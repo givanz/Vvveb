@@ -1,0 +1,27 @@
+{
+  "name": "givanz/Vvveb",
+  "description": "Vvveb",
+  "type": "project",
+  "keywords": [
+    "cms",
+    "builder",
+    "drag-drop",
+    "ecommerce",
+    "blog"
+  ],
+  "homepage": "https://www.vvveb.com/",
+  "license": "AGPL-3.0-or-later",
+  "support": {
+    "issues": "https://github.com/givanz/Vvveb/issues",
+    "forum": "https://github.com/givanz/Vvveb/discussions",
+    "wiki": "https://github.com/givanz/Vvveb/wiki",
+    "source": "https://github.com/givanz/Vvveb/releases",
+    "docs": "https://docs.vvveb.com/"
+  },
+  "config": {
+    "vendor-dir": "./vendor/"
+  },
+  "require": {
+    "php": ">=7.4.0"
+  }
+}

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="../../favicon.ico">
+
+  <base href="../">
+
+  <title>Vvveb - Message</title>
+
+
+
+  <link href="css/admin.css" rel="stylesheet">
+</head>
+
+
+<body class="message">
+
+  <div id="container">
+
+       <div class="sidebar" data-v-copy-from="index.html,.sidebar"></div>
+
+
+    <div class="main">
+
+       <div class="clearfix top-header" data-v-copy-from="index.html,.top-header">
+      </div>
+
+      <form id="settings-form" action="" method="post" class="needs-validation" data-v-message>
+        <input type="hidden" name="action" id="action" value="save">
+        <div class="actions flex-column flex-md-row">
+          <div class="title">
+            <h4 class="text-muted my-3">
+              <i class="icon-people-outline" data-v-menu-item-icon=""></i>&ensp;
+              <span>Message</span>
+            </h4>
+          </div>
+
+          <div class="btns">
+            <a href="/admin/?module=plugins/contact-form/messages" title="Message list" class="btn btn-outline-secondary pe-3">
+              <i class="la la-arrow-left"></i>
+              <span>Message list</span>
+            </a>
+<!--
+            <button type="submit" href="" data-bs-toggle="tooltip" title="" class="btn btn-primary btn-icon ms-1">
+              <i class="icon-create-outline"></i> <span>Save</span>
+            </button>
+-->            
+          </div>
+        </div>
+
+        <div id="main-content">
+
+        <div class="notifications" data-v-notifications data-v-copy-from="index.html,.notifications"></div>
+
+          <div class="px-4">
+
+            <input type="hidden" name="message_id" data-v-message-message_id>
+
+			<div class="table-responsive">
+                <table class="table table-hover middle-align" >
+					<tr data-v-data>
+						<td data-v-data-name></td>
+						<td>
+							<div class="value" data-v-data-value></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+
+			<h5 class="mt-4">User Meta</h5>
+			<div class="table-responsive">
+                <table class="table table-hover middle-align  table-bordered">
+					<tr data-v-meta>
+						<td data-v-meta-name></td>
+						<td>
+							<div class="value" data-v-meta-value></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+
+            </div>
+          </div>
+        </div>
+      </form>
+
+    </div>
+
+	<style>
+		.value {
+			white-space: pre-wrap;
+		}
+	</style>
+
+    <script id="jquery-js" src="js/jquery.min.js"></script>
+    <script id="popper-js" src="js/popper.min.js"></script>
+    <script id="bootstrap-js" src="js/bootstrap.min.js"></script>
+
+    <!--
+<script src="../../js/jquery.min.js"></script>
+<script src="../../js/popper.min.js"></script>
+<script src="../../js/bootstrap.min.js"></script>
+-->
+
+    
+    <script id="admin-js" type="module" src="../../js/admin.js"></script>
+
+
+    <script>
+let mediaPath = '{ $this->mediaPath }';
+let mediaScanUrl =  '{ $this->scanUrl }';
+let uploadUrl = '{ $this->uploadUrl }';
+</script>
+
+  
+    <script id="openverse-js" src="libs/media/openverse.js"></script>
+    <script id="media-js" src="libs/media/media.js"></script>
+    <script id="index-js" type="module" src="libs/vvveb/index.js"></script>
+    <link href="libs/media/media.css" rel="stylesheet">
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="heartBeatLogin" data-bs-backdrop="static" tabindex="-1" aria-labelledby="heartBeatLogin" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <span class="modal-title" id="heartBeatLogin">
+              <h5>Session has expired</h5>
+              <span>Login to resume your work</span>
+            </span>
+
+            <button type="button" class="btn-close me-2" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-5">
+          </div>
+        </div>
+      </div>
+    </div>
+
+</body>
+
+</html>

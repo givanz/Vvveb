@@ -1,0 +1,86 @@
+# sudo apt install docker-compose
+# sudo docker-compose up -d
+version: "3.3"
+services:
+  vvveb-install:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: "no"
+    depends_on:
+      - vvveb-app
+      - db
+    links:
+      - db
+    #  Sleep is required so that the command is run after mysql is initialized.
+    #command: >
+    #  /bin/sh -c'
+    #  sleep 10;
+    #  php cli.php install module=index host=db user=vvveb password=vvveb database=vvveb admin[email]=admin@vvveb.com admin[password]=admin
+    #  '
+    working_dir: /var/www/html
+    # https://docs.vvveb.com/installation#cli add engine=sqlite to cli parameters to install with sqlite
+    entrypoint: [ "bash", "-c", "sleep 10 && php cli.php install module=index host=db user=vvveb password=vvveb database=vvveb admin[email]=admin@vvveb.com admin[password]=admin"]            
+    # add shared volume
+    volumes:
+      - vvveb_data:/var/www/html
+      - db_data:/var/lib/mysql
+    networks:
+    - php-network
+  vvveb-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vvveb-cms
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+    links:
+      - db
+    # add shared volume
+    volumes:
+      - vvveb_data:/var/www/html
+      - db_data:/var/lib/mysql
+    networks:
+    - php-network
+    
+  db:
+    image: mysql:latest
+    #command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: vvveb
+      MYSQL_DATABASE: vvveb
+      MYSQL_USER: vvveb
+      MYSQL_PASSWORD: vvveb
+    networks:
+    - php-network
+    volumes:
+      - vvveb_data:/var/www/html
+      - db_data:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin-cms
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_USER=vvveb
+      - PMA_PASSWORD=vvveb
+      - PMA_HOST=db
+      - PMA_PORT=3306
+    depends_on:
+      - db
+    networks:
+    - php-network
+    # volumes:
+    #  - db_data:/var/lib/mysql
+    
+volumes:
+  db_data:
+  vvveb_data:
+
+networks:
+    php-network:
+      driver: bridge

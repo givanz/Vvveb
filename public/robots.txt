@@ -1,0 +1,13 @@
+User-agent: *
+Disallow: /search/
+Disallow: /user/*
+Disallow: /cart/*
+Disallow: /checkout/*
+Disallow: /filters-*/
+Disallow: /shop/*/*/filters-*
+
+User-agent: Expanse
+Crawl-Delay: 3600
+
+Sitemap: /sitemap.xml
+Sitemap: /news-sitemap.xml

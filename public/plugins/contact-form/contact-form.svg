@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   height="42.538307"
+   version="1.1"
+   viewBox="0 0 66.466104 42.538305"
+   width="66.466103"
+   id="svg11"
+   sodipodi:docname="contact-form.svg"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
+  <metadata
+     id="metadata15">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="2560"
+     inkscape:window-height="1391"
+     id="namedview13"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="7.375"
+     inkscape:cx="-12"
+     inkscape:cy="34.538307"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg11" />
+  <desc
+     id="desc4" />
+  <defs
+     id="defs6" />
+  <g
+     id="Page-1"
+     style="fill:none;fill-rule:evenodd;stroke:none;stroke-width:1"
+     transform="matrix(2.6586442,0,0,2.6586442,-10.634577,-21.269154)">
+    <g
+       id="icon-3-mail-envelope-closed"
+       style="fill:#333">
+      <path
+         d="M 5.3150072,9.2739193 C 5.1210604,9.4573941 5,9.7177049 5,10.006846 V 21.993154 C 5,22.54922 5.4389178,23 6.0030706,23 H 26.996929 C 27.55091,23 28,22.550051 28,21.993154 V 10.006846 C 28,9.7171119 27.88084,9.4559616 27.686893,9.2722668 L 16.5,19 Z M 6.0035949,8 C 4.89704,8 4,8.8945138 4,9.9940603 V 22.00594 C 4,23.107229 4.8897632,24 6.0035949,24 H 26.996405 C 28.10296,24 29,23.105486 29,22.00594 V 9.9940603 C 29,8.8927712 28.110237,8 26.996405,8 Z M 16.5,17.700012 26.5,9 h -20 z"
+         id="mail-envelope-closed"
+         inkscape:connector-curvature="0" />
+    </g>
+  </g>
+</svg>

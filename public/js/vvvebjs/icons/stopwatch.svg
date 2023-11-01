@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   height="32"
+   width="32"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="stopwatch.svg"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
+  <metadata
+     id="metadata10">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="2560"
+     inkscape:window-height="1391"
+     id="namedview6"
+     showgrid="false"
+     inkscape:zoom="14.75"
+     inkscape:cx="26.401964"
+     inkscape:cy="17.779252"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4" />
+  <path
+     d="M15.304 16.095V9.876c0-.302.25-.558.557-.558.298 0 .557.25.557.558v6.22a1.671 1.671 0 010 3.15v1.764c0 .302-.25.558-.557.558a.563.563 0 01-.557-.558v-1.764a1.671 1.671 0 010-3.15zm9.21-7.866a12.758 12.758 0 00-8.096-3.353h0v-2.24h1.113V1.523h-3.34v1.113h1.113v2.24c-6.815.291-12.25 5.908-12.25 12.794 0 7.073 5.734 12.807 12.807 12.807s12.807-5.734 12.807-12.807a12.76 12.76 0 00-3.366-8.653l1.369-1.37.787.788.788-.787-2.362-2.363-.788.788.788.787zm-8.653 21.135c6.458 0 11.693-5.236 11.693-11.694 0-6.458-5.235-11.693-11.693-11.693-6.458 0-11.693 5.235-11.693 11.693 0 6.458 5.235 11.694 11.693 11.694zm0-11.137a.557.557 0 100-1.113.557.557 0 000 1.113z"
+     fill="none"
+     stroke="#000"
+     stroke-width="1.14035712"
+     stroke-linecap="round"
+     stroke-miterlimit="2"
+     fill-rule="evenodd"
+     id="path2"
+     style="stroke-width:0.5;stroke-miterlimit:2;stroke-dasharray:none;fill:#000000;fill-opacity:1;stroke:none" />
+</svg>

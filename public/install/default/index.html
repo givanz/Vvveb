@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <link rel="icon" href="../../favicon.ico">
+    <base href="/install/default/">
+    <title>Vvveb install</title>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/install.css" rel="stylesheet">
+    <style>
+    
+    </style>
+  </head>
+
+
+  <body class="h-100">
+
+	<div class="header">
+
+		<div class="d-flex align-items-end">
+			
+			<a id="color-theme-switch" title="Switch sidebar color theme">
+				<i class="la la-sun"></i>
+			</a>
+
+			<form method="post" class="m-2">
+				 <select name="language" class="form-select py-2" onchange="this.form.submit()" data-v-language-list>
+					<option value="en">English</option>
+					<option value="ro">Romanian</option>
+				  </select>
+			</form>
+		</div>						  
+	</div>						  
+
+
+    <div id="container" class="container h-100">
+							
+			<div class="row align-items-center h-100">
+				<div class="col-12 mx-auto">
+		
+					<img id="logo" src="../../admin/default/img/logom.png">
+
+					<div class="card border-danger mb-3" id="minimum_requirements" data-v-requirements>
+						<h5 class="card-header bg-danger text-white">Minimum requirements not met</h5>
+					
+						<div class="card-body">
+							<div data-v-requirement><span class="text-danger"> &#10006; </span> <span data-v-requirement-text>Requirement not met</span></div>
+						</div>
+					</div>
+					
+					<div class="notifications" data-v-notifications>
+						
+						<div class="card border-danger mb-3" role="alert" data-v-notification-error>
+
+							<h5 class="card-header bg-danger text-white">Errors</h5>
+							<div class="icon">
+								<i class="la la-exclamation-triangle fs-2"></i>
+							</div>
+
+							<div class="card-body">
+								<span class="text-danger"> &#10006;</span>
+								<span data-v-notification-text>
+									Can't connect to database
+								</span>
+							</div>
+							
+						</div>
+
+						<div class="alert alert-success d-flex  alert-dismissable d-flex" role="alert" data-v-notification-success>
+
+							<div class="icon">
+								<i class="la la-info-circle fs-2"></i>
+							</div>
+
+							<div class="flex-grow-1 align-self-center" data-v-notification-text></div>
+
+							<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+								<span aria-hidden="true">
+									<i class="la la-times"></i>
+								</span>
+							</button>
+						</div>
+						
+						<div class="alert alert-primary d-flex alert-dismissable d-flex" role="alert" data-v-notification-info>
+
+							<div class="icon">
+								<i class="la la-info-circle fs-2"></i>
+							</div>
+
+							<div class="flex-grow-1 align-self-center" data-v-notification-text></div>
+
+							<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+								<span aria-hidden="true">
+									<i class="la la-times"></i>
+								</span>
+							</button>
+						</div>
+
+					</div>
+										
+					<div class="card">
+					  <!-- 		
+					  <div class="card-header">	
+					  </div>
+					  -->
+					
+					  <div class="card-body">
+							<p class="card-text text-muted">Please fill the form, contact your hosting provider for details</p>
+							<form method="post">
+							 <div class="mb-3 row">
+								<label for="engine" class="col-sm-3 col-form-label">Database engine</label>
+								<div class="col-sm-9">
+								   <select name="engine" id="engine" class="form-control" onchange="databaseEngine(this)">
+										<option value="mysqli">MySQL / MariaDB</option>
+										<option value="sqlite">SQLite</option>
+										<option value="pgsql">PgSql</option>
+									</select>
+								</div>
+							  </div>
+							  <div class="mb-3 row db-field">
+								<label for="host" class="col-sm-3 col-form-label">Database host</label>
+								<div class="col-sm-9">
+								  <input type="text" class="form-control" id="host" placeholder="Database host"  placeholder="localhost" name="host" value="127.0.0.1" required>
+								</div>
+							  </div>
+							  <div class="mb-3 row db-field">
+								<label for="database" class="col-sm-3 col-form-label">Database name</label>
+								<div class="col-sm-9">
+								  <input type="text" class="form-control" id="database" placeholder="Database name" name="database" value="vvveb" required>
+								</div>
+							  </div>
+							  <div class="mb-3 row db-field">
+								<label for="user" class="col-sm-3 col-form-label">Database username</label>
+								<div class="col-sm-9">
+								  <input type="text" class="form-control" id="user" placeholder="Database username" name="user" value="root" required>
+								</div>
+							  </div>
+							  <div class="mb-3 row db-field">
+								<label for="password" class="col-sm-3 col-form-label">Database password</label>
+								<div class="col-sm-9">
+
+									<div class="input-group">
+									  <input type="password" class="form-control"  id="password" placeholder="Database password" name="password" value="" aria-label="Database password">
+  									  <button class="btn btn-sm px-3 btn-toggle" type="button" onclick="togglePasswordInput(this)">&#x1F512;</button>
+									</div>
+								</div>
+							  </div>							 
+							  <div class="mb-3">
+									<div class="form-check">
+										<input type="checkbox" class="form-check-input" name="noimport" value="1" id="noimport">
+										<label class="form-check-label" for="noimport">
+											Do not import basic configuration and demo data
+											<span class="form-text">(Not recommended, check for total empty site only)</span>
+										</label>
+										
+									  </div>
+							  </div>
+							  <!--
+							  <div class="mb-3 row db-field">
+								<label for="prefix" class="col-sm-3 col-form-label">Table prefix</label>
+								<div class="col-sm-9">
+								  <input type="text" class="form-control" id="prefix" placeholder="vv_" name="prefix" value="">
+								</div>
+							  </div>
+							  -->
+							  <div class="row align-items-center">
+								  <div class="col-md-6 col-xs-12">
+									  <div class="form-check">
+										<input type="checkbox" class="form-check-input" id="license" required>
+										<label class="form-check-label" for="license">
+											I agree to AGPL 3 license terms
+										</label>
+										<a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank">license</a>&#8599;
+									  </div>
+								  </div>
+
+									<div class="col-md-6 col-xs-12">												  
+										  <button type="submit" class="btn btn-primary btn-lg float-end"><span>Continue install</span> &rarr;<!-- &#10140; --></button>
+									</div>
+							  </div>
+							</form>
+						
+			  </div>
+			</div>
+		</div>
+    </div>
+    </div>
+    
+   <script>
+	function databaseEngine(element) {
+		let display = '';
+		
+		if (element.value == 'sqlite')  {
+			display = 'none';
+		}
+		
+		document.querySelectorAll('.db-field').forEach(el => el.style.display = display);
+	}
+	
+	function togglePasswordInput(element) {
+		var password = document.getElementById("password");
+		if (password.type == "password") {
+			password.type = "text"; 
+			element.innerHTML = "&#x1F513;";
+		} else {
+			password.type = "password";
+			element.innerHTML = "&#x1F512;";
+		}
+	}
+  </script>   					
+
+    <script src="../../js/jquery.min.js"></script>
+    <script type="module" src="../../js/admin.js"></script>
+  </body>
+</html>

@@ -1,0 +1,230 @@
+html {
+	height:100%;
+}
+    
+body {
+	font-family:sans-serif;
+	font-size:14px;
+	background:linear-gradient(to top right,  rgba(var(--bs-secondary-color-rgb), 0.07) 1%,var(--bs-body-bg) 100%);
+}
+
+.header {
+	position:fixed;
+	top:0;
+	right:0;
+	/*width:100%;*/
+}
+
+#logo
+{
+	display:block;
+	margin:0rem auto 2rem;
+}
+
+[data-v-error-text] {
+    white-space: pre-wrap;
+}
+
+.card, .notifications {
+	max-width: 800px;
+	max-width: 800px;
+	margin: auto;	
+}
+
+.card 
+{
+	box-shadow:0px 2px 2px 1px rgba(0,0,0,0.1);
+    box-shadow:0px 1px 3px 1px rgba(0,0,0,0.05);
+	background: var(--bs-body-bg);
+	box-shadow:0px 3px 21px 5px rgba(0,0,0,0.03), 0px 3px 3px 0px rgba(0,0,0,0.03), rgba(29, 48, 61, 0.01) 0px 16px 40px 0px;
+	border:1px solid var(--bs-border-color);
+}
+
+.card-header
+{
+	background: transparent;
+	border-bottom: none;
+	color: #999;
+	padding:1rem 1rem 1rem;
+	font-size: 1rem;
+	border-bottom:1px solid #eee;
+}
+.card-body 
+{
+	padding:2rem;
+}
+
+.btn-primary
+{
+	padding: 0.7rem 2rem;
+	box-shadow:-1px 1px 2px 1px rgba(0,0,0,0.14),-1px 1px 2px 0px rgba(255,255,255,0.3) inset;
+	box-shadow:-1px 1px 2px 1px rgba(0,0,0,0.14),-3px 3px 7px 0px rgba(255,255,255,0.2) inset;
+	box-shadow:-1px 1px 2px 1px rgba(0, 0, 0, 0.07), -1px 1px 2px 0px rgba(255, 255, 255, 0.15) inset;
+	background:#2047F4;
+	border-color:#2047F4;
+	border-radius:3px;
+	font-size:1rem;
+}
+
+
+.btn-primary:hover
+{
+	/*background:rgb(35, 140, 238);*/
+}
+
+.btn-toggle
+{
+	border-color:var(--bs-border-color);
+}
+
+
+input.form-control
+{
+	box-shadow:0px 0px 3px 1px rgba(0, 0, 0, 0.05) inset;
+	padding-top:.5rem;
+	padding-bottom:.5rem;
+	height:auto;
+}
+
+
+.theme-check input {
+  background-color: rgba(255, 255, 255, 0.7); }
+
+.themes {
+}
+  .themes .list-card {
+    position: relative; }
+    .themes .list-card .theme-check {
+      position: absolute;
+      padding: 0.5rem;
+	  margin: 0;
+	  width: 100%;
+	  height: 100%;
+      top: 0px;
+      right: 3px;
+      z-index: 2;
+      font-size: 1.4rem; }
+      .themes .list-card .theme-check input {
+        margin: 0; }
+    .themes .list-card.active .card {
+      border: 2px solid rgba(62, 123, 238, 0.7); }
+
+.list-card .card {
+  padding: 0;
+  font-size: 12px;
+  border-radius: 4px;
+  box-shadow: #cccccc 0 0 16px;
+  box-shadow: rgba(255, 255, 255, 0.1) 0 0 6px inset, rgba(0, 0, 0, 0.2) 1px 1px 32px -6px;
+  border: none;
+  overflow: hidden;
+  background-color: white;
+  display: -ms-flexbox;
+  display: flex;
+  width: 100%;
+  -ms-flex-direction: column;
+  flex-direction: column; }
+  .list-card .card .btn-preview {
+    display: none; }
+
+.list-card .card .info {
+  float: left; }
+
+.list-card .card .buttons {
+  float: right; }
+
+.list-card .card .card-img-top {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125); }
+
+.list-card .card .card-footer {
+  opacity: 0;
+  border-top: none;
+  position: absolute;
+  background: rgba(255, 255, 255, 0.9);
+  width: 100%;
+  transition: opacity 0.3s;
+  text-align: center;
+  height: 70px;
+  bottom: 100px; }
+
+.list-card .card:hover .card-footer {
+  opacity: 1; }
+
+.list-card .card:hover .btn-preview {
+  display: inline-block; }
+
+.list {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -ms-flex-pack: center;
+  justify-content: center;
+  list-style: none; }
+
+.list-card .card-body {
+	padding:0.3rem;
+}
+.list-card .card-title {
+	font-size:1rem;
+	margin:0;
+}
+
+.list-card .card-body a {
+	text-decoration:none;
+}
+
+
+@supports (display: grid) {
+  .list {
+    display: -ms-grid;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+  
+  @media only screen and (min-width: 1600px) {
+    .list {
+      grid-template-columns: repeat(auto-fill, minmax(30%, 1fr)); } }
+      
+  @media only screen and (min-width: 2100px) {
+    .list {
+      grid-template-columns: repeat(auto-fill, minmax(30%, 1fr)); } } }
+
+/* card area */
+.list-card {
+  -ms-flex: 1 0 30%;
+  flex: 1 0 30%;
+  min-width: 0;
+  margin: 5px; }
+
+#color-theme-switch {
+		color:var(--bs-gray-500);
+		font-size:2.4rem;
+		text-decoration:none;
+		/*
+		width: 11px;
+		height: 11px;
+		background: transparent;
+		border: 1px solid var(--bs-gray-500);
+		border-radius: 50px;
+		*/
+		padding: 3px;
+		cursor:pointer;
+}			
+
+#color-theme-switch i {
+	font-style:normal;
+}
+
+
+.la-sun::before {
+	content:"☼";
+}
+
+.la-moon::before {
+	content:"☽";
+}
+
+[data-bs-theme="dark"] #logo {
+	filter: brightness(5);
+}
+
+

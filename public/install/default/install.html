@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <link rel="icon" href="../../favicon.ico">
+    <base href="">
+    <title>Vvveb install</title>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/install.css" rel="stylesheet">
+    <style>
+    
+    </style>
+  </head>
+
+
+  <body class="h-100">
+
+	<div class="header">
+
+		<a id="color-theme-switch" title="Switch sidebar color theme">
+			<i class="la la-sun"></i>
+		</a>
+	</div>
+
+    <div id="container" class="container h-100">
+							
+			<div class="row align-items-center h-100">
+				<div class="col-12 mx-auto">
+
+							
+						<img id="logo" src="../../admin/default/img/logom.png">
+
+							<div class="notifications" data-v-notifications>
+								
+								<div class="card border-danger mb-3" role="alert" data-v-notification-error>
+
+									<h5 class="card-header bg-danger text-white">Errors</h5>
+									<div class="icon">
+										<i class="la la-exclamation-triangle fs-2"></i>
+									</div>
+
+									<div class="card-body">
+										<span class="text-danger"> &#10006;</span>
+										<span data-v-notification-text>
+											Can't connect to database
+										</span>
+									</div>
+									
+								</div>
+
+								<div class="alert alert-success d-flex  alert-dismissable d-flex" role="alert" data-v-notification-success>
+
+									<div class="icon">
+										<i class="la la-info-circle fs-2"></i>
+									</div>
+
+									<div class="flex-grow-1 align-self-center" data-v-notification-text></div>
+
+									<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+										<span aria-hidden="true">
+											<i class="la la-times"></i>
+										</span>
+									</button>
+								</div>
+								
+								<div class="alert alert-primary d-flex alert-dismissable d-flex" role="alert" data-v-notification-info>
+
+									<div class="icon">
+										<i class="la la-info-circle fs-2"></i>
+									</div>
+
+									<div class="flex-grow-1 align-self-center" data-v-notification-text></div>
+
+									<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+										<span aria-hidden="true">
+											<i class="la la-times"></i>
+										</span>
+									</button>
+								</div>
+
+							</div>
+
+							<div class="card border-danger mb-3" id="minimum_requirements" data-v-requirements>
+								<h5 class="card-header bg-danger text-white">Minimum requirements not met</h5>
+							
+							  <div class="card-body">
+								  
+									<div data-v-requirement><span class="text-danger"> &#10006; </span> <span data-v-requirement-text>Requirement not met</span></div>
+
+							  </div>
+							</div>
+
+							<div class="card">
+							  
+							  <div class="card-body">
+								
+								<p class="card-text" style="color:#777">These can be later changed from admin.</p>
+								
+									<form method="post">
+									 <div class="mb-3 row">
+										<label for="title" class="col-sm-3 col-form-label">Website name</label>
+										<div class="col-sm-9">
+										  <input type="text" class="form-control" id="title" placeholder="Website name" name="settings[title]" value="" required>
+										</div>
+									  </div>
+									  <div class="mb-3 row">
+										<label for="email" class="col-sm-3 col-form-label">Email</label>
+										<div class="col-sm-9">
+										  <input type="email" class="form-control" id="email" placeholder="email" name="admin[email]" value="" required>
+										</div>
+									  </div>
+									  <div class="mb-3 row">
+										<label for="username" class="col-sm-3 col-form-label">User</label>
+										<div class="col-sm-9">
+										  <input type="text" class="form-control" id="username" placeholder="User" name="admin[username]" value="admin" required>
+										</div>
+									  </div>
+									  <div class="mb-3 row">
+										<label for="display_name" class="col-sm-3 col-form-label">User name</label>
+										<div class="col-sm-9">
+										  <input type="text" class="form-control" id="display_name" placeholder="Username" name="admin[display_name]" value="Admin" required>
+										</div>
+									  </div>
+									  <div class="mb-3 row">
+										<label for="password" class="col-sm-3 col-form-label">Password<br/><span class="small text-muted">Store your password in a safe place</span></label>
+										<div class="col-sm-9">
+
+
+											<div class="input-group mb-3">
+											  <input type="text" class="form-control" id="password" placeholder="User password" name="admin[password]" value="" aria-label="User password" autocomplete="new-password">
+											  <button class="btn btn-sm py-0 btn-toggle" type="button" onclick="togglePasswordInput(this)">&#x1F512;</button>
+											</div>
+										
+
+										</div>
+									  </div>
+											<div class="mb-3">
+												<div class="form-check">
+													<input type="checkbox" class="form-check-input" name="noecommerce" value="1" id="noecommerce">
+													<label class="form-check-label" for="noecommerce">
+														Disable ecommerce
+														<span class="form-text">(It can be enabled later)</span>
+													</label>
+													
+												  </div>
+										  </div>									  
+									 <div>
+
+
+										<h6>Theme</h6>
+
+										 <div class="list themes" data-v-themes>
+											 
+												<div class="list-card" data-v-theme data-v-class-if-active="theme.active">
+
+													<label class="form-check theme-check">						  
+														<input type="radio" class="form-check-input" value="/placeholder.svg" name="theme"><span class="form-check-label"></span>		
+													</label>				  
+
+													<!-- Card-->
+													<div class="card">
+														<img class="card-img-top img-fluid d-block mx-auto" src="..." alt="Card image cap" data-v-theme-screenshot_url data-v-theme-screenshot>
+														<div class="card-body">
+															<div class="info">
+																<a href="#" target="_blank"><h5 class="card-title" data-v-theme-name>Theme name</h5></a>
+																<!-- by <h6 class="card-subtitle mb-2 text-muted d-inline" data-v-theme-author>Author</h6>	-->
+															</div>
+
+														</div>
+													</div>
+												</div>
+												
+												<div class="list-card" data-v-theme>
+													
+													<label class="form-check">						  
+														<input type="radio" class="form-check-input" value="/placeholder.svg" name="theme"><span class="form-check-label"></span>		
+													</label>				  
+													<!-- Card-->
+													<div class="card">
+														<img class="card-img-top img-fluid d-block mx-auto" src="..." alt="Card image cap" data-v-theme-screenshot_url>
+														<div class="card-body">
+															<a href="#" target="_blank" data-v-theme-homepage><h5 class="card-title" data-v-theme-name>Theme name</h5></a>
+															<!-- by <h6 class="card-subtitle mb-2 text-muted d-inline" data-v-theme-author>Author</h6>	-->
+														</div>
+														  <div class="card-footer text-muted">
+													
+																<a href="#" class="btn btn-primary"><i class="icon-color-wand-outline"></i><span>Install</span></a>
+																<a href="#" class="btn btn-outline-primary" target="_blank" data-v-theme-preview_url><span>Preview</span></a>
+													
+														  </div>                
+													</div>
+												</div>
+											</div>
+									  </div>
+
+									  
+									  <div class="row align-items-center">
+										  <div class="col-md-6">
+											  <!-- div class="form-check custom-control custom-checkbox float-start">
+												<input type="checkbox" class="form-check-input btn-check" id="exampleCheck1" name="license" required>
+												<label class="form-check-label custom-control-label" for="exampleCheck1">Show advanced options</label>
+											  </div -->
+										  </div>
+
+										  <div class="col-md-6">												  
+											  <button type="submit" class="btn btn-primary mt-4 float-end"><span>Finish install</span> &#10140;</button>
+										  </div>
+									  </div>
+								  </form>
+							  </div>
+					</div>
+				</div>
+			</div>
+    </div>					
+	
+    <script>
+	function togglePasswordInput(element) {
+		var password = document.getElementById("password");
+		if (password.type == "password") {
+			password.type = "text"; 
+			element.innerHTML = "&#x1F513;";
+		} else {
+			password.type = "password";
+			element.innerHTML = "&#x1F512;";
+		}
+	}			
+		
+ 	function randomPassword(length) {
+		var chars = "abcdefghijklmnopqrstuvwxyz!@#$%^&*()-+<>ABCDEFGHIJKLMNOP1234567890";
+		var pass = "";
+		for (var x = 0; x < length; x++) {
+			var i = Math.floor(Math.random() * chars.length);
+			pass += chars.charAt(i);
+		}
+		return pass;
+	}
+
+	document.getElementById("password").value = randomPassword(24);   
+    
+    </script>
+    <script src="../../js/jquery.min.js"></script>
+    <script type="module" src="../../js/admin.js"></script>
+    		
+  </body>
+</html>

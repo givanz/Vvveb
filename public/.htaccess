@@ -1,0 +1,149 @@
+Options +SymLinksIfOwnerMatch -Indexes
+
+<Files *.php>
+        Order Deny,Allow
+        Deny from all
+</Files>
+
+<Files index.php>
+    Order Allow,Deny
+    Allow from all
+</Files>
+
+<IfModule dir_module>
+    DirectoryIndex index.php
+</IfModule>
+
+#<IfModule mod_headers.c>
+#Header always set Content-Security-Policy "upgrade-insecure-requests;"
+#</IfModule>
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+
+# Redirect http to https
+#RewriteCond %{HTTPS} !=on
+#RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
+
+#page cache
+RewriteCond %{REQUEST_METHOD} !=POST
+RewriteCond %{QUERY_STRING} !.*=.*
+RewriteCond %{HTTP_COOKIE} !^.*(nocache).*$
+#RewriteCond %{QUERY_STRING} !^.*(nocache|admin).*$
+RewriteCond %{QUERY_STRING} !^.*(/admin).*$
+RewriteCond %{DOCUMENT_ROOT}/page-cache/%{HTTP_HOST}/$1/index.html -f
+RewriteRule ^(.*) /page-cache/%{HTTP_HOST}/$1/index.html [L]
+RewriteCond %{DOCUMENT_ROOT}/page-cache/%{HTTP_HOST}/$1 -f
+RewriteRule ^(.*) /page-cache/%{HTTP_HOST}/$1 [L]
+#end page cache
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [L]
+</IfModule>
+
+#static files expiration
+#ExpiresDefault A2592000 = 1 month in the future
+#Cache-Control "max-age=2592000" = 1 month
+
+<IfModule mod_headers.c>
+
+	Header unset ETag
+    Header set Connection keep-alive
+
+    <FilesMatch "\.(txt|xml|js)$">
+        Header set Cache-Control "max-age=2592000"
+    </FilesMatch>
+
+    <FilesMatch "\.(css)$">
+        Header set Cache-Control "max-age=2592000"
+    </FilesMatch>
+
+    <FilesMatch "\.(flv|ico|pdf|avi|mov|ppt|doc|mp3|wmv|wav|mp4|m4v|ogg|webm|aac)$">
+        Header set Cache-Control "max-age=2592000"
+    </FilesMatch>
+
+        <FilesMatch "\.(jpg|jpeg|png|gif|swf|webp)$">
+    Header set Cache-Control "max-age=2592000"
+    </FilesMatch>
+
+    <FilesMatch "\.(ttf|ttc|otf|eot|woff|woff2|font.css|css|js)$">
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>  
+</IfModule>
+
+FileETag None
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault A2592000
+     
+    <FilesMatch "\.(txt|xml|js)$">
+    ExpiresDefault A2592000
+    </FilesMatch>
+     
+    <FilesMatch "\.(css)$">
+    ExpiresDefault A2592000
+    </FilesMatch>
+     
+    <FilesMatch "\.(ico|pdf|avi|mov|ppt|doc|mp3|wmv|wav|mp4|m4v|ogg|webm|aac)$">
+    ExpiresDefault A2592000
+    </FilesMatch>
+     
+    <FilesMatch "\.(jpg|jpeg|png|gif|swf|webp)$">
+    ExpiresDefault A2592000
+    </FilesMatch>
+</IfModule>
+
+
+
+#gzip to reduce response size
+<IfModule mod_deflate.c>
+    <IfModule mod_setenvif.c>
+        <IfModule mod_headers.c>
+            SetEnvIfNoCase ^(Accept-EncodXng|X-cept-Encoding|X{15}|~{15}|-{15})$ ^((gzip|deflate)\s*,?\s*)+|[X~-]{4,13}$ HAVE_Accept-Encoding
+            RequestHeader append Accept-Encoding "gzip,deflate" env=HAVE_Accept-Encoding
+        </IfModule>
+    </IfModule>
+    <IfModule mod_filter.c>
+        AddOutputFilterByType DEFLATE "application/atom+xml" \
+                                      "application/javascript" \
+                                      "application/json" \
+                                      "application/ld+json" \
+                                      "application/manifest+json" \
+                                      "application/rdf+xml" \
+                                      "application/rss+xml" \
+                                      "application/schema+json" \
+                                      "application/vnd.geo+json" \
+                                      "application/vnd.ms-fontobject" \
+                                      "application/x-font-ttf" \
+                                      "application/x-javascript" \
+                                      "application/x-web-app-manifest+json" \
+                                      "application/xhtml+xml" \
+                                      "application/xml" \
+                                      "font/eot" \
+                                      "font/opentype" \
+                                      "image/bmp" \
+                                      "image/svg+xml" \
+                                      "image/vnd.microsoft.icon" \
+                                      "image/x-icon" \
+                                      "text/cache-manifest" \
+                                      "text/css" \
+                                      "text/html" \
+                                      "text/javascript" \
+                                      "text/plain" \
+                                      "text/vcard" \
+                                      "text/vnd.rim.location.xloc" \
+                                      "text/vtt" \
+                                      "text/x-component" \
+                                      "text/x-cross-domain-policy" \
+                                      "text/xml"
+ 
+    </IfModule>
+    <IfModule mod_mime.c>
+        AddEncoding gzip              svgz
+    </IfModule>
+ 
+</IfModule>
+

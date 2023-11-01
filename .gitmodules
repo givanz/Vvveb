@@ -1,0 +1,12 @@
+[submodule "public/themes/landing"]
+	path = public/themes/landing
+	url = https://github.com/givanz/landing
+[submodule "public/themes/blog-default"]
+	path = public/themes/blog-default
+	url = https://github.com/givanz/blog-default
+[submodule "public/admin/default"]
+	path = public/admin/default
+	url = https://github.com/givanz/vvveb-admin-template
+[submodule "plugins/contact-form"]
+	path = plugins/contact-form
+	url = https://github.com/Vvveb/contact-form

@@ -1,0 +1,1 @@
+import(listing.tpl, {"type":"manufacturer","list": "manufacturers"})

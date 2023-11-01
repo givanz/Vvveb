@@ -1,0 +1,41 @@
+DROP TABLE IF EXISTS `subscription`;
+
+CREATE TABLE `subscription` (
+  `subscription_id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `order_id` INT NOT NULL,
+  `order_product_id` INT NOT NULL,
+  `site_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  `payment_address_id` INT NOT NULL,
+  `payment_method` text NOT NULL,
+  `shipping_address_id` INT NOT NULL,
+  `shipping_method` text NOT NULL,
+  `product_id` INT NOT NULL,
+  `quantity` int(4) NOT NULL,
+  `subscription_plan_id` INT NOT NULL,
+  `price` decimal(10,4) NOT NULL,
+  `period` TEXT CHECK( period IN ('day','week','month','year') ) NOT NULL DEFAULT 'month',
+  `cycle` smallint(6) NOT NULL,
+  `length` smallint(6) NOT NULL,
+  `left` smallint(6) NOT NULL,
+  `trial_price` decimal(10,4) NOT NULL,
+  `trial_period` TEXT CHECK( trial_period IN ('day','week','month','year') ) NOT NULL DEFAULT 'month',
+  `trial_cycle` smallint(6) NOT NULL,
+  `trial_length` smallint(6) NOT NULL,
+  `trial_left` smallint(6) NOT NULL,
+  `trial_status` tinyint NOT NULL,
+  `date_next` datetime NOT NULL,
+  `note` text NOT NULL,
+  `subscription_status_id` INT NOT NULL,
+  `tracking` TEXT NOT NULL,
+  `language_id` INT NOT NULL,
+  `currency_id` INT NOT NULL,
+  `ip` TEXT NOT NULL,
+  `forwarded_ip` TEXT NOT NULL,
+  `user_agent` TEXT NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+--  PRIMARY KEY (`subscription_id`),
+);
+
+CREATE INDEX `subscription_order_id` ON `subscription` (`order_id`);

@@ -1,0 +1,17 @@
+storage/compiled-templates/*
+storage/cache/*
+config/db.php
+app/model/*
+admin/model/*
+public/page-cache/*
+public/themes/*/*.html
+!public/themes/*/src/*.html
+public/admin/themes/*/*.html
+!public/admin/themes/*/src/*.html
+.codelite
+vendor
+node_modules
+*.map.*
+*.phprj
+*.workspace
+tinymce-dist

@@ -1,0 +1,1 @@
+import(listing.tpl, {"type":"vendor", "list": "vendors"})
