@@ -14,8 +14,12 @@ $limit = isset($comments['limit']) ? $comments['limit'] : 5;
 
 
 @comment|before = <?php
-if($comments && is_array($comments['comment'])) {
-	foreach ($this->_component['comments'][$_comments_idx]['comment'] as $index => $comment) {?>
+$_comments = $comments['comment'] ?? [];
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['comment_id' => 1, 'content' => '']] : false;
+$_comments = empty($_comments) ? $_default : $_comments;
+
+if($_comments && is_array($_comments)) {
+	foreach ($_comments as $index => $comment) {?>
 		
 		@comment|data-comment_id = $comment['comment_id']
 		
@@ -26,6 +30,7 @@ if($comments && is_array($comments['comment'])) {
 		@comment [data-v-comment-content] = <?php echo $comment['content'];?>
 		
 		@comment img[data-v-comment-*]|src = $comment['@@__data-v-comment-(*)__@@']
+		@comment img[data-v-comment-*]|width = <?php echo $comment['size'] ?? '60';?>
 		
 		@comment [data-v-comment-*]|innerText = $comment['@@__data-v-comment-(*)__@@']
 		

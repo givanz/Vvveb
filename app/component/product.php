@@ -32,16 +32,20 @@ use function Vvveb\url;
 
 class Product extends ComponentBase {
 	public static $defaultOptions = [
-		'product_id'  => 'url',
-		'slug'        => 'url',
-		'status'	     => 1,
-		'language_id' => null,
-		'site_id'     => null,
+		'product_id'    => 'url',
+		'slug'          => 'url',
+		'status'	    => 1,
+		'language_id'   => null,
+		'site_id'       => null,
+		'user_id'       => null,
+		'user_group_id' => null,
+		'reviews' 		=> true,
+		'rating' 		=> true,
+		'promotion'		=> true,
 	];
 
 	function results() {
 		$product = new ProductSQL();
-
 		$results = $product->get($this->options);
 
 		if (isset($results['product_image'])) {
@@ -53,10 +57,10 @@ class Product extends ComponentBase {
 			$results['image']= Images::image($results['image'], 'product');
 		}
 
-		$results['add-cart-url']     = url('cart/cart/add', ['product_id' => $results['product_id']]);
-		$results['buy-now-url']      = url('checkout/checkout/index', ['product_id' => $results['product_id']]);
-		$results['wishlist-url']     = url('cart/wishlist/add', ['product_id' => $results['product_id']]);
-		$results['compare-url']      = url('cart/compare/add', ['product_id' => $results['product_id']]);
+		$results['add_cart_url']     = url('cart/cart/add', ['product_id' => $results['product_id']]);
+		$results['buy_url']          = url('checkout/checkout/index', ['product_id' => $results['product_id']]);
+		$results['add_wishlist_url'] = url('user/wishlist/add', ['product_id' => $results['product_id']]);
+		$results['add_compare_url']  = url('cart/compare/add', ['product_id' => $results['product_id']]);
 		$results['manufacturer_url'] = url('product/manufacturer/index', ['slug' => $results['manufacturer_slug']]);
 		$results['vendor_url']       = url('product/vendor/index', ['slug' => $results['vendor_slug']]);
 
@@ -65,6 +69,13 @@ class Product extends ComponentBase {
 		$results['price_tax']           = $tax->addTaxes($results['price'], $results['tax_type_id']);
 		$results['price_tax_formatted'] = $currency->format($results['price_tax']);
 		$results['price_formatted']     = $currency->format($results['price']);
+		
+		if ($results['promotion']) {
+			$results['promotion_tax']           = $tax->addTaxes($results['promotion'], $results['tax_type_id']);
+			$results['promotion_tax_formatted'] = $currency->format($results['promotion_tax']);
+			$results['promotion_formatted']     = $currency->format($results['promotion']);
+			$results['promotion_discount']      = 100 - ceil($results['promotion'] * 100 / $results['price']);
+		}
 
 		//$data['price'] = $this->currency->format($this->tax->calculate($product_info['price'], $product_info['tax_type_id'], $this->config->get('config_tax')), $this->session->data['currency']);
 

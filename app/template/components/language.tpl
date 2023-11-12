@@ -12,6 +12,9 @@ if(isset($this->_component['language']) && $this->_component['language'][$_langu
 [data-v-component-language] img[data-v-language-info-*]|src = $language['active']['@@__data-v-language-info-(*)__@@']
 
 @language|before = <?php
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
+$language['language'] = empty($language['language']) ? $_default : $language['language'];
+
 	if (is_array($language['language'])) {
 		foreach ($language['language'] as $index => $lang) {?>
 		

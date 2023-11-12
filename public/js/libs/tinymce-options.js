@@ -24,16 +24,16 @@ function fixWrapper(body){
 const isSmallScreen = window.matchMedia('(max-width: 1023.5px)').matches;
 
 let tinyMceSkin = "oxide";
-let theme = 'auto'
+let tinyMceTheme = 'auto'
 if (window.matchMedia("(prefers-color-scheme: dark)").matches || $("html").attr("data-bs-theme") == "dark") {
 	tinyMceSkin = "oxide-dark";
-	theme = 'dark';
+	tinyMceTheme = 'dark';
 }
 
 let make_wysiwyg = function(inst){
     fixWrapper(inst.contentDocument.body);
      //set dark theme
-    inst.contentDocument.documentElement.setAttribute("data-bs-theme", theme);
+    inst.contentDocument.documentElement.setAttribute("data-bs-theme", tinyMceTheme);
 }
 
 var tinyMceOptions = {

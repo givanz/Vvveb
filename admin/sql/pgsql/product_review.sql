@@ -19,8 +19,13 @@
 	)
 	BEGIN
 
-		SELECT *
-            FROM product_review AS product_review
+		SELECT product_review.*,user.*,user.user_id as user_id,
+			(SELECT json_agg(json_build_object('id',prm.product_review_media_id,'image',prm.image))
+				FROM product_review_media as prm 
+			WHERE prm.product_review_id = product_review.product_review_id) as images
+
+            FROM product_review
+	    LEFT JOIN user ON user.user_id = product_review.user_id
 		
 			WHERE 1 = 1
             
@@ -69,6 +74,7 @@
 		-- review
 		SELECT *
 			FROM product_review as _ -- (underscore) _ means that data will be kept in main array
+		INNER JOIN user on user.user_id = product_review.user_id
 		WHERE product_review_id = :product_review_id LIMIT 1;
 
 	END

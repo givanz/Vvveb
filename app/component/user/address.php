@@ -59,6 +59,6 @@ class Address extends ComponentBase {
 	}
 
 	//called on each request
-	function request($results) {
+	function request($results, $index = 0) {
 	}
 }

@@ -173,7 +173,7 @@ class DBDriver {
 		//mysql
 		$query = preg_replace('/LIMIT\s+(\d+|:\w+),\s*(\d+|:\w+)\s*;?$/', '', $query);
 
-		$query = preg_replace("/^\s*SELECT .*?\s*FROM\s*$table /ms", "SELECT $column FROM $table ", $query);
+		$query = preg_replace("/^\s*SELECT .*?\s*FROM\s*$table\s/ms", "SELECT $column FROM $table ", $query);
 
 		return $query;
 	}

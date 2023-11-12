@@ -183,7 +183,7 @@ if (! function_exists('printAdminBarMenu')) {
 						</span>
 
 						<span class="button-text text-dark">
-						  <i class="la la-sign-out-alt"></i><?php echo __('Log out'); ?></a>
+						  <i class="la la-sign-out-alt"></i><?php echo __('Log out'); ?>
 						</span>
 
 					  </button>

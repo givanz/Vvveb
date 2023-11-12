@@ -40,7 +40,7 @@ class Comments extends Listing {
 
 	protected $listController = 'comments';
 
-	function status() {
+	function save() {
 		$type       = $this->type;
 		$comment_id = $this->request->get[$type . '_id'] ?? false;
 		$status     = $this->request->get['newstatus'] ?? false;
@@ -96,7 +96,7 @@ class Comments extends Listing {
 				$comment['image'] = Images::image($type, $comment['image']);
 			}
 
-			$url                    = ['module' => "$module/$listController", 'action' => 'status', 'status' => $status, $type . '_id' => $comment[$type . '_id']];
+			$url                    = ['module' => "$module/$listController", 'action' => 'save', 'status' => $status, $type . '_id' => $comment[$type . '_id']];
 			$postUrl                = ['module' => "$module/$controller", $type . '_id' => $comment[$type . '_id']];
 			$comment['edit-url']    = \Vvveb\url($postUrl);
 			$comment['delete-url']  = \Vvveb\url(['module' => "$module/$list", 'action' => 'delete'] + $url);

@@ -285,7 +285,13 @@ class Sites {
 			$result['host'] = self :: url($result['host']);
 		}
 
-		return $result ?? false;
+		return $result ?? [
+			'host' => 'localhost',
+			'theme' => 'landing',
+			'template' => '',
+			'id' => 1,
+			'state' => 'live',
+		  ];
 	}
 
 	public static function saveSite($site) {

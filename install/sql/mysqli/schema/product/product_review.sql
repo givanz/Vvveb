@@ -12,6 +12,5 @@ CREATE TABLE `product_review` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`product_review_id`),
-  KEY `product_id` (`product_id`, `status`),
-  KEY `user_id` (`user_id`)
+  KEY `product_id` (`product_id`, `user_id`,`status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

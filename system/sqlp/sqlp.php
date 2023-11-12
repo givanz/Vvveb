@@ -122,18 +122,44 @@ class SqlP {
 	}
 
 	/*
+	 * Replace subqueries with provided string to keep only main query for getTableName to correctly extract table name
+	 */
+	function removeParanthesis($query, $replace = '', $startChar = '(', $endChar = ')') {
+		$level = 0;
+		$start = null;
+		$end = 0;
+		for($i=0; $i<strlen($query); $i++) {
+			$char = $query[$i];
+			
+			if($char == $startChar) {
+				if ($start === null) $start = $i;
+				$level++;
+			}
+			else if($char == $endChar) {
+				$level--;
+			}
+				
+			if($start && $level == 0) {
+				$end = $i + 1;
+				$query = substr_replace($query, $replace, $start, $end - $start);
+				//reset
+				$i = 0;
+				$start = null;
+				
+			}
+		}	
+		
+		return $query;
+	}
+	
+	/*
 	 * Extract table name from sql statement
 	 */
 	function getTableName($query) {
 		$tableName = '';
 
 		//remove subselects
-		$count = 1;
-
-		while ($count != 0) {
-			$query = preg_replace('/\([^\(\)]{10,}?\)/ms', 'replaced_subselect', $query, -1, $count);
-		}
-
+		$query = $this->removeParanthesis($query, 'replace_subselect');
 		//remove macros
 		$count = 1;
 

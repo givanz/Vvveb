@@ -74,16 +74,16 @@ class Order extends Base {
 							//$product['images'][] = ['image' => Images::image($product['image'], 'product')];
 						}
 
-						$product['tax_formatted'] = $currency->format($product['tax'], '$');
+						$product['tax_formatted'] = $currency->format($product['tax']);
 					}
 				}
 
 				foreach ($results['total'] as $id => &$total) {
-					$total['value_formatted'] = $currency->format($total['value'], '$');
+					$total['value_formatted'] = $currency->format($total['value']);
 				}
 
 				$order                    = &$results['order'];
-				$order['total_formatted'] = $currency->format($order['total'], '$');
+				$order['total_formatted'] = $currency->format($order['total']);
 				$order['shipping_data']   = json_decode($order['shipping_data'] ?? '', true);
 				$order['payment_data']    = json_decode($order['payment_data'] ?? '', true);
 				$order['class'] 		        = orderStatusBadgeClass($order['order_status_id']);

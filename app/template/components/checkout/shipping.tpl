@@ -14,6 +14,9 @@ $_pagination_limit = isset($shippings['limit']) ? $shippings['limit'] : 5;
 
 
 @shipping|before = <?php
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['shipping_id' => 1]] : false;
+$shippings['shipping'] = empty($shippings['shipping']) ? $_default : $shippings['shipping'];
+
 if($shippings && is_array($shippings['shipping'])) {
 	foreach ($shippings['shipping'] as $index => $shipping) {?>
 		

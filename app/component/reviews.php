@@ -21,6 +21,8 @@
  */
 
 namespace Vvveb\Component;
+use Vvveb\Sql\Product_Review_MediaSQL;
+use Vvveb\System\Images;
 
 class Reviews extends Comments {
 	protected $type = 'review';
@@ -30,12 +32,44 @@ class Reviews extends Comments {
 	protected $model = 'product_review';
 
 	public static $defaultOptions = [
-		'product_id'       => 'url',
-		'slug'             => 'url',
-		'post_title'       => null, //include post title (for recent reviews etc)
-		'status'           => 1, //approved reviews
-		'start'            => 0,
-		'limit'            => 10,
-		'order'            => 'asc', //desc
+		'product_id'   => 'url',
+		'user_id'      => NULL,
+		'status'       => 1, //approved reviews
+		'start'        => 0,
+		'limit'        => 10,
+		'image_size'   => 'thumb',
+		'order'        => 'asc', //desc
 	];
+
+	function results() {
+		$results = parent::results();
+
+		//review images
+		foreach ($results['product_review'] as $id => &$review) {
+			if (isset($review['images'])) {
+				$review['images'] = json_decode($review['images'], true);
+
+				foreach ($review['images'] as &$image) {
+					$image['thumb'] = Images::image($image['image'], 'product', $this->options['image_size']);
+					$image['image'] = Images::image($image['image'], 'product');
+				}
+			}
+		}		
+
+		//all product reviews images
+		$media   = new Product_Review_MediaSQL();
+		$gallery = $media->getAll($this->options + ['status'=> 1])['product_review_media'] ?? [];
+		
+		if ($gallery) {
+			//$gallery = Images::images($gallery, 'product', $this->options['image_size']);
+			foreach ($gallery as &$image) {
+				$image['thumb'] = Images::image($image['image'], 'product', $this->options['image_size']);
+				$image['image'] = Images::image($image['image'], 'product');
+			}
+		}
+
+		$results['images'] = $gallery;
+		
+		return $results;
+	}
 }

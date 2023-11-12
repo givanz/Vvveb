@@ -55,9 +55,31 @@
 	* [Postgresql 11+](https://www.postgresql.org/) 
 
 
+## Build
+
+* Clone the repository 
+```bash
+#git 2.13+ 
+git clone --recurse-submodules https://github.com/givanz/Vvveb
+
+# older git versions 
+git clone --recursive https://github.com/givanz/Vvveb
+```
+
+* Pull changes 
+```bash
+git pull --recurse-submodules
+```
+
+* Build vvveb.zip to upload to server
+```bash
+./build.sh
+```
+
+
 ## Install
 
-* Clone the repository or download the latest [release](https://vvveb.com/download.php)
+* Clone the repository and [build](#build ) or download the latest [release](https://vvveb.com/download.php)
 * Upload the files on your server or localhost and open `http://localhost/` or `http://myserver.com/` 
 * Follow the [installation instructions](https://docs.vvveb.com/installation)
 

@@ -68,10 +68,12 @@ class Breadcrumb extends ComponentBase {
 					if ($result) {
 						$breadcrumb = array_merge($breadcrumb, [
 							['text' => $result['name'], 'url' => url('product/category/index', $result)],
-							['text' => $slug, 'url' => false],
+							//['text' => $slug, 'url' => false],
 						]);
 					}
 				}
+				
+				$breadcrumb[] = ['text' => $name, 'url' => false];
 
 			break;
 			//product category page

@@ -42,13 +42,13 @@ class Signup extends \Vvveb\Controller\Base {
 			$userInfo['username']     = $userInfo['first_name'] . $userInfo['last_name'];
 			$result                   = User::add($userInfo);
 
-			$this->view->errors['signup'] = [];
+			$this->view->errors['login'] = [];
 
 			if ($result) {
 				if (is_array($result)) {
 					$message = __('User created!');
-					$this->session->set('success',  ['signup' => $message]);
-					$this->view->success['signup'][]    = $message;
+					$this->session->set('success',  ['login' => $message]);
+					$this->view->success['login'][]    = $message;
 					$user_id                            = $result['user'];
 					$this->request->request['user_id']  = $user_id;
 
@@ -58,24 +58,23 @@ class Signup extends \Vvveb\Controller\Base {
 						$error =  __('Error sending account creation mail!');
 
 						if (! email([$userInfo['email'], $site['admin-email']], __('Your account has been created!'), 'user/signup', $userInfo)) {
-							$this->session->set('errors', ['signup' => $error]);
+							$this->session->set('errors', ['login' => $error]);
 							$this->view->errors[] = $error;
 						}
 					} catch (\Exception $e) {
 						if (DEBUG) {
 							$error .= "\n" . $e->getMessage();
 						}
-						$this->session->set('errors', ['signup' => $error]);
-						$this->view->errors['signup'] = $error;
+						$this->session->set('errors', ['login' => $error]);
+						$this->view->errors['login'] = $error;
 					}
 
 					return $this->redirect('user/index');
-				//header('Location: /user');
 				} else {
-					$this->view->errors['signup'] = __('This email is already in use. Please use another one."');
+					$this->view->errors['login'] = __('This email is already in use. Please use another one.');
 				}
 			} else {
-				$this->view->errors['signup'] = __('Error creating user!');
+				$this->view->errors['login'] = __('Error creating user!');
 			}
 		}
 	}

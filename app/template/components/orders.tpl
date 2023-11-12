@@ -14,6 +14,9 @@ $_pagination_limit = isset($ordercomp['limit']) ? $ordercomp['limit'] : 5;
 
 
 @order|before = <?php
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
+$ordercomp['order'] = empty($ordercomp['order']) ? $_default : $ordercomp['order'];
+
 if($ordercomp && is_array($ordercomp['order'])) {
 	foreach ($ordercomp['order'] as $index => $order) {?>
 		

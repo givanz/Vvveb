@@ -15,6 +15,9 @@ $addresses = $addresscomp['user_address'] ?? [];
 
 
 @address|before = <?php
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['user_address_id' => 1]] : false;
+$addresses = empty($addresses) ? $_default : $addresses;
+
 if($addresses) {
 	foreach ($addresses as $index => $address) {?>
 		

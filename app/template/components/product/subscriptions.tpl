@@ -14,8 +14,14 @@ $_pagination_limit = isset($subscriptions['limit']) ? $subscriptions['limit'] : 
 
 
 @subscription|before = <?php
-if($subscriptions && is_array($subscriptions['product_subscription'])) {
-	foreach ($subscriptions['product_subscription'] as $index => $subscription) {?>
+//if page loaded in editor then set a fist empty product if there are no products 
+//to render an empty product to avoid losing the html on edit
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
+$product_subscription = empty($subscriptions['product_subscription']) ? $_default : $subscriptions['product_subscription'];
+
+
+if($product_subscription) {
+	foreach ($product_subscription as $index => $subscription) {?>
 		
 		@subscription [data-v-subscription-*]|innerText = $subscription['@@__data-v-subscription-(*)__@@']
 	

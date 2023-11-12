@@ -60,7 +60,7 @@ class Post extends Base {
 
 					$comments                                           = $this->session->get('comments', []);
 					$comments[$comment['slug']][$comment['comment_id']] = $comment;
-					$this->session->set('comments', $comments);
+					$this->session->set('comment', $comments);
 
 					$this->view->success[] = __('Comment was posted!');
 				} else {

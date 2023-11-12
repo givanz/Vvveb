@@ -6,6 +6,14 @@
 		IN product_id INT,
 		IN slug CHAR,
 		IN language_id INT,
+		IN promotion INT,
+		IN points INT,
+		IN stock_status INT,
+		IN weight_type INT,
+		IN length_type INT,
+		IN rating INT,
+		IN reviews INT,
+		
 		OUT fetch_row, 
 		OUT fetch_all, 
 		OUT fetch_all, 
@@ -27,6 +35,98 @@
 			mf.slug as manufacturer_slug, mf.name as manufacturer_name,
 			vd.slug as vendor_slug, vd.name as vendor_name,
 			st.name as stock_status_name
+			
+			-- include promotional price 	
+			@IF !empty(:promotion) && !empty(:user_group_id) 
+			THEN 
+				,(SELECT pp.price FROM product_promotion pp 
+				WHERE pp.product_id = _.product_id AND pp.user_group_id = :user_group_id 
+					AND (
+							(pp.from_date = '0000-00-00' OR pp.from_date < date('now')) 
+							AND (pp.to_date = '0000-00-00' OR pp.to_date > date('now'))
+					) 
+				ORDER BY pp.priority ASC, pp.price ASC 
+				LIMIT 1
+			) AS promotion				
+			END @IF
+
+			-- include points 	
+			@IF !empty(:points) && !empty(:user_group_id) 
+			THEN 
+			
+			  ,(SELECT points
+			   FROM product_points pp
+			   WHERE pp.product_id = _.product_id
+				 AND pp.user_group_id = :user_group_id
+			   AS points
+			   
+			END @IF
+			
+			-- include stock_status 	
+			@IF !empty(:stock_status)
+			THEN 
+
+			  ,(SELECT ss.name
+			   FROM stock_status ss
+			   WHERE ss.stock_status_id = _.stock_status_id
+				 AND ss.language_id = :language_id) 
+			  AS stock_status
+			   
+			END @IF
+
+
+			-- include weight_type 	
+			@IF !empty(:weight_type)
+			THEN 
+			
+			  ,(SELECT wcd.unit
+			   FROM weight_type_content wcd
+			   WHERE _.weight_type_id = wcd.weight_type_id
+				 AND wcd.language_id = :language_id) 
+			   AS weight_type
+			   
+			END @IF
+
+
+			-- include length_type 	
+			@IF !empty(:length_type)
+			THEN 
+			
+			  ,(SELECT lcd.unit
+			   FROM length_type_content lcd
+			   WHERE _.length_type_id = lcd.length_type_id
+				 AND lcd.language_id = :language_id) 
+			   AS length_type
+			   
+			END @IF
+		
+		
+			-- include rating
+			@IF !empty(:rating)
+			THEN 
+			
+			  ,(SELECT AVG(rating) AS total
+			   FROM product_review prvr
+			   WHERE prvr.product_id = _.product_id
+				 AND prvr.status = '1'
+			   GROUP BY prvr.product_id) 
+			  AS rating
+
+			   
+			END @IF
+		
+			-- include reviews
+			@IF !empty(:reviews)
+			THEN 
+
+			  ,(SELECT COUNT(*) AS total
+			   FROM product_review prv
+			   WHERE prv.product_id = _.product_id
+				 AND prv.status = 1
+			   GROUP BY prv.product_id) AS reviews
+									
+			   
+			END @IF			
 			
 		FROM product as _ -- (underscore) _ means that data will be kept in main array ['data'] and not default ['product'=>['data']]
 		LEFT JOIN product_content pc ON (
@@ -614,12 +714,12 @@
 		IN direction CHAR,
 		
 		-- columns options (local variables used for conditional sql)
-		LOCAL include_manufacturer INT,
-		LOCAL include_discount INT,
-		LOCAL include_special INT,
-		LOCAL include_points INT,
-		LOCAL include_stock_status INT,
-		LOCAL include_image_gallery INT,
+		LOCAL manufacturer INT,
+		LOCAL discount INT,
+		LOCAL special INT,
+		LOCAL points INT,
+		LOCAL stock_status INT,
+		LOCAL image_gallery INT,
 			
 		-- return array of products for products query
 		OUT fetch_all,
@@ -630,7 +730,7 @@
 
 		SELECT  pd.*,products.*
 
-				@IF !empty(:include_manufacturer) 
+				@IF !empty(:manufacturer) 
 				THEN 
 					,m.name AS manufacturer
 				END @IF
@@ -638,7 +738,7 @@
 
 			-- include image gallery 	
 			
-			@IF !empty(:include_image_gallery) 
+			@IF !empty(:image_gallery) 
 			THEN
 				-- uncomment the group concat version if you are using an older sqlite version
 				-- ,(SELECT '[' || GROUP_CONCAT('{"id":"' || pi.product_image_id || '","image":"' || pi.image || '"}') || ']' FROM product_image as pi WHERE pi.product_id = products.product_id GROUP BY pi.product_id) as images
@@ -646,7 +746,7 @@
 			END @IF
 
 			-- include discount 	
-			@IF !empty(:include_discount) && !empty(:user_group_id) 
+			@IF !empty(:discount) && !empty(:user_group_id) 
 			THEN 
 			
 				 ,(SELECT price
@@ -655,16 +755,16 @@
 					 AND pd2.user_group_id = :user_group_id
 					 AND pd2.quantity = '1'
 					 AND ((pd2.from_date = '0000-00-00'
-						   OR pd2.from_date < NOW())
+						   OR pd2.from_date < date('now'))
 						  AND (pd2.to_date = '0000-00-00'
-							   OR pd2.to_date > NOW()))
+							   OR pd2.to_date > date('now')))
 				   ORDER BY pd2.priority ASC, pd2.price ASC
 				   LIMIT 1) AS discount
 				   
 			END @IF
 			
 			-- include special price 	
-			@IF !empty(:include_special) && !empty(:user_group_id) 
+			@IF !empty(:special) && !empty(:user_group_id) 
 			THEN 
 			
 			  ,(SELECT price
@@ -672,9 +772,9 @@
 			   WHERE ps.product_id = products.product_id
 				 AND ps.user_group_id = :user_group_id
 				 AND ((ps.from_date = '0000-00-00'
-					   OR ps.from_date < NOW())
+					   OR ps.from_date < date('now'))
 					  AND (ps.to_date = '0000-00-00'
-						   OR ps.to_date > NOW()))
+						   OR ps.to_date > date('now')))
 			   ORDER BY ps.priority ASC, ps.price ASC
 			   LIMIT 1) AS special
 			   
@@ -682,7 +782,7 @@
 
 
 			-- include points 	
-			@IF !empty(:include_points) && !empty(:user_group_id) 
+			@IF !empty(:points) && !empty(:user_group_id) 
 			THEN 
 			
 			  ,(SELECT points
@@ -694,7 +794,7 @@
 			END @IF
 			
 			-- include stock_status 	
-			@IF !empty(:include_stock_status)
+			@IF !empty(:stock_status)
 			THEN 
 
 			  ,(SELECT ss.name
@@ -708,7 +808,7 @@
 
 
 			-- include weight_type 	
-			@IF !empty(:include_weight_type)
+			@IF !empty(:weight_type)
 			THEN 
 			
 			  ,(SELECT wcd.unit
@@ -721,7 +821,7 @@
 
 
 			-- include length_type 	
-			@IF !empty(:include_length_type)
+			@IF !empty(:length_type)
 			THEN 
 			
 			  ,(SELECT lcd.unit
@@ -734,7 +834,7 @@
 		
 		
 			-- include rating
-			@IF !empty(:include_rating)
+			@IF !empty(:rating)
 			THEN 
 			
 			  ,(SELECT AVG(rating) AS total
@@ -748,7 +848,7 @@
 			END @IF
 		
 			-- include reviews
-			@IF !empty(:include_reviews)
+			@IF !empty(:reviews)
 			THEN 
 
 			  ,(SELECT COUNT(*) AS total
@@ -773,7 +873,7 @@
 
 			)  
 
-			@IF !empty(:include_manufacturer) 
+			@IF !empty(:manufacturer) 
 			THEN 
 				LEFT JOIN manufacturer m ON (products.manufacturer_id = m.manufacturer_id)
 			END @IF

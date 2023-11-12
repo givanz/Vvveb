@@ -14,6 +14,9 @@ $_pagination_limit = isset($attributes['limit']) ? $attributes['limit'] : 5;
 @attribute [data-v-attribute]|deleteAllButFirstChild
 
 @attribute|before = <?php
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['attribute_id' => 1]] : false;
+$attributes['attribute'] = empty($attributes['attribute']) ? $_default : $attributes['attribute'];
+
 if($attributes && is_array($attributes['attribute'])) {
 	$group = false;
 	foreach ($attributes['attribute'] as $index => $attribute) {?>

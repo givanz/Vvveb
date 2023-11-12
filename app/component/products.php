@@ -41,11 +41,11 @@ class Products extends ComponentBase {
 		'type'                         => 'product',
 		'parent'                       => null,
 		'manufacturer_id'              => NULL,
-		'vendor_id'			                 => NULL,
+		'vendor_id'			           => NULL,
 		'order_by'                     => NULL,
 		'direction'                    => ['url', 'asc', 'desc'],
-		'taxonomy_item_id'		           => NULL,
-		'include_image_gallery'        => true,
+		'taxonomy_item_id'		       => NULL,
+		'image_gallery'        		   => true,
 		'product_id'                   => [],
 		'search'                       => null,
 		'slug'                         => null,
@@ -120,13 +120,13 @@ class Products extends ComponentBase {
 				//rfc
 				$product['pubDate'] = date('r', strtotime($product['created_at']));
 
-				$url                     =  ['slug' => $product['slug'], 'product_id' => $product['product_id']] + $language;
-				$product['url']      	   = url('product/product/index', $url);
-				$product['add-cart-url'] = url('cart/cart/add', ['product_id' => $product['product_id']]);
-				$product['buy-now-url']  = url('checkout/checkout/index', ['product_id' => $product['product_id']]);
-				$product['wishlist-url'] = url('cart/wishlist/add', ['product_id' => $product['product_id']]);
-				$product['compare-url']  = url('cart/compare/add', ['product_id' => $product['product_id']]);
-				$product['full-url']     = url('product/product/index', $url + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http']);
+				$url                         =  ['slug' => $product['slug'], 'product_id' => $product['product_id']] + $language;
+				$product['url']      	     = url('product/product/index', $url);
+				$product['add_cart_url']     = url('cart/cart/add', ['product_id' => $product['product_id']]);
+				$product['buy_url']          = url('checkout/checkout/index', ['product_id' => $product['product_id']]);
+				$product['add_wishlist_url'] = url('user/wishlist/add', ['product_id' => $product['product_id']]);
+				$product['add_compare_url']  = url('cart/compare/add', ['product_id' => $product['product_id']]);
+				$product['full-url']         = url('product/product/index', $url + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http']);
 
 				$product['price_tax']           = $tax->addTaxes($product['price'], $product['tax_type_id']);
 				$product['price_tax_formatted'] = $currency->format($product['price_tax']);

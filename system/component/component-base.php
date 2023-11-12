@@ -42,6 +42,7 @@ class ComponentBase {
 			self :: $global['start']               = 0;
 			self :: $global['site_id']             = defined('SITE_ID') ? SITE_ID : 0;
 			self :: $global['user_id']             = $user['user_id'] ?? null;
+			self :: $global['user_group_id']       = $user['user_group_id'] ?? 1;
 			self :: $global['language_id']         = session('language_id') ?? 1;
 			self :: $global['language']            = session('language') ?? 'en_US';
 			self :: $global['default_language']    = session('default_language') ?? 'en_US';
@@ -51,7 +52,7 @@ class ComponentBase {
 
 		static :: $defaultOptions = array_merge(self :: $global, static :: $defaultOptions);
 
-		foreach (['site_id', 'language_id', 'currency_id'] as $key) {
+		foreach (['site_id', 'language_id', 'currency_id', 'user_group_id'] as $key) {
 			if (! isset(static :: $defaultOptions[$key]) || empty(static :: $defaultOptions[$key])) {
 				static :: $defaultOptions[$key] = self :: $global[$key];
 			}

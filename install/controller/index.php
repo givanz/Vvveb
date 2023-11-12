@@ -231,7 +231,8 @@ class Index extends Base {
 			$site['settings'] = json_encode($settings);
 
 			if ($theme) {
-				@\Vvveb\set_config('sites.* * *.theme', $theme);
+				//@\Vvveb\set_config('sites.* * *.theme', $theme);
+				$site['theme']  = $theme;
 			}
 
 			if ($noecommerce) {
@@ -255,6 +256,8 @@ class Index extends Base {
 
 			$site = [
 				'host'     => $_SERVER['HTTP_HOST'] ?? '*.*.*',
+				'id' 	   => 1,
+				'name'     => 'Default',
 				'theme'    => $theme,
 				'settings' => json_encode($settings),
 			];
@@ -286,6 +289,9 @@ class Index extends Base {
 					'default'     => 1,
 				]]);
 			}
+			
+			unset($site['settings']);
+			@\Vvveb\set_config('sites.* * *', $site);
 
 			$lang = \Vvveb\session('language');
 

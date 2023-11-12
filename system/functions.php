@@ -1454,8 +1454,8 @@ function commentStatusBadgeClass($status = 0) {
 	$classes = [
 		0 => 'bg-primary-subtle text-body', //pending
 		1 => 'bg-success-subtle text-body', //approved
-		2 => 'bg-danger-subtle text-body', //spam
-		3 => 'bg-warning-subtle text-body', //trash
+		2 => 'bg-warning-subtle text-body', //spam
+		3 => 'bg-danger-subtle text-body', //trash
 	];
 
 	return $classes[$status] ?? 'bg-secondary-subtle text-dark';

@@ -20,11 +20,15 @@ import(notifications.tpl)
 import(editor.tpl)
 import(pagination.tpl)
 
-html|addNewAttribute = <?php if (isset($_COOKIE['theme'])) { 
+html|addNewAttribute = <?php 
+if (isset($_COOKIE['theme'])) { 
 	echo 'data-bs-theme="';
 	if ($_COOKIE['theme'] == 'dark') echo 'dark'; else if ($_COOKIE['theme'] == 'light') echo 'light';else echo 'auto';  
 	echo '"';
-} ?>
+} 
+
+$vvveb_is_page_edit = Vvveb\isEditor();
+?>
 
 [data-v-global-*] = <?php 
 $name = '@@__data-v-global-(*)__@@';

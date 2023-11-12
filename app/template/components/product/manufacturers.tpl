@@ -14,6 +14,9 @@ $_pagination_limit = isset($manufacturers['limit']) ? $manufacturers['limit'] : 
 
 
 @manufacturer|before = <?php
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
+$manufacturers['manufacturer'] = empty($manufacturers['manufacturer']) ? $_default : $manufacturers['manufacturer'];
+
 if($manufacturers && is_array($manufacturers['manufacturer'])) {
 	foreach ($manufacturers['manufacturer'] as $index => $manufacturer) {?>
 		

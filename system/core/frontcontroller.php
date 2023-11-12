@@ -150,7 +150,9 @@ class FrontController {
 	}
 
 	static function closeConnections() {
-		\Vvveb\System\Db::getInstance()->close();
+		if (defined('DB_ENGINE') && ($instance = \Vvveb\System\Db::getInstance())) {
+			$instance->close();
+		}
 	}
 
 	/**
@@ -325,7 +327,7 @@ class FrontController {
 		}
 		$uri = preg_replace('/\?.*$/', '', $uri);
 
-		if (! $module && (APP != 'admin' && (Routes::init() && $parameters = Routes::match($uri)))) {
+		if (! $module && (APP != 'admin' && APP != 'install' && (Routes::init() && $parameters = Routes::match($uri)))) {
 			$_GET = array_merge($parameters, $_GET);
 		} else {
 			$module = $module ?? ((APP == 'app') ? 'error404' : 'index');

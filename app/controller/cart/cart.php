@@ -54,6 +54,17 @@ class Cart extends Base {
 		$this->view->cart = $cart;
 	}
 
+
+	function coupon() {
+		$coupon = $this->request->request['coupon'] ?? '';
+		
+		
+		$cart = ShoppingCart::getInstance($this->global);
+		
+		
+		return $this->index();
+	}
+
 	private function action($action, $productId = null, $quantity = 1) {
 		$cart = ShoppingCart::getInstance($this->global);
 

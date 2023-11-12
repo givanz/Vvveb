@@ -263,7 +263,7 @@ class Edit extends Base {
 				$result                                          = $posts->edit([$this->object => $post, $this->object . '_id' => $post_id] + $this->global);
 
 				if ($result >= 0) {
-					$this->view->success[] = ucfirst($this->type) . ' ' . __('saved') . '!';
+					$this->view->success['get'] = ucfirst($this->type) . ' ' . __('saved') . '!';
 
 					if ($this->revisions) {
 						$revisions = model($this->object . '_content_revision');
@@ -305,7 +305,7 @@ class Edit extends Base {
 					$new                                       = true;
 
 					$message         = ucfirst($this->type) . ' ' . __('saved') . '!';
-					$view->success[] = $message;
+					$view->success['get'] = $message;
 				}
 			}
 

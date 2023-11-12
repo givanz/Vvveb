@@ -154,6 +154,7 @@ class Base {
 
 		$this->global['site_id'] = SITE_ID ?? 1;
 		$this->global['user_id'] = $user['user_id'] ?? false;
+		$this->global['user_group_id'] = $user['user_group_id'] ?? 1;
 		$this->global['site']    = $site;
 		$this->global['user']    = $user ?? [];
 
@@ -169,12 +170,20 @@ class Base {
 		$view = View :: getInstance();
 
 		if ($errors = $this->session->get('errors')) {
-			$view->errors[] = $errors;
+			if (is_array($errors)) {
+				$view->errors = ($view->errors ?? []) + $errors;
+			} else {
+				$view->errors['session'] = $errors;
+			}
 			$this->session->delete('errors');
 		}
 
 		if ($success = $this->session->get('success')) {
-			$view->success[] = $success;
+			if (is_array($success)) {
+				$view->success = ($view->success ?? []) + $success;
+			} else {
+				$view->success['session'] = $success;
+			}
 			$this->session->delete('success');
 		}
 

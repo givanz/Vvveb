@@ -23,8 +23,10 @@
 	)
 	BEGIN
 
-		SELECT *, comment_id as array_key
+		SELECT comment.*, user.*, comment_id as array_key
 			FROM comment AS comment
+			LEFT JOIN user ON (comment.user_id = comment.user_id)	
+			
 			@IF isset(:post_title) AND :post_title
 			THEN 
 				LEFT JOIN post_content ON (post_content.post_id = comment.post_id)

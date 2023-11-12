@@ -117,7 +117,7 @@ class User extends Base {
 				if (! $id) {
 					$view->errors = [$users->error];
 				} else {
-					$view->success[] = ucfirst($this->type) . __(' added!');
+					$view->success['get'] = ucfirst($this->type) . __(' added!');
 					$this->redirect(['module'=> $this->type . '/user', $this->type . '_id' => $id, 'success' => $this->type . __(' added!')]);
 				}
 			}

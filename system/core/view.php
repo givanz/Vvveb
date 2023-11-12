@@ -167,7 +167,8 @@ class View {
 		if (! $this->template) {
 			return false;
 		}
-
+		
+		$this->template    = str_replace(['/', '\\'], DS, $this->template);
 		$templatePath      = $this->templatePath;
 		$template          = $this->template;
 		$templateMtime     = null;
@@ -347,7 +348,7 @@ class View {
 			$jsonFlags = 0;
 
 			//if (defined('CLI')) {
-				$jsonFlags = JSON_PRETTY_PRINT;
+			$jsonFlags = JSON_PRETTY_PRINT;
 			//}
 			ob_start();
 			echo json_encode($this, $jsonFlags);

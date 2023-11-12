@@ -1,1 +1,1 @@
-import(crud.tpl, {"type":"voucher"})
+import(crud.tpl, {"type":"return"})

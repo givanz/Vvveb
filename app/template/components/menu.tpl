@@ -11,8 +11,6 @@
 if (isset($_menu_idx)) $_menu_idx++; else $_menu_idx = 0;
 
 $_categories = [];
-$vvveb_is_page_edit = Vvveb\isEditor();
-
 if (isset($this->_component['menu']) && isset($this->_component['menu'][$_menu_idx])) {
 	//$_pagination_count = $this->menu[$_menu_idx]['count'];
 	//$_pagination_limit = $this->categories[$_menu_idx]['limit'];

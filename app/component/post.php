@@ -71,7 +71,7 @@ class Post  extends ComponentBase {
 	}
 
 	//called on each request
-	function request($results) {
+	function request($results, $index = 0) {
 	}
 
 	//called by editor on page save for each component on page

@@ -366,7 +366,7 @@ function start() {
 
 		FrontController::dispatch();
 	} else {
-		define('SITE_URL', $_SERVER['HTTP_HOST']);
+		define('SITE_URL', $_SERVER['HTTP_HOST'] ?? 'localhost');
 		define('SITE_ID', 1);
 		FrontController::notFound(false, 'Website not found!');
 	}

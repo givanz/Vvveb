@@ -52,10 +52,11 @@ class Plugins extends Extensions {
 		$params               = parent::getInfo($content, $name);
 		$params['status']     = 'inactive';
 
-		if (isset($params['thumb'])) {
-			$params['thumb_url'] = PUBLIC_PATH . 'plugins/' . $name . '/' . $params['thumb'];
+		if (isset($params['thumb']) && 
+			file_exists(DIR_PUBLIC . ($file = 'plugins/' . $name . '/' . $params['thumb']))) {
+			$params['thumb_url'] = PUBLIC_PATH . $file;
 		} else {
-			//$params['thumb_url'] = PUBLIC_PATH . 'plugins/plugin.svg';
+			$params['thumb_url'] = PUBLIC_PATH . 'media/placeholder.svg';
 		}
 
 		return $params;

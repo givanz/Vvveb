@@ -9,5 +9,4 @@ CREATE TABLE `product_image` (
 );
 
 
-
 CREATE UNIQUE INDEX `product_image_product_id_image` ON `product_image` (`product_id`, `image`);

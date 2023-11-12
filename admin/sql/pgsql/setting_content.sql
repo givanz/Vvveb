@@ -42,8 +42,7 @@
         
         VALUES ( :key, :value, :site_id , :language_id )
         
-        ON DUPLICATE KEY 
-            UPDATE  value = VALUES(value);
+        ON CONFLICT(`site_id`, `language_id`, `key`) DO UPDATE SET `value` = :value;
 		
 	END
     

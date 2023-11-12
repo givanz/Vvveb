@@ -105,6 +105,7 @@ class Product extends Base {
 
 					$this->request->get['product_id']     = $languageContent['product_id'];
 					$this->request->request['product_id'] = $languageContent['product_id'];
+					$this->request->get['name']      	  = $languageContent['name'];
 					$this->request->request['name']       = $languageContent['name'];
 
 					if (isset($languageContent['template']) && $languageContent['template']) {
@@ -124,3 +125,4 @@ class Product extends Base {
 		}
 	}
 }
+

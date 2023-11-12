@@ -18,6 +18,28 @@ $_pagination_limit = isset($options['limit']) ? $options['limit'] : 5;
 
 
 @option|before = <?php
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [
+  1 =>  [
+    'product_option_id' => 1,
+    'option_id' => 1,
+	'required' => 1,
+    'type' => 'radio',
+    'values' => [ 0 => 
+       [
+        'product_option_value_id' => 1,
+        'product_option_id' => 1,
+        'product_id' => 1,
+        'option_id' => 1,
+        'option_value_id' => 1,
+		'price' => 1,
+		'image' => 'img',
+		]
+	]
+  ] 
+] : false;
+
+$options = empty($options) ? $_default : $options;
+
 if($options && is_array($options)) {
 	foreach ($options as $index => $option) {?>
 		

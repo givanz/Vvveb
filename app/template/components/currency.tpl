@@ -16,6 +16,9 @@ $_pagination_limit = isset($currencies['limit']) ? $currencies['limit'] : 5;
 [data-v-component-currency] [data-v-currency-info-*] = $current_component['active']['@@__data-v-currency-info-(*)__@@']
 
 @currency|before = <?php
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
+$currencies = empty($currencies) ? $_default : $currencies;
+
 if($currencies)  {
 	foreach ( $currencies as $index => $currency) { ?>
 	

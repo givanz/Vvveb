@@ -430,20 +430,20 @@ class Base {
 		}
 
 		if (isset($this->request->get['errors'])) {
-			$view->errors[] = htmlentities($this->request->get['errors']);
+			$view->errors['get'] = htmlentities($this->request->get['errors']);
 		}
 
 		if ($errors = $this->session->get('errors')) {
-			$view->errors[] = $errors;
+			$view->errors['session'] = $errors;
 			$this->session->delete('errors');
 		}
 
 		if (isset($this->request->get['success'])) {
-			$view->success[] = htmlentities($this->request->get['success']);
+			$view->success['get'] = htmlentities($this->request->get['success']);
 		}
 
 		if ($success = $this->session->get('success')) {
-			$view->success[] = $success;
+			$view->success['session'] = $success;
 			$this->session->delete('success');
 		}
 
@@ -466,16 +466,6 @@ class Base {
 		//products - add to menu
 		$products_menu = $this->customProducts();
 		$menu          = array_insert_array_after('sales', $menu, $products_menu);
-
-		$stats           = new StatSQL();
-		$orderCount      = $stats->getOrdersCount($this->global);
-		$orderStatsusNew = 1; //get from site config
-		$newOrders       = ($orderCount['orders'][$orderStatsusNew]['count'] ?? 0);
-
-		if ($newOrders > 0) {
-			$menu['sales']['badge']       =  $newOrders;
-			$menu['sales']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
-		}
 
 		list($menu)       = Event::trigger(__CLASS__, __FUNCTION__ . '-menu', $menu);
 

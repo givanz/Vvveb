@@ -14,6 +14,9 @@ $_pagination_limit = isset($payments['limit']) ? $payments['limit'] : 5;
 
 
 @payment|before = <?php
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['payment_id' => 1]] : false;
+$payments['payment'] = empty($payments['payment']) ? $_default : $payments['payment'];
+
 if($payments && is_array($payments['payment'])) {
 	foreach ($payments['payment'] as $index => $payment) {?>
 		

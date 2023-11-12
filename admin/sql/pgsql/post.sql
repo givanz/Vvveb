@@ -135,7 +135,13 @@
 			
 			@IF isset(:taxonomy_item_slug)
 			THEN
-				AND pt.taxonomy_item_id = (SELECT taxonomy_item_id FROM taxonomy_item_content WHERE slug = :taxonomy_item_slug LIMIT 1)
+				AND pt.taxonomy_item_id IN (
+					SELECT ti.taxonomy_item_id 
+						FROM taxonomy_item_content AS tic
+						  -- include child categories
+						LEFT JOIN taxonomy_item AS ti ON ti.parent_id = tic.taxonomy_item_id OR ti.taxonomy_item_id  = tic.taxonomy_item_id
+					WHERE slug = :taxonomy_item_slug
+				)
 			END @IF
 
 			-- month

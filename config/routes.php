@@ -87,8 +87,9 @@ return [
 	'/product/{slug}'                       => ['module' => 'product/product/index', 'edit'=>'?module=product/product&slug={slug}'],
 
 	//compare
-	'/product/compare'				          => ['module' => 'product/compare/index'],
-	'/product/compare/#product_id#'	=> ['module' => 'product/compare/index'],
+	'/cart/compare'                     => ['module' => 'cart/compare/index'],
+	'/cart/compare/add/#product_id#'    => ['module' => 'cart/compare/add'],
+	'/cart/compare/remove/#product_id#' => ['module' => 'cart/compare/remove'],
 
 	//multi language catalog - language code must be at least 2 characters
 	'/{language{2,5}}/shop'                                 => ['module' => 'product/index'],

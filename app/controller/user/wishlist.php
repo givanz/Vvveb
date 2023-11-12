@@ -26,10 +26,9 @@ use Vvveb\System\User\User;
 
 class Wishlist extends Base {
 	function index() {
-		$user = User::current();
+	}
 
-		if (! $user) {
-			$this->redirect('/user/login');
-		}
+	function add() {
+		$productId = $this->request->request['product_id'];
 	}
 }

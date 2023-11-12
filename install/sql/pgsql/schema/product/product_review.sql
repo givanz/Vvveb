@@ -18,4 +18,4 @@ CREATE TABLE product_review (
   PRIMARY KEY ("product_review_id")
 );
 
-CREATE INDEX "product_review_product_id" ON product_review ("product_id");
+CREATE INDEX "product_review_product_id" ON product_review ("product_id", "user_id", "status");

@@ -19,6 +19,8 @@ $products = $cart['products'] ?? [];
 [data-v-component-cart] [data-v-cart-cart-*]|innerText = $cart['@@__data-v-cart-cart-(*)__@@']
 
 @cart-product|before = <?php
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['product_id' => 1, 'image' => '#']] : false;
+$products = empty($products) ? $_default : $products;
 
 if($products) {
 	foreach ($products as $index => $product) { ?>
@@ -50,6 +52,9 @@ if($products) {
 @total|before = <?php
 
 $totals  = $cart['totals'] ?? [];
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
+$totals = empty($totals) ? $_default : $totals;
+
 if(is_array($totals)) foreach ($totals as $index => $total) {
 ?>
 

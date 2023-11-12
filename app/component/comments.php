@@ -115,13 +115,13 @@ class Comments extends ComponentBase {
 			}
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		//list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 
 		return $results;
 	}
 
 	//called on each request
-	function request(&$results) {
+	function request(&$results, $index = 0) {
 		//check for user pending comments
 		$slug            = $this->options['slug'] ?? false;
 		$pendingComments = session($this->type, []);
@@ -131,6 +131,9 @@ class Comments extends ComponentBase {
 			$results[$this->type] = $results[$this->type] + $comments;
 			$results['count'] += count($comments);
 		}
+
+		//for component event convention use `results` as function
+		list($results) = Event :: trigger(__CLASS__, 'results', $results);
 
 		return $results;
 	}

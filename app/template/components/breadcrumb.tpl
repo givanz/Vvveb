@@ -16,6 +16,9 @@ $_pagination_limit = isset($breadcrumb['limit']) ? $breadcrumb['limit'] : 5;
 
 
 @item|before = <?php
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
+$breadcrumb['breadcrumb'] = empty($breadcrumb['breadcrumb']) ? $_default : $breadcrumb['breadcrumb'];
+
 if($breadcrumb && is_array($breadcrumb['breadcrumb'])) {
 	foreach ($breadcrumb['breadcrumb'] as $index => $breadcrumb) {?>
 		

@@ -28,31 +28,29 @@ $_pagination_limit = isset($product['limit']) ? $product['limit'] : 5;
 //manual echo to avoid html escape
 @product [data-v-product-content] = <?php echo $product['content'];?>
 
+@product button[data-v-product-*]|formaction = $product['@@__data-v-product-(*)__@@']
+@product a[data-v-product-*]|href = $product['@@__data-v-product-(*)__@@']
+
+
 @product img[data-v-product-main-image]|src = <?php echo $product['image'];?>
 @product a[data-v-product-main-image]|href = <?php echo reset($product['images'])['image'];?>
 
-
 @images [data-v-product-image]|deleteAllButFirstChild
 
-@product a[data-v-product-cart-url]|href = $product['add-cart-url']
-@product a[data-v-product-buy-url]|href = $product['buy-now-url']
-
-@product button[data-v-product-cart-url]|formaction = $product['add-cart-url']
-@product button[data-v-product-buy-url]|formaction = $product['buy-now-url']
-@product button[data-v-product-wishlist-url]|formaction = $product['wishlist-url']
-@product button[data-v-product-compare-url]|formaction = $product['compare-url']
-
-
 @images [data-v-product-image]|before = <?php
-if(isset($product['images']) && is_array($product['images'])) {
+$_images = $product['images'] ?? [];
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['product_image_id' => 1, 'image' => '']] : false;
+$_images = empty($_images) ? $_default : $_images;
+
+if($_images) {
 	$i = 0;
-	foreach ($product['images'] as $index => $image) { ?>
+	foreach ($_images as $index => $_image) { ?>
 
 		@images [data-bs-slide-to]|data-bs-slide-to = <?php echo $i;?>
-		@images img[data-v-product-image-src]|src = $image['image']
-		@images [data-v-product-image-background-image]|style = <?php echo 'background-image: url(\'' . $image['image'] . '\');';?>
-		@images a[data-v-product-image-src]|href = $image['image']
-		@images img[data-v-product-image-src]|data-v-id = $image['id']
+		@images img[data-v-product-image-src]|src = $_image['image']
+		@images [data-v-product-image-background-image]|style = <?php echo 'background-image: url(\'' . $_image['image'] . '\');';?>
+		@images a[data-v-product-image-src]|href = $_image['image']
+		@images img[data-v-product-image-src]|data-v-id = $_image['product_image_id']
 		@images img[data-v-product-image-src]|data-v-type = 'product_image'
 		
 		@images [data-v-product-image]|after = <?php 

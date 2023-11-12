@@ -2,7 +2,6 @@
 
 	import(/admin/product.sql);
 
-
 	-- get all languages content
 
 	CREATE PROCEDURE getContent(

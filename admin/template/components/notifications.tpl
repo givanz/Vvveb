@@ -29,7 +29,7 @@ $count = $notificationComponent['count'] ?? 0;
 
 		@notifications [data-v-group-notification-*]|innerText = <?php 
 			$name = '@@__data-v-group-notification-(*)__@@';
-			if (isset($notification[$name])) echo ucfirst($notification[$name]);
+			if (isset($notification[$name])) echo Vvveb\humanReadable($notification[$name]);
 		?>
 
 
@@ -50,6 +50,9 @@ $count = $notificationComponent['count'] ?? 0;
 $name = '@@__data-v-notification-(*)__@@';
 $default = '@@__innerHtml__@@';
 $path = str_replace('-', '.', $name);
+if ($path == 'count') {
+	echo $count;
+} else
 if (isset($notifications) && $path) {
 	echo \Vvveb\arrayPath($notifications, $path);
 } else echo $default;

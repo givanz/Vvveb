@@ -22,7 +22,7 @@ $page_stop = $pagecount;
 $url = '@@__data-v-url__@@';
 
 if (empty($url)) {
-	$url        = Vvveb\System\Core\FrontController :: getRoute();
+	$url = Vvveb\System\Core\FrontController :: getRoute();
 	if (is_array($parameters)) {
 		$parameters += Vvveb\System\Core\Request :: getInstance()->get;
 	} else {

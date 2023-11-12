@@ -29,12 +29,20 @@ class Login extends \Vvveb\Controller\Base {
 		$view = $this->view;
 
 		if ($errors = $this->session->get('errors')) {
-			$view->errors['login'] = $errors;
+			if (is_array($errors)) {
+				$view->errors = ($view->errors ?? []) + $errors;
+			} else {
+				$view->errors['login'] = $errors;
+			}
 			$this->session->delete('errors');
 		}
 
 		if ($success = $this->session->get('success')) {
-			$view->success['login'] = $success;
+			if (is_array($success)) {
+				$view->success = ($view->success ?? []) + $success;
+			} else {
+				$view->success['login'] = $success;
+			}
 			$this->session->delete('success');
 		}
 

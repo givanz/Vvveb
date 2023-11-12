@@ -44,7 +44,7 @@ class Reset extends Base {
 			if ($password && $admin) {
 				if (User::update(['token' => '', 'password' => $password], ['username' => $user, 'token' => $token])) {
 					$success               = __('Password was reset!');
-					$this->view->success[] = $success;
+					$this->view->success['get'] = $success;
 					$this->session->set('success', $success);
 					$this->redirect('/user/login');
 				//header('Location: ' . url(['module' => 'user/login', 'success' => $success]));
@@ -89,7 +89,7 @@ class Reset extends Base {
 
 				$reset_url = url('user/reset/reset', [
 					'token'  => $token,
-					'user'   => $adminData['user'],
+					'user'   => $adminData['username'],
 					'host'   => $site['host'] ?? false,
 					'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http',
 				]);
@@ -104,7 +104,7 @@ class Reset extends Base {
 				if (email($adminData['email'], __('Password reset'),'user/reset', $data)) {
 					$success               = __('A reset email was sent, please use it to reset your password!');
 					$this->view->success[] = $success;
-					$this->session->set('success', $success);
+					$this->session->set('success', ['login' => $success]);
 					$this->redirect('/user/login');
 				} else {
 					$this->view->errors[] = __('Error sending reset email!');

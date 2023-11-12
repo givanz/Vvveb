@@ -139,10 +139,12 @@
 	)
 	BEGIN
 		
+		-- allow only table fields and set defaults for missing values
+		:site_data  = @FILTER(:site, site);
 	
 		UPDATE site 
 			
-			SET @LIST(:site) 
+			SET @LIST(:site_data) 
 			
 		WHERE site_id = :site_id
 

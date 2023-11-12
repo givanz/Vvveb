@@ -90,7 +90,7 @@
 	
 			-- orders
 
-			SELECT COUNT(*) AS count, DATE(created_at) as date, orders.created_at, os.name, orders.order_status_id, orders.order_status_id as array_key 
+			SELECT COUNT(*) AS count, DATE(created_at) as date, os.name, orders.order_status_id as array_key 
 				FROM "order" AS orders
 				LEFT JOIN order_status AS os ON (orders.order_status_id = os.order_status_id AND os.language_id = :language_id) 
 				
@@ -115,7 +115,7 @@
 			
 				END @IF					
 			
-			GROUP BY orders.order_status_id, orders.created_at, os.name;		
+			GROUP BY orders.order_status_id, os.name, date, orders.order_status_id;		
 	END
 
 	CREATE PROCEDURE getCommentsCount(
@@ -162,7 +162,7 @@
 			
 				END @IF					
 			
-			GROUP BY comments.status, comments.created_at;		
+			GROUP BY comments.status, comments.created_at, date;		
 	END
 	
 	
@@ -184,7 +184,7 @@
 	
 			-- reviews
 
-			SELECT COUNT(*) AS count, DATE(created_at) as date, reviews.status,reviews.created_at, reviews.status as array_key FROM product_review AS reviews
+			SELECT COUNT(*) AS count, DATE(created_at) as date, reviews.status, reviews.status as array_key FROM product_review AS reviews
 				
 			WHERE 1 = 1 
 			
@@ -210,7 +210,7 @@
 			
 				END @IF					
 			
-			GROUP BY reviews.status, reviews.created_at;		
+			GROUP BY reviews.status, date;		
 	END
 	
 	CREATE PROCEDURE getQuestionsCount(
@@ -231,7 +231,7 @@
 	
 			-- questions
 
-			SELECT COUNT(*) AS count, DATE(created_at) as date, questions.status, questions.created_at, questions.status as array_key FROM product_question AS questions
+			SELECT COUNT(*) AS count, DATE(created_at) as date, questions.status, questions.status as array_key FROM product_question AS questions
 				
 			WHERE 1 = 1 
 			
@@ -257,7 +257,7 @@
 			
 				END @IF					
 			
-			GROUP BY questions.status, questions.created_at;		
+			GROUP BY questions.status, date;		
 	END
 	
 	CREATE PROCEDURE getProductStockCount(
@@ -276,7 +276,7 @@
 	
 			-- products
 
-			SELECT COUNT(*) AS count, products.stock_status_id, products.created_at as array_key FROM product AS products
+			SELECT COUNT(*) AS count, products.stock_status_id, st.name as array_key FROM product AS products
 			
 				LEFT JOIN stock_status AS st ON (products.stock_status_id = st.stock_status_id AND st.language_id = :language_id) 
 				
@@ -299,6 +299,6 @@
 			
 				END @IF					
 				
-			GROUP BY products.stock_status_id, products.created_at ORDER BY products.stock_status_id;
+			GROUP BY products.stock_status_id, st.name, products.created_at ORDER BY products.stock_status_id;
 					
 	END

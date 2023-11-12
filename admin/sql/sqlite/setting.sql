@@ -43,8 +43,7 @@
         
         VALUES ( :namespace, :key, :value, :site_id )
         
-        ON DUPLICATE KEY 
-            UPDATE value = values(value);
+		ON CONFLICT(`site_id`, `namespace`, `key`) DO UPDATE SET `value` = :value;
 		
 	END
     

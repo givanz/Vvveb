@@ -274,7 +274,7 @@ class Component {
 					$object    = $results['_instance'];
 
 					if (method_exists($object, 'request')) {
-						$object->request($results);
+						$object->request($results, $index);
 					}
 				}
 			}

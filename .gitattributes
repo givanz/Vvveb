@@ -1,0 +1,3 @@
+public/themes/** linguist-vendored
+public/admin/** linguist-vendored
+*.sql linguist-detectable=true
