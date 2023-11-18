@@ -23,17 +23,17 @@
 namespace Vvveb\Component;
 
 class Questions extends Comments {
-	protected $type = 'question';
+	protected $type = 'product_question';
 
 	protected $route = 'product/product/index';
-	
+
 	protected $model = 'product_question';
 
 	public static $defaultOptions = [
 		'product_id'    => 'url',
 		'slug'          => 'url',
-		'post_title'    => null, //include post title (for recent reviews etc)
-		'status'        => 1, //approved reviews
+		'product_title' => null, //include post title (for recent questions etc)
+		'status'        => 1, //approved questions
 		'start'         => 0,
 		'limit'         => 10,
 		'order'         => 'asc', //desc

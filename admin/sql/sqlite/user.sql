@@ -74,7 +74,7 @@
 
             @IF isset(:username)
 		THEN 
-				AND _.user = :user 
+				AND _.username = :username 
         	END @IF	
 
             @IF isset(:email)

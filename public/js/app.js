@@ -32,15 +32,27 @@ VvvebTheme.Ajax = {
 			data: parameters,
 			//dataType: 'json',
 			beforeSend: function() {
-				$('.loading', element).removeClass('d-none');
-				$('.button-text', element).addClass('d-none');
+				let loading = $('.loading', element);
+				let btn = $('.button-text', element);
+				
+				if (loading.hasClass("d-none")) {
+					loading.removeClass('d-none');
+					btn.addClass('d-none');
+				}
+				
 				if ($(element).is('button'))  {
 					$(element).attr("disabled", "true");
 				}
 			},
 			complete: function() {
-				$('.loading', element).addClass('d-none');
-				$('.button-text', element).removeClass('d-none');
+				let loading = $('.loading', element);
+				let btn = $('.button-text', element);
+				
+				if (btn.hasClass("d-none")) {
+					loading.addClass('d-none');
+					btn.removeClass('d-none');
+				}
+				
 				if ($(element).is('button')) {
 					$(element).removeAttr("disabled");
 				}
@@ -49,7 +61,7 @@ VvvebTheme.Ajax = {
 			success: function(data) {
 				//$("header [data-v-component-cart]")[0].outerHTML = data;
 				if (selector) {
-					let response = $(data);
+					let response = $(data);//new DOMParser().parseFromString(data, "text/html");
 					if (Array.isArray (selector) ) {
 						for (k in selector) {
 							let elementSelector = selector[k];
@@ -79,10 +91,10 @@ VvvebTheme.Cart = {
 	component_id: '0',
 	
 	ajax: function(action, parameters, element, selector, callback) {
-		parameters['module'] = this.module;
-		parameters['action'] = action;
-		parameters['component'] = this.component;
-		parameters['component_id'] = this.component_id;
+		parameters['module']       = parameters['module'] ?? this.module;
+		parameters['action']       = parameters['action']?? action;
+		parameters['component']    = parameters['component'] ?? this.component;
+		parameters['component_id'] = parameters['component_id'] ?? this.component_id;
 		VvvebTheme.Ajax.call(parameters, element,  selector, callback);
 	},
 	
@@ -104,19 +116,29 @@ VvvebTheme.Cart = {
 		return this.ajax('add',options, element, selector, callback);
 	},
 	
-	update: function(productId, options, element,  selector, callback = false) {
+	update: function(key, options, element,  selector, callback = false) {
 		if (!callback) callback = this.callback;
 		if (options) {
-			options['product_id'] = productId;
+			options['key'] = key;
 		} else {
-			options = {'product_id':productId};
+			options = {'key':key};
 		}
 		return this.ajax('update',options, element, selector, callback);
 	},
  
-	remove: function(productId, element, selector, callback = false) {
+	remove: function(key, element, selector, callback = false) {
 		if (!callback) callback = this.callback;
-		return this.ajax('remove', {'product_id':productId}, element, selector, callback);
+		return this.ajax('remove', {'key':key}, element, selector, callback);
+	},	
+	
+	coupon: function(options, element, selector, callback = false) {
+		if (!callback) callback = this.callback;
+		return this.ajax('coupon', options, element, selector, callback);
+	},	
+	
+	removeCoupon: function(options, element, selector, callback = false) {
+		if (!callback) callback = this.callback;
+		return this.ajax('removeCoupon', options, element, selector, callback);
 	}
 }
 
@@ -164,8 +186,8 @@ VvvebTheme.Comments = {
 	module: 'content/post',
 	
 	ajax: function(action, parameters, element,  selector, callback = false) {
-		parameters['module'] = this.module;
-		parameters['action'] = action;
+		parameters['module'] = parameters['module'] ?? this.module;
+		parameters['action'] = parameters['action'] ?? action;
 		VvvebTheme.Ajax.call(parameters, element, selector, callback);
 	},
 	
@@ -368,7 +390,7 @@ VvvebTheme.Gui = {
 	addToCompare : function (e) {
 		return false;
 	},
-
+	
 
 	replyTo : function (e) {
 		let commentId = this.dataset.comment_id;
@@ -397,6 +419,36 @@ VvvebTheme.Gui = {
 		let selector = this.dataset.selector ?? ".post-comments";
 		let form = this;
 		let parameters = $(form).serializeArray();
+		
+		VvvebTheme.Comments.add(parameters, this, selector, function () {
+			form.reset();
+		});
+		
+		e.preventDefault();
+		
+	},	
+	
+	addReview : function (e) {
+		let selector = this.dataset.selector ?? ".product-reviews";
+		let form = this;
+		let parameters = $(form).serializeArray();
+		parameters['module'] = 'product/product';
+		parameters['action'] = 'addReview';
+		
+		VvvebTheme.Comments.add(parameters, this, selector, function () {
+			form.reset();
+		});
+		
+		e.preventDefault();
+		
+	},		
+	
+	addQuestion : function (e) {
+		let selector = this.dataset.selector ?? ".product-questions";
+		let form = this;
+		let parameters = $(form).serializeArray();
+		parameters['module'] = 'product/product';
+		parameters['action'] = 'addQuestion';
 		
 		VvvebTheme.Comments.add(parameters, this, selector, function () {
 			form.reset();

@@ -18,9 +18,9 @@
 	)
 	BEGIN
 
-		SELECT *
+		SELECT user.*,product_question.*,user.user_id as user_id
             FROM product_question AS product_question
-	    INNER JOIN user on user.user_id = product_question.user_id
+	    LEFT JOIN user on user.user_id = product_question.user_id
 		
 			WHERE 1 = 1
             

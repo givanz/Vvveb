@@ -147,13 +147,13 @@
 			-- month
 			@IF isset(:month) && !empty(:month)
 			THEN
-				AND date_part('month',created_at) = :month
+				AND date_part('month',posts.created_at) = :month
 			END @IF					
 
 			-- year
 			@IF isset(:year) && !empty(:year)
 			THEN
-				AND date_part('year',created_at) = :year
+				AND date_part('year',posts.created_at) = :year
 			END @IF					
 
 			-- order by
@@ -364,6 +364,25 @@
 
 	END
 	
+	-- Edit post content
+
+	CREATE PROCEDURE editContent(
+		IN post_content ARRAY,
+		IN post_id INT,
+		IN language_id INT,
+		OUT affected_rows
+	)
+	BEGIN
+	
+		:post_content  = @FILTER(:post_content, post_content);
+	
+		UPDATE post_content 
+			
+			SET @LIST(:post_content) 
+			
+		WHERE post_id = :post_id AND language_id = :language_id
+	END
+	
 	
 	-- Delete post
 
@@ -435,16 +454,16 @@
 	BEGIN
 	
 		SELECT 
-			date_part('year',created_at) AS "year" 
+			date_part('year',archives.created_at) AS "year" 
 			
 			@IF isset(:interval) AND (:interval == "month" || :interval == "day")
 			THEN
-				,date_part('month',created_at) AS "month" 
+				,date_part('month',archives.created_at) AS "month" 
 			END @IF
 
 			@IF isset(:interval) AND :interval == "day"
 			THEN
-				,date_part('day',created_at) AS "day" 
+				,date_part('day',archives.created_at) AS "day" 
 			END @IF
 			
 			,count(archives.post_id) as count 
@@ -466,29 +485,29 @@
 
 		
 		GROUP BY 
-			date_part('year',created_at)
+			date_part('year',archives.created_at)
 			
 			@IF isset(:interval) AND (:interval == "month" || :interval == "day")
 			THEN
-				,date_part('month',created_at)
+				,date_part('month',archives.created_at)
 			END @IF
 
 			@IF isset(:interval) AND :interval == "day"
 			THEN
-				,date_part('day',created_at)
+				,date_part('day',archives.created_at)
 			END @IF
 			
 		ORDER BY 			
-			date_part('year',created_at)
+			date_part('year',archives.created_at)
 			
 			@IF isset(:interval) AND (:interval == "month" || :interval == "day")
 			THEN
-				,date_part('month',created_at)
+				,date_part('month',archives.created_at)
 			END @IF
 
 			@IF isset(:interval) AND :interval == "day"
 			THEN
-				,date_part('day',created_at)
+				,date_part('day',archives.created_at)
 			END @IF
 
 

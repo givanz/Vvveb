@@ -43,14 +43,14 @@ class Reset {
 
 			if ($password && $admin) {
 				if (Admin::update(['token' => '', 'password' => $password], ['username' => $user, 'token' => $token])) {
-					$success               = __('Password was reset!');
-					$this->view->success[] = $success;
-					$this->session->set('success', $success);
+					$success                      = __('Password was reset!');
+					$this->view->success['login'] = $success;
+					$this->session->set('success', ['login' => $success]);
 					header('Location: ' . url(['module' => 'user/login', 'success' => $success]));
 				} else {
-					$errors               =  __('Update failed!');
-					$this->view->errors[] = $errors;
-					$this->session->set('errors', $errors);
+					$errors                      =  __('Update failed!');
+					$this->view->errors['login'] = $errors;
+					$this->session->set('errors', ['login' => $errors]);
 				}
 			}
 		}
@@ -99,10 +99,10 @@ class Reset {
 					$this->session->set('success', $success);
 					header('Location: ' . url(['module' => 'user/login', 'success' => $success]));
 				} else {
-					$this->view->errors[] = __('Error sending reset email!');
+					$this->view->errors['login'] = __('Error sending reset email!');
 				}
 			} else {
-				$this->view->errors[] = __('Email not found!');
+				$this->view->errors['login'] = __('Email not found!');
 			}
 		}
 	}

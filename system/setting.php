@@ -111,7 +111,7 @@ class Setting {
 		if ($settings) {
 			foreach ($settings as $key => $value) {
 				$this->setting[$namespace][$key] = $value;
-				$result              = $this->settingSql->setSetting(['namespace' => $namespace, 'key' => $key, 'value' => $value, 'site_id' => $site_id]);
+				$result                          = $this->settingSql->setSetting(['namespace' => $namespace, 'key' => $key, 'value' => $value, 'site_id' => $site_id]);
 			}
 		}
 

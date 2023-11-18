@@ -42,11 +42,12 @@ class Cart extends ComponentBase {
 	protected $options = [];
 
 	function results() {
-		$cart						                 = ShoppingCart::getInstance($this->options);
-		$results['products']		      = $cart->getAll();
-		$results['total_items']		   = $cart->getNoProducts();
-		$results['totals']			       = $cart->getTotals();
-		$results['total']			        = $cart->getGrandTotal();
+		$cart                       = ShoppingCart::getInstance($this->options);
+		$results['products']        = $cart->getAll();
+		$results['coupons']         = $cart->getCoupons();
+		$results['total_items']     = $cart->getNoProducts();
+		$results['totals']          = $cart->getTotals();
+		$results['total']           = $cart->getGrandTotal();
 		$results['total_formatted'] = $cart->getGrandTotalFormatted();
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);

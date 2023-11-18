@@ -23,8 +23,6 @@
 namespace Vvveb\Controller\Admin;
 
 use Vvveb\Controller\Base;
-use Vvveb\System\Images;
-use Vvveb\System\User\Role;
 
 class Roles extends Base {
 	private function save() {

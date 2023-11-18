@@ -127,31 +127,34 @@ class SqlP {
 	function removeParanthesis($query, $replace = '', $startChar = '(', $endChar = ')') {
 		$level = 0;
 		$start = null;
-		$end = 0;
-		for($i=0; $i<strlen($query); $i++) {
+		$end   = 0;
+
+		for ($i=0; $i < strlen($query); $i++) {
 			$char = $query[$i];
-			
-			if($char == $startChar) {
-				if ($start === null) $start = $i;
+
+			if ($char == $startChar) {
+				if ($start === null) {
+					$start = $i;
+				}
 				$level++;
+			} else {
+				if ($char == $endChar) {
+					$level--;
+				}
 			}
-			else if($char == $endChar) {
-				$level--;
-			}
-				
-			if($start && $level == 0) {
-				$end = $i + 1;
+
+			if ($start && $level == 0) {
+				$end   = $i + 1;
 				$query = substr_replace($query, $replace, $start, $end - $start);
 				//reset
-				$i = 0;
+				$i     = 0;
 				$start = null;
-				
 			}
-		}	
-		
+		}
+
 		return $query;
 	}
-	
+
 	/*
 	 * Extract table name from sql statement
 	 */

@@ -5,6 +5,7 @@
 	PROCEDURE getAll(
 		IN language_id INT,
 		IN product_id INT,
+		IN subscription_plan_id INT,
 		IN start INT,
 		IN limit INT,
 		OUT fetch_all, 
@@ -35,6 +36,12 @@
 		@IF isset(:product_id)
 		THEN		
 			AND product_subscription.product_id = :product_id
+		END @IF			
+		
+		-- subscription_plan_id
+		@IF isset(:subscription_plan_id)
+		THEN		
+			AND product_subscription.subscription_plan_id = :subscription_plan_id
 		END @IF	
 		
 		-- limit
@@ -60,7 +67,9 @@
 	BEGIN
 		-- product_subscription
 		SELECT *
-			FROM product_subscription as _ WHERE product_subscription_id = :product_subscription_id;
+			FROM product_subscription as _ WHERE 1 = 1 
+			
+			product_subscription_id = :product_subscription_id;
 	END
 	
 	-- add product_subscription

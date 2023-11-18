@@ -190,19 +190,19 @@ INSERT INTO `post_content` VALUES
 (10,1,'Privacy policy','privacy-policy','Privacy Policy', '','',''),
 
 (11,1,'About','about','
-<div class="my-5 text-center"><img src="../../media/biglogo.png"></div>
+<div class="my-5"><img src="../../media/biglogo.png"></div>
 <hr class="my-5 border">
-<p class="lead fw-normal">Powerful and easy to use drag and drop website builder for blogs, presentation or ecommerce stores.</p>
-<p class="lead fw-normal">The html for sections blocks and components and this template are built using Bootstrap 5.</p>
+<p>Powerful and easy to use drag and drop website builder for blogs, presentation or ecommerce stores.</p>
+<p>The html for sections blocks and components and this template are built using Bootstrap 5.</p>
 <hr class="my-5 border">
-<h5>Better Security</h5>
-<p class="lead fw-normal">Vvveb is 100% safe against sql injections, a vulerability that affects most CMS.</p>
-<h5>Unlimited customization</h5>
-<p class="lead fw-normal">Vvveb uses only html for templating for maximum flexibility.</p>
-<h5>Advanced Ecommerce</h5>
-<p class="lead fw-normal">Vvveb is a full featured ecommerce platform with advanced functionality.</p>
-<h5>Full Localization</h5>
-<p class="lead fw-normal">Publish content in multiple languages or sell in different currencies.</p>
+<h6>Better Security</h6>
+<p>Vvveb is 100% safe against sql injections, a vulerability that affects most CMS.</p>
+<h6>Unlimited customization</h6>
+<p>Vvveb uses only html for templating for maximum flexibility.</p>
+<h6>Advanced Ecommerce</h6>
+<p>Vvveb is a full featured ecommerce platform with advanced functionality.</p>
+<h6>Full Localization</h6>
+<p>Publish content in multiple languages or sell in different currencies.</p>
 ', '','',''),
 (12,1,'Services','services','Services', '','',''),
 (13,1,'Pricing','pricing','Pricing', '','',''),
@@ -264,17 +264,17 @@ INSERT INTO `post_content` VALUES
 (11,2,'Despre','despre','
 <div class="my-5 text-center"><img src="../../media/biglogo.png"></div>
 <hr class="my-5 border">
-<p class="lead fw-normal">Unealta puternica si usor de folosit pentru a realiza blog-uri, site-uri de prezentare sau magazine online.</p>
-<p class="lead fw-normal">The html for sections blocks and components and this template are built using Bootstrap 5.</p>
+<p>Unealta puternica si usor de folosit pentru a realiza blog-uri, site-uri de prezentare sau magazine online.</p>
+<p>The html for sections blocks and components and this template are built using Bootstrap 5.</p>
 <hr class="my-5 border">
-<h5>Better Security</h5>
-<p class="lead fw-normal">Vvveb is 100% safe against sql injections, a vulerability that affects most CMS.</p>
-<h5>Unlimited customization</h5>
-<p class="lead fw-normal">Vvveb uses only html for templating for maximum flexibility.</p>
-<h5>Advanced Ecommerce</h5>
-<p class="lead fw-normal">Vvveb is a full featured ecommerce platform with advanced functionality.</p>
-<h5>Full Localization</h5>
-<p class="lead fw-normal">Publish content in multiple languages or sell in different currencies.</p>
+<h6>Better Security</h6>
+<p>Vvveb is 100% safe against sql injections, a vulerability that affects most CMS.</p>
+<h6>Unlimited customization</h6>
+<p>Vvveb uses only html for templating for maximum flexibility.</p>
+<h6>Advanced Ecommerce</h6>
+<p>Vvveb is a full featured ecommerce platform with advanced functionality.</p>
+<h6>Full Localization</h6>
+<p>Publish content in multiple languages or sell in different currencies.</p>
 ', '','',''),
 (12,2,'Servicii','servicii','Servicii', '','',''),
 (13,2,'Preturi','preturi','Preturi', '','',''),

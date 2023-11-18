@@ -40,7 +40,7 @@ return [
 	'user_group_content',
 	'user_points',
 	'user_wishlist',
-	
+
 	//taxonomy
 	'taxonomy_item',
 	'taxonomy_item_content',
@@ -75,7 +75,7 @@ return [
 	'attribute_content',
 	'attribute_group',
 	'attribute_group_content',
-	
+
 	//product
 	'product',
 	'product_attribute',
@@ -104,19 +104,18 @@ return [
 	'coupon_product',
 	'currency',
 
-	
-	 //digital_asset
+	//digital_asset
 	'digital_asset',
 	'digital_asset_content',
 	'digital_asset_log',
-	
+
 	'region_group',
 	'length_type',
 	'length_type_content',
 	'location',
 	'manufacturer',
 	'manufacturer_to_site',
-	
+
 	//order
 	'order',
 	'order_log',

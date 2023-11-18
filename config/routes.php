@@ -42,6 +42,7 @@ return [
 	'/user/downloads'                        => ['module' => 'user/downloads/index'],
 	'/user/downloads/#page#'                 => ['module' => 'user/downloads/index'],
 	'/user/downloads/#download_id#'          => ['module' => 'user/downloads/download'],
+	'/user/return-form'                      => ['module' => 'user/return-form'],
 	'/user/address'                          => ['module' => 'user/address/index'],
 	'/user/address/edit'                     => ['module' => 'user/address/edit'],
 	'/user/address/edit/#user_address_id#'   => ['module' => 'user/address/edit'],

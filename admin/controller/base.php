@@ -29,7 +29,6 @@ use function Vvveb\availableLanguages;
 use function Vvveb\clearLanguageCache;
 use function Vvveb\filter;
 use function Vvveb\setLanguage;
-use Vvveb\Sql\StatSQL;
 use Vvveb\Sql\taxonomySQL;
 use Vvveb\System\Core\FrontController;
 use Vvveb\System\Core\Request;

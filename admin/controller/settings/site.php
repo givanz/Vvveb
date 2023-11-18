@@ -164,7 +164,7 @@ class Site extends Base {
 			}
 		}
 
-		$data             = $siteSql->getData(($view->setting ?? []) + $this->global);
+		$data                       = $siteSql->getData(($view->setting ?? []) + $this->global);
 		$data['complete_status_id'] = $data['processing_status_id'] = $data['order_status_id'];
 
 		$data['timezone'] = [];

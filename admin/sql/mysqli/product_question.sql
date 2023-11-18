@@ -18,9 +18,9 @@
 	)
 	BEGIN
 
-		SELECT *
+		SELECT user.*,product_question.*,user.user_id as user_id
             FROM product_question AS product_question
-	    INNER JOIN user on user.user_id = product_question.user_id
+	    LEFT JOIN user on user.user_id = product_question.user_id
 		
 			WHERE 1 = 1
             
@@ -30,12 +30,12 @@
 				AND product_question.product_id  = :product_id
         	END @IF	            
             
-	   -- product slug
+			-- product slug
             @IF isset(:slug)
-		THEN 
-			AND product_question.product_id  = (SELECT product_id FROM product_content WHERE slug = :slug LIMIT 1) 
-	      END @IF
-
+			THEN 
+				AND product_question.product_id  = (SELECT product_id FROM product_content WHERE slug = :slug LIMIT 1) 
+			END @IF
+	
             -- user
             @IF isset(:user_id)
 			THEN 

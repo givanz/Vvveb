@@ -52,7 +52,6 @@ class AttributeGroup extends Crud {
 			}
 		}
 
-
 		if ($attribute_group_id) {
 			$attributeGroup = new Attribute_GroupSQL();
 			$attributeSql   = new AttributeSQL();

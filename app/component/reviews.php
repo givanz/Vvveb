@@ -25,20 +25,22 @@ use Vvveb\Sql\Product_Review_MediaSQL;
 use Vvveb\System\Images;
 
 class Reviews extends Comments {
-	protected $type = 'review';
+	protected $type = 'product_review';
 
 	protected $route = 'product/product/index';
 
 	protected $model = 'product_review';
 
 	public static $defaultOptions = [
-		'product_id'   => 'url',
-		'user_id'      => NULL,
-		'status'       => 1, //approved reviews
-		'start'        => 0,
-		'limit'        => 10,
-		'image_size'   => 'thumb',
-		'order'        => 'asc', //desc
+		'product_id'    => 'url',
+		'slug'		    => 'url',
+		'product_title' => NULL, //include product title (for recent reviews etc)
+		'user_id'       => NULL,
+		'status'        => 1, //approved reviews
+		'start'         => 0,
+		'limit'         => 10,
+		'image_size'    => 'thumb',
+		'order'         => 'asc', //desc
 	];
 
 	function results() {
@@ -69,6 +71,25 @@ class Reviews extends Comments {
 		}
 
 		$results['images'] = $gallery;
+		
+		$stats = $this->modelInstance->getProductStats($this->options);
+		if ($stats) {
+			$results += $stats;
+		}
+
+		$results['rating'] = number_format($results['rating'] ?? 0, 1);
+
+		//compute width and fill missing ratings
+		foreach ([1,2,3,4,5] as $rating) {
+			if (isset($results['summary'][$rating])) {
+				$summary = &$results['summary'][$rating];
+				$summary['percent'] = ceil($summary['count'] * 100 / $results['count']);
+			} else {
+				$results['summary'][$rating]['percent'] = 0;
+				$results['summary'][$rating]['rating'] = 1;
+				$results['summary'][$rating]['count'] = 0;
+			}
+		}
 		
 		return $results;
 	}

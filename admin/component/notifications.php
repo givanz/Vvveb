@@ -27,8 +27,8 @@ use function Vvveb\orderStatusBadgeClass;
 use Vvveb\Sql\StatSQL;
 use Vvveb\System\Cache;
 use Vvveb\System\Component\ComponentBase;
-use Vvveb\System\Event;
 use Vvveb\System\Core\View;
+use Vvveb\System\Event;
 use Vvveb\System\Update;
 
 class Notifications extends ComponentBase {
@@ -36,24 +36,28 @@ class Notifications extends ComponentBase {
 	];
 
 	public $options = [];
+
 	private $stats;
-	private $count = 0;	
+
+	private $count = 0;
+
 	private $notifications = [];
+
 	private $menu = [];
 
 	protected function orders() {
 		$orderCount      = $this->stats->getOrdersCount($this->options)['orders'] ?? [];
-		
+
 		$orderStatsusNew = 1; //get from site config
 		$newOrders       = ($orderCount[$orderStatsusNew]['count'] ?? 0);
 
 		if ($newOrders > 0) {
 			$this->count += $newOrders;
-			$this->menu['sales'] = [];
+			$this->menu['sales']                = [];
 			$this->menu['sales']['badge']       =  $newOrders;
 			$this->menu['sales']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
 		}
-				
+
 		//set order name as array keys
 		foreach ($orderCount as $type => $orders) {
 			if (isset($orders['name'])) {
@@ -69,7 +73,7 @@ class Notifications extends ComponentBase {
 
 	protected function users() {
 	}
-	
+
 	protected function products() {
 		$productCount      = $this->stats->getProductStockCount($this->options)['products'] ?? [];
 
@@ -80,9 +84,8 @@ class Notifications extends ComponentBase {
 
 		$this->notifications['products'] = $productCount + $this->notifications['products'];
 	}
-	
-	protected function comments() {
 
+	protected function comments() {
 		$commentCount      = $this->stats->getCommentsCount($this->options)['comments'] ?? [];
 		$comment_status    = [
 			0  => 'pending',
@@ -96,11 +99,11 @@ class Notifications extends ComponentBase {
 
 		if ($newComments > 0) {
 			$this->count += $newComments;
-			$this->menu['post'] = [];
+			$this->menu['post']                = [];
 			$this->menu['post']['badge']       =  $newComments;
-			$this->menu['post']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';	
-	
-			$this->menu['post']['items']['comments'] = [];
+			$this->menu['post']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
+
+			$this->menu['post']['items']['comments']                = [];
 			$this->menu['post']['items']['comments']['badge']       =  $newComments;
 			$this->menu['post']['items']['comments']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
 		}
@@ -114,9 +117,9 @@ class Notifications extends ComponentBase {
 
 		$this->notifications['comments'] = $commentCount + $this->notifications['comments'];
 	}
-	
+
 	protected function reviews() {
-		$reviewCount      = $this->stats->getReviewsCount($this->options)['reviews'] ?? [];
+		$reviewCount       = $this->stats->getReviewsCount($this->options)['reviews'] ?? [];
 		$comment_status    = [
 			0  => 'pending',
 			1  => 'approved',
@@ -131,13 +134,13 @@ class Notifications extends ComponentBase {
 			$this->count += $newReviews;
 			//$this->menu['product'] = [];
 			$this->menu['product']['badge']       =  $newReviews;
-			$this->menu['product']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';	
-	
+			$this->menu['product']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
+
 			//$this->menu['product']['items']['reviews'] = [];
 			$this->menu['product']['items']['reviews']['badge']       =  $newReviews;
 			$this->menu['product']['items']['reviews']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
 		}
-		
+
 		foreach ($reviewCount as $type => $reviews) {
 			$reviews['icon']                     = ' la la-comments';
 			$reviews['badge']                    =  commentStatusBadgeClass($reviews['status']);
@@ -146,12 +149,11 @@ class Notifications extends ComponentBase {
 		}
 
 		$this->notifications['reviews'] = $reviewCount + $this->notifications['reviews'];
-
 	}
 
 	protected function questions() {
 		$questionCount      = $this->stats->getQuestionsCount($this->options)['questions'] ?? [];
-		$comment_status    = [
+		$comment_status     = [
 			0  => 'pending',
 			1  => 'approved',
 			2  => 'spam',
@@ -165,13 +167,13 @@ class Notifications extends ComponentBase {
 			$this->count += $newQuestions;
 			//$this->menu['product'] = [];
 			$this->menu['product']['badge']       =  ($this->menu['product']['badge'] ?? 0) + $newQuestions;
-			$this->menu['product']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';	
-	
+			$this->menu['product']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
+
 			//$this->menu['product']['items']['questions'] = [];
 			$this->menu['product']['items']['questions']['badge']       =  $newQuestions;
 			$this->menu['product']['items']['questions']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
 		}
-		
+
 		foreach ($questionCount as $type => $questions) {
 			$questions['icon']                     = 'la la-question-circle';
 			$questions['badge']                    = commentStatusBadgeClass($questions['status']);
@@ -181,16 +183,16 @@ class Notifications extends ComponentBase {
 
 		$this->notifications['questions'] = $questionCount + $this->notifications['questions'];
 	}
-	
+
 	function request(&$results, $index) {
 		//add menu notification count
 
 		if ($results['menu'] && $index == 0) {
-			$view = View::getInstance();
+			$view       = View::getInstance();
 			$view->menu = array_merge_recursive($view->menu, $results['menu']);
 		}
 	}
-	
+
 	function results() {
 		// return [];
 		$cache = Cache::getInstance();
@@ -237,13 +239,12 @@ class Notifications extends ComponentBase {
 		$this->comments();
 		$this->reviews();
 		$this->questions();
-		
 
 		$update  = new Update();
 		$updates = $update->checkUpdates('core');
 
 		$this->notifications['updates']['core'] = $updates;
-		$this->count                           += max($updates['hasUpdate'], 0);
+		$this->count += max($updates['hasUpdate'], 0);
 
 		$results = [
 			'notifications' => $this->notifications,
@@ -252,7 +253,7 @@ class Notifications extends ComponentBase {
 		];
 
 		list($results) = Event::trigger(__CLASS__, __FUNCTION__, $results);
-		
+
 		return $results;
 	}
 }

@@ -151,13 +151,13 @@ abstract class Extensions {
 			//check if first entry is a directory
 			if (substr($folderName, -1, 1) != '/') {
 				if ($validate) {
-					throw new \Exception(sprintf('%s zip must have only %s folder!', $extensionZipFile, $extension));
+					throw new \Exception(sprintf('%s zip must have only %s folder!', $extensionZipFile, ucfirst($extension)));
 				}
 			} else {
 				$slug = trim($folderName, '/');
 			}
 
-			for ($i = $zip->numFiles; ($i > 0 && $success == true); $i--) {
+			for ($i = $zip->numFiles - 1; ($i > 0 && $success == true); $i--) {
 				$file = $zip->getNameIndex($i);
 
 				if ($validate) {
@@ -171,11 +171,12 @@ abstract class Extensions {
 					}
 				}
 
-				if (strpos($file, $fileCheck) !== false) {
+				// plugin.php must be in the top most folder
+				if (strpos($file, $fileCheck) !== false && substr_count($file, '/') < 2) {
 					$content = $zip->getFromName($file);
 					$info    = static::getInfo($content);
 
-					if ($folderName == ($info['slug'] . '/')) {
+					if (isset($info['slug']) && ($folderName == ($info['slug'] . '/'))) {
 						// Unzip Path
 						if ($zip->extractTo($extractTo)) {
 							$success = $info['slug'];
@@ -184,7 +185,7 @@ abstract class Extensions {
 						}
 					} else {
 						if ($validate) {
-							throw new \Exception(sprintf(__('%s slug `%s` does not match folder %s!'), $extension, $info['slug'], $folderName));
+							throw new \Exception(sprintf(__('%s slug `%s` does not match folder %s!'), $extension, $info['slug'] ?? '', $folderName));
 						} else {
 							if ($zip->extractTo($extractTo . DS . $slug)) {
 								$info    = ['slug' => $slug];
@@ -236,7 +237,7 @@ abstract class Extensions {
 		if ($content) {
 			$rss  = new Rss($content);
 
-			$result[static :: $extension . 's'] = $rss->get(1, 10);
+			$result[static :: $extension . 's'] = $rss->get($params['start'] ?? 1, $params['limit'] ??  10);
 			$result['count']                    = $rss->value('count');
 
 			return $result;

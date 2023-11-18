@@ -66,6 +66,7 @@ if ($optgroup != $option['folder']) {
 [data-v-languages] [data-v-language]|before = <?php
 
 foreach ($this->languagesList as $language) {
+	$content = $this->{{type}}['{{type}}_content'][$language['language_id']] ?? [];
 ?>
 	[data-v-languages] [data-v-language-id]|id = <?php echo 'lang-' . $language['code'] . '-' . $_lang_instance;?>
 	[data-v-languages]  [data-v-language-id]|addClass = <?php if ($_i == 0) echo 'show active';?>
@@ -87,26 +88,26 @@ $_i++;
 
 [data-v-{{type}}] input[data-v-{{type}}-content-*]|value = <?php
 	$desc = '@@__data-v-{{type}}-content-(*)__@@';
-	if (isset($this->{{type}}['{{type}}_content'][$language['language_id']][$desc])) 
-		echo $this->{{type}}['{{type}}_content'][$language['language_id']][$desc];
+	if (isset($content[$desc])) 
+		echo $content[$desc];
 ?>
 
 [data-v-{{type}}] [data-v-{{type}}-content-*]|innerText = <?php
 	$desc = '@@__data-v-{{type}}-content-(*)__@@';
-	if (isset($this->{{type}}['{{type}}_content'][$language['language_id']][$desc])) 
-		echo $this->{{type}}['{{type}}_content'][$language['language_id']][$desc];
+	if (isset($content[$desc])) 
+		echo $content[$desc];
 ?>
 
 [data-v-{{type}}] a[data-v-{{type}}-content-*]|href = <?php
 	$desc = '@@__data-v-{{type}}-content-(*)__@@';
-	if (isset($this->{{type}}['{{type}}_content'][$language['language_id']][$desc])) 
-		echo $this->{{type}}['{{type}}_content'][$language['language_id']][$desc];
+	if (isset($content[$desc])) 
+		echo $content[$desc];
 ?>
 
 [data-v-{{type}}] textarea[data-v-{{type}}-content-*] = <?php
 	$desc = '@@__data-v-{{type}}-content-(*)__@@';
-	if (isset($this->{{type}}['{{type}}_content'][$language['language_id']][$desc])) 
-		echo $this->{{type}}['{{type}}_content'][$language['language_id']][$desc];
+	if (isset($content[$desc])) 
+		echo $content[$desc];
 ?>
 
 [data-v-{{type}}] input[data-v-{{type}}-content-language_id]|value = <?php echo $language['language_id']; ?>
@@ -118,7 +119,7 @@ $_i++;
 [data-v-languages] [data-v-language] [data-v-revision]|deleteAllButFirstChild
 
 [data-v-languages] [data-v-language] [data-v-revision]|before = <?php
-$revisions = $this->{{type}}['{{type}}_content'][$language['language_id']]['revision'];
+$revisions = $content['revision'];
 foreach ($revisions as $revision) {
 ?>
 
@@ -133,5 +134,6 @@ foreach ($revisions as $revision) {
 	}
 ?>
 
+[data-v-{{type}}] [data-v-revisions_url]|href = $this->revisions_url
 
 import(content/post_taxonomy.tpl)

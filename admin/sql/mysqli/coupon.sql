@@ -29,12 +29,38 @@
 
 	PROCEDURE get(
 		IN coupon_id INT,
+		IN code CHAR,
+		IN free_shipping INT,
+		IN status INT,
 		OUT fetch_row, 
 	)
 	BEGIN
 		-- coupon
 		SELECT *
-			FROM coupon as _ WHERE coupon_id = :coupon_id;
+			FROM coupon as _ 
+		WHERE 1 = 1 
+			
+		@IF !empty(:code) 
+		THEN			
+			AND code = :code
+		END @IF				
+		
+		@IF !empty(:free_shipping) 
+		THEN			
+			AND free_shipping = :free_shipping
+		END @IF				
+		
+		@IF !empty(:coupon_id) 
+		THEN			
+			AND coupon_id = :coupon_id
+		END @IF		
+
+		@IF !empty(:status) 
+		THEN			
+			AND status = :status
+		END @IF
+		;			
+			
 	END
 	
 	-- add coupon

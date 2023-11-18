@@ -29,6 +29,8 @@ use Vvveb\System\Payment;
 use Vvveb\System\Shipping;
 
 class Cart extends Base {
+	use CouponTrait;
+
 	function index() {
 		$cart     = ShoppingCart::getInstance($this->global);
 		$payment  = Payment::getInstance();
@@ -48,32 +50,23 @@ class Cart extends Base {
 			'total_items' 	   => $cart->getNoProducts(),
 			'total_price' 	   => $cart->getNoProducts(),
 			'total'       	   => $cart->getGrandTotal(),
+			'coupons'         => $cart->getCoupons(),
 			'total_formatted' => $cart->getGrandTotalFormatted(),
 		];
 
 		$this->view->cart = $cart;
 	}
 
-
-	function coupon() {
-		$coupon = $this->request->request['coupon'] ?? '';
-		
-		
-		$cart = ShoppingCart::getInstance($this->global);
-		
-		
-		return $this->index();
-	}
-
 	private function action($action, $productId = null, $quantity = 1) {
 		$cart = ShoppingCart::getInstance($this->global);
 
-		$productId           = $this->request->request['product_id'];
-		$quantity            = $this->request->request['quantity'] ?? $quantity;
-		$option              = $this->request->request['option'] ?? [];
-		$subscriptionPlanId  = $this->request->request['subscription_plan_id'] ?? false;
+		$productId          = $this->request->request['product_id'] ?? false;
+		$key                = $this->request->request['key'] ?? false;
+		$quantity           = $this->request->request['quantity'] ?? $quantity;
+		$option             = $this->request->request['option'] ?? [];
+		$subscriptionPlanId = $this->request->request['subscription_plan_id'] ?? false;
 
-		if (isset($productId)) {
+		if ($key || $productId) {
 			//$this->view->success = false;
 			switch ($action) {
 				case 'add':
@@ -82,12 +75,12 @@ class Cart extends Base {
 				break;
 
 				case 'update':
-					$cart->update($productId, $quantity);
+					$cart->update($key, $quantity);
 
 				break;
 
 				case 'remove':
-					$cart->remove($productId);
+					$cart->remove($key);
 
 				break;
 			}

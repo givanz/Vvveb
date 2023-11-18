@@ -49,8 +49,8 @@ class Comments extends ComponentBase {
 
 	//called when fetching data, when cache expires
 	function results() {
-		$comments             = model($this->model); //new CommentSQL();
-		$results              = $comments->getAll($this->options);
+		$this->modelInstance         = model($this->model); //new CommentSQL();
+		$results              = $this->modelInstance->getAll($this->options);
 		$results[$this->type] = $results[$this->type] ?? [];
 
 		$order = $this->options['order'];

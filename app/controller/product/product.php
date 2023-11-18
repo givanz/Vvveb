@@ -25,54 +25,29 @@ namespace Vvveb\Controller\Product;
 use \Vvveb\Sql\ProductSQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\Controller\Content\CommentTrait;
 
 class Product extends Base {
 	public $type = 'product';
+	
+	use CommentTrait;
 
-	private function insertComment() {
-		$result    = false;
-		$product   = &$this->request->product;
-
-		if (isset($product['content'])) {
-			//robots will also fill hidden inputs
-			$notRobot =
-			(isset($product['firstname-empty']) && empty($product['firstname-empty']) &&
-			isset($product['lastname-empty']) && empty($product['lastname-empty']) &&
-			isset($product['subject-empty']) && empty($product['subject-empty']));
-
-			if ($notRobot) {
-				$user = $this->global['user'];
-
-				if ($user) {
-					$user['author'] = $user['display_name'];
-				}
-
-				$product['content'] = sanitizeHTML($product['content']);
-
-				$sql       = new \Vvveb\Sql\CommentSQL();
-				$comment   = array_merge($product, $user, ['created_at' => date('Y-m-d H:i:s'), 'status' => 0]);
-				$result    = $sql->add(['comment' => $comment]);
-
-				if ($result['comment']) {
-					$comment['comment_id'] = $result['comment'];
-
-					$comments                                           = $this->session->get('comments', []);
-					$comments[$comment['slug']][$comment['comment_id']] = $comment;
-					$this->session->set('comments', $comments);
-
-					$this->view->success[] = __('Comment was producted!');
-				} else {
-					$this->view->errors[] = __('Error adding comment!');
-				}
-			}
-		}
-
-		return $result;
+	function addReview() {
+		return $this->index();
 	}
 
+	function addQuestion() {
+		return $this->index();
+	}
+
+
 	function index() {
-		if (isset($this->request->product['content'])) {
-			$result = $this->insertComment();
+		if (isset($this->request->post['content'])) {
+			if (isset($this->request->post['rating'])) {
+				$result = $this->insertComment('product_review', __('review'));
+			} else {
+				$result = $this->insertComment('product_question', __('question'));
+			}
 		}
 
 		$language = $this->request->get['language'] ?? '';

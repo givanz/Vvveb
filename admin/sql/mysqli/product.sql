@@ -440,6 +440,26 @@
 	END	
 
 
+	-- Edit post content
+
+	CREATE PROCEDURE editContent(
+		IN product_content ARRAY,
+		IN product_id INT,
+		IN language_id INT,
+		OUT affected_rows
+	)
+	BEGIN
+	
+		:product_content  = @FILTER(:product_content, product_content);
+	
+		UPDATE product_content 
+			
+			SET @LIST(:product_content) 
+			
+		WHERE product_id = :product_id AND language_id = :language_id
+	END
+	
+
 	-- Add new product
 
 	CREATE PROCEDURE add(
@@ -728,7 +748,7 @@
 	)
 	BEGIN
 
-		SELECT  pd.*,products.*
+		SELECT  pd.*,products.*, products.product_id as array_key
 
 				@IF !empty(:manufacturer) 
 				THEN 

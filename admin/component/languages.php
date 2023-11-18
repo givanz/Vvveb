@@ -23,8 +23,6 @@
 namespace Vvveb\Component;
 
 use function Vvveb\availableLanguages;
-use Vvveb\Sql\LanguageSQL;
-use Vvveb\System\Cache;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Session;
@@ -46,7 +44,7 @@ class Languages extends ComponentBase {
 	}
 
 	function results() {
-		$results = [];
+		$results             = [];
 		$results['language'] = availableLanguages();
 
 		if ($results['language']) {

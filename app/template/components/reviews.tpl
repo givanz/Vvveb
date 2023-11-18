@@ -1,15 +1,17 @@
 @reviews = [data-v-component-reviews]
 @review  = [data-v-component-reviews] [data-v-review]
 
+@reviews [data-v-reviews-*] = $product_review['@@__data-v-reviews-(*)__@@']
+
 @review|deleteAllButFirstChild
 
 @reviews|prepend = <?php
 if (isset($_reviews_idx)) $_reviews_idx++; else $_reviews_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
-$component_reviews = $current_component = $this->_component['reviews'][$_reviews_idx] ?? [];
-$reviews = $component_reviews['product_review'] ?? [];
+$product_review = $current_component = $this->_component['reviews'][$_reviews_idx] ?? [];
+$reviews = $product_review['product_review'] ?? [];
 
-$_pagination_count = $reviews['count'] ?? 0;
+$_pagination_count = $count = $current_component['count'] ?? 0;
 $_pagination_limit = isset($reviews['limit']) ? $reviews['limit'] : 5;	
 ?>
 
@@ -42,11 +44,26 @@ if($reviews && is_array($reviews)) {
 ?>
 
 
+@reviews [data-v-summary-five]  = <?php echo $product_review['summary'][5]['count'];?>
+@reviews [data-v-summary-four]  = <?php echo $product_review['summary'][4]['count'];?>
+@reviews [data-v-summary-three] = <?php echo $product_review['summary'][3]['count'];?>
+@reviews [data-v-summary-two]   = <?php echo $product_review['summary'][2]['count'];?>
+@reviews [data-v-summary-one]   = <?php echo $product_review['summary'][1]['count'];?>
+
+
+@reviews [data-v-summary-five-width]|style  = <?php echo 'width:' . $product_review['summary'][5]['percent'] .'%';?>
+@reviews [data-v-summary-four-width]|style  = <?php echo 'width:' . $product_review['summary'][4]['percent'] .'%';?>
+@reviews [data-v-summary-three-width]|style = <?php echo 'width:' . $product_review['summary'][3]['percent'] .'%';?>
+@reviews [data-v-summary-two-width]|style   = <?php echo 'width:' . $product_review['summary'][2]['percent'] .'%';?>
+@reviews [data-v-summary-one-width]|style   = <?php echo 'width:' . $product_review['summary'][1]['percent'] .'%';?>
+
+
+
 @images = [data-v-component-reviews] [data-v-image]
 @images|deleteAllButFirstChild
 
 @images|before = <?php
-$_images = $component_reviews['images'] ?? [];
+$_images = $product_review['images'] ?? [];
 $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['product_review_media_id' => 0, 'image' => '']] : false;
 $_images = empty($_images) ? $_default : $_images;
 

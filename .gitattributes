@@ -1,3 +1,4 @@
-public/themes/** linguist-vendored
-public/admin/** linguist-vendored
+public/themes/* linguist-vendored
+public/admin/* linguist-vendored
+public/install/* linguist-vendored
 *.sql linguist-detectable=true

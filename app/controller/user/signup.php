@@ -48,7 +48,7 @@ class Signup extends \Vvveb\Controller\Base {
 				if (is_array($result)) {
 					$message = __('User created!');
 					$this->session->set('success',  ['login' => $message]);
-					$this->view->success['login'][]    = $message;
+					$this->view->success['login'][]     = $message;
 					$user_id                            = $result['user'];
 					$this->request->request['user_id']  = $user_id;
 

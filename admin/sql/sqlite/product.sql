@@ -440,6 +440,26 @@
 	END	
 
 
+	-- Edit post content
+
+	CREATE PROCEDURE editContent(
+		IN product_content ARRAY,
+		IN product_id INT,
+		IN language_id INT,
+		OUT affected_rows
+	)
+	BEGIN
+	
+		:product_content  = @FILTER(:product_content, product_content);
+	
+		UPDATE product_content 
+			
+			SET @LIST(:product_content) 
+			
+		WHERE product_id = :product_id AND language_id = :language_id
+	END
+	
+
 -- Add new product
 
 	CREATE PROCEDURE add(
@@ -719,7 +739,7 @@
 		LOCAL special INT,
 		LOCAL points INT,
 		LOCAL stock_status INT,
-		LOCAL image_gallery INT,
+		LOCAL product_image INT,
 			
 		-- return array of products for products query
 		OUT fetch_all,
@@ -728,7 +748,7 @@
 	)
 	BEGIN
 
-		SELECT  pd.*,products.*
+		SELECT  pd.*,products.*, products.product_id as array_key
 
 				@IF !empty(:manufacturer) 
 				THEN 
@@ -738,7 +758,7 @@
 
 			-- include image gallery 	
 			
-			@IF !empty(:image_gallery) 
+			@IF !empty(:product_image) 
 			THEN
 				-- uncomment the group concat version if you are using an older sqlite version
 				-- ,(SELECT '[' || GROUP_CONCAT('{"id":"' || pi.product_image_id || '","image":"' || pi.image || '"}') || ']' FROM product_image as pi WHERE pi.product_id = products.product_id GROUP BY pi.product_id) as images

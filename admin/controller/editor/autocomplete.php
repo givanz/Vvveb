@@ -24,7 +24,6 @@ namespace Vvveb\Controller\Editor;
 
 use Vvveb\Controller\Base;
 use Vvveb\Sql\categorySQL;
-use Vvveb\System\Core\View;
 
 class Autocomplete extends Base {
 	private $themeConfig = [];

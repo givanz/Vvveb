@@ -24,6 +24,7 @@ namespace Vvveb\Controller\Checkout;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\Controller\Cart\CouponTrait;
 use Vvveb\Controller\User\LoginTrait;
 use function Vvveb\email;
 use function Vvveb\prefixArrayKeys;
@@ -42,7 +43,7 @@ use Vvveb\System\Validator;
 use function Vvveb\url;
 
 class Checkout extends Base {
-	use LoginTrait;
+	use LoginTrait, CouponTrait;
 
 	/*
 	use LoginTrait {
@@ -56,10 +57,6 @@ class Checkout extends Base {
 		return $this->index();
 	}
 	*/
-	function coupon() {
-		$this->response->setType('json');
-		$this->response->output($result);
-	}
 
 	function regions() {
 		$country_id   = $this->request->get['country_id'] ?? false;

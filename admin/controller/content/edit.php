@@ -114,9 +114,11 @@ class Edit extends Base {
 		$this->type = $post['type'] ?? $this->type;
 
 		if ($this->object == 'product') {
-			$route = "product/{$this->type}/index";
+			$route      = "product/{$this->type}/index";
+			$controller = 'product';
 		} else {
-			$route = "content/{$this->type}/index";
+			$route      = "content/{$this->type}/index";
+			$controller = 'content';
 		}
 
 		if ($this->revisions) {
@@ -185,6 +187,7 @@ class Edit extends Base {
 		$view->type                = __($this->type);
 		$view->type_name           = $type_name;
 		$view->posts_list_url      =  \Vvveb\url(['module' => 'content/posts', 'type' => $this->type]);
+		$view->revisions_url       =  \Vvveb\url(['module' => "$controller/revisions", 'type' => $this->type, $this->object . '_id' => $post_id]);
 	}
 
 	private function addCategory($taxonomy_id, $name) {
@@ -304,7 +307,7 @@ class Edit extends Base {
 					$post_id                                   = $id;
 					$new                                       = true;
 
-					$message         = ucfirst($this->type) . ' ' . __('saved') . '!';
+					$message              = ucfirst($this->type) . ' ' . __('saved') . '!';
 					$view->success['get'] = $message;
 				}
 			}

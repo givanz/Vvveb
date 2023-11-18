@@ -29,17 +29,17 @@
 		  <div class="card-body">
 			<div class="row " data-v-if-not="this.global.user_id">
 
-			  <div class="mb-3 col-6" id="first_name_group">
+			  <div class="mb-3 col-6">
 				<label class="col-form-label" for="first_name">First Name <span class="text-danger text-small">*</span>
 				</label>
 				<input type="text" class="form-control" id="first_name" name="first_name" value="" minlength="3" required="">
 			  </div>
-			  <div class="mb-3 col-6" id="last_name_group">
+			  <div class="mb-3 col-6">
 				<label class="col-form-label" for="last_name">Last Name <span class="text-danger text-small">*</span>
 				</label>
 				<input type="text" class="form-control" id="last_name" name="last_name" value="" minlength="3" required="">
 			  </div>
-			  <div class="mb-3 col-12 mb-3" id="email_group">
+			  <div class="mb-3 col-12 mb-3">
 				<label class="col-form-label" for="email">Email Address <span class="text-danger text-small">*</span>
 				</label>
 				<input type="email" class="form-control" id="email" name="email" value="" required="">
@@ -85,7 +85,7 @@
 
 				<div class="row">
 				  
-				  <div class="mb-3 col-12 mb-3" id="company_group">
+				  <div class="mb-3 col-12 mb-3">
 					<label class="col-form-label" for="billing_company">Company Name</label>
 					<input type="text" class="form-control" id="billing_company" name="billing_address[company]" value="">
 				  </div>
@@ -140,22 +140,22 @@ Ship To A Different Address </label>
 			  <h5>Shipping Address</h5>
 
 			  <div class="row">
-				<div class="mb-3 col-6" id="first_name_group">
+				<div class="mb-3 col-6">
 				  <label class="col-form-label" for="first_name">First Name <span class="text-danger text-small">*</span>
 				  </label>
 				  <input type="text" class="form-control" id="first_name" name="shipping_address[first_name]" value="" minlength="3" required="" disabled="">
 				</div>
-				<div class="mb-3 col-6" id="last_name_group">
+				<div class="mb-3 col-6">
 				  <label class="col-form-label" for="last_name">Last Name <span class="text-danger text-small">*</span>
 				  </label>
 				  <input type="text" class="form-control" id="last_name" name="shipping_address[last_name]" value="" minlength="3" required="" disabled="">
 				</div>
-				<div class="mb-3 col-12 mb-3" id="email_group">
+				<div class="mb-3 col-12 mb-3">
 				  <label class="col-form-label" for="email">Email Address <span class="text-danger text-small">*</span>
 				  </label>
 				  <input type="email" class="form-control" id="email" name="shipping_address[email]" value="" required="" disabled="">
 				</div>
-				<div class="mb-3 col-12 mb-3" id="company_group">
+				<div class="mb-3 col-12 mb-3">
 				  <label class="col-form-label" for="company">Company Name</label>
 				  <input type="text" class="form-control" id="company" name="shipping_address[company]" value="" disabled="">
 				</div>

@@ -23,6 +23,8 @@
 namespace Vvveb\System\Cart;
 
 use function \Vvveb\url;
+use Vvveb\Sql\Product_Option_ValueSQL;
+use Vvveb\Sql\ProductSQL;
 use Vvveb\System\Images;
 use Vvveb\System\Session;
 
@@ -48,6 +50,8 @@ class Cart {
 	protected $total_tax = 0;
 
 	protected $total_items = 0;
+
+	use TaxTrait, ProductOptionTrait, CouponTrait;
 
 	public static function getInstance($options = []) {
 		static $inst = null;
@@ -87,71 +91,113 @@ class Cart {
 		$results = ['products' => [], 'count' => 0];
 
 		if (! empty($this->products)) {
-			$productIds = array_keys($this->products);
+			$productIds     = [];
+			$productOptions = [];
+			$productSubscriptions = [];
 
+			foreach ($this->products as $product) {
+				$productId = $product['product_id'];
+				$productIds[$productId] = $productId;
+
+				//get all product options to make one query to get all option values
+				if (isset($product['option'])) {
+					foreach ($product['option'] as $value) {
+						if (is_numeric($value)) {
+							$productOptions[$value] = $value;
+						}
+					}
+				}
+				
+				if (isset($product['subscription_plan_id'])) {
+					$productSubscriptions[$productId] = $product['subscription_plan_id'];
+				}
+			}
+			
+			//get product data from db for products in cart
 			$options =  [
 				'product_id'            => $productIds,
-				'start'                 => 0,
-				'include_image_gallery' => true,
 			] + $this->options;
 
-			$productSql = new \Vvveb\Sql\ProductSQL();
+			$productSql = new ProductSQL();
 			$results    = $productSql->getAll(
 				$options
 			);
+
+			// if products have options get all product options in one query
+			$optionResults = [];
+			if ($productOptions) {
+				$productOptionValueSql = new Product_Option_ValueSQL();
+				$optionResults         = $productOptionValueSql->getAll(
+					['product_option_value_id' => array_values($productOptions)] + $this->options
+				)['product_option_value'] ?? [];
+			}
 		}
 
-		$products       = $this->products;
-		$this->products = [];
+		$products       = $results['products'] ?? [];
 
-		foreach ($results['products'] as $id => &$product) {
-			$productId = $product['product_id'];
+		if ($products) {
+			foreach ($this->products as $key => &$prod) {
+				if (! isset($products[$product['product_id']])) {
+					unset($this->products[$key]);
 
-			if (isset($product['images'])) {
-				$product['images'] = json_decode($product['images'], true);
-
-				foreach ($product['images'] as &$image) {
-					$image['image'] = Images::image($image['image'], 'product', 'thumb');
+					continue;
 				}
+
+				$productId = $prod['product_id'];
+				$product   = $products[$productId];
+
+				$prod['price'] = $product['price'];
+				
+				//add option value data and adjust price if necessary
+				if ($prod['option']) {
+					foreach ($prod['option'] as $option_id => $product_option_value_id) {
+						$value = $optionResults[$product_option_value_id];
+						$prod['option_value'][$product_option_value_id] = $value;
+						
+						if ($value['price']) {
+							if ($value['price_operator'] == '-') {
+								$prod['price'] -= $value['price'];
+							} else {
+								$prod['price'] += $value['price'];
+							}
+						}
+					}
+				}
+
+				$prod['url']             = htmlentities(url('product/product/index', $product));
+				$prod['remove-url']      = htmlentities(url('cart/cart/remove', $product));
+
+				$prod['total']           = (int)$prod['price'] * $prod['quantity'];
+				$prod['total_formatted'] = $this->currency->format($prod['total']);
+
+				$taxValue             = $this->tax->addTaxes($prod['price'], $product['tax_type_id'], true);
+				$prod['price_tax']    = ($taxValue + $prod['price']);
+				$prod['tax']          = $prod['price_tax'] * $prod['quantity'];
+				$prod['total_tax']    = $prod['tax'];
+
+				$prod['price_tax_formatted'] = $this->currency->format($prod['price_tax']);
+				$prod['price_formatted']     = $this->currency->format($product['price']);
+				$prod['total_formatted']     = $this->currency->format($prod['total']);
+				$prod['total_tax_formatted'] = $this->currency->format($prod['total_tax']);
+
+				if (isset($products[$productId]['subscription_plan_id'])) {
+					//$prod['subscription_plan_id'] = $products[$productId]['subscription_plan_id'];
+				}
+
+				$this->total += $prod['total'];
+				$this->total_tax += $prod['total_tax'];
+				$this->total_items += $prod['quantity'];
+
+				$prod = array_merge($prod, $product);
+				
+		
+				if (isset($product['image'])) {
+					$prod['image'] = Images::image($product['image'], 'product', 'thumb');
+				}
+
+				// options add to price
+
 			}
-
-			if (isset($product['image'])) {
-				$product['image'] = Images::image($product['image'], 'product', 'thumb');
-			}
-
-			$product['url']             = htmlentities(url('product/product/index', $product));
-			$product['remove-url']      = htmlentities(url('cart/cart/remove', $product));
-
-			$product['quantity']        = $products[$productId]['quantity'] ?? 1;
-			$product['option']          = $products[$productId]['option'] ?? [];
-			$product['total']           = (int)$product['price'] * $product['quantity'];
-			$product['total_formatted'] = $this->currency->format($product['total']);
-
-			$taxValue             = $this->tax->addTaxes($product['price'], $product['tax_type_id'], true);
-			$product['price_tax'] = ($taxValue + $product['price']);
-			$product['tax']       = $product['price_tax'] * $product['quantity'];
-			$product['total_tax'] = $product['tax'];
-
-			$product['price_tax_formatted'] = $this->currency->format($product['price_tax']);
-			$product['price_formatted']     = $this->currency->format($product['price']);
-			$product['total_formatted']     = $this->currency->format($product['total']);
-			$product['total_tax_formatted'] = $this->currency->format($product['total_tax']);
-
-			if (isset($products[$productId]['subscription_plan_id'])) {
-				$product['subscription_plan_id'] = $products[$productId]['subscription_plan_id'];
-			}
-
-			$this->total += $product['total'];
-			$this->total_tax += $product['total_tax'];
-			$this->total_items += $product['quantity'];
-
-			if (isset($this->products[$productId])) {
-				$product = array_merge($this->products[$productId], $product);
-			}
-
-			// options add to price 
-
-			$this->products[$productId] = $product;
 		}
 
 		$this->addTotal('sub_total', 'Sub-total', $this->total);
@@ -166,10 +212,23 @@ class Cart {
 			return false;
 		}
 
-		if (isset($this->products[$productId])) {
-			$this->products[$productId]['quantity'] += $quantity;
+		$key = $productId;
+
+		if ($option) {
+			$key .= '_' . json_encode($option);
+		}
+
+		if ($subscriptionPlanId) {
+			$key .= "_$subscriptionPlanId";
+		}
+
+		$key = str_replace('"', '', $key);
+
+		if (isset($this->products[$key])) {
+			$this->products[$key]['quantity'] += $quantity;
 		} else {
-			$this->products[$productId] = [
+			$this->products[$key] = [
+				'product_id'           => $productId,
 				'quantity'             => $quantity,
 				'option'               => $option,
 				'subscription_plan_id' => $subscriptionPlanId,
@@ -179,16 +238,16 @@ class Cart {
 		return $this->updateCart();
 	}
 
-	function update($productId, $quantity = 1, $option = [], $subscriptionPlanId = false) {
-		if (isset($this->products[$productId])) {
-			$this->products[$productId]['quantity'] = max(1, $quantity);
-			
+	function update($key, $quantity = 1, $option = [], $subscriptionPlanId = false) {
+		if (isset($this->products[$key])) {
+			$this->products[$key]['quantity'] = max(1, $quantity);
+
 			if ($option) {
-				$this->products[$productId]['option'] = $option;
+				$this->products[$key]['option'] = $option;
 			}
 
 			if ($subscriptionPlanId) {
-				$this->products[$productId]['subscription_plan_id'] = $subscriptionPlanId;
+				$this->products[$key]['subscription_plan_id'] = $subscriptionPlanId;
 			}
 
 			return $this->updateCart();
@@ -203,8 +262,8 @@ class Cart {
 		return count($this->products ?? []);
 	}
 
-	function remove($productId) {
-		unset($this->products[$productId]);
+	function remove($key) {
+		unset($this->products[$key]);
 
 		return $this->updateCart();
 	}
@@ -259,46 +318,6 @@ class Cart {
 		$sum = $this->getGrandTotal();
 
 		return $this->currency->format($sum);
-	}
-
-	public function addTax($name, $price, $taxTypeId) {
-		if ($price && $taxTypeId) {
-			$this->taxes[$name] = ['price' => $price, 'tax_type_id' => $taxTypeId];
-		}
-	}
-
-	public function removeTax($name) {
-		unset($this->taxes[$name]);
-	}
-
-	public function getTaxes() {
-		$taxes    = [];
-		$products = $this->products + $this->taxes;
-
-		foreach ($products as $product) {
-			if ($product['tax_type_id']) {
-				$tax_rates = $this->tax->getRates($product['price'], $product['tax_type_id']);
-
-				foreach ($tax_rates as $tax_rate) {
-					if (! isset($taxes[$tax_rate['tax_rate_id']])) {
-						$taxes[$tax_rate['tax_rate_id']]          = $tax_rate;
-						$taxes[$tax_rate['tax_rate_id']]['value'] = 0;
-					}
-
-					$taxes[$tax_rate['tax_rate_id']]['value'] += ($tax_rate['amount'] * ($product['quantity'] ?? 1));
-				}
-			}
-		}
-
-		return $taxes;
-	}
-
-	function addTaxTotal() {
-		$taxes = $this->getTaxes();
-
-		foreach ($taxes as $tax) {
-			$this->addTotal('tax.' . $tax['tax_rate_id'], $tax['name'], $tax['value']);
-		}
 	}
 
 	function addTotal($key, $title, $value, $text = '') {
@@ -392,7 +411,7 @@ class Cart {
 
 	protected function write() {
 		//$data = get_object_vars($this);
-		foreach (['products', 'taxes', 'totals',  'total_items'] as $property) {
+		foreach (['products', 'taxes', 'totals',  'total_items', 'coupons', 'product_options'] as $property) {
 			$data[$property] = $this->$property;
 		}
 

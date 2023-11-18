@@ -35,8 +35,8 @@ class Subscription extends Crud {
 	function index() {
 		parent :: index();
 
-		$this->view->period       = ['day' => __('Day'), 'week' => __('Week'), 'month' => __('Month'),  'year' => __('Year')];
-		$this->view->trial_period = $this->view->period;
+		$this->view->period          = ['day' => __('Day'), 'week' => __('Week'), 'month' => __('Month'),  'year' => __('Year')];
+		$this->view->trial_period    = $this->view->period;
 		$this->view->trial_status    = $this->view->status;
 	}
 }

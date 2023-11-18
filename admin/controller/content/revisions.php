@@ -24,6 +24,7 @@ namespace Vvveb\Controller\Content;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\System\Images;
 use function Vvveb\humanReadable;
 use function Vvveb\model;
 
@@ -31,7 +32,7 @@ class Revisions extends Base {
 	protected $type = 'post';
 
 	//check for other modules permission like revision and editor to enable links like save/delete etc
-	//protected $additionalPermissionCheck = ['content/revision/save'];
+	protected $additionalPermissionCheck = ['content/revisions/save'];
 
 	function merge() {
 	}
@@ -40,76 +41,83 @@ class Revisions extends Base {
 		if (isset($this->request->get['type'])) {
 			$this->type = $this->request->get['type'];
 		}
-		$this->post_id     = $this->request->get[$this->type . '_id'] ?? false;
-		$this->language_id = $this->request->get['language_id'] ?? false;
-		$this->created_at  = $this->request->get['created_at'] ?? false;
+
 		$this->revisions   = model($this->type . '_content_revision');
+		$this->post        = model($this->type);
+		
+		$this->options = ['type' => $this->type];
+		
+		foreach ([$this->type . '_id', 'language_id', 'created_at'] as $param) {
+			if (isset($this->request->get[$param])) {
+				$this->options[$param] = $this->request->get[$param];
+			}
+		}		
 
 		return parent::init();
 	}
 
 	function delete() {
-		$view            = $this->view;
-		$this->revisions = model($this->type . '_content_revision');
-
-		$options      =  [
-			$this->type . '_id'          => $this->post_id,
-			'language_id'                => $this->language_id,
-			'created_at'                 => $this->created_at,
-		] + $this->global;
-
-		
-		$results = $this->revisions->delete($options);
+		$results = $this->revisions->delete($this->options + $this->global);
 
 		header('Content-type: application/json; charset=utf-8');
-		echo json_encode($options);
 
 		die();
 	}
 
+	function save() {
+		$content = $this->request->post['content'] ?? false;
+		if ($content) {
+			$result = $this->post->editContent(
+				[$this->type . '_content' => ['content' => $content]] + 
+				$this->options + 
+				$this->global
+			);
+			
+			if ($result) {
+				$this->view->success[] = ucfirst($this->type) . ' ' . __('saved') . '!';;
+			} else {
+				$view->errors = [$post->error];
+			}
+		}
+		
+		return $this->index();
+	}
+	
 	function revision() {
 		$view            = $this->view;
-
-		$options      =  [
-			$this->type . '_id'          => $this->post_id,
-			'language_id'                => $this->language_id,
-			'created_at'                 => $this->created_at,
-		] + $this->global;
-
-		$results = $this->revisions->get($options);
-
-		header('Content-type: application/json; charset=utf-8');
-		echo json_encode($results);
+		$results = $this->revisions->get($this->options);
+		if ($results && isset($results['content'])) {
+			echo $results['content'];
+		}
 
 		die();
 	}
 
 	function index() {
-		return;
-		$this->post_id     = $this->request->get[$this->type . '_id'] ?? false;
-		$this->language_id = $this->request->get['language_id'] ?? false;
-		$this->created_at  = $this->request->get['created_at'] ?? false;
+		$view      = $this->view;
+		$revisions = model($this->type . '_content_revision');
+		$this->options  += $this->global;
 
-		$view            = $this->view;
-		$revisions       = model($this->type . '_content_revision');
-
-		$options      =  [
-			'type'          => $this->type,
-			'comment_count' => true,
-		] + $this->global + $this->filter;
-
-		$results = $this->revisions->getAll($options);
-
-		foreach ($results['revisions'] as $id => &$revision) {
+		
+		$revisions = $this->revisions->getAll($this->options);// all post/product revisions
+		$revision  = $this->revisions->get($this->options);// latest or selected revision
+		$post      = $this->post->get($this->options);// post/product content
+		
+		if (isset($post['image'])) {
+			$post['image'] = $post['image'] = Images::image($post['image'], $this->type, 'thumb');
 		}
 
+		$results = [
+			'revisions' => $revisions['revision'] ?? [],
+			'revision' => $revision ?? [],
+			'post' => $post ?? [],
+		];
+
 		$view->set($results);
-		$view->status           = ['publish' => 'publish', 'pending' => 'pending'];
-		$view->archives         = $archives;
-		$view->filter           = $this->filter;
-		$view->limit            = $options['limit'];
+		
+		$view->limit            = $this->options['limit'];
 		$view->type             = $this->type;
-		$view->addUrl           = \Vvveb\url(['module' => 'content/revision', 'type' => $this->type]);
+		$view->revisionUrl      = \Vvveb\url(['module' => 'content/revisions', 'action' => 'revision', 'type' => $this->type]);
 		$view->type_name        = humanReadable(__($this->type));
 		$view->type_name_plural = humanReadable(__($view->type . 's'));
 	}

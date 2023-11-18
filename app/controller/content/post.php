@@ -31,54 +31,10 @@ use function Vvveb\sanitizeHTML;
 class Post extends Base {
 	public $type = 'post';
 
-	private function insertComment() {
-		$result = false;
-		$post   = &$this->request->post;
-
-		if (isset($post['content'])) {
-			//robots will also fill hidden inputs
-			$notRobot =
-			(isset($post['firstname-empty']) && empty($post['firstname-empty']) &&
-			isset($post['lastname-empty']) && empty($post['lastname-empty']) &&
-			isset($post['subject-empty']) && empty($post['subject-empty']));
-
-			if ($notRobot) {
-				$user = $this->global['user'];
-
-				if ($user) {
-					$user['author'] = $user['display_name'];
-				}
-
-				$post['content'] = sanitizeHTML($post['content']);
-
-				$sql       = new \Vvveb\Sql\CommentSQL();
-				$comment   = array_merge($post, $user, ['created_at' => date('Y-m-d H:i:s'), 'status' => 0]);
-				$result    = $sql->add(['comment' => $comment]);
-
-				if ($result['comment']) {
-					$comment['comment_id'] = $result['comment'];
-
-					$comments                                           = $this->session->get('comments', []);
-					$comments[$comment['slug']][$comment['comment_id']] = $comment;
-					$this->session->set('comment', $comments);
-
-					$this->view->success[] = __('Comment was posted!');
-				} else {
-					$this->view->errors[] = __('Error adding comment!');
-				}
-			}
-		}
-
-		return $result;
-	}
+	use CommentTrait;
 
 	function addComment() {
 		return $this->index();
-		//$result = $this->insertComment();
-		//$this->response->setType('json');
-		//$this->response->output($result);
-
-		//return false;
 	}
 
 	function index() {

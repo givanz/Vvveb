@@ -52,7 +52,7 @@ class Plugins extends Extensions {
 		$params               = parent::getInfo($content, $name);
 		$params['status']     = 'inactive';
 
-		if (isset($params['thumb']) && 
+		if (isset($params['thumb']) &&
 			file_exists(DIR_PUBLIC . ($file = 'plugins/' . $name . '/' . $params['thumb']))) {
 			$params['thumb_url'] = PUBLIC_PATH . $file;
 		} else {
@@ -135,7 +135,7 @@ class Plugins extends Extensions {
 		$pluginName = parent :: install($zipFile, $validate);
 
 		self :: copyPublicDir($pluginName);
-		self :: clearPluginsCache($site_id);
+		self :: clearPluginsCache();
 
 		return $pluginName;
 	}

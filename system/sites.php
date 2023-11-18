@@ -286,12 +286,12 @@ class Sites {
 		}
 
 		return $result ?? [
-			'host' => 'localhost',
-			'theme' => 'landing',
+			'host'     => 'localhost',
+			'theme'    => 'landing',
 			'template' => '',
-			'id' => 1,
-			'state' => 'live',
-		  ];
+			'id'       => 1,
+			'state'    => 'live',
+		];
 	}
 
 	public static function saveSite($site) {

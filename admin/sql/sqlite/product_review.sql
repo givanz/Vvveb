@@ -6,6 +6,7 @@
 		IN  language_id INT,
 		IN  site_id INT,
 		IN 	product_id INT,
+		IN 	slug CHAR,
         IN 	user_id INT,
         IN 	status INT,
 
@@ -19,7 +20,7 @@
 	)
 	BEGIN
 
-		SELECT product_review.*,user.*,user.user_id as user_id,
+		SELECT user.*,product_review.*,user.user_id as user_id,
 			(SELECT json_group_array(json_object('id',prm.product_review_media_id,'image',prm.image)) 
 				FROM product_review_media as prm 
 			WHERE prm.product_review_id = product_review.product_review_id) as images
@@ -29,13 +30,13 @@
 		
 			WHERE 1 = 1
             
-            -- post
+            -- product
             @IF isset(:product_id)
 			THEN 
 				AND product_review.product_id  = :product_id
         	END @IF	            
             
-	   -- post slug
+			-- product slug
             @IF isset(:slug)
 		THEN 
 			AND product_review.product_id  = (SELECT product_id FROM product_content WHERE slug = :slug LIMIT 1) 
@@ -76,6 +77,84 @@
 			FROM product_review as _ -- (underscore) _ means that data will be kept in main array
 		INNER JOIN user on user.user_id = product_review.user_id
 		WHERE product_review_id = :product_review_id LIMIT 1;
+
+	END	
+	
+	-- Get product reviews stats 
+	
+	CREATE PROCEDURE getProductStats(
+		-- variables
+		IN  language_id INT,
+		IN  site_id INT,
+		IN 	product_id INT,
+		IN 	slug CHAR,
+        IN 	user_id INT,
+        IN 	status INT,
+		-- return
+		OUT fetch_all, -- orders
+		OUT fetch_one  -- count	
+	)
+	BEGIN
+
+		-- rating count
+		SELECT COUNT(*) AS count, summary.rating, summary.rating as array_key 
+		FROM product_review AS summary 
+		WHERE 1 = 1
+			
+			-- product
+            @IF isset(:product_id)
+			THEN 
+				AND summary.product_id  = :product_id
+        	END @IF	            
+            
+			-- product slug
+            @IF isset(:slug)
+			THEN 
+				AND summary.product_id  = (SELECT product_id FROM product_content WHERE slug = :slug LIMIT 1) 
+			END @IF
+
+            -- user
+            @IF isset(:user_id)
+			THEN 
+				AND summary.user_id  = :user_id
+        	END @IF	              
+            
+			-- status
+            @IF isset(:status)
+			THEN 
+				AND summary.status  = :status
+        	END @IF		
+			
+		GROUP BY summary.rating;
+
+		SELECT AVG(rating.rating) as average 
+		FROM product_review AS rating
+		WHERE 1 = 1
+			-- product
+            @IF isset(:product_id)
+			THEN 
+				AND rating.product_id  = :product_id
+        	END @IF	            
+            
+			-- product slug
+            @IF isset(:slug)
+			THEN 
+				AND rating.product_id  = (SELECT product_id FROM product_content WHERE slug = :slug LIMIT 1) 
+			END @IF
+
+            -- user
+            @IF isset(:user_id)
+			THEN 
+				AND rating.user_id  = :user_id
+        	END @IF	              
+            
+			-- status
+            @IF isset(:status)
+			THEN 
+				AND rating.status  = :status
+        	END @IF
+		
+		LIMIT 1;
 
 	END
 	

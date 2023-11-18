@@ -6,6 +6,7 @@
 		IN language_id INT,
 		IN option_id INT,
 		IN product_id INT,
+		IN product_option_value_id ARRAY,
 		IN start INT,
 		IN limit INT,
 		OUT fetch_all, 
@@ -13,10 +14,13 @@
 	)
 	BEGIN
 		-- product_option_value
-		SELECT product_option_value.*, option_value.image, ovc.name, product_option_value.product_option_value_id as array_key
+		SELECT product_option_value.*, 
+			   option_value.image, ovc.name, oc.name as "option",
+			   product_option_value.product_option_value_id as array_key
 			FROM product_option_value AS product_option_value
 			INNER JOIN option_value ON option_value.option_value_id = product_option_value.option_value_id
 			INNER JOIN option_value_content ovc ON ovc.option_value_id = product_option_value.option_value_id AND ovc.language_id = :language_id
+			INNER JOIN option_content oc ON oc.option_id = product_option_value.option_id AND oc.language_id = :language_id
 			
 		WHERE 1 = 1
 			
@@ -24,6 +28,12 @@
 		@IF isset(:option_id)
 		THEN		
 			AND product_option_value.option_id = :option_id
+		END @IF				
+		
+		-- option_id
+		@IF isset(:product_option_value_id)
+		THEN		
+			AND product_option_value.product_option_value_id IN (:product_option_value_id)
 		END @IF		
 		
 		-- product_id

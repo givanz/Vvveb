@@ -28,16 +28,16 @@ use Vvveb\System\Images;
 
 class Products extends ComponentBase {
 	public static $defaultOptions = [
-		'start'                 => 0,
-		'limit'                 => 4,
-		'language_id'           => 1,
-		'site_id'               => 1,
-		'manufacturer_id'       => NULL,
-		'vendor_id'       		    => NULL,
-		'related'       		      => NULL,
-		'order'                 => ['url', 'price asc'],
-		//'taxonomy_item_id'    => null,
-		'include_image_gallery' => true,
+		'start'          => 0,
+		'limit'          => 4,
+		'language_id'    => 1,
+		'site_id'        => 1,
+		'manufacturer_id'=> NULL,
+		'vendor_id'      => NULL,
+		'related'        => NULL,
+		'order'          => ['url', 'price asc'],
+		//'taxonomy_item_id'=> null,
+		'product_image'  => true,
 	];
 
 	public $options = [];

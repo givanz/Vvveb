@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-if (! defined('DIR_ROOT')) {
-	exit();
+if (! defined('V_VERSION')) {
+	die('Invalid request!');
 }
 //if (function_exists('printAdminBarMenu')) return;
 
@@ -31,8 +31,8 @@ list($menu) = Vvveb\System\Event::trigger('Vvveb\Controller\Base','init-menu', $
 list($menu) = Vvveb\System\Event::trigger('admin-bar', 'menu', $menu);
 list($top)  = Vvveb\System\Event::trigger('admin-bar', 'top', []);
 
-$template = Vvveb\getCurrentTemplate();
-$url      =  Vvveb\getCurrentUrl();
+$template    = Vvveb\getCurrentTemplate();
+$url         =  Vvveb\getCurrentUrl();
 $admin_path  =  Vvveb\adminPath();
 $design_url  = $admin_path . Vvveb\url(['module' => 'editor/editor', 'template' => $template, 'url' => $url], false, false);
 $urlData     = Vvveb\System\Routes::getUrlData($url);
@@ -143,9 +143,9 @@ if (! function_exists('printAdminBarMenu')) {
 						<?php echo __('Full page cache'); ?>
 					</a>
 				</li>
-				<div class="dropdown-divider">
+				<li class="dropdown-divider">
 					<hr />
-				</div>
+				</li>
 				<li>
 					<a href="<?php echo $admin_path; ?>?module=tools/cache&action=delete" target="_blank">
 						<i class="la la-circle-notch"></i>
