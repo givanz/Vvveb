@@ -90,7 +90,7 @@
 	
 			-- orders
 
-			SELECT COUNT(*) AS count, os.name, orders.order_status_id as array_key 
+			SELECT COUNT(*) AS count, os.name, orders.order_status_id, orders.order_status_id as array_key 
 				FROM `order` AS orders
 				LEFT JOIN order_status AS os ON (orders.order_status_id = os.order_status_id AND os.language_id = :language_id) 
 				
