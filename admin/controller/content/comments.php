@@ -99,7 +99,7 @@ class Comments extends Listing {
 			$url                    = ['module' => "$module/$listController", 'action' => 'save', 'status' => $status, $type . '_id' => $comment[$type . '_id']];
 			$postUrl                = ['module' => "$module/$controller", $type . '_id' => $comment[$type . '_id']];
 			$comment['edit-url']    = \Vvveb\url($postUrl);
-			$comment['delete-url']  = \Vvveb\url(['module' => "$module/$list", 'action' => 'delete'] + $url);
+			$comment['delete-url']  = \Vvveb\url(['module' => "$module/$listController", 'action' => 'delete'] + $url);
 			$comment['approve-url'] = \Vvveb\url(['newstatus' => 1] + $url);
 			$comment['spam-url']    = \Vvveb\url(['newstatus' => 2] + $url);
 			$comment['trash-url']   = \Vvveb\url(['newstatus' => 3] + $url);
