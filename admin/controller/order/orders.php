@@ -27,6 +27,7 @@ use Vvveb\Controller\Base;
 use function Vvveb\orderStatusBadgeClass;
 use Vvveb\Sql\OrderSQL;
 use Vvveb\System\Core\View;
+use Vvveb\System\Cart\Currency;
 
 class Orders extends Base {
 	//check for order save permission
@@ -57,6 +58,7 @@ class Orders extends Base {
 	function index() {
 		$view         = View :: getInstance();
 		$orders       = new OrderSQL();
+		$currency     = Currency::getInstance();
 		$this->filter = $this->request->get['filter'] ?? [];
 
 		$options = [
@@ -67,8 +69,9 @@ class Orders extends Base {
 
 		if ($results['order']) {
 			foreach ($results['order'] as $id => &$order) {
-				$order['class']      = orderStatusBadgeClass($order['order_status_id']);
-				$order['delete-url'] = \Vvveb\url(['module' => 'order/orders', 'action' => 'delete'] + ['order_id[]' => $order['order_id']]);
+				$order['total_formatted'] = $currency->format($order['total']);
+				$order['class']           = orderStatusBadgeClass($order['order_status_id']);
+				$order['delete-url']      = \Vvveb\url(['module' => 'order/orders', 'action' => 'delete'] + ['order_id[]' => $order['order_id']]);
 			}
 		}
 

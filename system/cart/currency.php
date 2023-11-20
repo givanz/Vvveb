@@ -29,6 +29,8 @@ class Currency {
 	private $driver;
 
 	private $currencies;
+	
+	private $options;
 
 	public static function getInstance($options = []) {
 		static $inst = null;
@@ -41,12 +43,13 @@ class Currency {
 	}
 
 	public function __construct($options = []) {
+		$this->options    = $options;
 		$this->currencies = availableCurrencies();
 	}
 
 	public function format($number, $currency = false, $format = true, $value = 0) {
 		if (! $currency) {
-			$currency = session('currency');
+			$currency = $this->options['currency'] ?? session('currency');
 		}
 
 		if (! isset($this->currencies[$currency])) {

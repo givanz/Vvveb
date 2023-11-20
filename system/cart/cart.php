@@ -65,7 +65,7 @@ class Cart {
 
 	private function __construct($options = []) {
 		$this->session  = Session :: getInstance();
-		$this->currency = Currency :: getInstance();
+		$this->currency = Currency :: getInstance($options);
 		$this->tax      = Tax :: getInstance();
 
 		$this->options = $options;
@@ -91,12 +91,12 @@ class Cart {
 		$results = ['products' => [], 'count' => 0];
 
 		if (! empty($this->products)) {
-			$productIds     = [];
-			$productOptions = [];
+			$productIds           = [];
+			$productOptions       = [];
 			$productSubscriptions = [];
 
 			foreach ($this->products as $product) {
-				$productId = $product['product_id'];
+				$productId              = $product['product_id'];
 				$productIds[$productId] = $productId;
 
 				//get all product options to make one query to get all option values
@@ -107,12 +107,12 @@ class Cart {
 						}
 					}
 				}
-				
+
 				if (isset($product['subscription_plan_id'])) {
 					$productSubscriptions[$productId] = $product['subscription_plan_id'];
 				}
 			}
-			
+
 			//get product data from db for products in cart
 			$options =  [
 				'product_id'            => $productIds,
@@ -125,6 +125,7 @@ class Cart {
 
 			// if products have options get all product options in one query
 			$optionResults = [];
+
 			if ($productOptions) {
 				$productOptionValueSql = new Product_Option_ValueSQL();
 				$optionResults         = $productOptionValueSql->getAll(
@@ -147,13 +148,13 @@ class Cart {
 				$product   = $products[$productId];
 
 				$prod['price'] = $product['price'];
-				
+
 				//add option value data and adjust price if necessary
 				if ($prod['option']) {
 					foreach ($prod['option'] as $option_id => $product_option_value_id) {
-						$value = $optionResults[$product_option_value_id];
+						$value                                          = $optionResults[$product_option_value_id];
 						$prod['option_value'][$product_option_value_id] = $value;
-						
+
 						if ($value['price']) {
 							if ($value['price_operator'] == '-') {
 								$prod['price'] -= $value['price'];
@@ -189,14 +190,12 @@ class Cart {
 				$this->total_items += $prod['quantity'];
 
 				$prod = array_merge($prod, $product);
-				
-		
+
 				if (isset($product['image'])) {
 					$prod['image'] = Images::image($product['image'], 'product', 'thumb');
 				}
 
 				// options add to price
-
 			}
 		}
 

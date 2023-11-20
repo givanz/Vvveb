@@ -24,9 +24,11 @@ namespace Vvveb\Controller\Order;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\Controller\Content\AutocompleteTrait;
 use function Vvveb\orderStatusBadgeClass;
 use function Vvveb\prefixArrayKeys;
 use Vvveb\Sql\OrderSQL;
+use Vvveb\System\Cart\Cart;
 use Vvveb\System\Cart\Currency;
 use Vvveb\System\Core\View;
 use Vvveb\System\Images;
@@ -37,11 +39,14 @@ use Vvveb\System\Validator;
 use function Vvveb\url;
 
 class Order extends Base {
+	use AutocompleteTrait;
+	
 	protected $type = 'order';
 
 	function index() {
 		$view = View :: getInstance();
 
+		$cart     = Cart::getInstance($this->global);
 		$payment  = Payment::getInstance();
 		$shipping = Shipping::getInstance();
 
@@ -83,6 +88,7 @@ class Order extends Base {
 				}
 
 				$order                    = &$results['order'];
+				$oder['user_url']         = \Vvveb\url(['module' => 'user/user', 'user_id' => $order['user_id']]);
 				$order['total_formatted'] = $currency->format($order['total']);
 				$order['shipping_data']   = json_decode($order['shipping_data'] ?? '', true);
 				$order['payment_data']    = json_decode($order['payment_data'] ?? '', true);
@@ -92,6 +98,7 @@ class Order extends Base {
 				$order += prefixArrayKeys('payment_', $order['payment_data']) ?? [];
 
 				$data     		      = $orders->getData($order);
+
 				$view->set($data);
 				$view->set($results);
 
