@@ -156,7 +156,7 @@ class Index extends Base {
 			$import->createTables();
 
 			if ($noimport) {
-				$filter = ['taxonomy.insert', 'admin.insert', 'role.insert', 'country.insert', 'region.insert', 'site.insert', 'menu.insert', 'length_type.insert'];
+				$filter = ['taxonomy.sql', 'admin.sql', 'role.sql', 'country.sql', 'region.sql', 'site.sql', 'menu.sql', 'length_type.sql'];
 			} else {
 				$filter = [];
 			}
