@@ -19,6 +19,57 @@
  */
 let template = 
 `
+<div data-v-component-product-categories>
+<ul class="list-unstyled" data-v-cats>                  
+	<li data-v-cat>
+		<a href="/shop/computers" data-v-cat-url>
+		  <span data-v-cat-name>Computers</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/electronics" data-v-cat-url>
+		  <span data-v-cat-name>Electronics</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/tablets" data-v-cat-url>
+		  <span data-v-cat-name>Tablets</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/toys" data-v-cat-url>
+		  <span data-v-cat-name>Toys</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/home-kitchen" data-v-cat-url>
+		  <span data-v-cat-name>Home and Kitchen</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/books" data-v-cat-url>
+		  <span data-v-cat-name>Books</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/category-1" data-v-cat-url>
+		  <span data-v-cat-name>category 1</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/category-2" data-v-cat-url>
+		  <span data-v-cat-name>category 2</span>
+		</a>
+	  </li>                                    
+</ul>
+</div>
 `;
 
 class CategoriesComponent {

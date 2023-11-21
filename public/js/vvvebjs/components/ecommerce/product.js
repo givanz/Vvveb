@@ -126,7 +126,7 @@ let template =
 									</div>
 								</div>
 
-								<button type="button" formaction="/cart/1" id="button-cart" data-loading-text="Loading..." class="btn btn-primary btn-shadow px-4 mx-2 button-cart" data-v-vvveb-action="addToCart">
+								<button type="button" formaction="/cart/1" id="button-cart" class="btn btn-primary btn-shadow px-4 mx-2 button-cart" data-v-vvveb-action="addToCart">
 								
 									<span class="loading d-none">
 										<span class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true">
@@ -140,7 +140,7 @@ let template =
 									
 								</button> 
 
-								<button type="button" formaction="/checkout/1" id="buynow" data-checkout="nicocheckout" data-loading-text="Loading..." class="btn btn-light btn-shadow border px-4 buynow" data-v-vvveb-action="addToCart">
+								<button type="button" formaction="/checkout/1" id="buynow" class="btn btn-light btn-shadow border px-4 buynow" data-v-vvveb-action="addToCart">
 								
 									<span class="loading d-none">
 										<span class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true">

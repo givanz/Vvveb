@@ -21,13 +21,13 @@
 let template = 
 `<ul class="list-unstyled" data-v-component-product-manufacturers="sidebar" data-v-type="categories">
 <li data-v-manufacturer>
-	  <span data-v-manufacturer-name>Mango</span>
+	  <a href="/manufacturer/mango" data-v-manufacturer-url><span data-v-manufacturer-name>Mango</span></a>
 </li>
 <li data-v-manufacturer>
-	  <span data-v-manufacturer-name>Assos</span>
+	  <a href="/manufacturer/mango" data-v-manufacturer-url><span data-v-manufacturer-name>Assos</span></a>
 </li>
 <li data-v-manufacturer>
-	  <span data-v-manufacturer-name>Brand name</span>
+	  <a href="/manufacturer/mango" data-v-manufacturer-url><span data-v-manufacturer-name>Brand name</span></a>
 </li>
 </ul>`;
  
