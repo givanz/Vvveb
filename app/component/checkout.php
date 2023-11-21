@@ -27,7 +27,7 @@ use Vvveb\System\Component\ComponentBase;
 class Checkout extends ComponentBase {
 	public static $defaultOptions = [
 		'language_id' => null,
-		'site_id'	    => null,
+		'site_id'     => null,
 	];
 
 	public $cacheExpire = 0; //seconds

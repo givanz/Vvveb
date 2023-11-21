@@ -23,8 +23,6 @@
 namespace Vvveb\Component;
 
 use function Vvveb\availableCurrencies;
-use Vvveb\Sql\CurrencySQL;
-use Vvveb\System\Cache;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Session;
@@ -40,7 +38,7 @@ class Currency extends ComponentBase {
 	}
 
 	function results() {
-		$results = [];
+		$results             = [];
 		$results['currency'] = availableCurrencies();
 
 		if ($results) {

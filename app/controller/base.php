@@ -152,11 +152,11 @@ class Base {
 		$site = siteSettings();
 		$user = User::current();
 
-		$this->global['site_id'] = SITE_ID ?? 1;
-		$this->global['user_id'] = $user['user_id'] ?? false;
+		$this->global['site_id']       = SITE_ID ?? 1;
+		$this->global['user_id']       = $user['user_id'] ?? false;
 		$this->global['user_group_id'] = $user['user_group_id'] ?? 1;
-		$this->global['site']    = $site;
-		$this->global['user']    = $user ?? [];
+		$this->global['site']          = $site;
+		$this->global['user']          = $user ?? [];
 
 		$this->language($site['language'] ?? 'en_US', $site['language_id'] ?? 1);
 		$this->currency($site['currency'] ?? 'USD', $site['currency_id'] ?? 1);

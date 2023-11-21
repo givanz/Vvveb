@@ -37,21 +37,21 @@ class Comments extends ComponentBase {
 	protected $model = 'comment';
 
 	public static $defaultOptions = [
-		'post_id'       => 'url',
-		'slug'          => 'url',
-		'post_title'    => NULL, //include post title (for recent comments etc)
-		'status'        => 1, //approved comments
-		'language_id'   => NULL,
-		'start'         => 0,
-		'limit'         => 10,
-		'order'         => 'asc', //desc
+		'post_id'     => 'url',
+		'slug'        => 'url',
+		'post_title'  => NULL, //include post title (for recent comments etc)
+		'status'      => 1, //approved comments
+		'language_id' => NULL,
+		'start'       => 0,
+		'limit'       => 10,
+		'order'       => 'asc', //desc
 	];
 
 	//called when fetching data, when cache expires
 	function results() {
 		$this->modelInstance         = model($this->model); //new CommentSQL();
-		$results              = $this->modelInstance->getAll($this->options);
-		$results[$this->type] = $results[$this->type] ?? [];
+		$results                     = $this->modelInstance->getAll($this->options);
+		$results[$this->type]        = $results[$this->type] ?? [];
 
 		$order = $this->options['order'];
 

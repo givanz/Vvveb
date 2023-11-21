@@ -31,9 +31,9 @@ use Vvveb\System\Images;
 
 class Order extends ComponentBase {
 	public static $defaultOptions = [
-		'user_id'          => null,
-		'order_id'         => null,
-		'limit'            => ['url', 4],
+		'user_id'  => null,
+		'order_id' => null,
+		'limit'    => ['url', 4],
 	];
 
 	public $options = [];

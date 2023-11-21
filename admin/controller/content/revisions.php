@@ -24,9 +24,9 @@ namespace Vvveb\Controller\Content;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
-use Vvveb\System\Images;
 use function Vvveb\humanReadable;
 use function Vvveb\model;
+use Vvveb\System\Images;
 
 class Revisions extends Base {
 	protected $type = 'post';
@@ -44,14 +44,14 @@ class Revisions extends Base {
 
 		$this->revisions   = model($this->type . '_content_revision');
 		$this->post        = model($this->type);
-		
+
 		$this->options = ['type' => $this->type];
-		
+
 		foreach ([$this->type . '_id', 'language_id', 'created_at'] as $param) {
 			if (isset($this->request->get[$param])) {
 				$this->options[$param] = $this->request->get[$param];
 			}
-		}		
+		}
 
 		return parent::init();
 	}
@@ -66,26 +66,28 @@ class Revisions extends Base {
 
 	function save() {
 		$content = $this->request->post['content'] ?? false;
+
 		if ($content) {
 			$result = $this->post->editContent(
-				[$this->type . '_content' => ['content' => $content]] + 
-				$this->options + 
+				[$this->type . '_content' => ['content' => $content]] +
+				$this->options +
 				$this->global
 			);
-			
+
 			if ($result) {
-				$this->view->success[] = ucfirst($this->type) . ' ' . __('saved') . '!';;
+				$this->view->success[] = ucfirst($this->type) . ' ' . __('saved') . '!';
 			} else {
 				$view->errors = [$post->error];
 			}
 		}
-		
+
 		return $this->index();
 	}
-	
+
 	function revision() {
 		$view            = $this->view;
-		$results = $this->revisions->get($this->options);
+		$results         = $this->revisions->get($this->options);
+
 		if ($results && isset($results['content'])) {
 			echo $results['content'];
 		}
@@ -96,25 +98,24 @@ class Revisions extends Base {
 	function index() {
 		$view      = $this->view;
 		$revisions = model($this->type . '_content_revision');
-		$this->options  += $this->global;
+		$this->options += $this->global;
 
-		
-		$revisions = $this->revisions->getAll($this->options);// all post/product revisions
-		$revision  = $this->revisions->get($this->options);// latest or selected revision
-		$post      = $this->post->get($this->options);// post/product content
-		
+		$revisions = $this->revisions->getAll($this->options); // all post/product revisions
+		$revision  = $this->revisions->get($this->options); // latest or selected revision
+		$post      = $this->post->get($this->options); // post/product content
+
 		if (isset($post['image'])) {
 			$post['image'] = $post['image'] = Images::image($post['image'], $this->type, 'thumb');
 		}
 
 		$results = [
 			'revisions' => $revisions['revision'] ?? [],
-			'revision' => $revision ?? [],
-			'post' => $post ?? [],
+			'revision'  => $revision ?? [],
+			'post'      => $post ?? [],
 		];
 
 		$view->set($results);
-		
+
 		$view->limit            = $this->options['limit'];
 		$view->type             = $this->type;
 		$view->revisionUrl      = \Vvveb\url(['module' => 'content/revisions', 'action' => 'revision', 'type' => $this->type]);

@@ -28,13 +28,13 @@ use Vvveb\System\Event;
 
 class Subscriptions extends ComponentBase {
 	public static $defaultOptions = [
-		'start'          => 0,
-		'limit'          => 7,
-		'site_id'        => NULL,
-		'language_id'    => NULL,
-		'product_id'     => 'url',
-		'parent_id'      => NULL,
-		'search'         => NULL,
+		'start'       => 0,
+		'limit'       => 7,
+		'site_id'     => NULL,
+		'language_id' => NULL,
+		'product_id'  => 'url',
+		'parent_id'   => NULL,
+		'search'      => NULL,
 	];
 
 	function results() {

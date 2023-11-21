@@ -28,16 +28,16 @@ use Vvveb\System\Event;
 
 class Categories extends ComponentBase {
 	public static $defaultOptions = [
-		'start'                      => 0,
-		'limit'                      => 7,
-		'site_id'                    => NULL,
-		'language_id'                => NULL,
-		'taxonomy_id'                => NULL,
-		'post_id'                    => 'url',
-		'parent_id'                  => NULL,
-		'search'                     => NULL,
-		'type'                       => 'categories',
-		'post_type'                  => 'post',
+		'start'       => 0,
+		'limit'       => 7,
+		'site_id'     => NULL,
+		'language_id' => NULL,
+		'taxonomy_id' => NULL,
+		'post_id'     => 'url',
+		'parent_id'   => NULL,
+		'search'      => NULL,
+		'type'        => 'categories',
+		'post_type'   => 'post',
 	];
 
 	function results() {

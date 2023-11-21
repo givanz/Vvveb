@@ -28,18 +28,18 @@ use Vvveb\System\Event;
 
 class Attributes extends ComponentBase {
 	public static $defaultOptions = [
-		'start'          => 0,
-		'limit'          => 7,
-		'site_id'        => NULL,
-		'language_id'    => NULL,
-		'product_id'     => 'url',
-		'search'         => NULL,
-		'image_size'     => 'thumb',
+		'start'       => 0,
+		'limit'       => 7,
+		'site_id'     => NULL,
+		'language_id' => NULL,
+		'product_id'  => 'url',
+		'search'      => NULL,
+		'image_size'  => 'thumb',
 	];
 
 	function results() {
-		$category = new AttributeSQL();
-		$results  = $category->getAll($this->options);
+		$category   = new AttributeSQL();
+		$results    = $category->getAll($this->options);
 		$attributes = [];
 		$group      = false;
 

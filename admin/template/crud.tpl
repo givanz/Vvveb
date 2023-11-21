@@ -42,7 +42,7 @@ import(common.tpl)
 
 	[data-v-{{type}}] [data-v-{{type}}-*] [data-v-option]|value = $value
 	[data-v-{{type}}] [data-v-{{type}}-*] [data-v-option]|addNewAttribute = <?php if ($value == $selected) echo 'selected';?>
-	[data-v-{{type}}] [data-v-{{type}}-*] [data-v-option] = <?php if (is_array($text)) { if (isset($text['name'])) echo $text['name'];} else echo $text;?>  
+	[data-v-{{type}}] [data-v-{{type}}-*] [data-v-option] = <?php if (is_array($text)) { if (isset($text['name'])) echo Vvveb\humanReadable($text['name']);} else echo Vvveb\humanReadable($text);?>  
 
 [data-v-{{type}}] [data-v-{{type}}-*] [data-v-option]|after = <?php 
 } ?>

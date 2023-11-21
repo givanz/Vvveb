@@ -21,6 +21,7 @@
  */
 
 namespace Vvveb\Component;
+
 use Vvveb\Sql\Product_Review_MediaSQL;
 use Vvveb\System\Images;
 
@@ -33,7 +34,7 @@ class Reviews extends Comments {
 
 	public static $defaultOptions = [
 		'product_id'    => 'url',
-		'slug'		    => 'url',
+		'slug'          => 'url',
 		'product_title' => NULL, //include product title (for recent reviews etc)
 		'user_id'       => NULL,
 		'status'        => 1, //approved reviews
@@ -56,12 +57,12 @@ class Reviews extends Comments {
 					$image['image'] = Images::image($image['image'], 'product');
 				}
 			}
-		}		
+		}
 
 		//all product reviews images
 		$media   = new Product_Review_MediaSQL();
-		$gallery = $media->getAll($this->options + ['status'=> 1])['product_review_media'] ?? [];
-		
+		$gallery = $media->getAll($this->options + ['status' => 1])['product_review_media'] ?? [];
+
 		if ($gallery) {
 			//$gallery = Images::images($gallery, 'product', $this->options['image_size']);
 			foreach ($gallery as &$image) {
@@ -71,8 +72,9 @@ class Reviews extends Comments {
 		}
 
 		$results['images'] = $gallery;
-		
+
 		$stats = $this->modelInstance->getProductStats($this->options);
+
 		if ($stats) {
 			$results += $stats;
 		}
@@ -80,17 +82,20 @@ class Reviews extends Comments {
 		$results['rating'] = number_format($results['rating'] ?? 0, 1);
 
 		//compute width and fill missing ratings
-		foreach ([1,2,3,4,5] as $rating) {
+		foreach ([1, 2, 3, 4, 5] as $rating) {
 			if (isset($results['summary'][$rating])) {
-				$summary = &$results['summary'][$rating];
+				$summary            = &$results['summary'][$rating];
 				$summary['percent'] = ceil($summary['count'] * 100 / $results['count']);
 			} else {
+				$results['summary'][$rating]['rating']  = $rating;
 				$results['summary'][$rating]['percent'] = 0;
-				$results['summary'][$rating]['rating'] = 1;
-				$results['summary'][$rating]['count'] = 0;
+				$results['summary'][$rating]['count']   = 0;
 			}
 		}
-		
+
+		//$results['buyers'] = 5;
+		//$results['recommendations'] = 100;
+
 		return $results;
 	}
 }

@@ -112,7 +112,7 @@ class Admin extends Auth {
 		$data['status'] = 1;
 		$adminInfo      = self::get($data);
 
-		if (! ($adminInfo && isset(adminInfo['password'])) ||
+		if (! ($adminInfo && isset($adminInfo['password'])) ||
 			! self::checkPassword($data['password'], $adminInfo['password'])) {
 			return false;
 		}

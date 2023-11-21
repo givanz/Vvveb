@@ -32,13 +32,13 @@ use Vvveb\System\Images;
 
 class Options extends ComponentBase {
 	public static $defaultOptions = [
-		'start'          => 0,
-		'limit'			       => NULL,
-		'site_id'        => NULL,
-		'language_id'    => NULL,
-		'product_id'     => 'url',
-		'parent_id'      => NULL,
-		'search'         => NULL,
+		'start'       => 0,
+		'limit'       => NULL,
+		'site_id'     => NULL,
+		'language_id' => NULL,
+		'product_id'  => 'url',
+		'parent_id'   => NULL,
+		'search'      => NULL,
 	];
 
 	function results() {

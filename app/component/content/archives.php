@@ -28,17 +28,17 @@ use Vvveb\System\Event;
 
 class Archives extends ComponentBase {
 	public static $defaultOptions = [
-		'start'                    => 0,
-		'language_id'              => 1,
-		'site_id'                  => 1,
-		'count'                    => ['url', 4],
-		'id_manufacturer'          => NULL,
-		'order'                    => ['url', 'price asc'],
-		'id_category'              => NULL,
-		'limit'                    => 0,
-		'start'                    => 1,
-		'type'                 	   => 'post',
-		'interval'                 => 'month', //year, month, day
+		'start'           => 0,
+		'language_id'     => 1,
+		'site_id'         => 1,
+		'count'           => ['url', 4],
+		'id_manufacturer' => NULL,
+		'order'           => ['url', 'price asc'],
+		'id_category'     => NULL,
+		'limit'           => 0,
+		'start'           => 1,
+		'type'            => 'post',
+		'interval'        => 'month', //year, month, day
 	];
 
 	function results() {

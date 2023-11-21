@@ -29,7 +29,7 @@ use Vvveb\System\Event;
 class Cart extends ComponentBase {
 	public static $defaultOptions = [
 		'language_id' => null,
-		'site_id'	    => null,
+		'site_id'     => null,
 	];
 
 	public $cacheExpire = 0; //seconds

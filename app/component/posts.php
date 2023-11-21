@@ -33,31 +33,31 @@ use function Vvveb\url;
 
 class Posts extends ComponentBase {
 	public static $defaultOptions = [
-		'page'                => ['url', 1],
-		'post_id'             => 'url',
-		'language_id'         => null,
-		'source'              => 'autocomplete',
-		'type'                => 'post',
-		'site_id'             => null,
-		'start'               => null,
-		'limit'               => ['url', 8],
-		'order_by'            => 'sort_order',
-		'direction'           => ['desc', 'asc'],
-		'status'              => 'publish',
-		'excerpt_limit'   	  => 200,
-		'comment_count'   	  => 1,
-		'comment_status'   	  => 1,
-		'taxonomy_item_id'    => NULL,
-		'taxonomy_item_slug'  => NULL,
-		'search'              => NULL,
-		'admin_id'            => NULL,
+		'page'               => ['url', 1],
+		'post_id'            => 'url',
+		'language_id'        => null,
+		'source'             => 'autocomplete',
+		'type'               => 'post',
+		'site_id'            => null,
+		'start'              => null,
+		'limit'              => ['url', 8],
+		'order_by'           => 'sort_order',
+		'direction'          => ['desc', 'asc'],
+		'status'             => 'publish',
+		'excerpt_limit'      => 200,
+		'comment_count'      => 1,
+		'comment_status'     => 1,
+		'taxonomy_item_id'   => NULL,
+		'taxonomy_item_slug' => NULL,
+		'search'             => NULL,
+		'admin_id'           => NULL,
 		//archive
-		'month'               => NULL,
-		'year'                => NULL,
-		'image_size' 		  => 'medium',
-		'categories'		  => null,
-		'tags' 		 		  => null,
-		'taxonomy' 		      => null,
+		'month'      => NULL,
+		'year'       => NULL,
+		'image_size' => 'medium',
+		'categories' => null,
+		'tags'       => null,
+		'taxonomy'   => null,
 	];
 
 	public $options = [];
@@ -125,11 +125,14 @@ class Posts extends ComponentBase {
 				}
 
 				foreach (['categories' => 'category', 'tags' => 'tag', 'taxonomy' => $this->options['taxonomy'] ?? ''] as $taxonomy => $route) {
-
 					if (isset($post[$taxonomy])) {
 						$post[$taxonomy] = json_decode($post[$taxonomy], 1);
 						$count           = $this->options[$taxonomy];
-						if (!$post[$taxonomy]) continue;
+
+						if (! $post[$taxonomy]) {
+							continue;
+						}
+
 						if (is_numeric($count) && is_array($post[$taxonomy])) {
 							$post[$taxonomy] = array_slice($post[$taxonomy], 0, $count);
 						}

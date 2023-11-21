@@ -28,10 +28,10 @@ use Vvveb\System\Event;
 
 class Menu extends ComponentBase {
 	public static $defaultOptions = [
-		'start'                      => 0, //defaut, override from html
-		'limit'                      => 10000,
-		'menu_id'                    => null, //unset, set from html
-		'slug'                       => null, //unset, set from html
+		'start'   => 0, //defaut, override from html
+		'limit'   => 10000,
+		'menu_id' => null, //unset, set from html
+		'slug'    => null, //unset, set from html
 	];
 
 	function results() {

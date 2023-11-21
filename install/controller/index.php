@@ -256,7 +256,7 @@ class Index extends Base {
 
 			$site = [
 				'host'     => $_SERVER['HTTP_HOST'] ?? '*.*.*',
-				'id' 	   => 1,
+				'id' 	     => 1,
 				'name'     => 'Default',
 				'theme'    => $theme,
 				'settings' => json_encode($settings),

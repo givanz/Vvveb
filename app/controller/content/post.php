@@ -26,7 +26,6 @@ use \Vvveb\Sql\PostSQL;
 use function Vvveb\__;
 //use Vvveb\System\Component\Component;
 use Vvveb\Controller\Base;
-use function Vvveb\sanitizeHTML;
 
 class Post extends Base {
 	public $type = 'post';

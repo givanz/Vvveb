@@ -29,10 +29,10 @@ use function Vvveb\url;
 
 class Orders extends ComponentBase {
 	public static $defaultOptions = [
-		'start'            => 0,
-		'order_id'         => 'url',
-		'limit'            => ['url', 4],
-		'order'            => ['url', 'price asc'],
+		'start'    => 0,
+		'order_id' => 'url',
+		'limit'    => ['url', 4],
+		'order'    => ['url', 'price asc'],
 	];
 
 	public $options = [];

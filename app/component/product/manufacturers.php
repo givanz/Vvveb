@@ -24,11 +24,12 @@ namespace Vvveb\Component\Product;
 
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use function Vvveb\url;
 
 class Manufacturers extends ComponentBase {
 	public static $defaultOptions = [
-		'start'                    => 0,
-		//'language_id'              => 1,
+		'start' => 0,
+		//'language_id' => 1,
 		'count'                    => ['url', 4],
 		'id_manufacturer'          => NULL,
 		'order'                    => ['url', 'price asc'],
@@ -44,6 +45,10 @@ class Manufacturers extends ComponentBase {
 	function results() {
 		$category = new \Vvveb\Sql\ManufacturerSQL();
 		$results  = $category->getAll($this->options);
+
+		foreach ($results['manufacturer']  as &$manufacturer) {
+			$manufacturer['url'] = url('product/manufacturer/index', $manufacturer);
+		}
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 

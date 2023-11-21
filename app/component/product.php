@@ -34,14 +34,14 @@ class Product extends ComponentBase {
 	public static $defaultOptions = [
 		'product_id'    => 'url',
 		'slug'          => 'url',
-		'status'	    => 1,
+		'status'        => 1,
 		'language_id'   => null,
 		'site_id'       => null,
 		'user_id'       => null,
 		'user_group_id' => null,
-		'reviews' 		=> true,
-		'rating' 		=> true,
-		'promotion'		=> true,
+		'reviews'       => true,
+		'rating'        => true,
+		'promotion'     => true,
 	];
 
 	function results() {
@@ -69,7 +69,7 @@ class Product extends ComponentBase {
 		$results['price_tax']           = $tax->addTaxes($results['price'], $results['tax_type_id']);
 		$results['price_tax_formatted'] = $currency->format($results['price_tax']);
 		$results['price_formatted']     = $currency->format($results['price']);
-		
+
 		if ($results['promotion']) {
 			$results['promotion_tax']           = $tax->addTaxes($results['promotion'], $results['tax_type_id']);
 			$results['promotion_tax_formatted'] = $currency->format($results['promotion_tax']);

@@ -237,7 +237,7 @@ abstract class Extensions {
 		if ($content) {
 			$rss  = new Rss($content);
 
-			$result[static :: $extension . 's'] = $rss->get($params['start'] ?? 1, $params['limit'] ??  10);
+			$result[static :: $extension . 's'] = $rss->get($params['start'] ?? 1, $params['limit'] ?? 10);
 			$result['count']                    = $rss->value('count');
 
 			return $result;

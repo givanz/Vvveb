@@ -99,6 +99,7 @@ class Market extends Base {
 		$plugins = [];
 
 		$request['limit'] = $this->view->limit = 8;
+
 		try {
 			$plugins   =  Plugins :: getMarketList($request);
 			$installed = Plugins :: getList($this->global['site_id']);

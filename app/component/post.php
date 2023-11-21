@@ -31,14 +31,14 @@ use function Vvveb\url;
 
 class Post  extends ComponentBase {
 	public static $defaultOptions = [
-		'post_id'             => 'url',
-		'language_id'         => null,
-		'site_id'             => null,
-		'slug'                => 'url',
-		'status'              => 'publish',
-		'comment_count'   	   => 1,
-		'comment_status'   	  => 1,
-		//'type'        => 'post',
+		'post_id'        => 'url',
+		'language_id'    => null,
+		'site_id'        => null,
+		'slug'           => 'url',
+		'status'         => 'publish',
+		'comment_count'  => 1,
+		'comment_status' => 1,
+		//'type' => 'post',
 	];
 
 	//called when fetching data, when cache expires

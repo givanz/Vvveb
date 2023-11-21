@@ -92,6 +92,7 @@ class Market extends Base {
 		$themes  = [];
 
 		$request['limit'] = $this->view->limit = 8;
+
 		try {
 			$themes    = Themes :: getMarketList($request);
 			$installed = Themes :: getList($this->global['site_id']);
