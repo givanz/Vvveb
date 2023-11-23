@@ -1398,9 +1398,28 @@ class Vtpl {
 
 		if ($nodeList) {
 			foreach ($nodeList as $node) {
-				$f = $this->document->createDocumentFragment();
-				$f->appendXML($this->processAttributeConstants($html, $node));
-				$node->parentNode->insertBefore($f, $node);
+				if ($this->_external_elements) {
+					if ($this->froms[0][(int) $html[1]] == '@_SELF_@') {
+						$selector = $this->froms[2][(int) $html[1]];
+						$xpath    = new DOMXpath($this->document);
+						$result   = $xpath->query($this->cssToXpath($selector));
+					} else {
+						$result = $this->loadFromExternalHtml($html, $node);
+					}
+
+					if (! $result) {
+						continue;
+					}
+					//$html = array_reverse($html);
+					foreach ($result as $externalNode) {
+						$importedNode = $this->document->importNode($externalNode, true);
+						$node->parentNode->insertBefore($importedNode, $node);
+					}
+				} else {
+					$f = $this->document->createDocumentFragment();
+					$f->appendXML($this->processAttributeConstants($html, $node));
+					$node->parentNode->insertBefore($f, $node);
+				}
 			}
 		}
 	}
@@ -1412,10 +1431,29 @@ class Vtpl {
 
 		if ($nodeList) {
 			foreach ($nodeList as $node) {
-				$f = $this->document->createDocumentFragment();
-				$f->appendXML($this->processAttributeConstants($html, $node));
-				//$node->parentNode->appendChild( $f );
-				$node->parentNode->insertBefore($f, $node->nextSibling);
+				if ($this->_external_elements) {
+					if ($this->froms[0][(int) $html[1]] == '@_SELF_@') {
+						$selector = $this->froms[2][(int) $html[1]];
+						$xpath    = new DOMXpath($this->document);
+						$result   = $xpath->query($this->cssToXpath($selector));
+					} else {
+						$result = $this->loadFromExternalHtml($html, $node);
+					}
+
+					if (! $result) {
+						continue;
+					}
+					//$html = array_reverse($html);
+					foreach ($result as $externalNode) {
+						$importedNode = $this->document->importNode($externalNode, true);
+						$node->parentNode->insertBefore($importedNode, $node->nextSibling);
+					}
+				} else {
+					$f = $this->document->createDocumentFragment();
+					$f->appendXML($this->processAttributeConstants($html, $node));
+					//$node->parentNode->appendChild( $f );
+					$node->parentNode->insertBefore($f, $node->nextSibling);
+				}
 			}
 		}
 	}
