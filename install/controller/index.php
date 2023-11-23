@@ -57,9 +57,11 @@ class Index extends Base {
 		}
 
 		if (\Vvveb\is_installed()) {
-			$admin = false;
+			$admin   = false;
+			$message = '';
 
 			try {
+				//check if super admin user is available
 				$admin = Admin::get(['role_id' => 1]);
 			} catch (\Exception $e) {
 				$this->view         = View :: getInstance();
@@ -69,13 +71,13 @@ class Index extends Base {
 				//die($message);
 			}
 
-			if ($admin && $admin['status'] == '1') {
+			if ($admin && isset($admin['status']) && $admin['status'] == '1') {
 				header('Location: /');
 
 				die(__('Already installed! To reinstall remove config/db.php') . "\n");
 			} else {
 				if (! $admin || ! isset($admin['role_id']) || $admin['role_id'] != '1') {
-					$message            = __('Invalid installation. No user with "super admin" role found!');
+					$message += __('Invalid installation. No user with "super admin" role found!');
 					$this->view         = View :: getInstance();
 					$this->view->info[] = $message;
 				}
@@ -289,7 +291,7 @@ class Index extends Base {
 					'default'     => 1,
 				]]);
 			}
-			
+
 			unset($site['settings']);
 			@\Vvveb\set_config('sites.* * *', $site);
 
