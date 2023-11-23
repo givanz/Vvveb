@@ -25,6 +25,7 @@ namespace Vvveb\Controller\User;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use function Vvveb\email;
+use Vvveb\System\Event;
 use Vvveb\System\Functions\Str;
 use Vvveb\System\Sites;
 use Vvveb\System\User\User;
@@ -68,49 +69,53 @@ class Reset extends Base {
 		if ($email) {
 			$loginData['email'] = $email;
 
-			if (($adminData = User::get($loginData)) != false) {
-				//set reset token and send reset email
-				$token = Str::random(32);
-				User::update(['token' => $token], ['email' => $adminData['email']]);
+			list($loginData) = Event :: trigger(__CLASS__, __FUNCTION__ , $loginData);
 
-				$agent = $_SERVER['HTTP_USER_AGENT'];
+			if ($loginData) {
+				if (($adminData = User::get($loginData)) != false) {
+					//set reset token and send reset email
+					$token = Str::random(32);
+					User::update(['token' => $token], ['email' => $adminData['email']]);
 
-				if (strpos($agent, 'Linux') !== false) {
-					$os = 'Linux';
-				} elseif (strpos($agent, 'Win') !== false) {
-					$os = 'Windows';
-				} elseif (strpos($agent, 'Mac') !== false) {
-					$os = 'Mac';
+					$agent = $_SERVER['HTTP_USER_AGENT'];
+
+					if (strpos($agent, 'Linux') !== false) {
+						$os = 'Linux';
+					} elseif (strpos($agent, 'Win') !== false) {
+						$os = 'Windows';
+					} elseif (strpos($agent, 'Mac') !== false) {
+						$os = 'Mac';
+					} else {
+						$os = 'UnKnown';
+					}
+
+					$site = Sites :: getSiteData();
+
+					$reset_url = url('user/reset/reset', [
+						'token'  => $token,
+						'user'   => $adminData['username'],
+						'host'   => $site['host'] ?? false,
+						'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http',
+					]);
+
+					$data = $adminData + [
+						'token'            => $token,
+						'operating_system' => $os,
+						'browser_name'     => $_SERVER['HTTP_USER_AGENT'],
+						'reset_url'        => $reset_url,
+					];
+
+					if (email($adminData['email'], __('Password reset'),'user/reset', $data)) {
+						$success               = __('A reset email was sent, please use it to reset your password!');
+						$this->view->success[] = $success;
+						$this->session->set('success', ['login' => $success]);
+						$this->redirect('/user/login');
+					} else {
+						$this->view->errors[] = __('Error sending reset email!');
+					}
 				} else {
-					$os = 'UnKnown';
+					$this->view->errors['login'] = __('Email not found!');
 				}
-
-				$site = Sites :: getSiteData();
-
-				$reset_url = url('user/reset/reset', [
-					'token'  => $token,
-					'user'   => $adminData['username'],
-					'host'   => $site['host'] ?? false,
-					'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http',
-				]);
-
-				$data = $adminData + [
-					'token'            => $token,
-					'operating_system' => $os,
-					'browser_name'     => $_SERVER['HTTP_USER_AGENT'],
-					'reset_url'        => $reset_url,
-				];
-
-				if (email($adminData['email'], __('Password reset'),'user/reset', $data)) {
-					$success               = __('A reset email was sent, please use it to reset your password!');
-					$this->view->success[] = $success;
-					$this->session->set('success', ['login' => $success]);
-					$this->redirect('/user/login');
-				} else {
-					$this->view->errors[] = __('Error sending reset email!');
-				}
-			} else {
-				$this->view->errors['login'] = __('Email not found!');
 			}
 		}
 	}

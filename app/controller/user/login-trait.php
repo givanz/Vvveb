@@ -23,6 +23,7 @@
 namespace Vvveb\Controller\User;
 
 use function Vvveb\__;
+use Vvveb\System\Event;
 use Vvveb\System\User\User;
 use Vvveb\System\Validator;
 
@@ -38,20 +39,28 @@ trait LoginTrait {
 		$validator = new Validator(['login']);
 
 		if ($this->request->post) {
-			if (($errors['login'] = $validator->validate($this->request->post)) === true) {
-				if ($userInfo = User::login($this->request->post)) {
-					$success = __('Login successful!');
-					$this->session->set('success', ['login' => $success]);
-					$this->session->close();
-					$this->view->success['login']         = $success;
-					$this->view->global['user_id']        = $userInfo['user_id'];
-					$this->redirect('/user');
+			if (($errors = $validator->validate($this->request->post)) === true) {
+				$userInfo = $this->request->post;
+
+				list($userInfo) = Event :: trigger(__CLASS__, __FUNCTION__ , $userInfo);
+
+				if ($userInfo) {
+					if ($user = User::login($userInfo)) {
+						$success = __('Login successful!');
+						$this->session->set('success', ['login' => $success]);
+						$this->session->close();
+						$this->view->success['login']         = $success;
+						$this->view->global['user_id']        = $user['user_id'];
+						$this->redirect('/user');
+					} else {
+						//user not found or wrong password
+						$this->view->errors['login'] = __('Authentication failed, wrong email or password!');
+					}
 				} else {
-					//user not found or wrong password
-					$this->view->errors['login'] = __('Authentication failed, wrong email or password!');
+					if ($errors !== true) {
+						$this->view->errors['login'] = $errors;
+					}
 				}
-			} else {
-				$this->view->errors = $errors;
 			}
 		}
 	}

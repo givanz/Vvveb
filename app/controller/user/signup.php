@@ -25,57 +25,68 @@ namespace Vvveb\Controller\User;
 use function Vvveb\__;
 use function Vvveb\email;
 use function Vvveb\siteSettings;
+use Vvveb\System\Event;
 use Vvveb\System\User\User;
 use Vvveb\System\Validator;
 
 class Signup extends \Vvveb\Controller\Base {
-	function index() {
+	function addUser() {
 		//$this->checkAlreadyLoggedIn();
-
 		$validator = new Validator(['signup']);
 
 		if ($this->request->post &&
-			($this->view->errors['signup'] = $validator->validate($this->request->post)) === true) {
+			($this->view->errors['login'] = $validator->validate($this->request->post)) === true) {
 			//allow only fields that are in the validator list and remove the rest
 			$userInfo                 = $validator->filter($this->request->post);
 			$userInfo['display_name'] = $userInfo['first_name'] . ' ' . $userInfo['last_name'];
 			$userInfo['username']     = $userInfo['first_name'] . $userInfo['last_name'];
-			$result                   = User::add($userInfo);
 
-			$this->view->errors['login'] = [];
+			list($userInfo) = Event :: trigger(__CLASS__, __FUNCTION__ , $userInfo);
 
-			if ($result) {
-				if (is_array($result)) {
-					$message = __('User created!');
-					$this->session->set('success',  ['login' => $message]);
-					$this->view->success['login'][]     = $message;
-					$user_id                            = $result['user'];
-					$this->request->request['user_id']  = $user_id;
+			if ($userInfo) {
+				$result                   = User::add($userInfo);
 
-					$site = siteSettings();
+				$this->view->errors['login'] = [];
 
-					try {
-						$error =  __('Error sending account creation mail!');
+				if ($result) {
+					if (is_array($result)) {
+						$message = __('User created!');
+						$this->session->set('success',  ['login' => $message]);
+						$this->view->success['login'][]     = $message;
+						$user_id                            = $result['user'];
+						$this->request->request['user_id']  = $user_id;
 
-						if (! email([$userInfo['email'], $site['admin-email']], __('Your account has been created!'), 'user/signup', $userInfo)) {
+						$site = siteSettings();
+
+						try {
+							$error =  __('Error sending account creation mail!');
+
+							if (! email([$userInfo['email'], $site['admin-email']], __('Your account has been created!'), 'user/signup', $userInfo)) {
+								$this->session->set('errors', ['login' => $error]);
+								$this->view->errors[] = $error;
+							}
+						} catch (\Exception $e) {
+							if (DEBUG) {
+								$error .= "\n" . $e->getMessage();
+							}
 							$this->session->set('errors', ['login' => $error]);
-							$this->view->errors[] = $error;
+							$this->view->errors['login'] = $error;
 						}
-					} catch (\Exception $e) {
-						if (DEBUG) {
-							$error .= "\n" . $e->getMessage();
-						}
-						$this->session->set('errors', ['login' => $error]);
-						$this->view->errors['login'] = $error;
-					}
 
-					return $this->redirect('user/index');
+						return $this->redirect('user/index');
+					} else {
+						$this->view->errors['login'] = __('This email is already in use. Please use another one.');
+					}
 				} else {
-					$this->view->errors['login'] = __('This email is already in use. Please use another one.');
+					$this->view->errors['login'] = __('Error creating user!');
 				}
-			} else {
-				$this->view->errors['login'] = __('Error creating user!');
 			}
+		}
+	}
+
+	function index() {
+		if ($this->request->post) {
+			$this->addUser();
 		}
 	}
 }
