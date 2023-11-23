@@ -6,8 +6,8 @@ CREATE SEQUENCE language_seq;
 
 CREATE TABLE language (
   "language_id" int check ("language_id" > 0) NOT NULL DEFAULT NEXTVAL ('language_seq'),
-  "name" varchar(32) NOT NULL,
-  "code" varchar(5) NOT NULL,
+  "name" varchar(64) NOT NULL,
+  "code" varchar(12) NOT NULL,
   "locale" varchar(20) NOT NULL,
   "sort_order" int NOT NULL DEFAULT 0,
   "status" smallint NOT NULL,
