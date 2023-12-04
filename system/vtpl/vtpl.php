@@ -144,9 +144,13 @@ class Vtpl {
 		}
 	}
 
-	function loadTemplateFile($templateFile) {
+	function loadTemplateFile($templateFile, $before = false) {
 		if (file_exists($templateFile)) {
-			$this->template .= "\n\n" . file_get_contents($templateFile);
+			if ($before) {
+				$this->template  = file_get_contents($templateFile) . "\n\n" . $this->template;
+			} else {
+				$this->template .= "\n\n" . file_get_contents($templateFile);
+			}
 		}
 	}
 
@@ -262,22 +266,26 @@ class Vtpl {
 
 	private function processVariables() {
 		//preg_match_all('/(?<!["\'\[])(\\$[a-zA-Z0-9->\[\]\'"_\(\)\$\:]*)/s', $this->template, $variables);
-		preg_match_all('/(?<!["\'\[])(\\$.+)/', $this->template, $variables);
+		preg_match_all('/(?<!["\'\[])(\$.+)/', $this->template, $variables);
 
-		$variables[0] = array_values($variables[0]);
+		//$variables[0] = array_values($variables[0]);
+
+		$variables[1] = array_unique($variables[1]);
+		//usort($variables[1],fn($a,$b) => strlen($b) <=> strlen($a));
+		usort($variables[1],function ($a,$b) {return strlen($b) <=> strlen($a); });
 
 		for ($i=0; $i < count($variables[1]); $i++) {
-			$patternsVariables[]    = '/' . preg_quote($variables[0][$i], '/') . '/';
+			$patternsVariables[]    = '/' . preg_quote($variables[1][$i], '/') . '/';
 			$placeholdersVariables[]="replace_variable-$i";
 			// double backslashes must be escaped if we want to use them in the replacement argument
-			$variables[0][$i] = str_replace('\\\\', '\\\\\\\\', $variables[1][$i]);
+			//$variables[0][$i] = str_replace('\\\\', '\\\\\\\\', $variables[1][$i]);
 		}
 
-		if ($variables[0]) {
-			$this->template = preg_replace($patternsVariables, $placeholdersVariables, $this->template);
-		}
+		//if ($variables[1]) {
+		$this->template = preg_replace($patternsVariables, $placeholdersVariables, $this->template);
+		//}
 
-		$this->variables = $variables[0];
+		$this->variables = $variables[1];
 	}
 
 	private function processTemplateFile() {
@@ -298,7 +306,13 @@ class Vtpl {
 				$importContent = '';
 
 				foreach ($this->templatePath as $path) {
-					$importFile = $path . $imports[1][$i];
+					$import = $imports[1][$i];
+
+					if (substr_compare($import,'/plugins/', 0, 9) === 0) {
+						$importFile = DIR_PLUGINS . substr($import, 9);
+					} else {
+						$importFile = $path . $import;
+					}
 
 					if (file_exists($importFile)) {
 						$parameter = trim($imports[2][$i]);
@@ -392,7 +406,7 @@ class Vtpl {
 			'/\s*>\s*/',
 
 			// E + F: Matches any F element immediately preceded by an element
-			'/\s*\+\s*/',
+			'/\s+\+\s+/',
 
 			// E F: Matches any F element that is a descendant of an E element
 			'/([a-zA-Z\*="\[\]#._-])\s+([a-zA-Z\*="\[\]#._-])/', //'/([a-zA-Z\*="\[\]#._-])\s+([a-zA-Z\*#._-])/',
@@ -410,7 +424,7 @@ class Vtpl {
 			'/([a-z#\.]\w*):nth\((\d+)\)/',
 
 			// E[foo="warning"]: Matches any E element whose "foo" attribute value is exactly equal to "warning"
-			'/([a-z]\w*)\[([a-z][\w\-_]*)\="([^"]*)"]/',
+			'/([a-z]\w*)\[([a-z][\w\-_]*)\="([^"]*)"\]/',
 
 			// E[foo]: Matches any E element with the "foo" attribute set (whatever the value)
 			'/([a-z]\w*)\[([a-z][\w_\-]*)\]/',
@@ -480,9 +494,9 @@ class Vtpl {
 			'\1 [ not(@\2) ]', //element[!attribute]
 			'[ contains( concat( " ", @\1, " " ), concat( " ", "\2", " " ) ) ]', //[foo="warning"]
 			'*[ contains( concat( " ", @\1, " " ), concat( " ", "\2", " " ) ) ]', //[foo="warning"]
-			'*[ contains( concat( " ", @\1, " " ), "\2" ) ]', //[foo*="warning"]
-			'*[ contains( concat( " ", @\1, " " ), concat( " ", "\2", " " ) ) ]', //[foo^="warning"] not implemented
-			'*[ contains( concat( " ", @\1, " " ), concat( " ", "\2", " " ) ) ]', //[foo$="warning"] not implemented
+			'[ contains( concat( " ", @\1, " " ), "\2" ) ]', //[foo*="warning"]
+			'[starts-with(@\1,"\2")]', //[foo^="warning"]
+			'[ends-with(@\1,"\2")]', //[foo$="warning"]
 			'[ @\1 ]', //[attribute][attribute]
 			'*[ @\1 ]', //[attribute]
 			'\1 [ @*[starts-with(name(), "\2")] ]', //element[attr*]
@@ -571,6 +585,11 @@ class Vtpl {
 
 			case 'addNewAttribute':
 				$this->addNewAttribute($elements, $val);
+
+			break;
+
+			case 'removeAttribute':
+				$this->removeAttribute($elements, $val);
 
 			break;
 
@@ -1156,7 +1175,7 @@ class Vtpl {
 							break;
 							//case 'img':
 							case 'iframe':
-							case 'script':
+							//case 'script':
 							case 'video':
 							case 'audio':
 							case 'source':
@@ -1276,7 +1295,7 @@ class Vtpl {
 							break;
 							//case 'img':
 							case 'iframe':
-							case 'script':
+							//case 'script':
 							case 'video':
 							case 'audio':
 							case 'source':
@@ -1640,6 +1659,14 @@ class Vtpl {
 		}
 	}
 
+	private function removeAttribute(&$nodeList, $val) {
+		if ($nodeList && $nodeList->length > 0) {
+			foreach ($nodeList as $node) {
+				$node->removeAttribute($val);
+			}
+		}
+	}
+
 	private function removeClass(&$nodeList, $val) {
 		if ($nodeList->length > 0) {
 			foreach ($nodeList as $node) {
@@ -1729,18 +1756,16 @@ class Vtpl {
 
 		//preg_match_all("@<script[^>]*>.*?script>@s", $html, $this->_scripts);
 		preg_match_all("/<script((?:(?!src=|data-).)*?)>(.*?)<\/script>/smix", $html, $this->_scripts);
-
-		$this->_scripts = array_values(array_unique($this->_scripts[0]));
-		$count          = count($this->_scripts);
+		$count          = count($this->_scripts[0]);
 
 		if ($count) {
 			for ($i=0; $i < $count; $i++) {
-				$patternsScripts[]    = '/' . preg_quote($this->_scripts[$i], '/') . '/';
-				$placeholdersScripts[]= '<script holder="@@__VTPL__SCRIPT_PLACEHOLDER__' . $i . '@@"></script>';
-				$this->_scripts       = str_replace('\\\\', '\\\\\\\\', $this->_scripts);
+				$patternsScripts[]    = $this->_scripts[0][$i];
+				$placeholdersScripts[]= '<script ' . $this->_scripts[1][$i] . ' holder="@@__VTPL__SCRIPT_PLACEHOLDER__' . $i . '@@"></script>';
 			}
 
-			$html = preg_replace($patternsScripts, $placeholdersScripts, $html);
+			$html           = str_replace($patternsScripts, $placeholdersScripts, $html);
+			$this->_scripts = $this->_scripts[0];
 		}
 
 		if (VTPL_HTML_MINIFY === true) {
@@ -1962,7 +1987,7 @@ class Vtpl {
 					  	return $self->newAttributes[$matches[1]];
 					  }, $html); //sad hack :(
 
-		$html = preg_replace_callback('/<script holder="@@__VTPL__SCRIPT_PLACEHOLDER__(\d+)@@".*?><\/script>/',
+		$html = preg_replace_callback('/<script.*?holder="@@__VTPL__SCRIPT_PLACEHOLDER__(\d+)@@".*?><\/script>/',
 					  function ($matches) use ($self) {
 					  	if (VTPL_JS_MINIFY) {
 					  		$script = $self->minifyJs($self->_scripts[$matches[1]]);
@@ -1974,7 +1999,7 @@ class Vtpl {
 					  }, $html);
 
 		//cleanup modified scripts
-		$html = preg_replace('/<script holder="@@__VTPL__SCRIPT_PLACEHOLDER__(\d+)@@"[^>]*>/','', $html);
+		$html = preg_replace('/<script.*?holder="@@__VTPL__SCRIPT_PLACEHOLDER__(\d+)@@"[^>]*>/','', $html);
 
 		/*
 		Constants, replace @@_CONSTANT_NAME_@@ with the value defined for CONSTANT_NAME = 'value'
