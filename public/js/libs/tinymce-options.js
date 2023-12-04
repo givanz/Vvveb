@@ -37,7 +37,7 @@ let make_wysiwyg = function(inst){
 }
 
 var tinyMceOptions = {
-  selector: "textarea",
+  selector: "textarea.html",
   body_class: "container",
   init_instance_callback : make_wysiwyg,
   setup: function (editor) {
