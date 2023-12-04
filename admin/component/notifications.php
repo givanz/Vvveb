@@ -30,6 +30,7 @@ use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Core\View;
 use Vvveb\System\Event;
 use Vvveb\System\Update;
+use function Vvveb\url;
 
 class Notifications extends ComponentBase {
 	public static $defaultOptions = [
@@ -58,11 +59,13 @@ class Notifications extends ComponentBase {
 			$this->menu['sales']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
 		}
 
+		$url = ['module' => 'product/products'];
 		//set order name as array keys
 		foreach ($orderCount as $type => $orders) {
 			if (isset($orders['name'])) {
 				$orders['badge']             = orderStatusBadgeClass($orders['order_status_id']);
 				$orders['icon']              = 'icon-bag-handle-outline';
+				$orders['url']               = url($url + ['filter[order_status_id]' => $orders['order_status_id']]);
 				$orderCount[$orders['name']] = $orders;
 				unset($orderCount[$type]);
 			}
@@ -75,11 +78,13 @@ class Notifications extends ComponentBase {
 	}
 
 	protected function products() {
-		$productCount      = $this->stats->getProductStockCount($this->options)['products'] ?? [];
+		$productCount = $this->stats->getProductStockCount($this->options)['products'] ?? [];
+		$url          = ['module' => 'product/products'];
 
 		foreach ($productCount as $type => &$products) {
-			$products['icon']                     = 'icon-cube-outline';
-			$products['badge']                    = commentStatusBadgeClass($products['stock_status_id']);
+			$products['icon']  = 'icon-cube-outline';
+			$products['badge'] = commentStatusBadgeClass($products['stock_status_id']);
+			$products['url']   = url($url + ['filter[stock_status_id]' => $products['stock_status_id']]);
 		}
 
 		$this->notifications['products'] = $productCount + $this->notifications['products'];
@@ -108,9 +113,12 @@ class Notifications extends ComponentBase {
 			$this->menu['post']['items']['comments']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
 		}
 
+		$url = ['module' => 'content/comments'];
+
 		foreach ($commentCount as $type => $comments) {
 			$comments['icon']                     = 'la la-comment';
 			$comments['badge']                    = commentStatusBadgeClass($comments['status']);
+			$comments['url']                      = url($url + ['status' => $comments['status']]);
 			$commentCount[$comment_status[$type]] = $comments;
 			unset($commentCount[$type]);
 		}
@@ -141,9 +149,12 @@ class Notifications extends ComponentBase {
 			$this->menu['product']['items']['reviews']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
 		}
 
+		$url = ['module' => 'product/product-reviews'];
+
 		foreach ($reviewCount as $type => $reviews) {
 			$reviews['icon']                     = ' la la-comments';
 			$reviews['badge']                    =  commentStatusBadgeClass($reviews['status']);
+			$reviews['url']                      = url($url + ['status' => $reviews['status']]);
 			$reviewCount[$comment_status[$type]] = $reviews;
 			unset($reviewCount[$type]);
 		}
@@ -174,9 +185,12 @@ class Notifications extends ComponentBase {
 			$this->menu['product']['items']['questions']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
 		}
 
+		$url = ['module' => 'product/product-questions'];
+
 		foreach ($questionCount as $type => $questions) {
 			$questions['icon']                     = 'la la-question-circle';
 			$questions['badge']                    = commentStatusBadgeClass($questions['status']);
+			$questions['url']                      = url($url + ['status' => $questions['status']]);
 			$questionCount[$comment_status[$type]] = $questions;
 			unset($questionCount[$type]);
 		}

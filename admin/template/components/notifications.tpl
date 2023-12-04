@@ -27,6 +27,7 @@ $count = $notificationComponent['count'] ?? 0;
 	?>
 
 
+		@notifications a[data-v-group-notification-*]|href = $notification['@@__data-v-group-notification-(*)__@@']
 		@notifications [data-v-group-notification-*]|innerText = <?php 
 			$name = '@@__data-v-group-notification-(*)__@@';
 			if (isset($notification[$name])) echo Vvveb\humanReadable($notification[$name]);
