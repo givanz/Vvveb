@@ -77,7 +77,7 @@ class Index extends Base {
 				die(__('Already installed! To reinstall remove config/db.php') . "\n");
 			} else {
 				if (! $admin || ! isset($admin['role_id']) || $admin['role_id'] != '1') {
-					$message += __('Invalid installation. No user with "super admin" role found!');
+					$message .= __('Invalid installation. No user with "super admin" role found!');
 					$this->view         = View :: getInstance();
 					$this->view->info[] = $message;
 				}
@@ -222,6 +222,7 @@ class Index extends Base {
 			$settings    = $this->request->post['settings'] ?? [];
 			$theme       = $this->request->post['theme'] ?? 'landing';
 			$noecommerce = $this->request->post['noecommerce'] ?? false;
+			$hostname    = $this->request->post['hostname'] ?? null;
 
 			$user['status'] = 1;
 			$result         = Admin::update($user, ['username' => 'admin']);
@@ -257,7 +258,7 @@ class Index extends Base {
 			$settings['contact-email'] = $user['email'];
 
 			$site = [
-				'host'     => $_SERVER['HTTP_HOST'] ?? '*.*.*',
+				'host'     => $hostname ?? '*.*.*', //$_SERVER['HTTP_HOST']
 				'id' 	     => 1,
 				'name'     => 'Default',
 				'theme'    => $theme,
