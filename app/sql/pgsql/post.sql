@@ -37,7 +37,7 @@
 			END @IF 
 			
 			FROM post AS _
-			LEFT JOIN post_content pd ON (_.post_id = pd.post_id)  
+			LEFT JOIN post_content pd ON (_.post_id = pd.post_id AND pd.language_id = :language_id)  
 			LEFT JOIN admin ad ON (_.admin_id = ad.admin_id)  
 		WHERE 1 = 1
 
@@ -49,11 +49,6 @@
             @IF isset(:post_id)
 			THEN
                 AND _.post_id = :post_id
-        	END @IF	
-        			
-            @IF isset(:language_id)
-			THEN
-                AND pd.language_id = :language_id
         	END @IF			
 			
 			@IF isset(:type)
@@ -79,7 +74,7 @@
 	)
 	BEGIN
 
-		SELECT _.post_id,_.slug,_.name,_.meta_keywords,_.meta_description,_.language_id,post.template,language.code,language.code as array_key
+		SELECT post.*,_.post_id,_.slug,_.name,_.meta_keywords,_.meta_description,_.language_id,post.template,language.code,language.code as array_key
 			FROM post_content AS _
 			LEFT JOIN language ON (language.language_id = _.language_id)
 			LEFT JOIN post ON (post.post_id = _.post_id)

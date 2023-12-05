@@ -14,7 +14,7 @@ $_pagination_limit = isset($questions['limit']) ? $questions['limit'] : 5;
 ?>
 
 @question|before = <?php
-$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['product_question_id' => 0, 'content' => '']] : false;
 $questions = empty($questions) ? $_default : $questions;
 
 if($questions && is_array($questions)) {

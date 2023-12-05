@@ -42,6 +42,7 @@ class Product extends ComponentBase {
 		'reviews'       => true,
 		'rating'        => true,
 		'promotion'     => true,
+		'image_size'    => '',
 	];
 
 	function results() {
@@ -49,12 +50,12 @@ class Product extends ComponentBase {
 		$results = $product->get($this->options);
 
 		if (isset($results['product_image'])) {
-			$results['images'] = Images::images($results['product_image'], 'product');
+			$results['images'] = Images::images($results['product_image'], 'product', $this->options['image_size']);
 		}
 
 		if (isset($results['image'])) {
 			//$results['images'][] = ['image' => Images::image('product', $results['image'])];
-			$results['image']= Images::image($results['image'], 'product');
+			$results['image']= Images::image($results['image'], 'product', $this->options['image_size']);
 		}
 
 		$results['add_cart_url']     = url('cart/cart/add', ['product_id' => $results['product_id']]);

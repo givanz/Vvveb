@@ -7,6 +7,7 @@
 
 	CREATE PROCEDURE getContent(
 		IN product_id INT,
+		IN status INT,
         IN slug CHAR,
 		OUT fetch_all,
 	)
@@ -17,6 +18,11 @@
 			LEFT JOIN language ON (language.language_id = _.language_id)
 			LEFT JOIN product ON (product.product_id = _.product_id)
 		WHERE 1 = 1
+
+            @IF isset(:status)
+			THEN 
+				AND product.status = :status
+        	END @IF			
 
             @IF isset(:slug)
 			THEN 

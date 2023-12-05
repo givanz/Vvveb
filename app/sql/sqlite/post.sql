@@ -74,7 +74,7 @@
 	)
 	BEGIN
 
-		SELECT _.post_id,_.slug,_.name,_.meta_keywords,_.meta_description,_.language_id,post.template,language.code,language.code as array_key
+		SELECT post.*,_.post_id,_.slug,_.name,_.meta_keywords,_.meta_description,_.language_id,post.template,language.code,language.code as array_key
 			FROM post_content AS _
 			LEFT JOIN language ON (language.language_id = _.language_id)
 			LEFT JOIN post ON (post.post_id = _.post_id)

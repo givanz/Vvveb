@@ -37,7 +37,7 @@ if(is_array($products)) foreach ($products as $key => $product) {
 
 
 @cart-option|before = <?php
-$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['product_option_value_id' => 1]] : false;
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => 'product_option_value_id'] : false;
 $option_value = empty($product['option_value']) ? $_default : $product['option_value'];
 
 if($option_value) {

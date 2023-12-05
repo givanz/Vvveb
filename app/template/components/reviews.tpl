@@ -17,7 +17,7 @@ $_pagination_limit = isset($reviews['limit']) ? $reviews['limit'] : 5;
 
 
 @review|before = <?php
-$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['product_review_id']] : false;
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['product_review_id' => 0, 'content' => '']] : false;
 $reviews = empty($reviews) ? $_default : $reviews;
 
 if($reviews && is_array($reviews)) {

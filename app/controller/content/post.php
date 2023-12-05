@@ -26,6 +26,7 @@ use \Vvveb\Sql\PostSQL;
 use function Vvveb\__;
 //use Vvveb\System\Component\Component;
 use Vvveb\Controller\Base;
+use Vvveb\System\Event;
 
 class Post extends Base {
 	public $type = 'post';
@@ -41,15 +42,16 @@ class Post extends Base {
 			$result = $this->insertComment();
 		}
 
-		$language = $this->request->get['language'] ?? '';
+		$language = $this->request->get['language'] ?? $this->global['language'] ?? $this->global['default_language'];
 		$slug     = $this->request->get['slug'] ?? '';
 
 		if ($slug) {
 			$contentSql = new PostSQL();
 			$options    = $this->global + ['slug' => $slug, 'type' => $this->type];
-			$content    = $contentSql->getContent($options);
+			$content    = $contentSql->getContent($options) ?? [];
 
-			$error = __('Post not found!');
+			$error                           = __('Post not found!');
+			list($content, $language, $slug) = Event :: trigger(__CLASS__,__FUNCTION__, $content, $language, $slug);
 
 			if ($content) {
 				if (isset($content[$language])) {

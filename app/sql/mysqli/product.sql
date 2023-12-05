@@ -2,10 +2,12 @@
 
 	import(/admin/product.sql);
 
+
 	-- get all languages content
 
 	CREATE PROCEDURE getContent(
 		IN product_id INT,
+		IN status INT,
         IN slug CHAR,
 		OUT fetch_all,
 	)
@@ -17,7 +19,12 @@
 			LEFT JOIN product ON (product.product_id = _.product_id)
 		WHERE 1 = 1
 
-            @IF isset(:slug)
+            @IF isset(:status)
+			THEN 
+				AND product.status = :status
+        	END @IF			
+
+			@IF isset(:slug)
 			THEN 
 				AND _.product_id = (SELECT product_id FROM product_content WHERE slug = :slug LIMIT 1)
         	END @IF			

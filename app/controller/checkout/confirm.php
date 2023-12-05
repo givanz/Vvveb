@@ -27,7 +27,7 @@ use Vvveb\Controller\Base;
 class Confirm extends Base {
 	function index() {
 		$order                = $this->session->get('order');
-		$this->view->order_id = $order['order'];
+		$this->view->order_id = $order['order'] ?? false;
 
 		if (! $order) {
 			$this->notFound();

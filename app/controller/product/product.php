@@ -26,10 +26,11 @@ use \Vvveb\Sql\ProductSQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use Vvveb\Controller\Content\CommentTrait;
+use Vvveb\System\Event;
 
 class Product extends Base {
 	public $type = 'product';
-	
+
 	use CommentTrait;
 
 	function addReview() {
@@ -49,13 +50,15 @@ class Product extends Base {
 			}
 		}
 
-		$language = $this->request->get['language'] ?? '';
+		$language = $this->request->get['language'] ?? $this->global['language'] ?? $this->global['default_language'];
 		$slug     = $this->request->get['slug'] ?? '';
 
 		if ($slug) {
 			$contentSql = new ProductSQL();
-			$options    = $this->global + ['slug' => $slug, 'type' => $this->type];
+			$options    = $this->global + ['slug' => $slug, 'type' => $this->type, 'status' => 1];
 			$content    = $contentSql->getContent($options);
+
+			list($content, $language, $slug) = Event :: trigger(__CLASS__,__FUNCTION__, $content, $language, $slug);
 
 			$error = __('Product not found!');
 
