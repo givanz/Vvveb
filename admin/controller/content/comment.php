@@ -34,9 +34,14 @@ class Comment extends Base {
 		$comment_id = $this->request->get[$type . '_id'] ?? false;
 		$comment    = $this->request->post[$type] ?? false;
 
-		if ($comment_id && $comment) {
+		if ($comment) {
 			$comments = model($type);
-			$result   = $comments->edit([$type => $comment, $type . '_id' => $comment_id]);
+
+			if ($comment_id) {
+				$result   = $comments->edit([$type => $comment, $type . '_id' => $comment_id]);
+			} else {
+				$result   = $comments->add([$type => $comment]);
+			}
 
 			if ($result && isset($result[$type])) {
 				$this->view->success[] = __('Saved!');

@@ -69,7 +69,7 @@
 		-- question
 		SELECT *
 			FROM product_question as _ -- (underscore) _ means that data will be kept in main array
-		INNER JOIN user on user.user_id = product_question.user_id
+		INNER JOIN user on user.user_id = _.user_id
 		WHERE product_question_id = :product_question_id LIMIT 1;
 
 	END

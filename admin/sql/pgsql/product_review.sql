@@ -75,7 +75,7 @@
 		-- review
 		SELECT *
 			FROM product_review as _ -- (underscore) _ means that data will be kept in main array
-		INNER JOIN user on user.user_id = product_review.user_id
+		INNER JOIN user on user.user_id = _.user_id
 		WHERE product_review_id = :product_review_id LIMIT 1;
 
 	END	

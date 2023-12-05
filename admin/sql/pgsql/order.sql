@@ -140,9 +140,11 @@
 
 			WHERE products.order_id = :order_id;
 			
-		-- history	
-		SELECT * FROM order_log as history
-			WHERE history.order_id = :order_id;		
+		-- log	
+		SELECT *,os.name as order_status 
+			FROM order_log as log
+		    LEFT JOIN order_status AS os ON (log.order_status_id = os.order_status_id AND os.language_id = :language_id) 
+			WHERE log.order_id = :order_id;		
 		
 		-- meta
 		SELECT * FROM order_meta as meta

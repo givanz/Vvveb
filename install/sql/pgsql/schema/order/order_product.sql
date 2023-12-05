@@ -14,7 +14,7 @@ CREATE TABLE order_product (
   "price" decimal(15,4) NOT NULL DEFAULT 0.0000,
   "total" decimal(15,4) NOT NULL DEFAULT 0.0000,
   "tax" decimal(15,4) NOT NULL DEFAULT 0.0000,
-  "points" int NOT NULL,
+  "points" int NOT NULL DEFAULT 0,
   PRIMARY KEY ("order_product_id")
 );
 

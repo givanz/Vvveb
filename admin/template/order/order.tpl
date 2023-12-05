@@ -38,21 +38,22 @@ if(is_array($totals)) foreach ($totals as $index => $total) {
 @total|after = <?php }?>
 
 
-@history = [data-v-order] [data-v-order-history]
+@log = [data-v-order] [data-v-order-log]
 
-@history|deleteAllButFirstChild
-@history|before = <?php
+@log|deleteAllButFirstChild
+@log|before = <?php
 
-$histories  = $this->history ?? [];
-if(is_array($histories)) foreach ($histories as $index => $history) {
+$logs  = $this->log ?? [];
+if(is_array($logs)) foreach ($logs as $index => $log) {
 ?>
 
 	//catch all data attributes
-	@history [data-v-order-history-*]|innerText = $history['@@__data-v-order-history-(*)__@@']
-	@history a[data-v-order-history-*]|href = $history['@@__data-v-order-history-(*)__@@']
-	@history input[data-v-order-history-*]|value = $history['@@__data-v-order-history-(*)__@@']
+	@log [data-v-order-log-*]|innerText  = $log['@@__data-v-order-log-(*)__@@']
+	@log a[data-v-order-log-*]|href      = $log['@@__data-v-order-log-(*)__@@']
+	@log input[data-v-order-log-*]|value = $log['@@__data-v-order-log-(*)__@@']
+	@log .badge[data-v-order-log-order_status]|addClass = <?php echo Vvveb\orderStatusBadgeClass($log['order_status_id']);?>
 
-@history|after = <?php }?>
+@log|after = <?php }?>
 
 
 [data-v-order] [data-v-order-*]|innerText = $this->order['@@__data-v-order-(*)__@@']

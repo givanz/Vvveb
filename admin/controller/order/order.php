@@ -27,6 +27,7 @@ use Vvveb\Controller\Base;
 use Vvveb\Controller\Content\AutocompleteTrait;
 use function Vvveb\orderStatusBadgeClass;
 use function Vvveb\prefixArrayKeys;
+use Vvveb\Sql\Order_LogSQL;
 use Vvveb\Sql\OrderSQL;
 use Vvveb\System\Cart\Cart;
 use Vvveb\System\Cart\Currency;
@@ -40,7 +41,7 @@ use function Vvveb\url;
 
 class Order extends Base {
 	use AutocompleteTrait;
-	
+
 	protected $type = 'order';
 
 	function index() {
@@ -79,7 +80,8 @@ class Order extends Base {
 							//$product['images'][] = ['image' => Images::image($product['image'], 'product')];
 						}
 
-						$product['tax_formatted'] = $currency->format($product['tax']);
+						$product['price_formatted'] = $currency->format($product['price']);
+						$product['tax_formatted']   = $currency->format($product['tax']);
 					}
 				}
 
@@ -92,7 +94,7 @@ class Order extends Base {
 				$order['total_formatted'] = $currency->format($order['total']);
 				$order['shipping_data']   = json_decode($order['shipping_data'] ?? '', true);
 				$order['payment_data']    = json_decode($order['payment_data'] ?? '', true);
-				$order['class'] 		        = orderStatusBadgeClass($order['order_status_id']);
+				$order['class']           = orderStatusBadgeClass($order['order_status_id']);
 
 				$order += prefixArrayKeys('shipping_', $order['shipping_data']) ?? [];
 				$order += prefixArrayKeys('payment_', $order['payment_data']) ?? [];
@@ -124,6 +126,46 @@ class Order extends Base {
 		return $this->index();
 	}
 
+	function cart() {
+		$order_id    = $this->request->get['order_id'] ?? false;
+		$product_id  = $this->request->post['product_id'] ?? false;
+		$quantity    = $this->request->post['quantity'] ?? 1;
+
+		if ($order_id && $product_id) {
+			$order = new OrderSQL();
+			$order->addProducts(['order_id' => $order_id, 'products' => [['product_id' => $product_id, 'quantity' => $quantity]]]);
+		}
+
+		$this->index();
+	}
+
+	function saveLog() {
+		$order_id  = $this->request->get['order_id'] ?? false;
+		$log       = $this->request->post['log'] ?? [];
+		$view      = $this->view;
+
+		if ($order_id && $log) {
+			// update order status with the last log status
+			$order  = new OrderSQL();
+			$result = $order->edit(['order_id' => $order_id, 'order' => ['order_status_id' => $log['order_status_id']]]);
+
+			if (isset($result['order'])/* && $result['order']*/) {
+				$orderLog = new Order_LogSQL();
+				$result   = $orderLog->add(['order_id' => $order_id, 'order_log' => $log]);
+
+				if (isset($result['order_log']) && $result['order_log']) {
+					$view->success = [__('Order status saved!')];
+				} else {
+					$view->errors = [$orderLog->error];
+				}
+			} else {
+				$view->errors = [$order->error];
+			}
+		}
+
+		return $this->index();
+	}
+
 	function save() {
 		$validator = new Validator(['order']);
 		$view      = view :: getInstance();
@@ -146,7 +188,7 @@ class Order extends Base {
 			$orders = new OrderSQL();
 
 			if ($order_id) {
-				$result               = $orders->edit(['order_id' => $order_id, 'order' => $order]);
+				$result = $orders->edit(['order_id' => $order_id, 'order' => $order]);
 
 				if ($result >= 0) {
 					$view->success = [__('Order saved')];

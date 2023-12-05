@@ -25,6 +25,7 @@ namespace Vvveb\Controller\User;
 use \Vvveb\System\Functions\Str;
 use function Vvveb\__;
 use function Vvveb\setLanguage;
+use Vvveb\System\Event;
 use Vvveb\System\User\Admin;
 use Vvveb\System\Validator;
 
@@ -82,6 +83,7 @@ class Login {
 		if (($this->request->method == 'POST') &&
 			($this->view->errors = $validator->validate($this->request->post)) === true) {
 			$user	    = $this->request->post['user'];
+
 			$safemode = $this->request->post['safemode'] ?? false;
 			$flags    = [];
 
@@ -97,20 +99,24 @@ class Login {
 				$flags['safemode'] = true;
 			}
 
-			if ($userInfo = Admin::login($loginData, $flags)) {
-				$this->view->success[] = __('Login successful!');
+			list($loginData) = Event :: trigger(__CLASS__, __FUNCTION__ , $loginData);
 
-				if (isset($this->request->post['redir']) && $this->request->post['redir'] && $_SERVER['REQUEST_URI'] != $this->request->post['redir']) {
-					$url = parse_url($this->request->post['redir']);
-					$this->redirect($url['path'] . '?' . ($url['query'] ?? '') . '#' . ($url['fragment'] ?? ''));
-				    //$this->redirect($this->request->post['redirect']);
+			if ($loginData) {
+				if ($userInfo = Admin::login($loginData, $flags)) {
+					$this->view->success[] = __('Login successful!');
+
+					if (isset($this->request->post['redir']) && $this->request->post['redir'] && $_SERVER['REQUEST_URI'] != $this->request->post['redir']) {
+						$url = parse_url($this->request->post['redir']);
+						$this->redirect($url['path'] . '?' . ($url['query'] ?? '') . '#' . ($url['fragment'] ?? ''));
+					//$this->redirect($this->request->post['redirect']);
+					} else {
+						$this->redirect($admin_path);
+					}
 				} else {
-					$this->redirect($admin_path);
+					//user not found or wrong password
+					$this->view->errors = [__('Authentication failed, wrong email or password!')];
+					$this->session->set('csrf', Str::random());
 				}
-			} else {
-				//user not found or wrong password
-				$this->view->errors = [__('Authentication failed, wrong email or password!')];
-				$this->session->set('csrf', Str::random());
 			}
 		} else {
 			//return $this->redirect($admin_path);

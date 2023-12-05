@@ -140,9 +140,11 @@
 
 		WHERE products.order_id = :order_id;		
 			
-		-- history	
-		SELECT * FROM order_log as history
-			WHERE history.order_id = :order_id;		
+		-- log	
+		SELECT *,os.name as order_status 
+			FROM order_log as log
+		    LEFT JOIN order_status AS os ON (log.order_status_id = os.order_status_id AND os.language_id = :language_id) 
+		WHERE log.order_id = :order_id;		
 			
 		-- meta
 		SELECT * FROM order_meta as meta
@@ -313,3 +315,30 @@
 		WHERE order_id = :order_id;
 
     END
+	
+	CREATE PROCEDURE addProducts(
+		IN products ARRAY,
+		IN product_options ARRAY,
+		IN order_id INT,
+		OUT insert_id,
+		OUT insert_id
+	)
+	BEGIN
+	
+		:products  		  = @FILTER(:products, order_product, false, true);
+		:product_options  = @FILTER(:product_options, order_product_option, false, true);
+
+		-- insert products
+		@EACH(:products) 
+			INSERT INTO order_product 
+				( order_id, @KEYS(:each) )
+			VALUES ( :order_id, :each  );
+		
+		-- insert product options
+		@EACH(:product_options) 
+			INSERT INTO order_product_option 
+				( order_id, @KEYS(:each) )
+			VALUES ( :order_id, 0,  :each  );
+			
+    END
+			

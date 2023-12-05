@@ -26,8 +26,8 @@ use function Vvveb\__;
 use Vvveb\Controller\Base;
 use function Vvveb\orderStatusBadgeClass;
 use Vvveb\Sql\OrderSQL;
-use Vvveb\System\Core\View;
 use Vvveb\System\Cart\Currency;
+use Vvveb\System\Core\View;
 
 class Orders extends Base {
 	//check for order save permission

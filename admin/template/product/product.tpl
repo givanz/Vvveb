@@ -30,8 +30,12 @@ import(product/product/digital_asset.tpl)
 
 [data-v-product] [data-v-design_url]|href = $this->product['design_url']
 
-[data-v-template_missing] = <?php echo $this->template_missing;?>
-
 [data-v-product] input[type="checkbox"][data-v-product-*]|addNewAttribute = <?php
 	if ($value) echo 'checked';
 ?>
+
+[data-v-template_missing]    = <?php echo $this->template_missing;?>
+[data-v-type_name_plural]    = $this->type_name_plural
+[data-v-type-name]           = $this->type_name
+[data-v-type]                = $this->type
+[data-v-products-list-url]|href = $this->posts_list_url

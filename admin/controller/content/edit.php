@@ -31,6 +31,7 @@ use function Vvveb\slugify;
 use Vvveb\Sql\categorySQL;
 use Vvveb\System\CacheManager;
 use Vvveb\System\Core\View;
+use Vvveb\System\Event;
 use Vvveb\System\Images;
 use Vvveb\System\Sites;
 use Vvveb\System\Validator;
@@ -115,9 +116,11 @@ class Edit extends Base {
 
 		if ($this->object == 'product') {
 			$route      = "product/{$this->type}/index";
+			$altRoute   = "product/{$this->object}/index";
 			$controller = 'product';
 		} else {
 			$route      = "content/{$this->type}/index";
+			$altRoute   = "content/{$this->object}/index";
 			$controller = 'content';
 		}
 
@@ -129,6 +132,9 @@ class Edit extends Base {
 			foreach ($post[$this->object . '_content'] as &$content) {
 				if (! isset($post['url'])) {
 					$post['url'] = \Vvveb\url($route, ['slug'=> $content['slug']]);
+					if (!$post['url']) {
+						$post['url'] = \Vvveb\url($altRoute, ['slug'=> $content['slug']]);
+					}
 				}
 				$language = [];
 
@@ -143,6 +149,9 @@ class Edit extends Base {
 
 				$content['url']             = \Vvveb\url($route, $content + $language);
 				$content['revision_count']  = 0;
+				if (!$content['url']) {
+					$content['url']         = \Vvveb\url($altRoute, $content + $language);
+				}
 
 				if ($revisions) {
 					$revision = $revisions->getAll([$this->object . '_id' => $post_id, 'language_id' => $content['language_id']]);
@@ -177,6 +186,8 @@ class Edit extends Base {
 		if ($this->type != 'page') {
 			$view->taxonomies = $this->taxonomies($post[$this->object . '_id'] ?? false);
 		}
+
+		list($post, $post_id) = Event :: trigger(__CLASS__,__FUNCTION__, $post, $post_id);
 
 		$object                    = $this->object;
 		$view->$object             = $post;
@@ -321,6 +332,8 @@ class Edit extends Base {
 
 				$posts->$productImage([$this->object . '_id' => $post_id ? $post_id : 0, $this->object . '_image' => $post[$this->object . '_image']]);
 			}
+
+			list($post, $post_id, $this->type) = Event :: trigger(__CLASS__,__FUNCTION__, $post, $post_id, $this->type);
 
 			if ($new) {
 				$this->redirect(['module'=>$this->module, $this->object . '_id' => $id, 'type' => $this->type, 'success' => $message], [], false);

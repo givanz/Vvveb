@@ -133,21 +133,23 @@ class Posts extends Base {
 
 		$defaultTemplate = "content/{$this->type}.html";
 
-		foreach ($results['posts'] as $id => &$post) {
-			if (isset($post['image'])) {
-				$post['image'] = Images::image($post['image'], 'post');
+		if ($results && isset($results['posts'])) {
+			foreach ($results['posts'] as $id => &$post) {
+				if (isset($post['image'])) {
+					$post['image'] = Images::image($post['image'], 'post');
+				}
+
+				$url                = ['module' => 'content/post', 'post_id' => $post['post_id'], 'type' => $post['type']];
+				$admin_path         = \Vvveb\adminPath();
+				$template           = $post['template'] ? $post['template'] : $defaultTemplate;
+				$post['url']        = \Vvveb\url($url);
+				$post['edit-url']   = $post['url'];
+
+				$post['admin-url']   =  \Vvveb\url(['module' => 'content/posts']) . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
+				$post['delete-url']  = \Vvveb\url(['module' => 'content/posts', 'action' => 'delete'] + $url + ['post_id[]' => $post['post_id']]);
+				$post['view-url']    =  \Vvveb\url("content/{$this->type}/index", $post);
+				$post['design-url']  = $admin_path . \Vvveb\url(['module' => 'editor/editor', 'url' => $post['view-url'], 'template' => $template], false, false);
 			}
-
-			$url                = ['module' => 'content/post', 'post_id' => $post['post_id'], 'type' => $post['type']];
-			$admin_path         = \Vvveb\adminPath();
-			$template           = $post['template'] ? $post['template'] : $defaultTemplate;
-			$post['url']        = \Vvveb\url($url);
-			$post['edit-url']   = $post['url'];
-
-			$post['admin-url']   =  \Vvveb\url(['module' => 'content/posts']) . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
-			$post['delete-url']  = \Vvveb\url(['module' => 'content/posts', 'action' => 'delete'] + $url + ['post_id[]' => $post['post_id']]);
-			$post['view-url']    =  \Vvveb\url("content/{$this->type}/index", $post);
-			$post['design-url']  = $admin_path . \Vvveb\url(['module' => 'editor/editor', 'url' => $post['view-url'], 'template' => $template], false, false);
 		}
 
 		//archives for filter

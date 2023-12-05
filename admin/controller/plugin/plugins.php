@@ -30,6 +30,7 @@ use Vvveb\System\Core\FrontController;
 use Vvveb\System\Core\View;
 use Vvveb\System\Extensions\Plugins as PluginsList;
 use Vvveb\System\User\Admin;
+use Vvveb\System\CacheManager;
 
 class Plugins extends Base {
 	function init() {
@@ -43,6 +44,7 @@ class Plugins extends Base {
 
 		if (PluginsList::deactivate($this->plugin, $this->global['site_id'])) {
 			$this->view->success[] = sprintf(__('Plugin `%s` deactivated!'), \Vvveb\humanReadable($this->plugin));
+			CacheManager::clearCompiledFiles();
 		}
 
 		return $this->index();
@@ -160,6 +162,8 @@ class Plugins extends Base {
 
 			ignore_user_abort(1);
 			clearstatcache(true);
+			
+			CacheManager::clearCompiledFiles();
 
 			if (defined('CLI')) {
 				$this->view->success = [$success];

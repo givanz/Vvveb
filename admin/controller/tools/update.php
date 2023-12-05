@@ -87,15 +87,15 @@ class Update extends Base {
 
 		$url = [];
 
-		if (isset($this->view->errors)) {
+		if (isset($this->view->errors[0])) {
 			$url['error'] = $this->view->errors[0];
 		}
 
-		if (isset($this->view->success)) {
+		if (isset($this->view->success[0])) {
 			$url['success'] = $this->view->success[0];
 		}
 
-		if (isset($this->view->info)) {
+		if (isset($this->view->info[0])) {
 			$url['success'] = $this->view->info[0];
 		}
 

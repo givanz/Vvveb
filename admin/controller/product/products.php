@@ -28,6 +28,7 @@ use function Vvveb\humanReadable;
 use Vvveb\Sql\ProductSQL;
 use Vvveb\System\Core\View;
 use Vvveb\System\Images;
+use function Vvveb\url;
 
 class Products extends Base {
 	protected $type = 'product';
@@ -79,26 +80,28 @@ class Products extends Base {
 
 		$defaultTemplate = "product/{$this->type}.html";
 
-		foreach ($results['products'] as $id => &$product) {
-			if (isset($product['images'])) {
-				$product['images'] = json_decode($product['images'], 1);
+		if ($results && isset($results['products'])) {
+			foreach ($results['products'] as $id => &$product) {
+				if (isset($product['images'])) {
+					$product['images'] = json_decode($product['images'], 1);
 
-				foreach ($product['images'] as &$image) {
-					$image = Images::image($image, 'product');
+					foreach ($product['images'] as &$image) {
+						$image = Images::image($image, 'product');
+					}
+				} else {
+					if (isset($product['image'])) {
+						$product['image'] = Images::image($product['image'], 'product');
+					}
 				}
-			} else {
-				if (isset($product['image'])) {
-					$product['image'] = Images::image($product['image'], 'product');
-				}
+
+				$template              = (isset($product['template']) && $product['template']) ? $product['template'] : $defaultTemplate;
+				$product['url']        = url(['module' => 'product/product', 'product_id' => $product['product_id'], 'type' => $product['type']]);
+				$product['edit-url']   = url(['module' => 'product/product', 'product_id' => $product['product_id'], 'type' => $product['type']]);
+				$product['delete-url'] = url(['module' => 'product/products', 'action' => 'delete', 'product_id[]' => $product['product_id'], 'type' => $product['type']]);
+				$product['view-url']   =  url('product/product/index', $product);
+				$admin_path            = \Vvveb\config('admin.path', 'admin') . '/';
+				$product['design-url'] = '/' . $admin_path . url(['module' => 'editor/editor', 'url' => $product['view-url'], 'template' => $template], false, false);
 			}
-
-			$template              = (isset($product['template']) && $product['template']) ? $product['template'] : $defaultTemplate;
-			$product['url']        = \Vvveb\url(['module' => 'product/product', 'product_id' => $product['product_id'], 'type' => $product['type']]);
-			$product['edit-url']   = \Vvveb\url(['module' => 'product/product', 'product_id' => $product['product_id'], 'type' => $product['type']]);
-			$product['delete-url'] = \Vvveb\url(['module' => 'product/products', 'action' => 'delete', 'product_id[]' => $product['product_id'], 'type' => $product['type']]);
-			$product['view-url']   =  \Vvveb\url('product/product/index', $product);
-			$admin_path            = \Vvveb\config('admin.path', 'admin') . '/';
-			$product['design-url'] = '/' . $admin_path . \Vvveb\url(['module' => 'editor/editor', 'url' => $product['view-url'], 'template' => $template], false, false);
 		}
 
 		$view->set($results);
@@ -107,7 +110,7 @@ class Products extends Base {
 		$view->type             = $this->type;
 		$view->limit            = $options['limit'];
 		$view->type             = $this->type;
-		$view->addUrl           = \Vvveb\url(['module' => 'product/product', 'type' => $this->type]);
+		$view->addUrl           = url(['module' => 'product/product', 'type' => $this->type]);
 		$view->type_name        = humanReadable(__($this->type));
 		$view->type_name_plural = humanReadable(__($view->type . 's'));
 	}

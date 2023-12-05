@@ -11,7 +11,7 @@ if(isset($this->themes) && is_array($this->themes)) {
     
 	[data-v-themes] [data-v-theme] [data-v-theme-activate-url]|href  = <?php echo Vvveb\url(['module' => 'theme/themes', 'action' => 'activate', 'theme' => $theme['folder']]);?>
 	[data-v-themes] [data-v-theme] [data-v-theme-delete-url]|href  = <?php echo Vvveb\url(['module' => 'theme/themes', 'action' => 'delete', 'theme' => $theme['folder']]);?>
-	[data-v-themes] [data-v-theme] [data-v-theme-preview-url]|href  = <?php echo Vvveb\url('index/index') . '&theme=' . $theme['folder'];?>
+	[data-v-themes] [data-v-theme] [data-v-theme-preview-url]|href  = <?php echo Vvveb\url('index/index') . '?theme=' . $theme['folder'];?>
 	[data-v-themes] [data-v-theme] [data-v-theme-edit-url]|href  = <?php echo Vvveb\url(['module' => 'editor/editor']) . '&url=/&template=index.html&theme=' . $theme['folder'];?>
 	[data-v-themes] [data-v-theme] [data-v-theme-code-url]|href  = <?php echo Vvveb\url(['module' => 'editor/code']) . '&type=themes#%2F' . $theme['folder'];?>
 	[data-v-themes]  [data-v-theme]|after = <?php 
