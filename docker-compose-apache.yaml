@@ -4,7 +4,7 @@ services:
   vvveb-install:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-apache
     restart: "no"
     depends_on:
       - vvveb-app
@@ -35,7 +35,7 @@ services:
   vvveb-app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-apache
     container_name: vvveb-cms
     ports:
       - "80:80"
