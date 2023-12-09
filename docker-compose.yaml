@@ -39,7 +39,7 @@ services:
       - internal
 
   phpmyadmin:
-    image: phpmyadmin:fpm-alpine
+    image: phpmyadmin:latest
     ports:
       - "8081:80"
     environment:
