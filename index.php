@@ -39,6 +39,9 @@ function is_installed() {
 	return file_exists(DIR_ROOT . 'config' . DS . 'db.php');
 }
 
+$protocol = isset($_SERVER['HTTPS']) ? 'https' : 'http';
+$installPathRedirect = "{$protocol}://{$_SERVER['HTTP_HOST']}/install";
+
 if (! defined('APP')) {
 	if (is_installed()) {
 		define('APP', 'app');
@@ -47,14 +50,14 @@ if (! defined('APP')) {
 
 		if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'install') === false) {
 			//avoid redirect loop
-			die(header('Location: /install'));
+			die(header("Location: $installPathRedirect"));
 		}
 	}
 } elseif (! is_installed() && APP != 'install') {
 	define('APP', 'install');
 
 	if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'install') === false) {
-		die(header('Location: /install'));
+		die(header("Location: $installPathRedirect"));
 	}
 }
 
