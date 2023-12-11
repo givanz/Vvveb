@@ -3,6 +3,8 @@ storage/cache/*
 config/db.php
 app/model/*
 admin/model/*
+public/image-cache/*
+!public/image-cache/.gitkeep
 public/page-cache/*
 public/themes/*/*.html
 !public/themes/*/src/*.html

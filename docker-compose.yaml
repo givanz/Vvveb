@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:latest
+    #command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: vvveb
+      MYSQL_DATABASE: vvveb
+      MYSQL_USER: vvveb
+      MYSQL_PASSWORD: vvveb
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      - internal
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/var/www/html/
+    depends_on:
+      - db
+    networks:
+      - internal
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html/
+      - ./nginx-docker.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - internal
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_USER=vvveb
+      - PMA_PASSWORD=vvveb
+      - PMA_HOST=db
+      - PMA_PORT=3306
+    depends_on:
+      - db
+    networks:
+      - internal
+
+volumes:
+  db:
+
+networks:
+  internal:
+    driver: bridge
