@@ -10,3 +10,6 @@
 [submodule "plugins/contact-form"]
 	path = plugins/contact-form
 	url = https://github.com/Vvveb/contact-form
+[submodule "public/js/libs/tinymce-dist"]
+	path = public/js/libs/tinymce-dist
+	url = https://github.com/tinymce/tinymce-dist

@@ -16,4 +16,3 @@ node_modules
 *.map.*
 *.phprj
 *.workspace
-tinymce-dist
