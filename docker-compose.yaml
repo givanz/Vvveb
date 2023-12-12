@@ -26,6 +26,23 @@ services:
     networks:
       - internal
 
+  # uncomment lines bellow for auto install
+  #vvveb-install:
+    #build:
+      #context: .
+    #volumes:
+      #- ./:/var/www/html/
+    #entrypoint:
+      #[
+        #"bash",
+        #"-c",
+        #"sleep 5 && php cli.php install module=index host=db user=vvveb password=vvveb database=vvveb admin[email]=admin@vvveb.com admin[password]=admin",
+      #]
+    #depends_on:
+      #- php
+    #networks:
+      #- internal
+
   nginx:
     image: nginx:alpine
     ports:
