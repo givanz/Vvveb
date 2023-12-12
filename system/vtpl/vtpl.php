@@ -492,8 +492,8 @@ class Vtpl {
 			'\1[ contains( concat( " ", @\2, " " ), concat( " ", "\3", " " ) ) ]', //element[attribute="string"]
 			'\1 [ @\2 ]', //element[attribute]
 			'\1 [ not(@\2) ]', //element[!attribute]
-			'[ contains( concat( " ", @\1, " " ), concat( " ", "\2", " " ) ) ]', //[foo="warning"]
-			'*[ contains( concat( " ", @\1, " " ), concat( " ", "\2", " " ) ) ]', //[foo="warning"]
+			'*[contains(@\1,"\2")]', //[foo="warning"]
+			'[contains(@\1,"\2")]', //[foo="warning"]
 			'[ contains( concat( " ", @\1, " " ), "\2" ) ]', //[foo*="warning"]
 			'[starts-with(@\1,"\2")]', //[foo^="warning"]
 			'[ends-with(@\1,"\2")]', //[foo$="warning"]
@@ -617,7 +617,7 @@ class Vtpl {
 					unset($selectors[0]);
 					//add new selectors
 					foreach ($selectors as $selector) {
-						$newSelectors[] = [trim($selector), $data[1]];
+						$newSelectors[] = [trim($selector), $data[1] ?? ''];
 					}
 				}
 			}
@@ -1755,17 +1755,20 @@ class Vtpl {
 		//replace script tags with placeholders to preserve formatting.
 
 		//preg_match_all("@<script[^>]*>.*?script>@s", $html, $this->_scripts);
-		preg_match_all("/<script((?:(?!src=|data-).)*?)>(.*?)<\/script>/smix", $html, $this->_scripts);
-		$count          = count($this->_scripts[0]);
+		preg_match_all("/<script(.*?)>(.*?)<\/script>/smix", $html, $this->_scripts);
+		$count          = count($this->_scripts[0] ?? []);
 
 		if ($count) {
+			$patternsScripts     = [];
+			$placeholdersScripts = [];
+
 			for ($i=0; $i < $count; $i++) {
-				$patternsScripts[]    = $this->_scripts[0][$i];
-				$placeholdersScripts[]= '<script ' . $this->_scripts[1][$i] . ' holder="@@__VTPL__SCRIPT_PLACEHOLDER__' . $i . '@@"></script>';
+				$patternsScripts[]     = $this->_scripts[0][$i];
+				$placeholdersScripts[] = '<script ' . $this->_scripts[1][$i] . ' holder="@@__VTPL__SCRIPT_PLACEHOLDER__' . $i . '@@"></script>';
 			}
 
 			$html           = str_replace($patternsScripts, $placeholdersScripts, $html);
-			$this->_scripts = $this->_scripts[0];
+			$this->_scripts = $this->_scripts[2];
 		}
 
 		if (VTPL_HTML_MINIFY === true) {
@@ -1987,15 +1990,15 @@ class Vtpl {
 					  	return $self->newAttributes[$matches[1]];
 					  }, $html); //sad hack :(
 
-		$html = preg_replace_callback('/<script.*?holder="@@__VTPL__SCRIPT_PLACEHOLDER__(\d+)@@".*?><\/script>/',
+		$html = preg_replace_callback('/<script(.*?)holder="@@__VTPL__SCRIPT_PLACEHOLDER__(\d+)@@"(.*?)><\/script>/',
 					  function ($matches) use ($self) {
 					  	if (VTPL_JS_MINIFY) {
-					  		$script = $self->minifyJs($self->_scripts[$matches[1]]);
+					  		$script = $self->minifyJs($self->_scripts[$matches[2]]);
 					  	} else {
-					  		$script = $self->_scripts[$matches[1]];
+					  		$script = $self->_scripts[$matches[2]];
 					  	}
 
-					  	return $script;
+					  	return '<script' . $matches[1] . '>' . $script . $matches[3] . '</script>';
 					  }, $html);
 
 		//cleanup modified scripts
