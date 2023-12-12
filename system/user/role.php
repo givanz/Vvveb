@@ -24,6 +24,7 @@ namespace Vvveb\System\User;
 
 use function Vvveb\pregMatch;
 use function Vvveb\pregMatchAll;
+use Vvveb\System\Event;
 
 class Role {
 	static private $data = null;
@@ -213,5 +214,12 @@ class Role {
 		self :: $data = $data;
 
 		return $data;
+	}
+
+	public static function getCapabilitiesList() {
+		$capabilities       =  include DIR_SYSTEM . 'data' . DS . 'capabilities.php';
+		list($capabilities) = Event :: trigger(__CLASS__,__FUNCTION__, $capabilities);
+
+		return $capabilities;
 	}
 }

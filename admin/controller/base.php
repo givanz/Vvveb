@@ -80,14 +80,16 @@ class Base {
 		$default_custom_posts =
 		[
 			'post' => [
-				'type'        => 'post',
-				'plural'      => 'posts',
-				'icon' 		     => 'icon-document-text-outline',
+				'type'    => 'post',
+				'plural'  => 'posts',
+				'icon'    => 'icon-document-text-outline',
+				'comments'=> true,
 			],
 			'page' => [
-				'type'        => 'page',
-				'plural'      => 'pages',
-				'icon' 		     => 'icon-document-outline',
+				'type'    => 'page',
+				'plural'  => 'pages',
+				'icon'    => 'icon-document-outline',
+				'comments'=> false,
 			],
 		];
 
@@ -110,6 +112,10 @@ class Base {
 			$posts_menu[$type]['icon']     = $settings['icon'] ?? '';
 			$posts_menu[$type]['icon-img'] = $settings['icon-img'] ?? '';
 			$posts_menu[$type]['url'] .= "&type=$type";
+
+			if (isset($settings['comments']) && ! $settings['comments']) {
+				unset($posts_menu[$type]['items']['comments']);
+			}
 
 			foreach ($posts_menu[$type]['items'] as $item => &$values) {
 				if (isset($values['url'])) {
@@ -536,8 +542,13 @@ class Base {
 		$action = $action ?? $this->request->get['origaction'] ?? '';
 		$type   = $type ?? $this->request->get['type'] ?? '';
 		$action = $action ? '/' . $action : '';
-		$type   = $type ? '/' . $type : '';
 		$url    = 'https://docs.vvveb.com/';
+
+		if ($type == 'post' || $type == 'page'/* || $type == 'product'*/) {
+			$type   = $type ? '/' . $type : '';
+		} else {
+			$type = '';
+		}
 
 		$documentionList             = include DIR_SYSTEM . 'data/documentation-map.php';
 

@@ -56,6 +56,10 @@ class Post  extends ComponentBase {
 			$results['image'] = Images::image($results['image'], 'post');
 		}
 
+		if (isset($results['avatar'])) {
+			$results['avatar'] = Images::image($results['avatar'], 'admin');
+		}
+
 		//comments translations
 		$results['comment_count'] = $results['comment_count'] ?? 0;
 		$results['comment_text']  = sprintf(__('%d comment', '%d comments', (int)$results['comment_count']), $results['comment_count']);

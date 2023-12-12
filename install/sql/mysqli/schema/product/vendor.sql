@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS `vendor`;
 
 CREATE TABLE `vendor` (
   `vendor_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `admin_id` INT unsigned NOT NULL DEFAULT '0',
   `name` varchar(191) NOT NULL DEFAULT "",
   `slug` varchar(191) NOT NULL DEFAULT "",
   `image` varchar(191) NOT NULL,

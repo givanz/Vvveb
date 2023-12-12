@@ -6,6 +6,7 @@ CREATE SEQUENCE product_seq;
 
 CREATE TABLE product (
   "product_id" int check ("product_id" > 0) NOT NULL DEFAULT NEXTVAL ('product_seq'),
+  "admin_id" int check ("admin_id" >= 0) NOT NULL DEFAULT 0,
   "model" varchar(64) NOT NULL,
   "sku" varchar(64) NOT NULL,
   "upc" varchar(12) NOT NULL,

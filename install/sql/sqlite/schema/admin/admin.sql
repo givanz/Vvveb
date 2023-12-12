@@ -15,6 +15,8 @@ CREATE TABLE `admin` (
 `phone_number` TEXT NOT NULL DEFAULT '',
 `url` TEXT NOT NULL DEFAULT '',
 `display_name` TEXT NOT NULL DEFAULT '',
+`avatar` TEXT NOT NULL DEFAULT '',
+`bio` TEXT NOT NULL DEFAULT '',
 `role_id` INT  DEFAULT NULL,
 `status` INT NOT NULL DEFAULT '0',
 `token` TEXT NOT NULL DEFAULT '',

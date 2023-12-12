@@ -26,6 +26,8 @@ use Vvveb\Controller\Content\Revisions as RevisionsBase;
 
 class Revisions extends RevisionsBase {
 	protected $type = 'product';
+	
+	protected $object = 'product';
 
 	protected $additionalPermissionCheck = ['product/revisions/save'];
 }

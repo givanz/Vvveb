@@ -16,3 +16,7 @@ foreach ($this->revisions as $revision) {?>
 @revision|after = <?php 
 	} 
 ?>
+
+[data-v-type_name_plural]    = $this->type_name_plural
+[data-v-type-name]           = $this->type_name
+[data-v-type]                = $this->type

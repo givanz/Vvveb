@@ -109,3 +109,23 @@ reset($tree);
 $generate_menu($tree); }
 $uniq = Vvveb\System\Functions\Str::random(5);
 ?>
+
+
+@capability = [data-v-capabilities] [data-v-capability]
+@capability|deleteAllButFirstChild
+
+@capability|before = <?php
+if(isset($this->capabilities) && is_array($this->capabilities)) {
+	foreach ($this->capabilities as $value => $name) {?>
+    
+	
+	@capability [data-v-capability-name]|innerText        = $name
+	@capability [data-v-capability-value]                 = $value
+	@capability [data-v-capability-value]|name            = <?php echo "capabilities[$value]";?>
+	@capability [data-v-capability-value]|addNewAttribute = <?php 
+		if (in_array($value, $this->role['permissions']['capabilities'])) echo 'checked';
+	?>
+
+	@capability|after = <?php 
+	} 
+}?>

@@ -28,6 +28,7 @@ use function Vvveb\humanReadable;
 use Vvveb\Sql\ProductSQL;
 use Vvveb\System\Core\View;
 use Vvveb\System\Images;
+use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
 class Products extends Base {
@@ -74,7 +75,15 @@ class Products extends Base {
 
 		$options = [
 			'type'        => $this->type,
-		] + $this->global + $this->filter;
+		] + $this->global;
+
+		if (Admin::hasCapability('view_other_products')) {
+			unset($options['admin_id']);
+		} else {
+			$options['admin_id'] = $this->global['admin_id'];
+		}
+
+		$options += $this->filter;
 
 		$results = $products->getAll($options);
 

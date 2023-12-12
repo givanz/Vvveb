@@ -40,6 +40,13 @@ class Admin extends Auth {
 		return $admin->add(['admin' => $data]);
 	}
 
+	public static function hasCapability($capability) {
+		$admin        = \Vvveb\session('admin', false);
+		$capabilities = $admin['permissions']['capabilities'] ?? [];
+
+		return in_array($capability, $capabilities);
+	}
+
 	public static function hasPermission($permission) {
 		$admin       = \Vvveb\session('admin', false);
 		$permissions = $admin['permissions'] ?: [];

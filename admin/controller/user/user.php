@@ -51,15 +51,18 @@ class User extends Base {
 				unset($user['password']);
 			}
 
-			//default user
-			$user['image_url'] = Images::image($this->type);
-			//featured image
-			if (isset($user['image'])) {
-				$user['image_url'] = Images::image($this->type, $user['image']);
+			//featured avatar
+			if (isset($user['avatar'])) {
+				$user['avatar_url'] = Images::image($user['avatar'], $this->type);
 			}
 
 			$view->user = $user;
 		}
+
+		$admin_path      = \Vvveb\adminPath();
+		$controllerPath  = $admin_path . 'index.php?module=media/media';
+		$view->scanUrl   = "$controllerPath&action=scan";
+		$view->uploadUrl = "$controllerPath&action=upload";
 	}
 
 	function loginAs() {

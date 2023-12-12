@@ -7,6 +7,7 @@
 ?>
 
 [data-v-component-admin] [data-v-admin-*]|innerText = $admin['@@__data-v-admin-(*)__@@']
+[data-v-component-admin] img[data-v-admin-*]|src = $admin['@@__data-v-admin-(*)__@@']
 [data-v-component-admin] a[data-v-admin-edit-url]|href = $admin['edit-url']
 
 [data-v-component-admin]|append = <?php 

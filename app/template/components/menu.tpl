@@ -15,7 +15,7 @@ if (isset($this->_component['menu']) && isset($this->_component['menu'][$_menu_i
 	//$_pagination_count = $this->menu[$_menu_idx]['count'];
 	//$_pagination_limit = $this->categories[$_menu_idx]['limit'];
 	$_categories = $this->_component['menu'][$_menu_idx]['menus'] ?? [];
-	if ($vvveb_is_page_edit) {
+	if (isset($vvveb_is_page_edit) && $vvveb_is_page_edit) {
 		$_categories = [
 			['menu_item_id' => 1, 'parent_id' => 0, 'children' => 1, 'class' => 'vvveb-hidden'],
 			['menu_item_id' => 2, 'parent_id' => 1, 'children' => 0, 'class' => 'vvveb-hidden'], 

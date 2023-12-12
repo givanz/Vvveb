@@ -116,7 +116,7 @@ class Editor extends Base {
 		$view->themeComponents = $components;
 		$view->themeSections   = $sections;
 		$view->themeBlocks     = $blocks;
-		$view->themeJs 		      = $themeJs;
+		$view->themeJs         = $themeJs;
 	}
 
 	function index() {

@@ -39,4 +39,7 @@ return [
 		'minLength'          => 6,
 		'maxLength'          => 32,
 	],
+	'confirm_password' => [
+		'match'          => 'password',
+	],
 ];

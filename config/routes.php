@@ -78,14 +78,15 @@ return [
 	'/{language{2,5}}/product/{slug}'       => ['module' => 'product/product/index', 'edit'=>'?module=product/product&slug={slug}'],
 
 	//catalog
-	'/shop'                                 => ['module' => 'product/index'],
-	'/shop/#page#'                          => ['module' => 'product/index'],
-	'/shop/{slug}'                          => ['module' => 'product/category/index'],
-	'/shop/{slug}/#page#'                   => ['module' => 'product/category/index'],
-	'/shop/{slug}/#page#/filters-{filters}' => ['module' => 'product/category/index'],
-	'/manufacturer/{slug}'                  => ['module' => 'product/manufacturer/index'],
-	'/vendor/{slug}'                        => ['module' => 'product/vendor/index'],
-	'/product/{slug}'                       => ['module' => 'product/product/index', 'edit'=>'?module=product/product&slug={slug}'],
+	'/shop'                                  => ['module' => 'product/index'],
+	'/shop/#page#'                           => ['module' => 'product/index'],
+	'/shop/{slug}'                           => ['module' => 'product/category/index'],
+	'/shop/{slug}/#page#'                    => ['module' => 'product/category/index'],
+	'/shop/{slug}/#page#/filters-{filters}'  => ['module' => 'product/category/index'],
+	'/manufacturer/{slug}'                   => ['module' => 'product/manufacturer/index'],
+	'/vendor/{slug}'                         => ['module' => 'product/vendor/index'],
+	'/vendor/{slug}/#page#'                  => ['module' => 'product/vendor/index'],
+	'/product/{slug}'                        => ['module' => 'product/product/index', 'edit'=>'?module=product/product&slug={slug}'],
 
 	//compare
 	'/cart/compare'                     => ['module' => 'cart/compare/index'],
@@ -93,14 +94,15 @@ return [
 	'/cart/compare/remove/#product_id#' => ['module' => 'cart/compare/remove'],
 
 	//multi language catalog - language code must be at least 2 characters
-	'/{language{2,5}}/shop'                                 => ['module' => 'product/index'],
-	'/{language{2,5}}/shop/#page#'                          => ['module' => 'product/index'],
-	'/{language{2,5}}/shop/{slug}'                          => ['module' => 'product/category/index'],
-	'/{language{2,5}}/shop/{slug}/#page#'                   => ['module' => 'product/category/index'],
-	'/{language{2,5}}/shop/{slug}/#page#/filters-{filters}' => ['module' => 'product/category/index'],
-	'/{language{2,5}}/manufacturer/{slug}'                  => ['module' => 'product/manufacturer/index'],
-	'/{language{2,5}}/vendor/{slug}'                        => ['module' => 'product/vendor/index'],
-	'/{language{2,5}}/product/{slug}'                       => ['module' => 'product/product/index', 'edit'=>'?module=product/product&slug={slug}'],
+	'/{language{2,5}}/shop'                                  => ['module' => 'product/index'],
+	'/{language{2,5}}/shop/#page#'                           => ['module' => 'product/index'],
+	'/{language{2,5}}/shop/{slug}'                           => ['module' => 'product/category/index'],
+	'/{language{2,5}}/shop/{slug}/#page#'                    => ['module' => 'product/category/index'],
+	'/{language{2,5}}/shop/{slug}/#page#/filters-{filters}'  => ['module' => 'product/category/index'],
+	'/{language{2,5}}/manufacturer/{slug}'                   => ['module' => 'product/manufacturer/index'],
+	'/{language{2,5}}/vendor/{slug}'                         => ['module' => 'product/vendor/index'],
+	'/{language{2,5}}/vendor/{slug}/#page#'                  => ['module' => 'product/vendor/index'],
+	'/{language{2,5}}/product/{slug}'                        => ['module' => 'product/product/index', 'edit'=>'?module=product/product&slug={slug}'],
 
 	//checkout
 	'/cart'                         => ['module' => 'cart/cart/index'],

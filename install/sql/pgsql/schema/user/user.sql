@@ -16,6 +16,8 @@ CREATE TABLE "user" (
   "url" varchar(100) NOT NULL DEFAULT '',
   "status" int check ("status" >= 0) NOT NULL DEFAULT 0,
   "display_name" varchar(250) NOT NULL DEFAULT '',
+  "avatar" varchar(250) NOT NULL DEFAULT '',
+  "bio" varchar(250) NOT NULL DEFAULT '',
   "token" varchar(32) NOT NULL DEFAULT '',
   "created_at" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',
   "updated_at" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',

@@ -25,6 +25,7 @@ namespace Vvveb\Controller\Product;
 use \Vvveb\Sql\VendorSQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\System\Images;
 
 class Vendor extends Base {
 	function index() {
@@ -37,9 +38,12 @@ class Vendor extends Base {
 			$vendor      = $vendorSql->get($options);
 
 			if ($vendor) {
+				if (isset($vendor['image'])) {
+					$vendor['image_url'] = Images::image($vendor['image'], 'vendor');
+				}
+
 				$this->request->request['vendor_id'] = $vendor['vendor_id'];
 				$this->view->vendor                  = $vendor;
-				$this->view->vendor_name             = $vendor['name'];
 			} else {
 				$message = __('Vendor not found!');
 				$this->notFound(true, $message);

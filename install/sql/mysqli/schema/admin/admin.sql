@@ -10,6 +10,8 @@ CREATE TABLE `admin` (
   `phone_number` varchar(32) NOT NULL DEFAULT '',
   `url` varchar(100) NOT NULL DEFAULT '',
   `display_name` varchar(250) NOT NULL DEFAULT '',
+  `avatar` varchar(250) NOT NULL DEFAULT '',
+  `bio` text,
   `role_id` INT UNSIGNED DEFAULT NULL,
   `status` INT UNSIGNED NOT NULL DEFAULT '0',
   `token` varchar(32) NOT NULL DEFAULT '',

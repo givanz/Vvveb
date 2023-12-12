@@ -30,6 +30,8 @@ use Vvveb\System\Images;
 
 class Revisions extends Base {
 	protected $type = 'post';
+	
+	protected $object = 'post';
 
 	//check for other modules permission like revision and editor to enable links like save/delete etc
 	protected $additionalPermissionCheck = ['content/revisions/save'];
@@ -40,14 +42,17 @@ class Revisions extends Base {
 	function init() {
 		if (isset($this->request->get['type'])) {
 			$this->type = $this->request->get['type'];
+		}	
+		if (isset($this->request->get['object'])) {
+			$this->object = $this->request->get['object'];
 		}
-
-		$this->revisions   = model($this->type . '_content_revision');
-		$this->post        = model($this->type);
+		
+		$this->revisions   = model($this->object . '_content_revision');
+		$this->post        = model($this->object);
 
 		$this->options = ['type' => $this->type];
 
-		foreach ([$this->type . '_id', 'language_id', 'created_at'] as $param) {
+		foreach ([$this->object . '_id', 'language_id', 'created_at'] as $param) {
 			if (isset($this->request->get[$param])) {
 				$this->options[$param] = $this->request->get[$param];
 			}
@@ -97,7 +102,7 @@ class Revisions extends Base {
 
 	function index() {
 		$view      = $this->view;
-		$revisions = model($this->type . '_content_revision');
+		$revisions = model($this->object . '_content_revision');
 		$this->options += $this->global;
 
 		$revisions = $this->revisions->getAll($this->options); // all post/product revisions
@@ -105,7 +110,7 @@ class Revisions extends Base {
 		$post      = $this->post->get($this->options); // post/product content
 
 		if (isset($post['image'])) {
-			$post['image'] = $post['image'] = Images::image($post['image'], $this->type, 'thumb');
+			$post['image'] = $post['image'] = Images::image($post['image'], $this->object, 'thumb');
 		}
 
 		$results = [
@@ -118,7 +123,7 @@ class Revisions extends Base {
 
 		$view->limit            = $this->options['limit'];
 		$view->type             = $this->type;
-		$view->revisionUrl      = \Vvveb\url(['module' => 'content/revisions', 'action' => 'revision', 'type' => $this->type]);
+		$view->revisionUrl      = \Vvveb\url(['module' => 'content/revisions', 'action' => 'revision', 'type' => $this->type, 'object' => $this->object]);
 		$view->type_name        = humanReadable(__($this->type));
 		$view->type_name_plural = humanReadable(__($view->type . 's'));
 	}

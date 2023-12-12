@@ -34,7 +34,7 @@
 	)
 	BEGIN
 
-		SELECT pd.*,posts.*,ad.username,ad.display_name,ad.admin_id,ad.email
+		SELECT pd.*,posts.*,ad.username,ad.display_name,ad.admin_id,ad.email, ad.avatar, ad.bio, ad.first_name, ad.last_name
 			@IF isset(:comment_count)
 			THEN
 				,(SELECT COUNT(c.comment_id) 

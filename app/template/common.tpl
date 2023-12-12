@@ -30,7 +30,7 @@ if (isset($_COOKIE['theme'])) {
 $vvveb_is_page_edit = Vvveb\isEditor();
 ?>
 
-[data-v-global-*] = <?php 
+[data-v-global-*]|innerText = <?php 
 $name = '@@__data-v-global-(*)__@@';
 $path = str_replace('-', '.', $name);
 if (isset($this->global) && $path) {
@@ -39,6 +39,14 @@ if (isset($this->global) && $path) {
 ?>
 
 img[data-v-global-*]|src = <?php 
+$name = '@@__data-v-global-(*)__@@';
+$path = str_replace('-', '.', $name);
+if (isset($this->global) && $path) {
+	echo \Vvveb\arrayPath($this->global, $path);
+}
+?>
+
+a[data-v-global-*]|href = <?php 
 $name = '@@__data-v-global-(*)__@@';
 $path = str_replace('-', '.', $name);
 if (isset($this->global) && $path) {

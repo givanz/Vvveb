@@ -146,7 +146,10 @@ class Sites {
 	}
 
 	public static function url($url, $host = null) {
-		$host         = $host ?? self :: getHost();
+		$host    = $host ?? self :: getHost();
+		$hasPort = strpos($host, ':') ?: null;
+		$hostWp  = substr($host, 0, strpos($host, ':') ?: null);
+
 		$host_matches = self :: $host_matches[$host] ?? [];
 
 		if (preg_match(self :: HOST_REGEX, $url, $matches)) {
@@ -169,8 +172,8 @@ class Sites {
 				return $host;
 			}
 
-			if ($host == 'localhost') {
-				$matches['domain']    = 'localhost';
+			if ($hostWp == 'localhost') {
+				$matches['domain']    = $host;
 				$matches['subdomain'] = $matches['tld'] = $matches['prefix'] = '';
 			}
 
@@ -245,12 +248,6 @@ class Sites {
 
 	public static function getHost() {
 		$host =$_SERVER['HTTP_HOST'] ?? 'localhost';
-
-		$hasPort = strpos($host, ':') ?: null;
-
-		if ($hasPort) {
-			$host = substr($host, 0, $hasPort);
-		}
 
 		return $host;
 	}

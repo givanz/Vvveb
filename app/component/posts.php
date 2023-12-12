@@ -147,6 +147,10 @@ class Posts extends ComponentBase {
 					$post['image'] = $post['images'][] = Images::image($post['image'], 'post', $this->options['image_size']);
 				}
 
+				if (isset($post['avatar'])) {
+					$post['avatar'] = $post['avatar'] = Images::image($post['avatar'], 'admin');
+				}
+
 				if (empty($post['excerpt']) && ! empty($post['content'])) {
 					$post['excerpt'] = substr(strip_tags($post['content']), 0, $this->options['excerpt_limit']);
 				}

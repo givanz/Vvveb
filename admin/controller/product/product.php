@@ -34,7 +34,9 @@ class Product extends Edit {
 
 	protected $object = 'product';
 
-	protected $module  = 'product/product';
+	protected $module = 'product/product';
+
+	protected $list   = 'product/products';
 
 	protected $revisions = true;
 

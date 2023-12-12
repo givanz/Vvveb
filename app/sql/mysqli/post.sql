@@ -18,7 +18,7 @@
 	)
 	BEGIN
 
-		SELECT _.*,pd.*,ad.admin_id,ad.username,ad.display_name,ad.email
+		SELECT _.*,pd.*,ad.admin_id,ad.username,ad.display_name,ad.email, ad.avatar, ad.bio, ad.first_name, ad.last_name
 		
 		@IF isset(:comment_count)
 			THEN

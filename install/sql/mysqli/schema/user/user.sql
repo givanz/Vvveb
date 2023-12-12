@@ -13,6 +13,7 @@ CREATE TABLE `user` (
   `status` INT UNSIGNED NOT NULL DEFAULT '0',
   `display_name` varchar(250) NOT NULL DEFAULT '',
   `avatar` varchar(250) NOT NULL DEFAULT '',
+  `bio` text,
   `token` varchar(32) NOT NULL DEFAULT '',
 --  `fields` text NOT NULL DEFAULT '',
   `subscribe` tinyint NOT NULL DEFAULT 0, 

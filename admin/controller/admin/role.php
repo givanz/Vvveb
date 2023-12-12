@@ -37,24 +37,27 @@ class Role extends Base {
 		RoleList::mkmap(DIR_APP . 'controller', $tree);
 		$this->view->tree = $tree['controller'];
 
-		$controllers             = RoleList::getControllerList();
-		$this->view->controllers = $controllers;
+		$controllers              = RoleList::getControllerList();
+		$this->view->controllers  = $controllers;
+		$this->view->capabilities = RoleList::getCapabilitiesList();
 
 		$role             = new RoleSQL();
 		$this->view->role = $role->get(['role_id' => $role_id]);
 
 		if ($this->view->role) {
-			$this->view->role['permissions']          = json_decode($this->view->role['permissions'], true);
-			$this->view->role['permissions']['deny']  = $this->view->role['permissions']['deny'] ? $this->view->role['permissions']['deny'] : [];
-			$this->view->role['permissions']['allow'] = $this->view->role['permissions']['allow'] ? $this->view->role['permissions']['allow'] : [];
+			$this->view->role['permissions']                 = json_decode($this->view->role['permissions'], true);
+			$this->view->role['permissions']['deny']         = $this->view->role['permissions']['deny'] ?? [];
+			$this->view->role['permissions']['allow']        = $this->view->role['permissions']['allow'] ??  [];
+			$this->view->role['permissions']['capabilities'] = $this->view->role['permissions']['capabilities'] ?? [];
 		}
 	}
 
 	function save() {
-		$data        = $this->request->post['role'] ?? [];
-		$allow       = $this->request->post['allow'] ?? [];
-		$deny        = $this->request->post['deny'] ?? [];
-		$permissions = ['deny' => $allow, 'allow' => $deny];
+		$data         = $this->request->post['role'] ?? [];
+		$allow        = $this->request->post['allow'] ?? [];
+		$deny         = $this->request->post['deny'] ?? [];
+		$capabilities = $this->request->post['capabilities'] ?? [];
+		$permissions  = ['deny' => $allow, 'allow' => $deny, 'capabilities' => $capabilities];
 
 		$role_id = $this->request->get['role_id'] ?? false;
 

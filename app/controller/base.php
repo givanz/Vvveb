@@ -151,6 +151,7 @@ class Base {
 
 		$site = siteSettings();
 		$user = User::current();
+		$site['url'] = '//' . $_SERVER['HTTP_HOST'] ?? '';
 
 		$this->global['site_id']       = SITE_ID ?? 1;
 		$this->global['user_id']       = $user['user_id'] ?? false;

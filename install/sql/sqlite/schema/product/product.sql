@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS `product`;
 
 CREATE TABLE `product` (
 `product_id` INTEGER PRIMARY KEY AUTOINCREMENT,
+`admin_id` INT NOT NULL DEFAULT 0,
 `model` TEXT NOT NULL,
 `sku` TEXT NOT NULL,
 `upc` TEXT NOT NULL,

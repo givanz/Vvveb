@@ -6,6 +6,7 @@ CREATE SEQUENCE vendor_seq;
 
 CREATE TABLE vendor (
   "vendor_id" int check ("vendor_id" > 0) NOT NULL DEFAULT NEXTVAL ('vendor_seq'),
+  "admin_id" int check ("admin_id" >= 0) NOT NULL DEFAULT 0,
   "name" varchar(191) NOT NULL DEFAULT '',
   "slug" varchar(191) NOT NULL DEFAULT '',
   "image" varchar(191) NOT NULL,

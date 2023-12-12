@@ -20,20 +20,11 @@
  *
  */
 
-namespace Vvveb\Controller\Content;
+use function Vvveb\__;
 
-class Post extends Edit {
-	protected $type = 'post';
-
-	protected $object = 'post';
-
-	protected $module = 'content/post';
-
-	protected $list   = 'content/posts';
-
-	function save() {
-		parent::save();
-
-		return $this->index();
-	}
-}
+return [
+	'view_other_posts' 	  => __('View other users posts'),
+	'edit_other_posts' 	  => __('Edit other users posts'),
+	'view_other_products' => __('View other users products'),
+	'edit_other_products' => __('Edit other users products'),
+];

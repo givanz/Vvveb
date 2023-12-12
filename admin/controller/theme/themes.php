@@ -24,11 +24,27 @@ namespace Vvveb\Controller\Theme;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use function Vvveb\rrmdir;
+use function Vvveb\sanitizeFileName;
 use Vvveb\System\Extensions\Themes as ThemesList;
 use Vvveb\System\Import\Theme;
 use Vvveb\System\Sites;
 
 class Themes extends Base {
+	function delete() {
+		$theme = sanitizeFileName(basename($this->request->get['theme'] ?? ''));
+
+		if ($theme) {
+			if (rrmdir(DIR_THEMES . DS . $theme)) {
+				$this->view->success[] = _('Theme removed!');
+			} else {
+				$this->view->errors[] = _('Error removing theme!');
+			}
+		}
+
+		return $this->index();
+	}
+
 	function upload() {
 		$files = $this->request->files;
 		$error = false;

@@ -132,7 +132,8 @@ class Edit extends Base {
 			foreach ($post[$this->object . '_content'] as &$content) {
 				if (! isset($post['url'])) {
 					$post['url'] = \Vvveb\url($route, ['slug'=> $content['slug']]);
-					if (!$post['url']) {
+
+					if (! $post['url']) {
 						$post['url'] = \Vvveb\url($altRoute, ['slug'=> $content['slug']]);
 					}
 				}
@@ -149,7 +150,8 @@ class Edit extends Base {
 
 				$content['url']             = \Vvveb\url($route, $content + $language);
 				$content['revision_count']  = 0;
-				if (!$content['url']) {
+
+				if (! $content['url']) {
 					$content['url']         = \Vvveb\url($altRoute, $content + $language);
 				}
 
@@ -197,8 +199,8 @@ class Edit extends Base {
 		//$view->validatorJson       = $validator->getJSON();
 		$view->type                = __($this->type);
 		$view->type_name           = $type_name;
-		$view->posts_list_url      =  \Vvveb\url(['module' => 'content/posts', 'type' => $this->type]);
-		$view->revisions_url       =  \Vvveb\url(['module' => "$controller/revisions", 'type' => $this->type, $this->object . '_id' => $post_id]);
+		$view->posts_list_url      =  \Vvveb\url(['module' => $this->list, 'type' => $this->type]);
+		$view->revisions_url       =  \Vvveb\url(['module' => "$controller/revisions", 'object' => $this->object, 'type' => $this->type, $this->object . '_id' => $post_id]);
 	}
 
 	private function addCategory($taxonomy_id, $name) {

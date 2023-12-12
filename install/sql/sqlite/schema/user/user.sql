@@ -12,6 +12,8 @@ CREATE TABLE `user` (
 `url` TEXT NOT NULL DEFAULT '',
 `status` INT NOT NULL DEFAULT 0,
 `display_name` TEXT NOT NULL DEFAULT '',
+`avatar` TEXT NOT NULL DEFAULT '',
+`bio` TEXT NOT NULL DEFAULT '',
 `token` TEXT NOT NULL DEFAULT '',
 `subscribe` INT NOT NULL DEFAULT 0,
 `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

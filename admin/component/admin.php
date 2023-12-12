@@ -24,6 +24,7 @@ namespace Vvveb\Component;
 
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use Vvveb\System\Images;
 use Vvveb\System\User\Admin as AdminUser;
 
 class Admin extends ComponentBase {
@@ -43,6 +44,11 @@ class Admin extends ComponentBase {
 
 	function results() {
 		$results       = AdminUser::current();
+
+		if (isset($results['avatar'])) {
+			$results['avatar']= Images::image($results['avatar'], 'admin');
+		}
+
 		list($results) = Event::trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;

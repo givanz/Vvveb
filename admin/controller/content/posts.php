@@ -28,6 +28,7 @@ use function Vvveb\humanReadable;
 use Vvveb\Sql\PostSQL;
 use Vvveb\System\Cache;
 use Vvveb\System\Images;
+use Vvveb\System\User\Admin;
 
 class Posts extends Base {
 	protected $type = 'post';
@@ -113,10 +114,19 @@ class Posts extends Base {
 
 		$this->type   = $this->request->get['type'] ?? 'post';
 		$this->filter = $this->request->get['filter'] ?? [];
+
 		$options      =  [
 			'type'          => $this->type,
 			'comment_count' => true,
-		] + $this->global + $this->filter;
+		] + $this->global;
+
+		if (Admin::hasCapability('view_other_posts')) {
+			unset($options['admin_id']);
+		} else {
+			$options['admin_id'] = $this->global['admin_id'];
+		}
+
+		$options += $this->filter;
 
 		//override admin if admin_id filter set
 		if (isset($this->filter['admin_id'])) {

@@ -42,8 +42,8 @@
 				,(SELECT pp.price FROM product_promotion pp 
 					WHERE pp.product_id = _.product_id AND pp.user_group_id = :user_group_id 
 						AND (
-							(pp.from_date = '0000-00-00' OR pp.from_date < NOW()) 
-							AND (pp.to_date = '0000-00-00' OR pp.to_date > NOW())
+							(pp.from_date = NULL OR pp.from_date < NOW()) 
+							AND (pp.to_date = NULL OR pp.to_date > NOW())
 						) 
 					ORDER BY pp.priority ASC, pp.price ASC 
 					LIMIT 1
@@ -716,6 +716,7 @@
 		IN language_id INT,
 		IN user_group_id INT,
 		IN site_id INT,
+		IN admin_id INT,
 		IN product_id ARRAY,
 		IN taxonomy_item_id INT,
 		IN manufacturer_id INT,
@@ -772,9 +773,9 @@
 				   WHERE pd2.product_id = products.product_id
 					 AND pd2.user_group_id = :user_group_id
 					 AND pd2.quantity = '1'
-					 AND ((pd2.from_date = '0000-00-00'
+					 AND ((pd2.from_date = NULL
 						   OR pd2.from_date < NOW())
-						  AND (pd2.to_date = '0000-00-00'
+						  AND (pd2.to_date = NULL
 							   OR pd2.to_date > NOW()))
 				   ORDER BY pd2.priority ASC, pd2.price ASC
 				   LIMIT 1) AS discount
@@ -789,9 +790,9 @@
 			   FROM product_promotion ps
 			   WHERE ps.product_id = products.product_id
 				 AND ps.user_group_id = :user_group_id
-				 AND ((ps.from_date = '0000-00-00'
+				 AND ((ps.from_date = NULL
 					   OR ps.from_date < NOW())
-					  AND (ps.to_date = '0000-00-00'
+					  AND (ps.to_date = NULL
 						   OR ps.to_date > NOW()))
 			   ORDER BY ps.priority ASC, ps.price ASC
 			   LIMIT 1) AS special
@@ -937,6 +938,11 @@
 			@IF isset(:manufacturer_id) && !empty(:manufacturer_id)
 			THEN 
 				AND products.manufacturer_id = :manufacturer_id
+        	END @IF	   		
+
+			@IF isset(:admin_id) && !empty(:admin_id)
+			THEN 
+				AND products.admin_id = :admin_id
         	END @IF	   		
 			
 			@IF isset(:vendor_id) && !empty(:vendor_id)
