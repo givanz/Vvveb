@@ -23,57 +23,93 @@
 namespace Vvveb\System\Cache;
 
 class APCu {
-	private $expire;
+	private $expire = 0;
+
+	private $options = [];
 
 	private $active;
 
 	private $cachePrefix = 'cache.';
 
-	public function __construct($expire = 3600) {
-		$this->expire = $expire;
-		$this->active = function_exists('apcu_cache_info') && ini_get('apc.enabled');
+	public function __construct($options) {
+		$this->options += $options;
+
+		$this->cachePrefix = md5(DIR_ROOT); //unique instance for shared hosting
+		$this->expire      = $this->options['expire'] ?? $this->expire;
+		$this->active      = function_exists('apcu_cache_info') && ini_get('apc.enabled');
+	}
+
+	private function key($namespace, $key = '') {
+		return str_replace(['\\', '/'], '.', $this->cachePrefix . $namespace . $key);
 	}
 
 	public function get($namespace, $key) {
-		return $this->active ? apcu_fetch($this->cachePrefix . $namespace . $key) : [];
+		return $this->active ? apcu_fetch($this->key($namespace, $key)) : null;
 	}
 
-	public function set($namespace, $key, $value, $expire = 0) {
+	public function set($namespace, $key, $value, $expire = null) {
 		if (! $expire) {
 			$expire = $this->expire;
 		}
 
 		if ($this->active) {
-			apcu_store($this->cachePrefix . $namespace . $key, $value, $expire);
+			apcu_store($this->key($namespace, $key), $value, $expire);
 		}
 	}
 
 	public function getMulti($namespace, $keys, $serverKey = false) {
-		$result = [];
+		$result   = [];
+		$fullKeys = [];
 
-		foreach ($keys as $key) {
-			$result[$key] = $this->get($namespace, $key);
+		foreach ($keys as &$key) {
+			// simulate with single call version
+			//$result[$key] = $this->get($namespace, $key);
+
+			//add namespace
+			$newKey         = $this->key($namespace, $key);
+			$fullKeys[$key] = $newKey;
+			$key            = $newKey;
+		}
+
+		$result = $this->active ? apcu_fetch($keys) : null;
+
+		if ($result) {
+			foreach ($fullKeys as $key => &$fullKey) {
+				$fullKeys[$key] = $result[$fullKey] ?? null;
+			}
+
+			return $fullKeys;
 		}
 
 		return $result;
 	}
 
-	public function setMulti($namespace, $items, $expire = 0, $serverKey = false) {
+	public function setMulti($namespace, $items, $expire = null, $serverKey = false) {
 		foreach ($items as $key => $value) {
-			$this->set($namespace, $key, $value);
+			$this->set($namespace, $key, $value, $expire);
 		}
 	}
 
-	public function delete($namespace, $key) {
+	public function delete($namespace, $key = '') {
 		if ($this->active) {
-			$cache_info = apcu_cache_info();
+			if ($namespace) {
+				return apcu_delete(new \APCUIterator('/' . $this->key($namespace, $key) . '.*/'));
 
-			$cache_list = $cache_info['cache_list'];
+				if ($key) {
+					return apcu_delete($this->key($namespace, $key));
+				} else {
+					$cache_info = apcu_cache_info();
 
-			foreach ($cache_list as $entry) {
-				if (strpos($entry['info'], $this->cachePrefix . $namespace . $key) === 0) {
-					apcu_delete($entry['info']);
+					$cache_list = $cache_info['cache_list'];
+
+					foreach ($cache_list as $entry) {
+						if (strpos($entry['info'], $this->key($namespace, $key)) === 0) {
+							apcu_delete($entry['info']);
+						}
+					}
 				}
+			} else {
+				return apcu_clear_cache();
 			}
 		}
 	}
