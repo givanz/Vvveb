@@ -22,13 +22,15 @@
 
 namespace Vvveb\System;
 
+use function Vvveb\globBrace;
+
 class CacheManager {
 	private static function clearFolder($folder, $root = DIR_PUBLIC) {
 		$name = $root . $folder . DS;
 
-		$name .= '{*,*/*,*/*/*}';
+		$glob = ['*', '*/*', '*/*/*'];
 
-		$files = glob($name, GLOB_BRACE);
+		$files = globBrace($name,$glob);
 
 		if ($files) {
 			foreach ($files as $file) {
@@ -96,10 +98,10 @@ class CacheManager {
 		return true;
 	}
 
-	public static function clearObjectCache($namespace = '') {
+	public static function clearObjectCache($namespace = '', $key = '') {
 		$cacheDriver = Cache::getInstance();
 
-		return $cacheDriver->delete($namespace);
+		return $cacheDriver->delete($namespace, $key);
 	}
 
 	public static function clearPageCache($namespace = '') {

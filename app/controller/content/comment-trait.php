@@ -25,6 +25,7 @@ namespace Vvveb\Controller\Content;
 use function Vvveb\__;
 use function Vvveb\model;
 use function Vvveb\sanitizeHTML;
+use Vvveb\System\CacheManager;
 use Vvveb\System\Event;
 
 trait CommentTrait {
@@ -68,6 +69,9 @@ trait CommentTrait {
 					$comments                                                  = $this->session->get('comments', []);
 					$comments[$comment['slug']][$comment["{$commentType}_id"]] = $comment;
 					$this->session->set($commentType, $comments);
+
+					// clear notifications cache
+					CacheManager :: clearObjectCache('component', 'notifications');
 
 					$this->view->success[] = ucfirst($commentName) . __(' was posted!');
 				} else {

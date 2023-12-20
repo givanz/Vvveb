@@ -31,7 +31,7 @@ class Cache {
 		static $inst = null;
 
 		if ($inst === null) {
-			$driver = \Vvveb\config(APP . '.cache.driver', 'file');
+			$driver = \Vvveb\config('app.cache.driver', 'file');
 			$inst   = new self($driver);
 		}
 
@@ -88,7 +88,7 @@ class Cache {
 		return $this->driver->setMulti($namespace, $items, $expire, $serverKey);
 	}
 
-	public function delete($namespace, $key = false) {
+	public function delete($namespace, $key = '') {
 		return $this->driver->delete($namespace, $key);
 	}
 

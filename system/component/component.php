@@ -53,6 +53,8 @@ class Component {
 
 	private $view = false;
 
+	private $cache = true;
+
 	static function getInstance($view = false, $regenerate = false, $content = false) {
 		if (self :: $instance === NULL) {
 			if (! $view) {
@@ -75,7 +77,7 @@ class Component {
 
 		$this->view = $view;
 
-		$this->componentsFile = $view->serviceTemplate() . '.components';
+		$this->componentsFile = $view->serviceTemplate() . '.component';
 		$this->content        = $content;
 
 		if ((! file_exists($this->componentsFile)) || $regenerate) {
@@ -108,7 +110,7 @@ class Component {
 
 		$cache     = [];
 		$objs      = [];
-		$namespace = 'components';
+		$namespace = 'component';
 
 		$notFound404 = false;
 
@@ -138,8 +140,8 @@ class Component {
 						$obj      = new $class($options);
 						$cacheKey = $obj->cacheKey();
 
-						if ($cacheKey) {
-							$cacheExpireKey                  = 'expire_' . $cacheKey;
+						if ($cacheKey && $this->cache) {
+							$cacheExpireKey                  = $cacheKey . '_expire';
 							$cache[]                         = $cacheKey;
 							$cache[]                         = $cacheExpireKey;
 							$obj->component                  = $component;
@@ -162,104 +164,110 @@ class Component {
 				}
 			}
 
-			//get cached data
-			$cacheDriver = Cache::getInstance();
-			//$cacheDriver = new Memcached();
-			$null = [];
-			$data = $cacheDriver->getMulti($namespace, $cache, SITE_ID);
+			if ($this->cache) {
+				//get cached data
+				$cacheDriver = Cache::getInstance();
+				//$cacheDriver = new Memcached();
+				$null = [];
+				$data = $cacheDriver->getMulti($namespace, $cache, SITE_ID) ?? [];
 
-			foreach ($objs as $cacheKey => $instances) {
-				foreach ($instances as $index => $instance) {
-					$component                    = $instance->component;
-					$component                    = str_replace('-', '_', $component);
-
-					$data[$cacheKey]['_instance'] = $instance;
-					$comp                         = &$view->_component[$component];
-					$comp[$index]                 = $data[$cacheKey];
-
-					if (isset($comp[$index]['404']) && $comp[$index]['404'] == true) {
-						$notFound404 = true;
-					}
-				}
-
-				//cache hit, remove from sql regeneration queue
-				$cacheExpireKey = 'expire_' . $cacheKey;
-
-				//if no lock set (! -1) and cache is expiring then set lock and set for regeneration
-				if (! isset($data[$cacheExpireKey]) || ! isset($data[$cacheKey]) ||
-					($data[$cacheExpireKey] && ($data[$cacheExpireKey] > 0) &&
-					($data[$cacheExpireKey] + COMPONENT_CACHE_EXPIRE_DELAY) < $_SERVER['REQUEST_TIME'])) {
-					$cacheDriver->set($cacheExpireKey, COMPONENT_CACHE_FLAG_LOCK, COMPONENT_CACHE_LOCK_EXPIRE); //set lock
-					$data[$cacheExpireKey] = COMPONENT_CACHE_FLAG_REGENERATE; //set regeneration flag
-					//error_log($data[$cacheExpireKey] . ' regeneration' . $cacheExpireKey);
-				}
-
-				if ($data[$cacheExpireKey] > 0) {
-					unset($objs[$cacheKey], $cache[$cacheKey], $cache[$cacheExpireKey], $data[$cacheKey], $data[$cacheExpireKey]);
-				}
-			}
-
-			$wait  = true;
-			$retry = 0;
-			//run sql queries for uncached components
-			$saveCache = [];
-
-			while ($wait && $retry < COMPONENT_CACHE_MAX_WAIT_RETRY) {
-				$wait = false;
-				$retry++;
-
-				foreach ($objs as $key => $objects) {
-					$cacheExpireKey = 'expire_' . $key;
-					//error_log($cacheExpireKey . ' --- waiTTTTT ' . $data[$cacheExpireKey]);
-					//check lock
-					if (! isset($data[$cacheExpireKey]) || ! isset($data[$key]) || $data[$cacheExpireKey] == COMPONENT_CACHE_FLAG_REGENERATE) {
-						//lock set by this script, regenerate content
-						$id      = key($objects);
-
-						$results = $objects[$id]->results();
-
-						if ($results !== null) {
-							$saveCache[$key]            = $results;
-							$saveCache[$cacheExpireKey] = $_SERVER['REQUEST_TIME'] + $objects[$id]->cacheExpire;
+				foreach ($objs as $cacheKey => $instances) {
+					foreach ($instances as $index => $instance) {
+						if (! isset($data[$cacheKey]) || ! is_array($data[$cacheKey])) {
+							$data[$cacheKey] = [];
 						}
 
-						if (isset($results['404']) && $results['404'] == true) {
+						$component                    = $instance->component;
+						$component                    = str_replace('-', '_', $component);
+						$data[$cacheKey]['_instance'] = $instance;
+						$comp                         = &$view->_component[$component];
+						$comp[$index]                 = $data[$cacheKey];
+
+						if (isset($comp[$index]['404']) && $comp[$index]['404'] == true) {
 							$notFound404 = true;
 						}
+					}
 
-						$data[$cacheExpireKey] = 0;
+					//cache hit, remove from sql regeneration queue
+					$cacheExpireKey = $cacheKey . '_expire';
 
-						foreach ($objects as $index => $instance) {
-							$results['_instance'] = $instance;
-							$component            = $instance->component;
-							$component            = str_replace('-', '_', $component);
-							$comp                 = &$view->_component[$component];
-							$comp[$index]         = $results;
-						}
-					} else {
-						if ($data[$cacheExpireKey] == COMPONENT_CACHE_FLAG_LOCK) {
-							//error_log("wait for $cacheExpireKey");
-							//item is locked, some other script is generating content
-							$wait = true;
-						}
+					//if no lock set (! -1) and cache is expiring then set lock and set for regeneration
+					if (! isset($data[$cacheExpireKey]) || ! isset($data[$cacheKey]) ||
+						($data[$cacheExpireKey] && ($data[$cacheExpireKey] > 0) &&
+						($data[$cacheExpireKey] + COMPONENT_CACHE_EXPIRE_DELAY) < $_SERVER['REQUEST_TIME'])) {
+						$cacheDriver->set($namespace, $cacheExpireKey, COMPONENT_CACHE_FLAG_LOCK, COMPONENT_CACHE_LOCK_EXPIRE); //set lock
+						$data[$cacheExpireKey] = COMPONENT_CACHE_FLAG_REGENERATE; //set regeneration flag
+					}
+
+					if ($data[$cacheExpireKey] > 0) {
+						unset($objs[$cacheKey], $cache[$cacheKey], $cache[$cacheExpireKey], $data[$cacheKey], $data[$cacheExpireKey]);
 					}
 				}
 
-				if ($wait) {
-					error_log('wait cache ' . $_SERVER['REQUEST_URI'] . print_r($cache,1));
-					//get
-					@sleep(COMPONENT_CACHE_WAIT);
-					$data = $cacheDriver->getMulti($namespace, $cache);
+				$wait  = true;
+				$retry = 0;
+				//run sql queries for uncached components
+				$saveCache = [];
+
+				while ($wait && $retry < COMPONENT_CACHE_MAX_WAIT_RETRY) {
+					$wait = false;
+					$retry++;
+
+					foreach ($objs as $key => $objects) {
+						$cacheExpireKey =  $key . '_expire';
+
+						//check lock
+						if ((! isset($data[$cacheExpireKey]) || ! ($data[$cacheExpireKey])) ||
+							! isset($data[$key]) ||
+							$data[$cacheExpireKey] == COMPONENT_CACHE_FLAG_REGENERATE) {
+							//lock set by this script, regenerate content
+							$id      = key($objects);
+
+							$results = $objects[$id]->results();
+
+							if ($results !== null) {
+								$saveCache[$key]            = $results;
+								$saveCache[$cacheExpireKey] = $_SERVER['REQUEST_TIME'] + $objects[$id]->cacheExpire;
+							}
+
+							if (isset($results['404']) && $results['404'] == true) {
+								$notFound404 = true;
+							}
+
+							$data[$cacheExpireKey] = 0;
+
+							foreach ($objects as $index => $instance) {
+								$results['_instance'] = $instance;
+								$component            = $instance->component;
+								$component            = str_replace('-', '_', $component);
+								$comp                 = &$view->_component[$component];
+								$comp[$index]         = $results;
+							}
+						} else {
+							if ($data[$cacheExpireKey] == COMPONENT_CACHE_FLAG_LOCK) {
+								//error_log("wait for $cacheExpireKey");
+								//item is locked, some other script is generating content
+								$wait = true;
+							}
+						}
+					}
+
+					if ($wait) {
+						error_log('wait cache ' . $_SERVER['REQUEST_URI'] . print_r($cache,1));
+						//get
+						@sleep(COMPONENT_CACHE_WAIT);
+						$data = $cacheDriver->getMulti($namespace, $cache);
+					}
+				}
+
+				if ($retry >= COMPONENT_CACHE_MAX_WAIT_RETRY) {
+					error_log('error:CACHE max retry reached for ' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
 				}
 			}
 
-			if ($retry >= COMPONENT_CACHE_MAX_WAIT_RETRY) {
-				error_log('error:CACHE max retry reached for ' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+			if (! empty($saveCache)) {
+				$cacheDriver->setMulti($namespace, $saveCache, $_SERVER['REQUEST_TIME'] + COMPONENT_CACHE_EXPIRE, SITE_ID);
 			}
-		}
-
-		if (! empty($saveCache)) {
-			$cacheDriver->setMulti($namespace, $saveCache, $_SERVER['REQUEST_TIME'] + COMPONENT_CACHE_EXPIRE, SITE_ID);
 		}
 
 		//call request for each component

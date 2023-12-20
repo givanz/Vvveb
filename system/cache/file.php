@@ -34,7 +34,7 @@ class File {
 
 	private $cacheDir = DIR_CACHE;
 
-	private $cachePrefix = 'cache.';
+	private $cachePrefix = ''; //'cache.';
 
 	public function __construct($options) {
 		$this->options += $options;
@@ -46,6 +46,7 @@ class File {
 
 	protected function validateNamespace($namespace) {
 		if ($namespace) {
+			$namespace = str_replace(['\\', '/'] , '.', $namespace);
 			$namespace = sanitizeFileName($namespace);
 		}
 
@@ -53,9 +54,10 @@ class File {
 	}
 
 	public function get($namespace, $key) {
-		$namespace = $this->validateNamespace($namespace);
+		$namespace  = $this->validateNamespace($namespace);
+		$key        = $this->validateNamespace($key);
 
-		$files = glob($this->cacheDir . $namespace . 'cache.' . basename($key) . '.*');
+		$files = glob($this->cacheDir . $namespace . '.' . $this->cachePrefix . basename($key) . '.*');
 
 		if ($files) {
 			$data = file_get_contents($files[0]);
@@ -67,7 +69,8 @@ class File {
 	}
 
 	public function set($namespace, $key, $value, $expire = null) {
-		$namespace = $this->validateNamespace($namespace);
+		$namespace  = $this->validateNamespace($namespace);
+		$key        = $this->validateNamespace($key);
 
 		if (! $expire) {
 			$expire = $this->expire;
@@ -75,7 +78,7 @@ class File {
 		$expire = time() + $expire;
 
 		$this->delete($namespace, $key);
-		$file = $this->cacheDir . $namespace . 'cache.' . basename($key) . '.' . $expire;
+		$file = $this->cacheDir . $namespace . '.' . $this->cachePrefix . basename($key) . '.' . $expire;
 
 		$handle = fopen($file, 'w');
 		flock($handle, LOCK_EX);
@@ -95,11 +98,11 @@ class File {
 		return $result;
 	}
 
-	public function setMulti($namespace, $items, $expire = 0, $serverKey = false) {
+	public function setMulti($namespace, $items, $expire = null, $serverKey = false) {
 		$namespace = $this->validateNamespace($namespace);
 
 		foreach ($items as $key => $value) {
-			$this->set($namespace, $key, $value);
+			$this->set($namespace, $key, $value, $expire);
 		}
 	}
 
@@ -110,10 +113,14 @@ class File {
 	public function delete($namespace, $key = false) {
 		$namespace = $this->validateNamespace($namespace);
 
-		$name = $this->cacheDir . $namespace;
+		$name = $this->cacheDir;
+
+		if ($namespace) {
+			$name .= $namespace . '.';
+		}
 
 		if ($key) {
-			$name .= 'cache.' . basename($key) . '.*';
+			$name .= $this->cachePrefix . basename($key) . '.*';
 		} else {
 			$name .= '*';
 		}

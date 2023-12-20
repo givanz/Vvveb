@@ -114,8 +114,8 @@ class ComponentBase {
 			return $this->cacheKey;
 		}
 
-		$className      = strtolower(str_replace('Vvveb\\Component\\', '',get_class($this)));
-		$this->cacheKey = md5($className . serialize($this->options));
+		$className      = strtolower(str_replace(['Vvveb\Plugins\\', 'Vvveb\Component\\', '\Component\\'], '',get_class($this)));
+		$this->cacheKey = $className . '.' . md5(serialize($this->options));
 
 		return $this->cacheKey;
 	}

@@ -22,6 +22,7 @@
 
 namespace Vvveb\System;
 
+use function Vvveb\globBrace;
 use Vvveb\System\Core\FrontController;
 
 class PageCache {
@@ -31,7 +32,7 @@ class PageCache {
 
 	const CACHE_DIR = PAGE_CACHE_DIR;
 
-	const MAX_LOCK_SECONDS = 60;
+	const MAX_LOCK_SECONDS = 10;
 
 	private $fileName;
 
@@ -94,7 +95,11 @@ class PageCache {
 	function startGenerating() {
 		$dir = dirname($this->fileName);
 
-		if (! file_exists($dir)) {
+		if (! is_dir($dir)) {
+			//if page with the same name as folder remove
+			if (file_exists($dir)) {
+				unlink($dir);
+			}
 			mkdir($dir, (0755 & ~umask()), true);
 		}
 
@@ -153,11 +158,12 @@ class PageCache {
 	}
 
 	function cleanUp() {
-		//remove lock
-		$file = $this->fileName . self :: LOCK_EXT;
-
-		if (file_exists($file)) {
-			return unlink($file);
+		//remove lock and stale cache
+		foreach ([$this->fileName . self :: LOCK_EXT,
+			$this->fileName . self :: STALE_EXT, ] as $file) {
+			if (file_exists($file)) {
+				return unlink($file);
+			}
 		}
 
 		return false;
@@ -178,6 +184,10 @@ class PageCache {
 			$this->fileName && $data &&
 			http_response_code() == 200) {
 			//create directory structure
+			if (is_dir($this->fileName)) {
+				$this->fileName .= 'index.html';
+			}
+
 			$dir = dirname($this->fileName);
 
 			if (! file_exists($dir)) {
@@ -197,10 +207,11 @@ class PageCache {
 	}
 
 	function purge($path = '/') {
-		$name = $this->cacheFolder . $path;
-		$name .= '{,*/*/,*/}*';
+		$folder = $this->cacheFolder . $path;
+		$glob   = ['', '*/*/', '*/'];
 
-		$files = glob($name, GLOB_BRACE);
+		//$files = glob($name, GLOB_BRACE);
+		$files = globBrace($folder, $glob, '*');
 
 		if ($files) {
 			foreach ($files as $file) {
@@ -217,11 +228,11 @@ class PageCache {
 		return true;
 	}
 
-	static function enable() {
-		setcookie('nocache', '', time() - 3600, '/');
+	static function enable($type = false) {
+		setcookie((in_array($type, ['user', 'cart']) ? $type : 'nocache'), '', time() - 3600, '/');
 	}
 
-	static function disable() {
-		setcookie('nocache', '1', 0, '/');
+	static function disable($type = false) {
+		setcookie((in_array($type, ['user', 'cart']) ? $type : 'nocache'), '1', 0, '/');
 	}
 }

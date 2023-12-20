@@ -31,6 +31,7 @@ use function Vvveb\filter;
 use function Vvveb\setLanguage;
 use function Vvveb\siteSettings;
 use Vvveb\System\Core\View;
+use Vvveb\System\PageCache;
 use Vvveb\System\User\Admin;
 use Vvveb\System\User\User;
 
@@ -208,6 +209,7 @@ class Base {
 		}
 
 		FrontController::closeConnections();
+		PageCache::getInstance()->cleanUp();
 
 		die(header("Location: $url"));
 	}

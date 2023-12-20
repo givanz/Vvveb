@@ -32,6 +32,7 @@ use function Vvveb\siteSettings;
 use Vvveb\Sql\CountrySQL;
 use Vvveb\Sql\RegionSQL;
 use Vvveb\Sql\User_AddressSQL;
+use Vvveb\System\CacheManager;
 use Vvveb\System\Cart\Cart;
 use Vvveb\System\Cart\Order;
 use Vvveb\System\Core\View;
@@ -276,6 +277,9 @@ class Checkout extends Base {
 						$this->session->set('errors', $error);
 						$this->view->errors[] = $error;
 					}
+
+					// clear notifications cache
+					CacheManager :: clearObjectCache('component', 'notifications');
 
 					return $this->redirect('checkout/confirm/index');
 				} else {

@@ -1147,7 +1147,7 @@ function getLanguage() {
 
 function siteSettings($site_id = SITE_ID) {
 	$cache     = System\Cache::getInstance();
-	$site      = $cache->cache(APP,'site.' . $site_id,function () use ($site_id) {
+	$site      = $cache->cache(APP,'site.' . $site_id, function () use ($site_id) {
 		$siteSql             = new Sql\SiteSQL();
 		$site                = $siteSql->get(['site_id' => $site_id]);
 
@@ -1178,9 +1178,11 @@ function siteSettings($site_id = SITE_ID) {
 function checkPhpSyntax($source) {
 	$tokens = false;
 
+	if (function_exists('token_get_all')) {
 	try {
 		$tokens = token_get_all($source, TOKEN_PARSE);
 	} catch (\ParseError $e) {
+	}
 	}
 
 	return $tokens ? true : false;
@@ -1351,8 +1353,9 @@ function download($url) {
 }
 
 function getUrl($url, $cache = true, $expire = 0) {
-	$cacheDriver = System\Cache :: getInstance();
-	$cacheKey    = md5($url);
+	$cacheDriver  = System\Cache :: getInstance();
+	$cacheKey     = md5($url);
+	$result       = false;
 
 	if ($cache && ($result = $cacheDriver->get('url', $cacheKey))) {
 		return $result;
@@ -1378,25 +1381,29 @@ function getUrl($url, $cache = true, $expire = 0) {
 			return $result;
 		} else {
 			//try with curl
-			$ch = curl_init($url);
+			if (function_exists('curl_init')) {
+				$ch = curl_init($url);
 
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			$result = curl_exec($ch);
-			curl_close($ch);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				$result = curl_exec($ch);
+				curl_close($ch);
 
-			if ($result) {
-				if ($cache) {
-					$cacheDriver->set('url', $cacheKey, $result);
+				if ($result) {
+					if ($cache) {
+						$cacheDriver->set('url', $cacheKey, $result);
+					}
+
+					return $result;
+				} else {
+					throw new \Exception('Curl error: ' . curl_errno($ch) . ' - ' . curl_error($ch));
+
+					return [];
 				}
-
-				return $result;
-			} else {
-				throw new \Exception('Curl error: ' . curl_errno($ch) . ' - ' . curl_error($ch));
-
-				return [];
 			}
 		}
 	}
+
+	return $result;
 }
 
 function unzip($file) {
@@ -1459,4 +1466,20 @@ function commentStatusBadgeClass($status = 0) {
 	];
 
 	return $classes[$status] ?? 'bg-secondary-subtle text-dark';
+}
+
+function globBrace($path, $glob, $filename = '') {
+	//$glob = ['*','*/*','*/*/*'];
+	$files = [];
+
+	if (false && defined('GLOB_BRACE')) {
+		$path .= '{' . implode(',', $glob) . '}' . $filename;
+		$files = glob($path, GLOB_BRACE);
+	} else {
+		foreach ($glob as $pattern) {
+			$files = array_merge($files, glob($path . DS . $pattern . $filename));
+		}
+	}
+
+	return $files;
 }
