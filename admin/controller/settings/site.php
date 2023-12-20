@@ -38,8 +38,10 @@ class Site extends Base {
 		$countryModel      = new CountrySQL();
 		$options           = $this->global;
 		$options['status'] = 1;
+
 		unset($options['limit']);
-		$country	              = $countryModel->getAll($options);
+
+		$country               = $countryModel->getAll($options);
 		$this->view->countries = $country['country'] ?? [];
 
 		//set Regions for default store country
@@ -50,7 +52,7 @@ class Site extends Base {
 		$options['country_id'] = $country_id;
 		$this->view->regions = $regions['region'] ?? [];
 		*/
-		$this->view->regionsUrl   = url(['module' => 'checkout/checkout', 'action' => 'regions']);
+		$this->view->regionsUrl = url(['module' => 'checkout/checkout', 'action' => 'regions']);
 	}
 
 	function dateFormat() {
@@ -60,16 +62,16 @@ class Site extends Base {
 	}
 
 	function regions() {
-		$country_id   = $this->request->get['country_id'] ?? false;
-		$regions      = [];
+		$country_id = $this->request->get['country_id'] ?? false;
+		$regions    = [];
 
 		if ($country_id) {
-			$region              = new RegionSQL();
-			$options             = $this->global;
-			$options['status']   = 1;
+			$region            = new RegionSQL();
+			$options           = $this->global;
+			$options['status'] = 1;
 			unset($options['limit']);
-			$options['country_id']   = $country_id;
-			$regions	                = $region->getAll($options)['region'] ?? [];
+			$options['country_id'] = $country_id;
+			$regions               = $region->getAll($options)['region'] ?? [];
 		}
 
 		$this->response->setType('json');
@@ -121,7 +123,7 @@ class Site extends Base {
 				$return                   = $sites->add($data);
 				$id                       = $return['site'];
 				$site['state']            = 'live';
-				$site['id']	              = $id;
+				$site['id']               = $id;
 				Sites::saveSite($site);
 
 				if (! $id) {
@@ -144,27 +146,29 @@ class Site extends Base {
 	function index() {
 		$themeList = Themes:: getList();
 
-		$site_id                   = $this->request->get['site_id'] ?? null;
-		$view                      = $this->view;
-		$view->themeList           = $themeList;
-		$view->templateList        = \Vvveb\getTemplateList(false, ['email']);
-		$site                      = [];
-		$siteSql                   = new SiteSQL();
+		$site_id            = $this->request->get['site_id'] ?? null;
+		$view               = $this->view;
+		$site               = [];
+		$siteSql            = new SiteSQL();
 
 		if ($site_id) {
-			$site                = $siteSql->get(['site_id' => $site_id]);
-		}
+			$site = $siteSql->get(['site_id' => $site_id]);
 
-		$default	      = '{"logo":"logo.png","logo-sticky":"logo.png","logo-dark":"logo-white.png","logo-dark-sticky":"logo-white.png","favicon":"favicon.ico", "country_id":223, "region_id":3655}';
-		$view->setting	= json_decode($site['settings'] ?? $default, true);
-
-		foreach (['favicon', 'logo', 'logo-sticky', 'logo-dark', 'logo-dark-sticky'] as $img) {
-			if (isset($view->setting[$img])) {
-				$view->setting[$img . '-src'] = Images::image($view->setting[$img]);
+			if (! $site) {
+				return $this->notFound();
 			}
 		}
 
-		$data                       = $siteSql->getData(($view->setting ?? []) + $this->global);
+		$default       = '{"logo":"logo.png","logo-sticky":"logo.png","logo-dark":"logo-white.png","logo-dark-sticky":"logo-white.png","favicon":"favicon.ico", "country_id":223, "region_id":3655}';
+		$setting       = json_decode($site['settings'] ?? $default, true);
+
+		foreach (['favicon', 'logo', 'logo-sticky', 'logo-dark', 'logo-dark-sticky'] as $img) {
+			if (isset($setting[$img])) {
+				$setting[$img . '-src'] = Images::image($setting[$img]);
+			}
+		}
+
+		$data                       = $siteSql->getData(($setting ?? []) + $this->global);
 		$data['complete_status_id'] = $data['processing_status_id'] = $data['order_status_id'];
 
 		$data['timezone'] = [];
@@ -181,16 +185,9 @@ class Site extends Base {
 			$data['timezone'][$timezone] = $timezone . $hour;
 		}
 
-		$admin_path          = \Vvveb\adminPath();
-		$view->site	         = $site + $view->setting;
+		$admin_path = \Vvveb\adminPath();
 
 		$domain       = Sites::urlSplit();
-		$view->domain = '';
-
-		if ($domain) {
-			$view->domain = ($domain['domain'] ?? '') . '.' . ($domain['tld'] ?? '');
-		}
-
 		//$data['subtract'] = [1 => __('Yes'), 0 => __('No')]; //Subtract stock options
 		$date_format = ['F j, Y', 'Y-m-d', 'm/d/Y', 'd/m/Y'];
 		$time_format = ['g:i a', 'g:i A', 'H:i'];
@@ -203,11 +200,22 @@ class Site extends Base {
 			$data['time_format'][$format] = date($format);
 		}
 
-		$view->set($data);
-		$view->resize = ['s' => __('Stretch'), 'c' => __('Crop')];
+		if (! defined('CLI')) {
+			$view->domain = '';
 
-		$controllerPath        = $admin_path . 'index.php?module=media/media';
-		$view->scanUrl         = "$controllerPath&action=scan";
-		$view->uploadUrl       = "$controllerPath&action=upload";
+			if ($domain) {
+				$view->domain = ($domain['domain'] ?? '') . '.' . ($domain['tld'] ?? '');
+			}
+
+			$view->set($data);
+			$view->site         = $site + $setting;
+			$view->resize       = ['s' => __('Stretch'), 'c' => __('Crop')];
+			$view->themeList    = $themeList;
+			$view->templateList = \Vvveb\getTemplateList(false, ['email']);
+
+			$controllerPath  = $admin_path . 'index.php?module=media/media';
+			$view->scanUrl   = "$controllerPath&action=scan";
+			$view->uploadUrl = "$controllerPath&action=upload";
+		}
 	}
 }

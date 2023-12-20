@@ -111,13 +111,13 @@ class User extends Auth {
 		unset($userInfo['password']);
 		\Vvveb\session(['user' => $userInfo]);
 
-		PageCache::disable();
+		PageCache::disable('user');
 
 		return $userInfo;
 	}
 
 	public static function logout() {
-		PageCache::enable();
+		PageCache::enable('user');
 
 		return \Vvveb\session(['user' => false]);
 	}

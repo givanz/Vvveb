@@ -7,6 +7,7 @@ CREATE SEQUENCE "user_seq";
 CREATE TABLE "user" (
   "user_id" int check ("user_id" > 0) NOT NULL DEFAULT NEXTVAL ('user_seq'),
   "user_group_id" int check ("user_group_id" > 0) NOT NULL DEFAULT 1,
+  "site_id" int check ("site_id" > 0) NOT NULL DEFAULT 1,
   "username" varchar(60) NOT NULL DEFAULT '',
   "first_name" varchar(32) NOT NULL DEFAULT '',
   "last_name" varchar(32) NOT NULL DEFAULT '',

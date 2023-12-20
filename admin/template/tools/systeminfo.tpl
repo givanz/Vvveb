@@ -15,7 +15,13 @@ foreach ($this->info as $category => $info) {
 	?>
 
 		@entry [data-v-name] = $name
-		@entry [data-v-value] = $value
+		@entry [data-v-value] = <?php 
+			if (is_string($value)) { 
+				echo htmlentities($value);
+			} else {
+				highlight_string(var_export($value, true)); 
+			}
+		?>
 
 
 	@entry|after = 

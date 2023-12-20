@@ -27,11 +27,13 @@ use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Session;
 use Vvveb\System\Sites as SitesList;
+use Vvveb\System\User\Admin;
 
 class Sites extends ComponentBase {
 	public static $defaultOptions = [
-		'limit' => 1000,
-		'page'  => 1,
+		'limit'       => 1000,
+		'page'        => 1,
+		'site_access' => 1,
 	];
 
 	protected $options = [];
@@ -51,6 +53,18 @@ class Sites extends ComponentBase {
 		$results['site_id']  = session('site_id');
 		$results['active']   = SitesList::getSiteById($results['site_id']);
 		$results['count']    = count($results['sites']);
+
+		if ($this->options['site_access']) {
+			$site_access = Admin::siteAccess();
+
+			if ($site_access) {
+				foreach ($results['sites'] as $key => $site) {
+					if (! in_array($site['id'], $site_access)) {
+						unset($results['sites'][$key]);
+					}
+				}
+			}
+		}
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 

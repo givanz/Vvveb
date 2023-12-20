@@ -255,10 +255,10 @@ class Notifications extends ComponentBase {
 		$this->questions();
 
 		$update  = new Update();
-		$updates = $update->checkUpdates('core');
+		$updates = $update->checkUpdates('core') ?? [];
 
 		$this->notifications['updates']['core'] = $updates;
-		$this->count += max($updates['hasUpdate'], 0);
+		$this->count += max($updates['hasUpdate'] ?? 0, 0);
 
 		$results = [
 			'notifications' => $this->notifications,

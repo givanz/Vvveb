@@ -13,6 +13,7 @@ CREATE TABLE `admin` (
   `avatar` varchar(250) NOT NULL DEFAULT '',
   `bio` text,
   `role_id` INT UNSIGNED DEFAULT NULL,
+  `site_access` TEXT NOT NULL,
   `status` INT UNSIGNED NOT NULL DEFAULT '0',
   `token` varchar(32) NOT NULL DEFAULT '',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

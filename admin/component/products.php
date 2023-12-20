@@ -51,6 +51,8 @@ class Products extends ComponentBase {
 
 		$results = $products->getAll($this->options);
 
+		$results['products'] = $results['products'] ?? [];
+
 		foreach ($results['products'] as $id => &$product) {
 			if (isset($product['images'])) {
 				$product['images'] = json_decode($product['images'], true);

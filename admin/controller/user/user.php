@@ -56,6 +56,10 @@ class User extends Base {
 				$user['avatar_url'] = Images::image($user['avatar'], $this->type);
 			}
 
+			if (isset($user['site_access'])) {
+				$user['site_access'] = json_decode($user['site_access']);
+			}
+
 			$view->user = $user;
 		}
 
@@ -98,14 +102,24 @@ class User extends Base {
 			$users    = new $sqlModel();
 			$user     = $this->request->post[$this->type] ?? [];
 
+			//if no password provided don't change
 			if (empty($user['password'])) {
 				unset($user['password']);
 			} else {
 				$user['password'] = Auth :: password($user['password']);
 			}
 
+			if (isset($user['site_access'])) {
+				if (is_array($user['site_access'])) {
+					$user['site_access'] = json_encode($user['site_access']);
+				} else {
+					$user['site_access'] = '[]';
+				}
+			} else {
+				$user['site_access'] = '[]';
+			}
+
 			if ($user_id) {
-				//if no password provided don't change
 				$result  = $users->edit([$this->type . '_id' => $user_id, $this->type => $user]);
 
 				if ($result >= 0) {

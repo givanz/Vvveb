@@ -26,6 +26,22 @@ use \Vvveb\Sql\AdminSQL;
 use Vvveb\System\PageCache;
 
 class Admin extends Auth {
+	private static function setUserData(&$data) {
+		if (isset($data['password'])) {
+			$data['password'] = self :: password($data['password']);
+		}
+
+		if (isset($data['site_access'])) {
+			if (is_array($data['site_access'])) {
+				$data['site_access'] = json_encode($data['site_access']);
+			}
+		} else {
+			$data['site_access'] = '[]';
+		}
+
+		return $data;
+	}
+
 	public static function add($data) {
 		$admin = new \Vvveb\Sql\AdminSQL();
 
@@ -34,8 +50,9 @@ class Admin extends Auth {
 			return true;
 		}
 
-		$data['password'] = self :: password($data['password']);
 		$data['status']   = 0;
+
+		self::setUserData($data);
 
 		return $admin->add(['admin' => $data]);
 	}
@@ -45,6 +62,19 @@ class Admin extends Auth {
 		$capabilities = $admin['permissions']['capabilities'] ?? [];
 
 		return in_array($capability, $capabilities);
+	}
+
+	public static function siteAccess() {
+		$admin       = \Vvveb\session('admin', false);
+
+		return $site_access = $admin['site_access'] ?? [];
+	}
+
+	public static function hasSiteAccess($site_id) {
+		$admin       = \Vvveb\session('admin', false);
+		$site_access = $admin['site_access'] ?? [];
+
+		return in_array($site_id, $site_access);
 	}
 
 	public static function hasPermission($permission) {
@@ -59,9 +89,7 @@ class Admin extends Auth {
 	public static function update($data, $condition) {
 		$admin = new \Vvveb\Sql\AdminSQL();
 
-		if (isset($data['password'])) {
-			$data['password'] = self :: password($data['password']);
-		}
+		self::setUserData($data);
 
 		return $admin->edit(array_merge(['admin' => $data], $condition));
 	}
@@ -105,6 +133,10 @@ class Admin extends Auth {
 			if (isset($adminInfo['permissions'])) {
 				$adminInfo['permissions'] = json_decode($adminInfo['permissions'], true);
 			}
+
+			if (isset($adminInfo['site_access'])) {
+				$adminInfo['site_access'] = json_decode($adminInfo['site_access'], true);
+			}
 		}
 
 		if (! $adminInfo) {
@@ -127,13 +159,13 @@ class Admin extends Auth {
 		unset($adminInfo['password']);
 		\Vvveb\session(['admin' => $adminInfo + $additionalInfo]);
 
-		PageCache::disable();
+		PageCache::disable('user');
 
 		return $adminInfo;
 	}
 
 	public static function logout() {
-		PageCache::enable();
+		PageCache::enable('user');
 
 		return \Vvveb\session(['admin' => false]);
 	}

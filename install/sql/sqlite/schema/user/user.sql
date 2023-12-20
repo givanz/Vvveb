@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
 `user_id` INTEGER PRIMARY KEY AUTOINCREMENT,
 `user_group_id` INT NOT NULL DEFAULT 1,
+`site_id` INT NOT NULL DEFAULT 1,
 `username` TEXT NOT NULL DEFAULT '',
 `first_name` TEXT NOT NULL DEFAULT '',
 `last_name` TEXT NOT NULL DEFAULT '',

@@ -49,7 +49,7 @@ class Sites extends Base {
 			$site['url'] = SitesList::url($site['host']);
 		}
 
-		$view->sitesList = $results['sites'];
-		$view->count     = $results['count'];
+		$view->sitesList = $results['sites'] ?? [];
+		$view->count     = $results['count'] ?? 0;
 	}
 }

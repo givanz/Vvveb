@@ -18,6 +18,7 @@ CREATE TABLE `admin` (
 `avatar` TEXT NOT NULL DEFAULT '',
 `bio` TEXT NOT NULL DEFAULT '',
 `role_id` INT  DEFAULT NULL,
+`site_access` INT NOT NULL DEFAULT '[]',
 `status` INT NOT NULL DEFAULT '0',
 `token` TEXT NOT NULL DEFAULT '',
 `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

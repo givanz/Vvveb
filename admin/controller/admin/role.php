@@ -47,7 +47,7 @@ class Role extends Base {
 		if ($this->view->role) {
 			$this->view->role['permissions']                 = json_decode($this->view->role['permissions'], true);
 			$this->view->role['permissions']['deny']         = $this->view->role['permissions']['deny'] ?? [];
-			$this->view->role['permissions']['allow']        = $this->view->role['permissions']['allow'] ??  [];
+			$this->view->role['permissions']['allow']        = $this->view->role['permissions']['allow'] ?? [];
 			$this->view->role['permissions']['capabilities'] = $this->view->role['permissions']['capabilities'] ?? [];
 		}
 	}

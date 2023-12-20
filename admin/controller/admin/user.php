@@ -23,6 +23,7 @@
 namespace Vvveb\Controller\Admin;
 
 use Vvveb\Controller\User\User as UserBase;
+use Vvveb\Sql\SiteSQL;
 
 class User extends UserBase {
 	protected $type = 'admin';
@@ -37,6 +38,9 @@ class User extends UserBase {
 		] + $this->global;
 
 		$roles             = $roles->getAll($options);
-		$this->view->roles = $roles ? $roles['role'] : [];
+		$sites             = new SiteSQL();
+
+		$this->view->sitesList = $sites->getAll()['sites'] ?? [];
+		$this->view->roles     = $roles ? $roles['role'] : [];
 	}
 }
