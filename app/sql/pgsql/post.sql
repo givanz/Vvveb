@@ -69,7 +69,8 @@
 
 	CREATE PROCEDURE getContent(
 		IN post_id INT,
-        IN slug CHAR,
+		IN site_id INT,
+                IN slug CHAR,
 		OUT fetch_all,
 	)
 	BEGIN
@@ -78,6 +79,12 @@
 			FROM post_content AS _
 			LEFT JOIN language ON (language.language_id = _.language_id)
 			LEFT JOIN post ON (post.post_id = _.post_id)
+
+		@IF isset(:site_id)
+		THEN
+			LEFT JOIN post_to_site pt ON (pt.post_id = _.post_id)
+		END @IF			
+			
 		WHERE 1 = 1
 
             @IF isset(:slug)
@@ -88,6 +95,11 @@
             @IF isset(:post_id)
 			THEN
                 AND _.post_id = :post_id
+        	END @IF			
+
+		@IF isset(:site_id)
+		THEN
+            	    AND pt.site_id = :site_id
         	END @IF			
 	END
 

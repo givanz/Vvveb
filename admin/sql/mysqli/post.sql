@@ -66,11 +66,11 @@
 					INNER JOIN taxonomy_item_content td ON (taxonomies.taxonomy_item_id = td.taxonomy_item_id AND td.language_id = :language_id)  
 					INNER JOIN taxonomy t ON (taxonomies.taxonomy_id = t.taxonomy_id)  
 					
-					LEFT JOIN post_to_taxonomy_item pt ON (taxonomies.taxonomy_item_id = pt.taxonomy_item_id AND pt.post_id = posts.post_id)  
+					LEFT JOIN post_to_taxonomy_item pt ON (taxonomies.taxonomy_item_id = pt.taxonomy_item_id)  
 
 					WHERE 
 					
-					td.language_id = :language_id AND t2s.site_id = :site_id AND pt.post_id = posts.post_id AND t.type = "categories"
+					td.language_id = :language_id AND t2s.site_id = :site_id AND pt.post_id = posts.post_id AND t.type = "categories" AND pt.post_id = posts.post_id
 					
 					LIMIT :categories
 
@@ -88,11 +88,11 @@
 					INNER JOIN taxonomy_item_content td ON (taxonomies.taxonomy_item_id = td.taxonomy_item_id AND td.language_id = :language_id)  
 					INNER JOIN taxonomy t ON (taxonomies.taxonomy_id = t.taxonomy_id)  
 					
-					LEFT JOIN post_to_taxonomy_item pt ON (taxonomies.taxonomy_item_id = pt.taxonomy_item_id AND pt.post_id = posts.post_id)  
+					LEFT JOIN post_to_taxonomy_item pt ON (taxonomies.taxonomy_item_id = pt.taxonomy_item_id)  
 
 					WHERE 
 					
-					td.language_id = :language_id AND t2s.site_id = :site_id AND pt.post_id = posts.post_id AND t.type = "tags"
+					td.language_id = :language_id AND t2s.site_id = :site_id AND pt.post_id = posts.post_id AND t.type = "tags" AND pt.post_id = posts.post_id
 					
 					LIMIT :tags
 
@@ -110,11 +110,11 @@
 					INNER JOIN taxonomy_item_content td ON (taxonomies.taxonomy_item_id = td.taxonomy_item_id AND td.language_id = :language_id)  
 					INNER JOIN taxonomy t ON (taxonomies.taxonomy_id = t.taxonomy_id)  
 					
-					LEFT JOIN post_to_taxonomy_item pt ON (taxonomies.taxonomy_item_id = pt.taxonomy_item_id AND pt.post_id = posts.post_id)  
+					LEFT JOIN post_to_taxonomy_item pt ON (taxonomies.taxonomy_item_id = pt.taxonomy_item_id)  
 
 					WHERE 
 					
-					td.language_id = :language_id AND t2s.site_id = :site_id AND pt.post_id = posts.post_id AND t.type = :taxonomy
+					td.language_id = :language_id AND t2s.site_id = :site_id AND pt.post_id = posts.post_id AND t.type = :taxonomy AND pt.post_id = posts.post_id
 
 
 				) as taxonomy
