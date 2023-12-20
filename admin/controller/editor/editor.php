@@ -95,7 +95,7 @@ class Editor extends Base {
 
 		foreach (['inputs', 'components', 'blocks', 'sections'] as $type) {
 			$$type = [];
-			$glob  = glob("$themeFolder/$type/*.js", GLOB_BRACE);
+			$glob  = glob("$themeFolder/$type/*.js");
 
 			foreach ($glob as &$file) {
 				$base          = str_replace('.js', '', basename($file));
@@ -358,8 +358,8 @@ class Editor extends Base {
 			}
 		}
 
-		//if absolute path then this might be a plugin template, save to public
-		if ($page[0] == '/') {
+		//if plugins template use public path
+		if (substr_compare($page[0],'/plugins/', 0, 9) === 0) {
 			$fileName = DIR_PUBLIC . DS . $page;
 		} else {
 			$fileName = $themeFolder . DS . $page;
