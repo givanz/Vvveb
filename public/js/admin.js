@@ -71,7 +71,7 @@ function ucFirst(str) {
 }
 
 function displayToast(bg, title, message, id = "bottom-toast") {
-	$("#" + id + " .toast-body").html(message);
+	$("#" + id + " .toast-body .message").html(message);
 	$("#" + id + " .toast-header").removeClass(["bg-danger", "bg-success"]).addClass(bg).
 	find("strong").text(title);
 	/*

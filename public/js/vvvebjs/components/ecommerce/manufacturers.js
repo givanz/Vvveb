@@ -19,7 +19,7 @@
  */
  
 let template = 
-`<ul class="list-unstyled" data-v-component-product-manufacturers="sidebar" data-v-type="categories">
+`<ul class="list-unstyled" data-v-component-product-manufacturers="sidebar">
 <li data-v-manufacturer>
 	  <a href="/manufacturer/mango" data-v-manufacturer-url><span data-v-manufacturer-name>Mango</span></a>
 </li>

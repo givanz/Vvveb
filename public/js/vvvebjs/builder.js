@@ -1985,9 +1985,9 @@ Vvveb.Builder = {
 				bg = "bg-danger";
 			}
 			
-			displayToast(bg, data.message ?? data);			
+			displayToast(bg, "Save", data.message ?? data);			
 		}).fail(function (data) {
-			displayToast("bg-danger", "Error saving!");
+			displayToast("bg-danger", "Error", "Error saving!");
 			alert(data.responseText);
 		});		
 	},
@@ -2120,7 +2120,7 @@ Vvveb.CodeEditor = {
 
 
 function displayToast(bg, title, message, id = "top-toast") {
-	$("#" + id + " .toast-body").html(message);
+	$("#" + id + " .toast-body .message").html(message);
 	$("#" + id + " .toast-header").removeClass(["bg-danger", "bg-success"]).addClass(bg).text(title);
 	$("#" + id + " .toast").addClass("show");
 	delay(() => $("#" + id + " .toast").removeClass("show"), 5000);
@@ -2225,7 +2225,7 @@ Vvveb.Gui = {
 				bg = "bg-danger";
 			}
 			
-			displayToast(bg, data.message ?? data);
+			displayToast(bg, "Save", data.message ?? data);
 
 			const offcanvas = document.getElementById('save-offcanvas');
 			if (offcanvas) {
@@ -2233,7 +2233,7 @@ Vvveb.Gui = {
 				if (instance) instance.hide();			
 			}
 		}, saveUrl).fail(function (data, text, errorThrown) {
-			displayToast("bg-danger", "Error saving!");
+			displayToast("bg-danger", "Error", "Error saving!");
 		}, saveUrl).always(function (data) {
 			$(".loading", btn).toggleClass("d-none");
 			$(".button-text", btn).toggleClass("d-none");
@@ -3072,10 +3072,10 @@ Vvveb.FileManager = {
 						bg = "bg-danger";
 					}
 
-					displayToast(bg, data.message ?? data);
+					displayToast(bg, "Delete", data.message ?? data);
 				},
 				error: function (data) {
-					displayToast("bg-danger", data.responseText);
+					displayToast("bg-danger", "Error", data.responseText);
 				}
 			});
 			element.remove();
@@ -3099,7 +3099,7 @@ Vvveb.FileManager = {
 						bg = "bg-danger";
 					}
 
-					displayToast(bg, data.message ?? data);
+					displayToast(bg, "Rename", data.message ?? data);
 					let baseName = newfile.replace('.html', '');
 					let newName = friendlyName(newfile.replace(/.*[\/\\]+/, '')).replace('.html', '');
 					
@@ -3120,7 +3120,7 @@ Vvveb.FileManager = {
 					
 				},
 				error: function (data) {
-					displayToast("bg-danger", data.responseText);
+					displayToast("bg-danger", "Error", data.responseText);
 				}
 			});
 
