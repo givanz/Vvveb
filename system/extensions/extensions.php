@@ -57,15 +57,23 @@ abstract class Extensions {
 
 	static function getComments($content) {
 		//$content = file_get_contents($file);
-		$docComments = [];
+		if (function_exists('token_get_all')) {
+			$docComments = [];
 
-		foreach (token_get_all($content) as $entry) {
-			if ($entry[0] == T_DOC_COMMENT || $entry[0] == T_COMMENT) {
-				$docComments[] = $entry[1];
+			foreach (token_get_all($content) as $entry) {
+				if ($entry[0] == T_DOC_COMMENT || $entry[0] == T_COMMENT) {
+					$docComments[] = $entry[1];
+				}
+			}
+
+			return implode("\n", $docComments);
+		} else {
+			if (preg_match_all('@(?s)/\*.*?\*/@', $content, $matches, PREG_PATTERN_ORDER)) {
+				return implode("\n", $matches[0] ?? []);
 			}
 		}
 
-		return implode("\n", $docComments);
+		return '';
 	}
 
 	static function getInfo($content, $name = false) {

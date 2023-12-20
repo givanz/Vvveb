@@ -2098,7 +2098,7 @@ class Vtpl {
 			return false;
 		}
 
-		if ($this->checkSyntax) {
+		if ($this->checkSyntax && function_exists('token_get_all')) {
 			file_put_contents($compiledFile, $html);
 
 			try {
