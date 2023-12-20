@@ -71,7 +71,9 @@ class Images {
 				$image = self::size($image,"{$width}x{$height}");
 
 				if ($width || $height) {
-					if (! file_exists($image)) {
+					if (file_exists(DIR_PUBLIC . $cacheFolder . $image)) {
+						$mediaFolder = $cacheFolder;
+					} else {
 						if (self :: resize(DIR_PUBLIC . $mediaFolder . $src, DIR_PUBLIC . $cacheFolder . $image, $width, $height, $method)) {
 							$mediaFolder = $cacheFolder;
 						} else {
