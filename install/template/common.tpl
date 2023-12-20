@@ -1,18 +1,3 @@
-//example class="copy_from_index.html"
-.copy_from*|outerHTML = from(@@__class:copy_from:([^\,]+)__@@|@@__class:copy_from:[^\,]+\,([^\,]+)__@@)
-
-
-/* modifiers */
-.capitalize|register_filter = <?php ucfirst($content, $arg1, $arg2);?>
-
-
-.if_*|after = <?php } ?>
-
-.if_*|before = 
-<?php if (@@macro if('@@__class__@@')@@) {?> 
-
-[class*=":if_"]|addClass =  <?php @@macro class_if('@@__class__@@')@@?>
-					  
 				  
 /*body|prepend = <?php var_dump($this);?>*/
 head base|href = <?php echo Vvveb\themeUrlPath()?>;
@@ -20,23 +5,29 @@ head base|href = <?php echo Vvveb\themeUrlPath()?>;
 
 input[type="text"]|value = 
 <?php
-	 if (isset($_POST['@@__name__@@'])) 
+ if (isset($_POST['@@__name__@@'])) 
 		echo $_POST['@@__name__@@'];
+	else if (isset($this->config['@@__name__@@'])) 
+		echo $this->config['@@__name__@@'];
 	else echo '@@__value__@@';		
 ?>
 
 input[type="password"]|value = 
 <?php
-	 if (isset($_POST['@@__name__@@'])) 
-		echo $_POST['@@__name__@@']; 
-	else echo '@@__value__@@';
+ if (isset($_POST['@@__name__@@'])) 
+		echo $_POST['@@__name__@@'];
+	else if (isset($this->config['@@__name__@@'])) 
+		echo $this->config['@@__name__@@'];
+	else echo '@@__value__@@';		
 ?>
 
 
 input[type="email"]|value = 
 <?php
-	 if (isset($_POST['@@__name__@@'])) 
+ if (isset($_POST['@@__name__@@'])) 
 		echo $_POST['@@__name__@@'];
+	else if (isset($this->config['@@__name__@@'])) 
+		echo $this->config['@@__name__@@'];
 	else echo '@@__value__@@';		
 ?>
 
@@ -45,7 +36,9 @@ input[type="checkbox"]|value =
 <?php
 	 if (isset($_POST['@@__name__@@'])) 
 		echo $_POST['@@__name__@@'];
-	 else echo '@@__value__@@';		
+	else if (isset($this->config['@@__name__@@'])) 
+		echo $this->config['@@__name__@@'];
+	else echo '@@__value__@@';		
 ?>
 
 /*

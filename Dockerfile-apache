@@ -1,4 +1,4 @@
-FROM php:8.2.11-apache
+FROM php:8.3-apache
 
 ARG DOWNLOAD_URL
 
@@ -30,6 +30,8 @@ RUN apt-get install -y \
   && docker-php-ext-install -j$(nproc) gd \
   && docker-php-ext-install xml dom curl mbstring intl gettext\
   && docker-php-ext-install zip\
+  && pecl bundle -d /usr/src/php/ext apcu\
+  && docker-php-ext-install /usr/src/php/ext/apcu\
   && docker-php-ext-install mysqli
 
 
@@ -68,6 +70,10 @@ RUN chmod -R 666 ${DIR_PLUGINS}
 RUN chmod -R 666 ${DIR_CACHE}
 RUN chmod -R 666 ${DIR_DIGITAL_ASSETS}
 RUN chmod -R 666 ${DIR_IMAGE_CACHE}
+
+COPY php.ini ${PHP_INI_DIR}
+COPY docker-entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 
 EXPOSE 80
 #CMD ["apachectl", "-D", "FOREGROUND"]

@@ -43,6 +43,8 @@ define('DEFAULT_LANG', 'en_US');
 
 #[\AllowDynamicProperties]
 class Index extends Base {
+	private $config = ['engine' => 'mysqli', 'host' => '127.0.0.1', 'database'  => 'vvveb', 'user'  => 'root', 'password'  => '', 'port'  => null, 'prefix'  => ''];
+
 	function __construct() {
 		if (! ($lang = session('language'))) {
 			$lang = userPreferedLanguage();
@@ -116,8 +118,8 @@ class Index extends Base {
 		clearstatcache(true, $configFile);
 	}
 
-	function import($noimport = false) {
-		$config = ['engine' => '', 'host' => '', 'database'  => '', 'user'  => '', 'password'  => '', 'prefix'  => ''];
+	private function import($noimport = false) {
+		$config = $this->config;
 
 		array_walk($this->request->post, function ($value, $key) use (&$config) {
 			if (isset($config[$key])) {
@@ -140,16 +142,16 @@ class Index extends Base {
 		try {
 			if (! defined('DB_ENGINE')) {
 				define('DB_ENGINE', $engine);
-				define('DB_HOST', $host);
-				define('DB_USER', $user);
-				define('DB_PASS', $password);
-				define('DB_NAME', $database);
+				define('DB_HOST',   $host);
+				define('DB_USER',   $user);
+				define('DB_PASS',   $password);
+				define('DB_NAME',   $database);
 				define('DB_PREFIX', $prefix);
-				define('DB_CHARSET', 'utf8mb4');
-				define('DIR_SQL', DIR_APP . 'sql/' . DB_ENGINE . '/');
+				define('DB_PORT',   $port);
+				define('DIR_SQL',   DIR_APP . 'sql/' . DB_ENGINE . '/');
 			}
 
-			$import = new \Vvveb\System\Import\Sql($engine, $host, $database, $user, $password, $prefix);
+			$import = new \Vvveb\System\Import\Sql($engine, $host, $database, $user, $password, $port, $prefix);
 			//$import->createDb($database);
 			if ($engine == 'mysqli') {
 				$import->createDb($database);
@@ -184,6 +186,19 @@ class Index extends Base {
 
 		\Vvveb\System\CacheManager::clearFrontend();
 
+		//get defaults from get parameters if passed or from env if available
+		foreach ($this->config as $key => &$value) {
+			$env = 'DB_' . strtoupper($key);
+
+			if (isset($_ENV[$env])) {
+				$value = $_ENV[$env];
+			}
+
+			if (isset($this->request->get[$key])) {
+				$value = $this->request->get[$key];
+			}
+		}
+
 		if ($this->request->post) {
 			if (isset($this->request->post['language'])) {
 				$lang = $this->request->post['language'];
@@ -198,9 +213,10 @@ class Index extends Base {
 			}
 		}
 
-		$installedLanguages                = [DEFAULT_LANG => '0'] + array_flip(installedLanguages());
-		$languagesList                     = include DIR_SYSTEM . 'data/languages-list.php';
-		$languages                         = array_intersect_key($languagesList, $installedLanguages);
+		$installedLanguages = [DEFAULT_LANG => '0'] + array_flip(installedLanguages());
+		$languagesList      = include DIR_SYSTEM . 'data/languages-list.php';
+		$languages          = array_intersect_key($languagesList, $installedLanguages);
+		$this->view->config = $this->config;
 
 		if (! defined('CLI')) {
 			$this->view->languagesList    = $languages;
@@ -259,7 +275,7 @@ class Index extends Base {
 
 			$site = [
 				'host'     => $hostname ?? '*.*.*', //$_SERVER['HTTP_HOST']
-				'id' 	     => 1,
+				'id'       => 1,
 				'name'     => 'Default',
 				'theme'    => $theme,
 				'settings' => json_encode($settings),
@@ -317,6 +333,11 @@ class Index extends Base {
 
 			@\Vvveb\set_config('app.cronkey', Str::random(32));
 			@\Vvveb\set_config('app.key', Str::random(32));
+
+			//set APCu memory cache if available instead of default file cache
+			if (function_exists('apcu_cache_info') && ini_get('apc.enabled')) {
+				@\Vvveb\set_config('app.cache.driver', 'APCu');
+			}
 
 			$success               = __('Installation succesful!');
 			$this->view->success[] = $success;

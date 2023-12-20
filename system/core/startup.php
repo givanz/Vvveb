@@ -309,12 +309,12 @@ $connection = \Vvveb\config('db.connections.' . $dbDefault,  []);
 if ($connection) {
 	// Define default database configuration
 	define('DB_ENGINE', $connection['engine']);
-	define('DB_HOST', $connection['host'] ?? '');
-	define('DB_USER', $connection['user'] ?? '');
-	define('DB_PASS', $connection['password'] ?? '');
-	define('DB_NAME', $connection['database'] ?? '');
+	define('DB_HOST',   $connection['host'] ?? '');
+	define('DB_USER',   $connection['user'] ?? '');
+	define('DB_PASS',   $connection['password'] ?? '');
+	define('DB_NAME',   $connection['database'] ?? '');
 	define('DB_PREFIX', $connection['prefix'] ?? '');
-	define('DB_CHARSET', 'utf8mb4');
+	define('DB_PORT',   $connection['port'] ?? null);
 } else {/*
 	define('DB_ENGINE', 'mysqli');
 	define('DB_HOST', 'localhost');
@@ -322,7 +322,6 @@ if ($connection) {
 	define('DB_PASS', '');
 	define('DB_NAME', 'vvveb');
 	define('DB_PREFIX', '');
-	define('DB_CHARSET', 'utf8mb4');
 	 */
 }
 

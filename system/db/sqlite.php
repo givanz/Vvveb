@@ -72,7 +72,7 @@ class Sqlite extends DBDriver {
 		return $result;
 	}
 
-	public function __construct($filename = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS,  $prefix = DB_PREFIX) {
+	public function __construct($filename = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = null,  $prefix = DB_PREFIX) {
 		if (self :: $link) {
 			return self :: $link;
 		}
@@ -161,8 +161,8 @@ class Sqlite extends DBDriver {
 		}
 
 		return $return;
-	}	
-	
+	}
+
 	public function fetchArray($result) {
 		$return = false;
 
@@ -171,8 +171,8 @@ class Sqlite extends DBDriver {
 		}
 
 		return $return;
-	}	
-	
+	}
+
 	public function fetchAll($result) {
 		$return = [];
 
@@ -195,7 +195,7 @@ class Sqlite extends DBDriver {
 				$this->affected_rows = self :: $link->changes();
 				$this->insert_id     = self :: $link->lastInsertRowID();
 				$this->num_rows      = $result->numColumns() && $result->columnType(0) != SQLITE3_NULL;
-				//$result->finalize();
+			//$result->finalize();
 			} else {
 				throw new \Exception($this->error(), $this->errorCode());
 			}

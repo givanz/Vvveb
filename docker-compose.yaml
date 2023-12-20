@@ -19,8 +19,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      VVVEB_HOST: db
+      VVVEB_PASSWORD: vvveb
+      DB_HOST: db
+      DB_DATABASE: vvveb
+      DB_USER: vvveb
+      DB_PASSWORD: vvveb
+      DB_ENGINE: mysqli
     volumes:
       - ./:/var/www/html/
+    links:
+      - db:mysql
     depends_on:
       - db
     networks:

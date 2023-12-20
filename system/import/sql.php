@@ -22,22 +22,24 @@
 
 namespace Vvveb\System\Import;
 
+use function Vvveb\globBrace;
+
 #[\AllowDynamicProperties]
 class Sql {
 	public $db;
 
-	function __construct($driver = DB_ENGINE, $host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $prefix = DB_PREFIX) {
+	function __construct($driver = DB_ENGINE, $host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = DB_PASS, $prefix = DB_PREFIX) {
 		$this->sqlPath = DIR_ROOT . "install/sql/$driver/";
 		$engine        = '\Vvveb\System\Db\\' . ucfirst($driver);
 
 		$this->prefix = $prefix;
 
 		try {
-			$this->db = new $engine($host, $dbname, $user, $pass, $prefix);
+			$this->db = new $engine($host, $dbname, $user, $pass, $port, $prefix);
 		} catch (\Exception $e) {
 			//unknown database, try to create
 			if ($e->getCode() == 1049) {
-				$this->db = new $engine($host, '', $user, $pass, $prefix);
+				$this->db = new $engine($host, '', $user, $pass, $port, $prefix);
 
 				if ($driver !== 'sqlite') {
 					$this->createDb($dbname);
@@ -173,7 +175,12 @@ class Sql {
 			$this->db->query($query , 'fts5 test module');
 		}
 
-		foreach (glob($this->sqlPath . '{,**/}*.sql', GLOB_BRACE) as $filename) {
+		$glob   = ['', '*/*/', '*/'];
+
+		//$files = glob($name, GLOB_BRACE);
+		$files = globBrace($this->sqlPath, ['', '**/'], '*.sql');
+
+		foreach ($files as $filename) {
 			$sql      = file_get_contents($filename);
 			$filename = str_replace($this->sqlPath, '', $filename);
 
@@ -229,7 +236,12 @@ class Sql {
 	}
 
 	function insertData($filter = []) {
-		foreach (glob($this->sqlPath . '{,**/}*.sql', GLOB_BRACE) as $filename) {
+		$glob   = ['', '*/*/', '*/'];
+
+		//$files = glob($name, GLOB_BRACE);
+		$files = globBrace($this->sqlPath, ['', '**/'], '*.sql');
+
+		foreach ($files as $filename) {
 			$name = basename($filename);
 
 			if ($filter && ! in_array($name, $filter)) {

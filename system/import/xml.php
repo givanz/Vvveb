@@ -43,18 +43,18 @@ class Xml {
 
 	private $cDataColumns = ['content', 'excerpt', 'name', 'title', 'description', 'meta_title', 'meta_description', 'slug'];
 
-	function __construct($driver = DB_ENGINE, $host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $prefix = DB_PREFIX) {
+	function __construct($driver = DB_ENGINE, $host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = DB_PORT, $prefix = DB_PREFIX) {
 		$this->sqlPath = DIR_ROOT . "install/sql/$driver/";
 		$engine        = '\Vvveb\System\Db\\' . ucfirst($driver);
 
 		$this->prefix = $prefix;
 
 		try {
-			$this->db = new $engine($host, $dbname, $user, $pass, $prefix);
+			$this->db = new $engine($host, $dbname, $user, $pass, $port, $prefix);
 		} catch (\Exception $e) {
 			//unknown database, try to create
 			if ($e->getCode() == 1049) {
-				$this->db = new $engine($host, '', $user, $pass, $prefix);
+				$this->db = new $engine($host, '', $user, $pass, $port, $prefix);
 				$this->createDb($dbname);
 			} else {
 				throw($e);

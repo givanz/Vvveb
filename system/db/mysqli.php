@@ -24,10 +24,6 @@ namespace Vvveb\System\Db;
 
 use Vvveb\System\Event;
 
-//ini_set('mysql.trace_mode', '0');
-//ini_set('mysqli.trace_mode', '0');
-
-//define('SQL_ALLOW_FUNCTIONS','NOW,DATE,CURTIME');
 /*
  Define and use mysqli_result if native is missing
  */
@@ -127,7 +123,7 @@ class Mysqli extends DBDriver {
 		return $result;
 	}
 
-	public function __construct($host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS,  $prefix = DB_PREFIX) {
+	public function __construct($host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = DB_PORT,  $prefix = DB_PREFIX) {
 		//mysqli_report(MYSQLI_REPORT_OFF);
 		//connect to database
 		if (self :: $link) {
@@ -135,10 +131,10 @@ class Mysqli extends DBDriver {
 		}
 		$this->prefix = $prefix;
 
-		mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+		\mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 		try {
-			self :: $link = new \Mysqli(/*'p:' . */$host, $user, $pass, $dbname);
+			self :: $link = new \Mysqli(/*'p:' . */$host, $user, $pass, $dbname, $port);
 			//self :: $link = $this;
 		} catch (\mysqli_sql_exception $e) {
 			$errorMessage = str_replace($pass,'*****', $e->getMessage());

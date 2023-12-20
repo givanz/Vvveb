@@ -73,10 +73,10 @@ class Pgsql extends DBDriver {
 		return $stmt;
 	}
 
-	public function __construct($host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS,  $prefix = DB_PREFIX) {
+	public function __construct($host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = DB_PORT, $prefix = DB_PREFIX) {
 		if (! self :: $link) {
 			//port 5432 for direct pgsql connection 6432 for pgbouncer
-			$port           = 5432;
+			$port           = $port ?: 5432;
 			$connect_string = "host=$host port=$port dbname=$dbname  user=$user password=$pass";
 
 			if (self :: $persistent) {
