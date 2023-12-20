@@ -36,6 +36,7 @@ use Vvveb\System\Core\View;
 use Vvveb\System\Event;
 use Vvveb\System\Extensions\Plugins;
 use Vvveb\System\Functions\Str;
+use Vvveb\System\PageCache;
 use Vvveb\System\Session;
 use Vvveb\System\Sites;
 use Vvveb\System\User\Admin;
@@ -290,9 +291,6 @@ class Base {
 			clearLanguageCache($language);
 		}
 
-		$view                = $this->view;
-		$view->languagesList = $languages;
-
 		$default_language    = $this->session->get('default_language') ?? $default_language = $defaultLanguage;
 		$default_language_id = $this->session->get('default_language_id') ?? $default_language_id = $defaultLanguageId;
 		$language            = $this->session->get('language') ?? $language = $default_language;
@@ -341,6 +339,11 @@ class Base {
 		$this->global['default_language_id'] = $default_language_id;
 
 		setLanguage($language);
+
+		if (! defined('CLI')) {
+			$view                = $this->view;
+			$view->languagesList = $languages;
+		}
 	}
 
 	protected function currency($defaultCurrency, $defaultCurrencyId) {
@@ -499,6 +502,7 @@ class Base {
 		if ($stop) {
 			$this->session->close();
 			FrontController::closeConnections();
+			PageCache::getInstance()->cleanUp();
 
 			die();
 		}

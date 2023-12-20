@@ -113,7 +113,7 @@ class Sites {
 	}
 
 	public static function urlSplit($url = null) {
-		$url          = $url ?? $_SERVER['HTTP_HOST'];
+		$url          = $url ?? $_SERVER['HTTP_HOST'] ?? '';
 		$host         = $host ?? self :: getHost();
 		$host_matches = self :: $host_matches[$host] ?? [];
 

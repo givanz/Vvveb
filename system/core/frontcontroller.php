@@ -143,7 +143,7 @@ class FrontController {
 
 		//return $response->output();
 		PageCache::getInstance()->cleanUp();
-		$view->render(false, true, $service);
+		$view->render($service, true, $service);
 
 		die();
 		//self :: closeConnections();

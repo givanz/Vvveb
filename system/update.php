@@ -56,7 +56,7 @@ class Update {
 			$info = json_decode($result, true);
 
 			if ($type == 'core') {
-				$info['hasUpdate'] = max(version_compare($info['version'], V_VERSION), 0);
+				$info['hasUpdate'] = max(version_compare($info['version'] ?? 0, V_VERSION), 0);
 			}
 
 			return $info;
