@@ -22,32 +22,26 @@
 
 namespace Vvveb\Controller\Feed;
 
-use \Vvveb\Controller\Base;
-use Vvveb\System\Functions\Str;
+use Vvveb\Controller\Base;
 
-class Index extends Base {
+class Robots extends Base {
 	function index() {
-		$rss = $this->request->get['rss'] ?? false;
+		$text   = '';
+		$robots = DIR_PUBLIC . 'vrobots.txt';
 
-		if ($rss) {
-			$rss   = Str::sanitizeFilename($rss);
-			$xml   = "/feed/{$rss}.xml";
-			$theme = $this->view->getTheme();
-
-			foreach ([$theme, 'default'] as $t) {
-				$file = DIR_THEME . $t . DS . $xml;
-
-				if (file_exists($file)) {
-					header('Content-type: text/xml');
-
-					$this->view->setTheme($t);
-					$this->view->pubDate = date('r');
-
-					return $xml;
-				}
-			}
-
-			$this->notFound(true);
+		if (file_exists($robots)) {
+			$text = @file_get_contents($robots);
 		}
+
+		$host = ' https://' . $_SERVER['HTTP_HOST'] ?? '' . (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
+
+		// change sitemap urls to absolute
+		if ($host) {
+			$text = preg_replace('@(sitemap):\s+/@', "$1: $host/", $text);
+		}
+
+		$this->view->text = $text;
+
+		$this->response->setType('text');
 	}
 }

@@ -117,7 +117,8 @@ return [
 	'/checkout/confirm/#id#'  => ['module' => 'checkout/order/index'],
 
 	//feeds
-	'/feed/{rss}'     => ['module' => 'feed/index'],
+	'/feed/{rss}' => ['module' => 'feed/index'],
+	'/robots.txt' => ['module' => 'feed/robots/index'],
 	/*
 	'/feed/posts'     => ['module' => 'feed/posts'],
 	'/feed/products'  => ['module' => 'feed/products'],
@@ -166,10 +167,6 @@ return [
 	'/{language{2,5}}/#year{4,4}#/#month{2,2}#'=> ['module' => 'content/archive/index'],
 	//archive day
 	//'/#year#/#month#/#day#'=> ['module' => 'content/archive/index'],
-
-	//feed
-	'/feed'           => ['module' => 'feed'],
-	'/feed/comments'  => ['module' => 'feed/comments/index'],
 
 	//Cron
 	'/run-cron/{key}' => ['module' => 'cron/index'],

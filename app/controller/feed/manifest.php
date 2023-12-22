@@ -92,8 +92,7 @@ class Manifest extends Base {
 		  ],*/
 		];
 
-		header('Content-type: application/json; charset=utf-8');
-
-		die(json_encode($manifest));
+		$this->view->json = $manifest;
+		$this->response->setType('json');
 	}
 }
