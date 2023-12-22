@@ -167,7 +167,7 @@ class View {
 		if (! $this->template) {
 			return false;
 		}
-		
+
 		$this->template    = str_replace(['/', '\\'], DS, $this->template);
 		$templatePath      = $this->templatePath;
 		$template          = $this->template;
@@ -344,6 +344,14 @@ class View {
 			$this->_type = 'json';
 		}*/
 
+		if ($this->_type == 'text') {
+			if (isset($this->text)) {
+				echo $this->text;
+			}
+
+			return;
+		}
+
 		if ($this->_type == 'json') {
 			$jsonFlags = 0;
 
@@ -351,7 +359,11 @@ class View {
 			$jsonFlags = JSON_PRETTY_PRINT;
 			//}
 			ob_start();
-			echo json_encode($this, $jsonFlags);
+			if (isset($this->json)) {
+				echo json_encode($this->json, $jsonFlags);
+			} else {
+				echo json_encode($this, $jsonFlags);
+			}
 
 			return ob_end_flush();
 		} else { //html

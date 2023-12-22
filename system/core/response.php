@@ -29,7 +29,7 @@ class Response {
 
 	private $type = ''; //html, json, xml
 
-	private $typeHeaders = ['html' => 'text/html', 'xml' => 'text/xml', 'json' => 'application/json'];
+	private $typeHeaders = ['html' => 'text/html', 'xml' => 'text/xml', 'text' => 'text/plain', 'json' => 'application/json'];
 
 	protected static $instance;
 
