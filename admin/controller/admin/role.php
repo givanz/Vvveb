@@ -57,7 +57,7 @@ class Role extends Base {
 		$allow        = $this->request->post['allow'] ?? [];
 		$deny         = $this->request->post['deny'] ?? [];
 		$capabilities = $this->request->post['capabilities'] ?? [];
-		$permissions  = ['deny' => $allow, 'allow' => $deny, 'capabilities' => $capabilities];
+		$permissions  = ['deny' => $deny, 'allow' => $allow, 'capabilities' => $capabilities];
 
 		$role_id = $this->request->get['role_id'] ?? false;
 
