@@ -24,6 +24,7 @@ namespace Vvveb\Component;
 
 use function Vvveb\availableLanguages;
 use function Vvveb\getCurrentUrl;
+use function Vvveb\isSecure;
 use Vvveb\Sql\LanguageSQL;
 use Vvveb\System\Cache;
 use Vvveb\System\Component\ComponentBase;
@@ -85,6 +86,8 @@ class Language extends ComponentBase {
 
 			$hreflang = [];
 
+			$scheme = isSecure() ? 'https' : 'http';
+
 			foreach ($results['language'] as $code => &$language) {
 				$shortcode       = \Vvveb\filter('/[a-z]+/',$code);
 				$content 		      = [];
@@ -105,8 +108,9 @@ class Language extends ComponentBase {
 
 				//$url = getCurrentUrl();
 				if (true/* && $options['default'] != $code*/) {
-					$url             = url($request->get['route'] ?? '', $lang + $content + $get, false); //"/$shortcode" . getCurrentUrl();
-					$hreflang[$code] = $url;
+					$params               = $lang + $content + $get + ['host' => $_SERVER['HTTP_HOST'] ?? '', 'scheme' => $scheme];
+					$url                  = url($request->get['route'] ?? '', $params, false); //"/$shortcode" . getCurrentUrl();
+					$hreflang[$shortcode] = $url;
 				}
 
 				$language['url'] = $url;
