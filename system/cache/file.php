@@ -81,11 +81,14 @@ class File {
 		$file = $this->cacheDir . $namespace . '.' . $this->cachePrefix . basename($key) . '.' . $expire;
 
 		$handle = fopen($file, 'w');
-		flock($handle, LOCK_EX);
-		fwrite($handle, json_encode($value/*, JSON_PRETTY_PRINT*/));
-		fflush($handle);
-		flock($handle, LOCK_UN);
-		fclose($handle);
+
+		if ($handle) {
+			flock($handle, LOCK_EX);
+			fwrite($handle, json_encode($value/*, JSON_PRETTY_PRINT*/));
+			fflush($handle);
+			flock($handle, LOCK_UN);
+			fclose($handle);
+		}
 	}
 
 	public function getMulti($namespace, $keys, $serverKey = false) {

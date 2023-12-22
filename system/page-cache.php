@@ -70,7 +70,7 @@ class PageCache {
 		}
 
 		if (substr($path, -1) == '/') {
-			$path .= 'index.html';
+			$path .= DS . 'index.html';
 		}
 
 		return $file_cache = $this->cacheFolder . $path;
@@ -94,6 +94,10 @@ class PageCache {
 
 	function startGenerating() {
 		$dir = dirname($this->fileName);
+
+		if (is_dir($this->fileName)) {
+			$this->fileName .= DS . 'index.html';
+		}
 
 		if (! is_dir($dir)) {
 			//if page with the same name as folder remove
@@ -185,7 +189,7 @@ class PageCache {
 			http_response_code() == 200) {
 			//create directory structure
 			if (is_dir($this->fileName)) {
-				$this->fileName .= 'index.html';
+				$this->fileName .= DS . 'index.html';
 			}
 
 			$dir = dirname($this->fileName);
