@@ -25,21 +25,29 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Base;
 use Vvveb\Sql\SiteSQL;
 use Vvveb\System\Sites as SitesList;
+use Vvveb\System\User\Admin;
 
 class Sites extends Base {
 	function add() {
 	}
 
 	function index() {
-		$view              = $this->view;
-		$sites             = new SiteSQL();
-		$this->view->sites = $sites->getAll();
+		$view  = $this->view;
+		$sites = new SiteSQL();
+
+		$options = [];
+
+		if (Admin::hasCapability('view_other_sites')) {
+			unset($options['site_id']);
+		} else {
+			$options['site_id'] = Admin :: siteAccess();
+		}
 
 		$page    = $this->request->get['page'] ?? 1;
 		$limit   = $this->request->get['limit'] ?? 10;
 
 		$results = $sites->getAll(
-			[
+			$options + [
 				'start'        => ($page - 1) * $limit,
 				'limit'        => $limit,
 			]

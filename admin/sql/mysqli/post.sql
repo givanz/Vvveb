@@ -247,6 +247,7 @@
 		IN language_id INT,
 		IN comment_count INT,
 		IN comment_status INT,
+		IN admin_id INT,
 		IN type CHAR,
 		
 		OUT fetch_row,
@@ -296,6 +297,11 @@
             @IF isset(:post_id)
 			THEN
                 AND _.post_id = :post_id
+        	END @IF		
+			
+            @IF isset(:admin_id)
+			THEN
+                AND _.admin_id = :admin_id
         	END @IF			
 			
 			@IF isset(:type)

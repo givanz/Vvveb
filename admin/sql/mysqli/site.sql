@@ -1,10 +1,11 @@
--- Languages
+-- Sites
 
 	-- get all sites
 
 	PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN site_id ARRAY,
 		
 		-- return array of sites for sites query
 		OUT fetch_all,
@@ -15,6 +16,14 @@
 		-- site
 		SELECT *, site_id as array_key
 			FROM site as sites
+
+		WHERE 1
+		
+		-- site_id
+		@IF isset(:site_id)
+		THEN
+			AND sites.site_id IN (:site_id)
+		END @IF
 
 		-- limit
 		@IF isset(:limit)

@@ -27,4 +27,6 @@ return [
 	'edit_other_posts' 	  => __('Edit other users posts'),
 	'view_other_products' => __('View other users products'),
 	'edit_other_products' => __('Edit other users products'),
+	'view_other_sites'    => __('View other users sites'),
+	'edit_other_sites'    => __('Edit other users sites'),
 ];
