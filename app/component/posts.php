@@ -114,6 +114,8 @@ class Posts extends ComponentBase {
 		$results = $posts->getAll($this->options);
 		//$languages = availableLanguages();
 
+		$type = $this->options['type'] ?: 'post';
+
 		if ($results && isset($results['posts'])) {
 			foreach ($results['posts'] as $id => &$post) {
 				if (isset($post['images'])) {
@@ -176,8 +178,8 @@ class Posts extends ComponentBase {
 
 				//url
 				$url                  =  ['slug' => $post['slug'], 'post_id' => $post['post_id']] + $language;
-				$post['url']          = url('content/post/index', $url);
-				$post['full-url']     = url('content/post/index', $url + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http']);
+				$post['url']          = url("content/$type/index", $url);
+				$post['full-url']     = url("content/$type/index", $url + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http']);
 				$post['author-url']   = url('content/user/index', $post);
 				$post['comments-url'] = $post['url'] . '#comments';
 			}
