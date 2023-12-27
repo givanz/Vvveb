@@ -18,30 +18,10 @@
  *
  */
 
-/*
- "elements/testimonial",
- "elements/code",
- "elements/social-icons",
- "elements/carousel",
- "elements/icon-list",
- popup-button cu editare continut popup cu un toggle ca la flip box
- * 
- * accordion
- * sideblock
- * tabs
- * slider
- * parallax
- * fullscreen slider
- * 
- * section, footer, header, icon,gallery,slider,menu,logo,tabs,accordion,flip-box,counter,contact-form,svg-icon, cover, counter, contact form, flip box
- 
- 
- 
- */ 
-
 Vvveb.ComponentsGroup['Elements'] = [
 /*sections */
-"elements/svg-icon", /*
+"elements/svg-icon",
+"elements/carousel", /*
 "elements/gallery",
 "elements/slider",
 "elements/menu",
@@ -56,7 +36,6 @@ Vvveb.ComponentsGroup['Elements'] = [
 "elements/subscribe-form",
 "elements/testimonial",
 "elements/social-icons",
-"elements/carousel",
 "elements/icon-list",
 "elements/divider",
 "elements/separator",
@@ -69,9 +48,9 @@ Vvveb.ComponentsGroup['Elements'] = [
 "elements/code",
 "elements/image-compare",
 "elements/back-to-top",
-"elements/blob", //https://unlimited-elements.com/blob-shape-widget-for-elementor/
-"elements/image-shape", //https://unlimited-elements.com/image-shapes-for-elementor-page-builder/
-"elements/image-shape", //https://unlimited-elements.com/image-shapes-for-elementor-page-builder/
+"elements/blob",
+"elements/image-shape",
+"elements/image-shape",
 "elements/rating",*/
 "elements/section", 
 "elements/footer", 
@@ -79,60 +58,8 @@ Vvveb.ComponentsGroup['Elements'] = [
 // cover
 //counter
 //contact form
-//flip box - https://www.w3schools.com/howto/howto_css_flip_box.asp
+//flip box
 ];
-
-// Section
-/*
- content
-	- hide on desktop
-	- hide on tablet
-	- hide on mobile
- style
-	- background
-		- image
-			- url 
-			- size - cover / contain /auto
-			- attachement - scroll / fixed / parallax
-			- position
-				- top 
-				- left
-			- size
-				- width
-				- height
-		- video
-			- native
-			- yotube 
-			- vimeo
-			- url
-		- slider?	
-		- color
-	- background overlay
-		-color
-			- color
-		- gradient
-			- type - linear / radial
-			- color
-			- secondary color
-			- angle 
-			- position
-			
-		- opacity
-		- blend mode
-
-	- separator 
-		- top
-			- divider
-			- color
-			- width
-			- height
-		- bottom
-	- padding
-	- margin
-*/ 
-
-
-
 
 Vvveb.Components.extend("_base","elements/figure", {
     nodes: ["figure"],
@@ -943,13 +870,236 @@ Vvveb.Components.add("elements/social-icons", {
 });   
 
 Vvveb.Components.add("elements/carousel", {
-    nodes: [".counter"],
     name: "Carousel",
     image: "icons/carousel.svg",
-    html: `<i class="font-icon la la-star"></i>`,
+    classes: ["swiper"],
+    html: `
+	  <div class="swiper" data-slides-per-view="3" data-draggable="true">
+		<div class="swiper-wrapper">
+		  <div class="swiper-slide"><img src="../../media/posts/1.jpg" class="img-fluid"><p>Slide 1</p></div>
+		  <div class="swiper-slide"><img src="../../media/posts/2.jpg" class="img-fluid"><p>Slide 2</p></div>
+		  <div class="swiper-slide"><img src="../../media/posts/3.jpg" class="img-fluid"><p>Slide 3</p></div>
+		  <div class="swiper-slide"><img src="../../media/posts/4.jpg" class="img-fluid"><p>Slide 4</p></div>
+		</div>
+		<div class="swiper-pagination"></div>
+
+		<!--
+		<div class="swiper-button-prev"></div>
+		<div class="swiper-button-next"></div>
+		-->
+		
+		<!-- <div class="swiper-scrollbar"></div> -->
+	  </div>	
+	`,
+	afterDrop: function (node)
+	{
+		//check if swiper js is included and if not add it when drag starts to allow the script to load
+		body = Vvveb.Builder.frameBody;
+		
+		if ($("#swiper-js", body).length == 0)
+		{
+			let swiperScript = `<script id="swiper-js" src="../../js/libs/swiper/swiper-bundle.min.js"></script> 
+			<link id="swiper-css" href="../../js/libs/swiper/swiper-bundle.min.css" rel="stylesheet">
+			<script>
+			var swiper = [];
+			function initSwiper(onlyNew = false) {
+				var list = document.querySelectorAll('.swiper' + (onlyNew ? ":not(.swiper-initialized)" : "") );
+				list.forEach(el => 
+					swiper.push(new Swiper(el, el.dataset))
+					//swiper.push(new Swiper(el, { ...{autoplay:{delay: 500}}, ...el.dataset}))		
+				);
+			}	
+			$(document).ready(function() {
+				initSwiper();
+			  });
+			</script>`;				
+					
+			$(body).append(swiperScript);
+		} else {
+			Vvveb.Builder.iframe.contentWindow.initSwiper(true);
+		}
+		
+		return node;
+	},
+	
+    onChange: function (node, property, value) {
+		let element = node[0];
+		if (property.key == "autoplay" && value == true) {
+			value = {"waitForTransition":true,"enabled":value,"delay":element.dataset.delay};
+		}
+
+		element.swiper.params[property.key] = value;
+		element.swiper.originalParams[property.key] = value;
+		element.swiper.update();
+		return node;
+	},
+
     properties: [
-	]
-});   
+	{
+		name: "Slides",
+        key: "slidesPerView",
+        inputtype: ListInput,
+		htmlAttr:"data-slides-per-view",
+		inline:true,
+		data: {
+			"selector":".swiper-slide",
+			"container":".swiper-wrapper",
+			"prefix":"Slide ",
+			"removeElement": false,//handle manually with removeSlide
+			//"newElement": `<div class="swiper-slide"><img src="../../media/posts/1.jpg" class="img-fluid"><p>Slide 1</p></div>`
+		},
+        onChange: function(node, value, input, component, event) {
+			let element = node[0];
+			let dataset = {};
+			for (i in element.dataset) {
+				dataset[i] = element.dataset[i];
+			}; 
+
+			if (event.action) {
+				if (event.action == "add") {
+					let random = Math.floor(Math.random() * 6) + 1;
+					let index = element.swiper.slides.length + 1;
+					element.swiper.appendSlide(`<div class="swiper-slide"><img src="../../media/posts/${random}.jpg" class="img-fluid"><p>Slide ${index}</p></div>`);
+					element.swiper.slideTo(index);
+					//temporary solution to better update list
+					Vvveb.Components.render("elements/carousel");
+				}
+				if (event.action == "remove") {
+					element.swiper.removeSlide(event.index);
+				}
+			}
+			
+			setTimeout(function () {
+				for (i in dataset) {
+					element.swiper.params[i] = dataset[i];
+					element.dataset[i] = dataset[i];
+				}; 
+				element.swiper.update(); 
+			}, 1000);
+			
+			return node;
+		},
+	},	{
+		name: "Slides per view",
+        key: "slidesPerView",
+        inputtype: NumberInput,
+		htmlAttr:"data-slides-per-view",
+	},
+	{
+		name: "Space between",
+        key: "spaceBetween",
+        inputtype: NumberInput,
+		htmlAttr:"data-space-between",
+	},	
+	{
+		name: "Speed",
+        key: "speed",
+        inputtype: NumberInput,
+		htmlAttr:"data-speed",
+		data: {step:100},
+	},	
+	{
+		name: "Delay",
+        key: "delay",
+        inputtype: NumberInput,
+		htmlAttr:"data-delay",
+		data: {step:100},
+    },{
+		key: "carousel_options",
+        inputtype: SectionInput,
+        name:false,
+        data: {header:"Options"},
+    },{	
+		name: "Simulate touch",
+        key: "simulateTouch",
+		htmlAttr:"data-simulate-touch",
+		inputtype: CheckboxInput,
+		inline:true,
+        col:4
+    },{	
+		name: "Autoplay",
+        key: "autoplay",
+		htmlAttr:"data-autoplay",
+		inputtype: CheckboxInput,
+		inline:true,
+        col:4
+	}, {
+		name: "Auto height",
+        key: "autoHeight",
+		htmlAttr:"data-auto-height",
+		inputtype: CheckboxInput,
+		inline:true,
+        col:4
+	},{
+		name: "Centered slides",
+        key: "centeredSlides",
+		htmlAttr:"data-centered-slides",
+		inputtype: CheckboxInput,
+		inline:true,
+        col:4
+	},{	name: "Center insufficient",
+        key: "centerInsufficientSlides",
+		htmlAttr:"data-center-insufficient-slides",
+		inputtype: CheckboxInput,
+		inline:true,
+        col:4
+	},{	name: "Loop",
+        key: "loop",
+		htmlAttr:"data-loop",
+		inputtype: CheckboxInput,
+		inline:true,
+        col:4
+	},{	name: "Mouse wheel",
+        key: "mousewheel",
+		htmlAttr:"data-mousewheel",
+		inputtype: CheckboxInput,
+		inline:true,
+        col:4
+	},{	
+        name: "Pagination",
+        key: "pagination",
+		htmlAttr:"data-pagination",
+		inputtype: CheckboxInput,
+		inline:true,
+        col:4
+	},{	name: "Rewind",
+        key: "rewind",
+		htmlAttr:"data-rewind",
+		inputtype: CheckboxInput,
+		inline:true,
+        col:4
+	},{	name: "Scrollbar",
+        key: "scrollbar",
+		htmlAttr:"data-scrollbar",
+		inputtype: CheckboxInput,
+		inline:true,
+        col:4
+	},/*
+	{
+        name: "direction",
+        key: "direction",
+		htmlAttr:"data-direction",
+		section: style_section,
+        col:6,
+        inline:false,
+        inputtype: RadioButtonInput,
+        data: {
+			extraclass:"btn-group-sm btn-group-fullwidth",
+            options: [{
+                value: "horizontal",
+                icon:"la la-arrow-down",
+                title: "Horizontal",
+                checked:true,
+            }, {
+                value: "vertical",
+                title: "Vertical",
+                icon:"la la-arrow-right",
+                checked:false,
+			}],
+		}
+    }*/]
+});
+
 
 
 Vvveb.Components.add("elements/icon-list", {

@@ -345,7 +345,7 @@ Vvveb.Components = {
 		var element;
 		
 		var fn = function(component, property) {
-			return property.input.on('propertyChange', function (event, value, input) {
+			return property.input.on('propertyChange', function (event, value, input, origEvent) {
 					
 					var element = selectedElement = Vvveb.Builder.selectedEl;
 					
@@ -353,7 +353,7 @@ Vvveb.Components = {
 					if (property.parent) element = element.parent(property.parent);
 					
 					if (property.onChange) {
-						let ret = property.onChange(element, value, input, component);
+						let ret = property.onChange(element, value, input, component, origEvent);
 						//if on change returns an object then is returning the dom node otherwise is returning the new value
 						if (typeof ret == "object")  {
 							element = ret;
@@ -1668,7 +1668,7 @@ Vvveb.Builder = {
 			
 			return false;
 		});
-
+		
 		$("#delete-btn").on("click", function(event) {
 			$("#select-box").hide();
 			
