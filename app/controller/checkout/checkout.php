@@ -200,6 +200,7 @@ class Checkout extends Base {
 				}
 			}
 
+			unset($rules['confirm_password']);
 			$validator                = new Validator($rules);
 			$checkoutInfo             = $validator->filter($this->request->post);
 

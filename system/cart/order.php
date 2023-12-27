@@ -22,6 +22,7 @@
 
 namespace Vvveb\System\Cart;
 
+use function Vvveb\siteSettings;
 use Vvveb\Sql\OrderSQL;
 
 class Order {
@@ -46,6 +47,22 @@ class Order {
 	}
 
 	public function add($data) {
+		//set defaults
+		$defaults = ['invoice_prefix', 'order_status_id', 'remote_ip', 'forwarded_for_ip'];
+
+		$site                     = siteSettings();
+		$site['remote_ip']        = $_SERVER['REMOTE_ADDR'] ?? false;
+		$site['forwarded_for_ip'] = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? false;
+
+		foreach ($defaults as $default) {
+			if (
+				(! isset($data) || ! empty($data)) &&
+				(isset($site[$default]) && ! empty($site[$default]))
+			) {
+				$data[$default] = $site[$default];
+			}
+		}
+
 		//check if email is already registerd
 		return $this->model->add(['order' => $data]);
 	}

@@ -34,7 +34,6 @@ return [
 		'maxLength'  => 100,
 	],
 	'password' => [
-		'notEmpty'           => '',
 		//'passwordComplexity' => 'low',
 		'minLength'          => 6,
 		'maxLength'          => 32,
