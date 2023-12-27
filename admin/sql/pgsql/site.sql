@@ -1,4 +1,4 @@
--- Languages
+-- Sites
 
 	-- get all sites
 
@@ -20,7 +20,7 @@
 		WHERE 1
 		
 		-- site_id
-		@IF isset(:site_id)
+		@IF isset(:site_id) && !empty(:site_id)
 		THEN
 			AND sites.site_id IN (:site_id)
 		END @IF

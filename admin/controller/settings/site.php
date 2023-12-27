@@ -209,6 +209,7 @@ class Site extends Base {
 
 			$view->set($data);
 			$view->site         = $site + $setting;
+			$view->setting      = $setting;
 			$view->resize       = ['s' => __('Stretch'), 'c' => __('Crop')];
 			$view->themeList    = $themeList;
 			$view->templateList = \Vvveb\getTemplateList(false, ['email']);
