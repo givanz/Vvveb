@@ -51,11 +51,11 @@
      transform="translate(-35.883 -48.843)"
      stroke-miterlimit="0"
      stroke-linecap="round"
-     stroke-width="5.292"
+     stroke-width="3"
      stroke="#000"
      fill="none"
      id="g14"
-     style="stroke-width:3.96874997;stroke-miterlimit:2.33349991;stroke-dasharray:none">
+     style="stroke-width:3;stroke-miterlimit:3;stroke-dasharray:none">
     <rect
        width="112.577"
        height="33.841"
@@ -64,12 +64,12 @@
        ry="1.975"
        stroke-linejoin="round"
        id="rect2"
-       style="stroke-width:3.96874997;stroke-miterlimit:2.33349991;stroke-dasharray:none" />
+       style="stroke-width:3;stroke-miterlimit:3;stroke-dasharray:none" />
     <path
        d="M67.527 74.198l49.034-.035M142.736 70.67l6.773 8.608 7.62-8.043M67.47 142.601l49.034-.035"
        stroke-linejoin="round"
        id="path4"
-       style="stroke-width:3.96874997;stroke-miterlimit:2.33349991;stroke-dasharray:none" />
+       style="stroke-width:3;stroke-miterlimit:3;stroke-dasharray:none" />
     <rect
        width="112.577"
        height="33.841"
@@ -77,12 +77,12 @@
        y="125.681"
        ry="0"
        id="rect6"
-       style="stroke-width:3.96874997;stroke-miterlimit:2.33349991;stroke-dasharray:none" />
+       style="stroke-width:3;stroke-miterlimit:3;stroke-dasharray:none" />
     <path
        d="M142.679 139.074l6.773 8.607 7.62-8.043"
        stroke-linejoin="round"
        id="path8"
-       style="stroke-width:3.96874997;stroke-miterlimit:2.33349991;stroke-dasharray:none" />
+       style="stroke-width:3;stroke-miterlimit:3;stroke-dasharray:none" />
     <rect
        width="112.577"
        height="33.841"
@@ -91,12 +91,12 @@
        ry="1.975"
        stroke-linejoin="round"
        id="rect10"
-       style="stroke-width:3.96874997;stroke-miterlimit:2.33349991;stroke-dasharray:none" />
+       style="stroke-width:3;stroke-miterlimit:3;stroke-dasharray:none" />
     <path
        d="M67.47 176.442l49.034-.035M142.68 172.914l6.772 8.608 7.62-8.043"
        stroke-linejoin="round"
        id="path12"
-       style="stroke-width:3.96874997;stroke-miterlimit:2.33349991;stroke-dasharray:none" />
+       style="stroke-width:3;stroke-miterlimit:3;stroke-dasharray:none" />
   </g>
   <path
      d="M134.014 40.423V80.14M21.436 32.641v45.927"
@@ -105,5 +105,5 @@
      stroke-width="5.292"
      stroke-miterlimit="4.667"
      id="path16"
-     style="stroke-width:3.96874997;stroke-miterlimit:2.33349991;stroke-dasharray:none" />
+     style="stroke-width:3;stroke-miterlimit:3;stroke-dasharray:none" />
 </svg>
