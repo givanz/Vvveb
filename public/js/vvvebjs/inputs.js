@@ -332,13 +332,15 @@ var CssUnitInput = $.extend({}, Input, {
 	},
 	
 	setValue: function(value) {
-		this.number = parseFloat(value);
-		this.unit = value.replace(this.number, '').trim();
-		
-		if (this.unit == "auto") $(this.element).addClass("auto");
+		if (value) {
+			this.number = parseFloat(value);
+			this.unit = value.replace(this.number, '').trim();
+			
+			if (this.unit == "auto") $(this.element).addClass("auto");
 
-		$('input', this.element).val(this.number);
-		$('select', this.element).val(this.unit);
+			$('input', this.element).val(this.number);
+			$('select', this.element).val(this.unit);
+		}
 	},
 	
 	init: function(data) {
@@ -634,6 +636,7 @@ var ListInput = $.extend({}, Input, {
         ["change", "onChange", "select"],
         ["click", "remove", ".delete-btn"],
         ["click", "add", ".btn-new"],
+        ["click", "select", ".section-item"],
 	 ],
 	
 
@@ -662,6 +665,16 @@ var ListInput = $.extend({}, Input, {
 		event.action = "add";
 		event.data.input.onChange(event, node);
 		return false;
+	},	
+	
+	select: function(event, node) {
+		let sectionItem = $(this);
+		let index = sectionItem.index();
+		
+		event.action = "select";
+		event.index = index;
+		event.data.input.onChange(event, node);
+		return false;
 	},
 
 	setValue: function(value) {
@@ -672,12 +685,17 @@ var ListInput = $.extend({}, Input, {
 		this.selector = data.selector;
 		this.node = node;
 
-		let elements = $(this.selector, this.node);
+		let elements = $(data.container + " " + this.selector, this.node);
 		let options = [];
 		
 		elements.each(function (i, e) {
+			let element = e;
+			if (data.nameElement) {
+				element = element.querySelector(data.nameElement);
+			}
+			let name = (data.name = "text" ? element.textContent : element.id);
 			options.push({
-				name: e.id,
+				name: name,
 				type: (data.prefix ?? "") + (i + 1) + (data.suffix ?? ""),
 			});
 		});

@@ -20,8 +20,8 @@
 
 Vvveb.ComponentsGroup['Elements'] = [
 /*sections */
-"elements/svg-icon",
-"elements/carousel", /*
+"elements/font-icon",
+"elements/carousel", 
 "elements/gallery",
 "elements/slider",
 "elements/menu",
@@ -30,10 +30,8 @@ Vvveb.ComponentsGroup['Elements'] = [
 "elements/accordion",
 "elements/flip-box",
 "elements/counter",
-//"elements/contact-form",
 "elements/svg-icon",
 "elements/figure",
-"elements/subscribe-form",
 "elements/testimonial",
 "elements/social-icons",
 "elements/icon-list",
@@ -51,13 +49,12 @@ Vvveb.ComponentsGroup['Elements'] = [
 "elements/blob",
 "elements/image-shape",
 "elements/image-shape",
-"elements/rating",*/
+"elements/rating",
 "elements/section", 
 "elements/footer", 
 "elements/header", 
 // cover
 //counter
-//contact form
 //flip box
 ];
 
@@ -101,13 +98,13 @@ Vvveb.Components.extend("_base","elements/figure", {
         key: "width",
         child:"img",
         htmlAttr: "width",
-        inputtype: TextInput
+        inputtype: CssUnitInput
     }, {
         name: "Height",
         key: "height",
         child:"img",
         htmlAttr: "height",
-        inputtype: TextInput
+        inputtype: CssUnitInput
     }, {
         name: "Alt",
         key: "alt",
@@ -126,13 +123,57 @@ Vvveb.Components.extend("_base","elements/figure", {
 
 
 //Icon
-Vvveb.Components.add("elements/icon", {
-    nodes: ["i.icon"],
+Vvveb.Components.extend("_base","elements/font-icon", {
+    classes: ["la", "lab"],
     name: "Font Icon",
     image: "icons/star.svg",
-    html: `<i class="font-icon la la-star"></i>`,
+    html: `<i class="la la-star la-2x"></i>`,
     properties: [
-	]
+{
+		name: "Icon",
+		key: "icon",
+		inline:true,
+		inputtype: HtmlListSelectInput,
+		onChange:function(element, value, input, component) {
+			
+			element.removeClass(["la", "lab", "lar"]);
+			element.removeClass(function (index, className) {
+				return (className.match (/(^|\s)la-(?!lg|2x)\S+/g) || []).join(' ');
+			});
+			
+			element.addClass(input.firstChild.className);
+
+			return element;
+		},
+		data: {
+			url: Vvveb.baseUrl + "../../resources/{value}.html",
+			clickElement:"li",
+			insertElement:"i",
+			elements: 'Loading ...',
+			options: [{
+                value: "line-awesome",
+                text: "Line-awesome"
+            }]
+		},
+	}, {
+        name: "Size",
+        key: "type",
+        htmlAttr: "class",
+        inputtype: SelectInput,
+        validValues: ["","la-lg", "la-2x"],
+        data: {
+            options: [{
+                value: "",
+                text: "Normal"
+            }, {
+                value: "la-lg",
+                text: "Large"
+            }, {
+                value: "la-2x",
+                text: "2x"
+            }]
+        }
+    }]
 });   
 /*
 V.Resources.Icons =
@@ -212,8 +253,8 @@ Vvveb.Components.extend("_base","elements/svg-icon", {
                 value: "olicons",
                 text: "Olicons"
             }, {
-		value: "open-iconic",
-		text: "Open iconic"
+				value: "open-iconic",
+				text: "Open iconic"
             }, {
                 value: "boxicons",
                 text: "Box icons"
@@ -535,44 +576,10 @@ Vvveb.Components.add("elements/gallery", {
 		} else {
 			source = "flex";
 		}
+
 		$('.mb-3[data-group="'+ source + '"]').attr('style','');
 	}	
 });  
-
-//Slider
-Vvveb.Components.add("elements/slider", {
-    nodes: ["i.icon"],
-    name: "Slider",
-    image: "icons/slider.svg",
-    html: `<section>
-				<div class="container>
-					<h1>Container</h1>
-				</div>
-			</section>`,
-    properties: [
-		  {
-			name: "Width",
-			key: "width",
-			htmlAttr: "width",
-			inputtype: RangeInput,
-			data:{
-				max: 640,
-				min:6,
-				step:1
-			}
-		   }, {
-			name: "Height",
-			key: "height",
-			htmlAttr: "height",
-			inputtype: RangeInput,
-			data:{
-				max: 640,
-				min:6,
-				step:1
-		   },
-		}
-	]
-}); 	
 
 //Menu
 Vvveb.Components.add("elements/Menu", {
@@ -645,33 +652,30 @@ Vvveb.Components.add("elements/tabs", {
     name: "Tabs",
     image: "icons/tabs.svg",
     html: `
-	<div data-component-tabs>
-		<div class="shadow">
+	<div data-component-tabs id="tabs-parentId">
 			<nav>
-			  <div class="nav nav-tabs" id="nav-tab" role="tablist">
-				<button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Home</button>
-				<button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Profile</button>
-				<button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Contact</button>
-				<button class="nav-link" id="nav-disabled-tab" data-bs-toggle="tab" data-bs-target="#nav-disabled" type="button" role="tab" aria-controls="nav-disabled" aria-selected="false" disabled>Disabled</button>
-			  </div>
+			  <div class="nav nav-tabs" role="tablist">
+				<button class="nav-link active" id="nav-tab-parentId-1" data-bs-toggle="tab" data-bs-target="#nav-parentId-1" type="button" role="tab" aria-controls="nav-1" aria-selected="true">Home</button>
+				<button class="nav-link" id="nav-tab-parentId-2" data-bs-toggle="tab" data-bs-target="#nav-parentId-2" type="button" role="tab" aria-controls="nav-2" aria-selected="false">Profile</button>
+				<button class="nav-link" id="nav-tab-parentId-3" data-bs-toggle="tab" data-bs-target="#nav-parentId-3" type="button" role="tab" aria-controls="nav-3" aria-selected="false">Contact</button>	  </div>
 			</nav>
-			<div class="tab-content" id="nav-tabContent">
-			  <div class="tab-pane show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
+			<div class="tab-content">
+			  <div class="tab-pane p-4 show active" id="nav-parentId-1" role="tabpanel" aria-labelledby="nav-tab-1" tabindex="0">
 				<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis perferendis rem accusantium ducimus animi nesciunt expedita omnis aut quas molestias!</p>
 			  </div>
-			  <div class="tab-pane" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
+			  <div class="tab-pane p-4" id="nav-parentId-2" role="tabpanel" aria-labelledby="nav-tab-2" tabindex="0">
 				<p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin</p>
 			  </div>
-			  <div class="tab-pane" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabindex="0">
+			  <div class="tab-pane p-4" id="nav-parentId-3" role="tabpanel" aria-labelledby="nav-tab-3" tabindex="0">
 				<p>Quisque sagittis non ex eget vestibulum</p>
 			  </div>
-			  <div class="tab-pane" id="nav-disabled" role="tabpanel" aria-labelledby="nav-disabled-tab" tabindex="0">
-				<p>Sed viverra pellentesque dictum.</p>
-			  </div>
 			</div>
-		</div>
 	</div>`,
-	
+	afterDrop: function(node) {
+		//set unique accordion id
+		node[0].outerHTML = node[0].outerHTML.replaceAll('parentId', Math.ceil(Math.random() * 1000));
+		return node;
+	},	
     properties: [{
 			//name: "List",
 			key: "list",
@@ -684,124 +688,152 @@ Vvveb.Components.add("elements/tabs", {
 			inline:false,
 			inputtype: ListInput,
 			data: {
-				component: "elements/tab",
-				selector:".tab-pane",
-				children :{
-					component: "elements/tab",
-					selector:".tab-pane",
-					name: "html/gridcolumn",
-					classesRegex: ["col-"],
-				},				
-				options: [{
-					name: "btn-default",
-					type: "Default",
-					suffix: "unu"
-				}, {
-					name: "btn-asdasd",
-					type: "Second",
-					suffix: "doi"
-				}, {
-					name: "btn-435435",
-					type: "Third",
-					suffix: "trei"
-				}]
-			}
+				selector:"> .nav-link",
+				container:"> nav > .nav-tabs",
+				prefix:"Tab ",
+				name: "text",
+				removeElement: false,//handle manually to delete pane also
+				//"newElement": ``
+			},
+			onChange: function(node, value, input, component, event) {
+				let element = node[0];
+				let tabsId = element.id.replace('tabs-','');
+				
+				let nav = $("> nav .nav-tabs", node);
+				let content = $("> .tab-content", node);
+
+				if (event.action) {
+					if (event.action == "add") {
+						let random = Math.floor(Math.random() * 100) + 1;
+						let index = nav[0].childElementCount + 1;
+						
+						nav.append(`<button class="nav-link" id="nav-tab-${tabsId}-${index}-${random}" data-bs-toggle="tab" data-bs-target="#tab-${tabsId}-${index}-${random}" type="button" role="tab" aria-controls="tab-${index}-${random}" aria-selected="false">Tab ${index}</button>`);
+						
+						content.append(`<div class="tab-pane p-4" id="tab-${tabsId}-${index}-${random}" role="tabpanel" aria-labelledby="tab-${tabsId}-${index}-${random}" tabindex="0"><p>Quisque sagittis non ex eget vestibulum</p></div>`);
+						
+						//temporary solution to better update list
+						Vvveb.Components.render("elements/tabs");
+					}
+					if (event.action == "remove") {
+						$("> button:eq(" + event.index + ")", nav).remove();
+						$("> .tab-pane:eq(" + event.index + ")", content).remove();
+					} else if (event.action == "select") {
+						let tab = $("> button:eq(" + event.index + ")", nav);
+						//tab[0].click();
+						Vvveb.Builder.iframe.contentWindow.bootstrap.Tab.getOrCreateInstance(tab[0]).show();
+					}
+				}
+				
+				return node;
+			},
 		}
 	]
 }); 	
 
+
 //Accordion
 Vvveb.Components.add("elements/accordion", {
-    nodes: [".accordion"],
+    classes: ["accordion"],
     name: "Accordeon",
     image: "icons/accordion.svg",
-    html: `
-<div class="accordion" id="accordionExample">
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="headingOne">
-      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-        Accordion Item #1
-      </button>
-    </h2>
-    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-      <div class="accordion-body">
-        <strong>This is the first item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-      </div>
-    </div>
-  </div>
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="headingTwo">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-        Accordion Item #2
-      </button>
-    </h2>
-    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
-      <div class="accordion-body">
-        <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-      </div>
-    </div>
-  </div>
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="headingThree">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-        Accordion Item #3
-      </button>
-    </h2>
-    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
-      <div class="accordion-body">
-        <strong>This is the third item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-      </div>
-    </div>
-  </div>
-</div>    
-    
-    
-    
-    <div class="accordion">
-    
-			  <div class="accordion-item">
-				<div class="accordion-header">
-				  <button class="accordion-button" type="button" data-bs-toggle="collapse" aria-expanded="true" data-bs-target="::parent .accordion-collapse">
-					Accordion Item #1
-				  </button>
-				<div class="accordion-collapse collapse show" data-bs-parent=".accordion">
-				  <div class="accordion-body">
-					<strong> 1This is the first item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-				  </div>
-				</div>
-				</div>
+    html: `<div class="accordion" id="accordion-parentId">
+		  <div class="accordion-item">
+			<h2 class="accordion-header" id="headingOne-parentId">
+			  <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne-parentId" aria-expanded="true" aria-controls="collapseOne-parentId">
+				Accordion Item #1
+			  </button>
+			</h2>
+			<div id="collapseOne-parentId" class="accordion-collapse collapse show" aria-labelledby="headingOne-parentId" data-bs-parent="#accordion-parentId">
+			  <div class="accordion-body">
+				<p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin</p>
 			  </div>
-			  
-			  <div class="accordion-item">
-				<div class="accordion-header">
-				  <button class="accordion-button" type="button" data-bs-toggle="collapse" aria-expanded="true" data-bs-target="::parent .accordion-collapse">
-					Accordion Item #2
-				  </button>
-				<div class="accordion-collapse collapse show" data-bs-parent=".accordion">
-				  <div class="accordion-body">
-					<strong>2 This is the first item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-				  </div>
-				</div>
-				</div>
+			</div>
+		  </div>
+		  <div class="accordion-item">
+			<h2 class="accordion-header" id="headingTwo-parentId">
+			  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo-parentId" aria-expanded="false" aria-controls="collapseTwo">
+				Accordion Item #2
+			  </button>
+			</h2>
+			<div id="collapseTwo-parentId" class="accordion-collapse collapse" aria-labelledby="headingTwo-parentId" data-bs-parent="#accordion-parentId">
+			  <div class="accordion-body">
+				<p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin</p>
 			  </div>
-			  
-			  <div class="accordion-item">
-				<div class="accordion-header">
-				  <button class="accordion-button" type="button" data-bs-toggle="collapse" aria-expanded="true" data-bs-target="::parent .accordion-collapse">
-					Accordion Item #3
-				  </button>
-				<div class="accordion-collapse collapse show" data-bs-parent=".accordion">
-				  <div class="accordion-body">
-					<strong>3 This is the first item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-				  </div>
-				</div>
-				</div>
+			</div>
+		  </div>
+		  <div class="accordion-item">
+			<h2 class="accordion-header" id="headingThree-parentId">
+			  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree-parentId" aria-expanded="false" aria-controls="collapseThree">
+				Accordion Item #3
+			  </button>
+			</h2>
+			<div id="collapseThree-parentId" class="accordion-collapse collapse" aria-labelledby="headingThree-parentId" data-bs-parent="#accordion-parentId">
+			  <div class="accordion-body">
+				<p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin</p>
 			  </div>
-			  
-			  
-			</div>`,
-    properties: [
-		{
+			</div>
+		  </div>
+		</div>`,
+	afterDrop: function(node) {
+		//set unique accordion id
+		node[0].outerHTML = node[0].outerHTML.replaceAll('parentId', Math.ceil(Math.random() * 1000));
+		return node;
+	},
+    properties: [{
+			//name: "List",
+			key: "list",
+			component: "elements/tab",
+			inline:false,
+			inputtype: ListInput,
+			data: {
+				selector:"> .accordion-item",
+				container:"",
+				prefix:"Item ",
+				name: "text",
+				nameElement: ".accordion-button",
+				removeElement: false,//handle manually
+				//"newElement": ``
+			},
+			onChange: function(node, value, input, component, event) {
+				let element = node[0];
+				let accordionId = element.id.replace('accordion-','');
+				
+				if (event.action) {
+					if (event.action == "add") {
+						let random = Math.floor(Math.random() * 100) + 1;
+						let index = element.childElementCount + 1;
+						
+						node.append(`<div class="accordion-item">
+							<h2 class="accordion-header" id="heading-${index}-${random}">
+							  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${index}-${random}" aria-expanded="false" aria-controls="collapseTwo">Accordion Item #${index}</button>
+							</h2>
+							<div id="collapse-${index}-${random}" class="accordion-collapse collapse" aria-labelledby="heading-${index}-${random}" data-bs-parent="#accordion-${accordionId}">
+							  <div class="accordion-body">
+								<p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin</p>
+							  </div>
+							</div>
+						  </div>`);
+						
+						//temporary solution to better update list
+						Vvveb.Components.render("elements/accordion");
+					}
+					if (event.action == "remove") {
+						$("> .accordion-item:eq(" + event.index + ")", node).remove();
+					} else if (event.action == "select") {
+						let btn = $("> .accordion-item:eq(" + event.index + ") .accordion-button", node);
+						let el = $("> .accordion-item:eq(" + event.index + ") .collapse", node);
+						$(".accordion-button", node).addClass("collapsed");
+						$(".collapse", node).removeClass("show");
+						btn.removeClass("collapsed");
+						el.addClass("show");
+						//el[0].click();
+						//Vvveb.Builder.iframe.contentWindow.bootstrap.Collapse.getOrCreateInstance(el[0]).toggle();
+					}
+				}
+				
+				return node;
+			},
+		}, {
 			name: "Flush",
 			key: "flush",
 			htmlAttr: "class",
@@ -811,16 +843,85 @@ Vvveb.Components.add("elements/accordion", {
 				on: "accordion-flush",
 				off: ""
 			}
-		},
+		},		
 	]
 }); 
 
 Vvveb.Components.add("elements/flip-box", {
-    nodes: [".flip-box"],
+    classes: ["flip-box"],
     name: "Flip box",
     image: "icons/flipbox.svg",
-    html: `<i class="font-icon la la-star"></i>`,
-    properties: [
+    html: `<div class="flip-box enabled">
+		  <div class="flip-box-inner">
+			<div class="flip-box-front">
+				  <div class="card">
+				  <img src="../../media/posts/1.jpg" class="card-img-top" alt="Post">
+				  <div class="card-body">
+					<h5 class="card-title">Card title</h5>
+					<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+					<a href="#" class="btn btn-primary">Go somewhere</a>
+				  </div>
+				</div>	
+			</div>
+			
+			<div class="flip-box-back">
+				<div class="d-flex align-items-center flex-column">
+				  <div class="flex-shrink-0">
+					<img src="../../media/posts/2.jpg" alt="Post">
+				  </div>
+				  <div class="flex-grow-1 ms-3">
+					<p>
+						This is some content from a media component. You can replace this with any content and adjust it as needed.
+					</p>
+					
+					<a href="#" class="btn btn-primary">Go somewhere</a>
+				  </div>
+				</div>
+			</div>
+		  </div>
+		</div>`,
+		properties: [{
+			name: "Width",
+			key: "width",
+			htmlAttr: "style",
+			inputtype: CssUnitInput
+		}, {
+			name: "Height",
+			key: "height",
+			htmlAttr: "style",
+			inputtype: CssUnitInput
+		},{
+			name: "Enabled",
+			key: "enabled",
+			htmlAttr: "class",
+			validValues: ["enabled"],
+			inputtype: ToggleInput,
+			data: {
+				on: "enabled",
+				off: ""
+			}
+		},{
+			name: "Show back",
+			key: "back",
+			htmlAttr: "class",
+			validValues: ["back"],
+			inputtype: ToggleInput,
+			data: {
+				on: "back",
+				off: ""
+			}
+		},
+		{
+			name: "Vertical",
+			key: "vertical",
+			htmlAttr: "class",
+			validValues: ["vertical"],
+			inputtype: ToggleInput,
+			data: {
+				on: "vertical",
+				off: ""
+			}
+		},
 	]
 });   
 /*
@@ -841,7 +942,7 @@ Vvveb.Components.add("elements/counter", {
     properties: [
 	]
 });   
-
+/*
 Vvveb.Components.add("elements/subscribe-form", {
     nodes: [".counter"],
     name: "Subscribe form",
@@ -850,12 +951,17 @@ Vvveb.Components.add("elements/subscribe-form", {
     properties: [
 	]
 });   
-
+*/
 Vvveb.Components.add("elements/testimonial", {
     nodes: [".counter"],
     name: "Testimonial",
     image: "icons/testimonial.svg",
-    html: `<i class="font-icon la la-star"></i>`,
+    html: `<blockquote cite="https://en.wikipedia.org/wiki/Marcus_Aurelius">
+				<p>Today I shall be meeting with interference, ingratitude, insolence, disloyalty, ill-will, and selfishness all of them due to the offenders' ignorance of what is good or evil.</p>
+				<cite class="small">
+					<a href="https://en.wikipedia.org/wiki/Marcus_Aurelius" class="text-decoration-none" target="blank">Marcus Aurelius</a>
+				</cite>	
+			</blockquote>`,
     properties: [
 	]
 });   
@@ -868,6 +974,48 @@ Vvveb.Components.add("elements/social-icons", {
     properties: [
 	]
 });   
+
+
+function carouselAfterDrop(node) {
+	//check if swiper js is included and if not add it when drag starts to allow the script to load
+	body = Vvveb.Builder.frameBody;
+	
+	if ($("#swiper-js", body).length == 0)
+	{
+		let swiperScript = `<script id="swiper-js" src="../../js/libs/swiper/swiper-bundle.min.js"></script> 
+		<link id="swiper-css" href="../../js/libs/swiper/swiper-bundle.min.css" rel="stylesheet">
+		<script>
+		var swiper = [];
+		function initSwiper(onlyNew = false) {
+			var list = document.querySelectorAll('.swiper' + (onlyNew ? ":not(.swiper-initialized)" : "") );
+			list.forEach(el => {
+				//el.dataset
+				let params = {};
+				for (i in el.dataset) {
+					let param = el.dataset[i];
+					console.log(i);
+					console.log(param);
+					if (param[0] = '{') {
+						param = JSON.parse(param);
+					}
+					params[i] = param;
+				}
+				swiper.push(new Swiper(el, params))
+				//swiper.push(new Swiper(el, { ...{autoplay:{delay: 500}}, ...el.dataset}))		
+			});
+		}	
+		$(document).ready(function() {
+			initSwiper();
+		  });
+		</script>`;				
+				
+		$(body).append(swiperScript);
+	} else {
+		Vvveb.Builder.iframe.contentWindow.initSwiper(true);
+	}
+	
+	return node;
+};
 
 Vvveb.Components.add("elements/carousel", {
     name: "Carousel",
@@ -891,36 +1039,7 @@ Vvveb.Components.add("elements/carousel", {
 		<!-- <div class="swiper-scrollbar"></div> -->
 	  </div>	
 	`,
-	afterDrop: function (node)
-	{
-		//check if swiper js is included and if not add it when drag starts to allow the script to load
-		body = Vvveb.Builder.frameBody;
-		
-		if ($("#swiper-js", body).length == 0)
-		{
-			let swiperScript = `<script id="swiper-js" src="../../js/libs/swiper/swiper-bundle.min.js"></script> 
-			<link id="swiper-css" href="../../js/libs/swiper/swiper-bundle.min.css" rel="stylesheet">
-			<script>
-			var swiper = [];
-			function initSwiper(onlyNew = false) {
-				var list = document.querySelectorAll('.swiper' + (onlyNew ? ":not(.swiper-initialized)" : "") );
-				list.forEach(el => 
-					swiper.push(new Swiper(el, el.dataset))
-					//swiper.push(new Swiper(el, { ...{autoplay:{delay: 500}}, ...el.dataset}))		
-				);
-			}	
-			$(document).ready(function() {
-				initSwiper();
-			  });
-			</script>`;				
-					
-			$(body).append(swiperScript);
-		} else {
-			Vvveb.Builder.iframe.contentWindow.initSwiper(true);
-		}
-		
-		return node;
-	},
+	afterDrop: carouselAfterDrop,
 	
     onChange: function (node, property, value) {
 		let element = node[0];
@@ -942,10 +1061,10 @@ Vvveb.Components.add("elements/carousel", {
 		htmlAttr:"data-slides-per-view",
 		inline:true,
 		data: {
-			"selector":".swiper-slide",
-			"container":".swiper-wrapper",
-			"prefix":"Slide ",
-			"removeElement": false,//handle manually with removeSlide
+			selector:".swiper-slide",
+			container:".swiper-wrapper",
+			prefix:"Slide ",
+			removeElement: false,//handle manually with removeSlide
 			//"newElement": `<div class="swiper-slide"><img src="../../media/posts/1.jpg" class="img-fluid"><p>Slide 1</p></div>`
 		},
         onChange: function(node, value, input, component, event) {
@@ -966,6 +1085,8 @@ Vvveb.Components.add("elements/carousel", {
 				}
 				if (event.action == "remove") {
 					element.swiper.removeSlide(event.index);
+				} else if (event.action == "select") {
+					element.swiper.slideTo(event.index, 300, true);
 				}
 			}
 			
@@ -1100,6 +1221,28 @@ Vvveb.Components.add("elements/carousel", {
     }*/]
 });
 
+//Slider
+Vvveb.Components.add("elements/slider", {
+	name: "Slider",
+    image: "icons/slider.svg",
+     html: `
+	  <div class="swiper" data-slides-per-view="1" data-draggable="true" data-navigation='{"nextEl": ".swiper-button-next","prevEl": ".swiper-button-prev"}'>
+		<div class="swiper-wrapper">
+		  <div class="swiper-slide"><img src="../../media/posts/1.jpg" class="img-fluid"><p>Slider 1</p></div>
+		  <div class="swiper-slide"><img src="../../media/posts/2.jpg" class="img-fluid"><p>Slider 2</p></div>
+		  <div class="swiper-slide"><img src="../../media/posts/3.jpg" class="img-fluid"><p>Slider 3</p></div>
+		  <div class="swiper-slide"><img src="../../media/posts/4.jpg" class="img-fluid"><p>Slider 4</p></div>
+		</div>
+		<div class="swiper-pagination"></div>
+
+		<div class="swiper-button-prev"></div>
+		<div class="swiper-button-next"></div>
+		
+		<!-- <div class="swiper-scrollbar"></div> -->
+	  </div>	
+	`,
+	afterDrop: carouselAfterDrop,
+}); 	
 
 
 Vvveb.Components.add("elements/icon-list", {
@@ -1150,7 +1293,7 @@ Vvveb.Components.add("elements/Icon box", {
 Vvveb.Components.add("elements/animated-headline", {
     nodes: [".counter"],
     name: "Animated headline",
-    image: "icons/heading.svg",
+    image: "icons/dots_three.svg",
     html: `<i class="font-icon la la-star"></i>`,
     properties: [
 	]
@@ -1184,12 +1327,20 @@ Vvveb.Components.add("elements/reviews", {
 });   
 
 Vvveb.Components.add("elements/code", {
-    nodes: [".counter"],
+    nodes: ["code"],
     name: "Code",
     image: "icons/code.svg",
-    html: `<i class="font-icon la la-star"></i>`,
-    properties: [
-	]
+    html: `<code>print "Hello world!"</code>`,
+	properties: [{
+		name: "Text",
+		key: "text",
+		inline:false,
+		htmlAttr: "innerHTML",
+		inputtype: TextareaInput,
+		data:{
+			rows:20,
+		}
+	}]
 }); 
   
 Vvveb.Components.add("elements/image-compare", {

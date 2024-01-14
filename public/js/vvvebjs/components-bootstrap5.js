@@ -762,6 +762,7 @@ Vvveb.Components.extend("_base", "html/gridcolumn", {
 		},				
 	}]
 });
+
 Vvveb.Components.extend("_base", "html/gridrow", {
     name: "Grid Row",
     image: "icons/grid_row.svg",

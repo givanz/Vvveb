@@ -25,7 +25,7 @@ let template =
 `
 <div class="container"  data-v-component-products="popular" data-v-limit="1">
 	<div class="row">
-		<div class="col-md-3" data-v-product>
+		<div class="col" data-v-product>
 			<article class="single-product-wrapper">
 				<!-- Product Image -->
 				<a href="product/product.html" data-v-product-url> </a>

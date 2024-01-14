@@ -28,7 +28,7 @@ let template =
 <div class="container" data-v-component-posts="popular" data-v-limit="4">      
 <div class="row">
 
-	<div class="col-12 col-lg-4 mb-2" data-v-post="" data-v-id="6" data-v-type="post">
+	<div class="col mb-2" data-v-post="" data-v-id="6" data-v-type="post">
 
 	  <article class="card">
 		<div class="card-img-top">
@@ -51,7 +51,7 @@ let template =
 	  </article>
 
 
-	</div><div class="col-12 col-lg-4 mb-2" data-v-post="" data-v-id="5" data-v-type="post">
+	</div><div class="col mb-2" data-v-post="" data-v-id="5" data-v-type="post">
 
 	  <article class="card">
 		<div class="card-img-top">
@@ -74,7 +74,7 @@ let template =
 	  </article>
 
 
-	</div><div class="col-12 col-lg-4 mb-2" data-v-post="" data-v-id="4" data-v-type="post">
+	</div><div class="col mb-2" data-v-post="" data-v-id="4" data-v-type="post">
 
 	  <article class="card">
 		<div class="card-img-top">
@@ -99,7 +99,7 @@ let template =
 	  </article>
 
 
-	</div><div class="col-12 col-lg-4 mb-2" data-v-post="" data-v-id="3" data-v-type="post">
+	</div><div class="col mb-2" data-v-post="" data-v-id="3" data-v-type="post">
 
 	  <article class="card">
 		<div class="card-img-top">
