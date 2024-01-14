@@ -55,7 +55,12 @@ class Setting {
 				$return = [];
 
 				foreach ($result as $value) {
-					$return[$value['key']] = $value['value'];
+					$val = $value['value'];
+					if ($val[0] == '{') {
+						$json = json_decode($val, true);
+						$val =  $json ?: $val;
+					}
+					$return[$value['key']] = $val;
 				}
 
 				return $return;
@@ -87,8 +92,11 @@ class Setting {
 		}
 
 		$this->setting[$namespace][$key] = $value;
+		if (is_array($value)) {
+			$value = json_encode($value);
+		}
 
-		return $this->settingSql->setSetting(['namespace' => $namespace, 'key' => $key, 'value' => $key, 'site_id' => $site_id]);
+		return $this->settingSql->setSetting(['namespace' => $namespace, 'key' => $key, 'value' => $value, 'site_id' => $site_id]);
 	}
 
 	public function delete($namespace, $key, $value, $site_id = SITE_ID) {
@@ -110,6 +118,9 @@ class Setting {
 
 		if ($settings) {
 			foreach ($settings as $key => $value) {
+				if (is_array($value)) {
+					$value = json_encode($value);
+				}
 				$this->setting[$namespace][$key] = $value;
 				$result                          = $this->settingSql->setSetting(['namespace' => $namespace, 'key' => $key, 'value' => $value, 'site_id' => $site_id]);
 			}
