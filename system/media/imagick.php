@@ -67,11 +67,12 @@ class Image {
 		return $this->mime;
 	}
 
-	public function save($file, $quality = 80) {
+	public function save($file, $quality = 80, $extension = false) {
 		if (! $this->image) {
 			return;
 		}
-		$this->image->setImageFormat($this->mime);
+
+		$this->image->setImageFormat($extension ?: $this->mime);
 
 		$this->image->setCompressionQuality($quality);
 		//$this->image->setImageCompressionQuality($quality);

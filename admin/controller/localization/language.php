@@ -34,7 +34,9 @@ class Language extends Crud {
 
 	protected $module = 'localization';
 
-	protected $installUrl = 'https://raw.githubusercontent.com/Vvveb/{code}/master/LC_MESSAGES/vvveb.po';
+	protected $installUrl = 'https://raw.githubusercontent.com/Vvveb/{code}/master/LC_MESSAGES/';
+	
+	protected $files = ['vvveb.po', 'landing-theme.po'];
 
 	protected $listUrl = 'https://www.vvveb.com/page/contribute#language';
 
@@ -47,27 +49,34 @@ class Language extends Crud {
 	function install() {
 		$code         = filter('/[-\w]+/', $this->request->post['code']);
 		$url          = str_replace('{code}', $code, $this->installUrl);
-		$translations = download($url);
+		
+		require DIR_SYSTEM . 'functions' . DS . 'php-mo.php';
+		
+		foreach ($this->files as $file) {
+			$translations = download($url . $file);
 
-		if ($translations) {
-			$folder = DIR_ROOT . 'locale' . DS . $code . DS . 'LC_MESSAGES';
-			$poFile = $folder . DS . 'vvveb.po';
-			@mkdir($folder, 0755 & ~umask(), true);
+			if ($translations) {
+				$folder = DIR_ROOT . 'locale' . DS . $code . DS . 'LC_MESSAGES';
+				$poFile = $folder . DS . $file;
+				@mkdir($folder, 0755 & ~umask(), true);
 
-			if (file_put_contents($poFile, $translations)) {
-				require DIR_SYSTEM . 'functions' . DS . 'php-mo.php';
+				if (file_put_contents($poFile, $translations)) {
 
-				if (phpmo_convert($poFile)) {
-					$this->view->success[] = __('Language pack installed!');
+					if (phpmo_convert($poFile)) {
+						$this->view->success['language'] = __('Language pack installed!');
+					} else {
+						$this->view->errors['language'] = __('Language compilation failed!');
+						break;
+					}
 				} else {
-					$this->view->errors[] = __('Language compilation failed!');
+					$this->view->errors[] = __('Error writing language files!');
+					break;
 				}
 			} else {
-				$this->view->errors[] = __('Error writing language files!');
+				$this->view->errors[] = __('Language pack not available!');
+				$this->view->info[]   = sprintf(__('Check available translations at %s'), '<a href="' . $this->listUrl . '" target="_blank">' . $this->listUrl . '</a>');
+				break;
 			}
-		} else {
-			$this->view->errors[] = __('Language pack not available!');
-			$this->view->info[]   = sprintf(__('Check available translations at %s'), '<a href="' . $this->listUrl . '" target="_blank">' . $this->listUrl . '</a>');
 		}
 
 		return $this->index();

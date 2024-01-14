@@ -79,27 +79,29 @@ class Image {
 		return $this->mime;
 	}
 
-	public function save($file, $quality = 80) {
+	public function save($file, $quality = 80, $extension = false) {
 		if (! $this->image) {
 			return;
 		}
 
 		$info = pathinfo($file);
 
-		$extension = strtolower($info['extension']);
+		$extension = $extension ?: strtolower($info['extension']);
 
 		if (is_object($this->image) || is_resource($this->image)) {
 			if ($extension == 'jpeg' || $extension == 'jpg') {
-				imagejpeg($this->image, $file, $quality);
+				$result = imagejpeg($this->image, $file, $quality);
 			} elseif ($extension == 'png') {
-				imagepng($this->image, $file, 8, PNG_ALL_FILTERS);
+				$result = imagepng($this->image, $file, 8, PNG_ALL_FILTERS);
 			} elseif ($extension == 'gif') {
-				imagegif($this->image, $file);
+				$result = imagegif($this->image, $file);
 			} elseif ($extension == 'webp') {
-				imagewebp($this->image, $file, $quality);
+				$result = imagewebp($this->image, $file, $quality);
 			}
 
-			return imagedestroy($this->image);
+			imagedestroy($this->image);
+
+			return $result;
 		}
 	}
 

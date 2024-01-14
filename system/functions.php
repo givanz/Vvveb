@@ -43,7 +43,7 @@ function url($parameters, $mergeParameters = false, $useCurrentUrl = true) {
 		static $urlParams = [];
 
 		if ($useCurrentUrl) {
-			$url=parse_url($_SERVER['REQUEST_URI'] ?? '');
+			$url = parse_url($_SERVER['REQUEST_URI'] ?? '');
 
 			if (isset($url['query'])) {
 				parse_str($url['query'], $urlParams);
@@ -199,7 +199,12 @@ function friendlyDate($date) {
 	];
 
 	$time_direction = __(' ago');
-	$diff           = time() - strtotime($date) + 10;
+
+	if (is_string($date)) {
+		$date = strtotime($date);
+	}
+
+	$diff           = time() - $date + 10;
 
 	if ($diff < 0) {
 		$time_direction = __(' from now');
@@ -379,7 +384,7 @@ function humanReadable($text) {
 function cleanUrl($text, $divider = '-') {
 	// replace non letter or digits by divider
 	$text = preg_replace('/[^\pL\d]+/u', $divider, $text);
-	
+
 	// remove unwanted characters
 	$text = preg_replace('/[^\\-\w]+/', '', $text);
 
@@ -412,13 +417,33 @@ function slugify($text, $divider = '-') {
 	return $text;
 }
 
+$vvvebTranslationDomains = ['vvveb', 'landing-theme'];
+
+function addTranslationDomain($domain) {
+	global $vvvebTranslationDomains;
+	
+	if (!in_array($domain, $vvvebTranslationDomains)) {
+		array_push($vvvebTranslationDomains, $domain);
+	} 
+}
+
 if (function_exists('_')) {
 	function __($text, $plural = false, $count = false) {
+		global $vvvebTranslationDomains;
+		
 		if ($plural) {
-			return ngettext($text, $plural, $count);
+			foreach ($vvvebTranslationDomains as $domain) {
+				$translation = dngettext($domain, $text, $plural, $count);
+				if ($translation != $text) break;
+			}
 		} else {
-			return gettext($text);
+			foreach ($vvvebTranslationDomains as $domain) {
+				$translation = dgettext($domain, $text);
+				if ($translation != $text) break;
+			}
 		}
+
+		return $translation;
 	}
 } else {
 	function __($text, $plural = false, $count = false) {
@@ -1084,6 +1109,7 @@ function userPreferedLanguage() {
  * @return mixed 
  */
 function setLanguage($langCode = 'en_US', $domain = 'vvveb') {
+	global $vvvebTranslationDomains;
 	//setlocale(LC_TIME, "");
 	//\putenv('LOCPATH=' . DIR_ROOT. "locale");
 
@@ -1093,6 +1119,9 @@ function setLanguage($langCode = 'en_US', $domain = 'vvveb') {
 	}
 
 	if (function_exists('bindtextdomain')) {
+		foreach ($vvvebTranslationDomains as $tdomain)  {
+			bindtextdomain($tdomain, DIR_ROOT . 'locale');
+		}
 		bindtextdomain($domain, DIR_ROOT . 'locale');
 		textdomain($domain);
 		bind_textdomain_codeset($domain, 'utf8');
@@ -1130,10 +1159,10 @@ function clearLanguageCache($langCode = 'en_US', $domain = 'vvveb') {
 		}
 
 		if (function_exists('symlink') && symlink($locale, $nocache)) {
-		bindtextdomain($domain, $nocache);
-		textdomain($domain);
-		bind_textdomain_codeset($domain, 'different_codeset');
-		bindtextdomain($domain, $locale);
+			bindtextdomain($domain, $nocache);
+			textdomain($domain);
+			bind_textdomain_codeset($domain, 'different_codeset');
+			bindtextdomain($domain, $locale);
 		}
 
 		@unlink($nocache);
@@ -1179,10 +1208,10 @@ function checkPhpSyntax($source) {
 	$tokens = false;
 
 	if (function_exists('token_get_all')) {
-	try {
-		$tokens = token_get_all($source, TOKEN_PARSE);
-	} catch (\ParseError $e) {
-	}
+		try {
+			$tokens = token_get_all($source, TOKEN_PARSE);
+		} catch (\ParseError $e) {
+		}
 	}
 
 	return $tokens ? true : false;
@@ -1203,6 +1232,7 @@ function truncateWords($text, $limit) {
  * @return bool 
  */
 function email($to, $subject, $template, $data = [], $config = []) {
+	return true;
 	$email = System\Email::getInstance();
 
 	if (is_array($template)) {
@@ -1265,11 +1295,12 @@ function rrmdir($src, $skip = []) {
 				}
 			}
 		}
-		
+
 		closedir($dir);
+
 		return rmdir($src);
 	}
-	
+
 	return false;
 }
 

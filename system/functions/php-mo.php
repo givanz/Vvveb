@@ -1,4 +1,5 @@
 <?php
+
 /**
  * php.mo 0.1 by Joss Crowcroft (http://www.josscrowcroft.com).
  * 
@@ -25,6 +26,7 @@
 /**
  * The main .po to .mo function.
  */
+
 function phpmo_convert($input, $output = false) {
 	if (! $output) {
 		$output = str_replace('.po', '.mo', $input);
@@ -47,11 +49,13 @@ function phpmo_clean_helper($x) {
 			$x[$k] = phpmo_clean_helper($v);
 		}
 	} else {
-		if ($x[0] == '"') {
+		if ($x && $x[0] == '"') {
 			$x = substr($x, 1, -1);
 		}
 		$x = str_replace("\"\n\"", '', $x);
 		$x = str_replace('$', '\\$', $x);
+		$x = str_replace('\\\\', '\\', $x);
+		$x = preg_replace('/\+(["\$n])/', '\$1', $x);	
 	}
 
 	return $x;
@@ -83,7 +87,14 @@ function phpmo_parse_po_file($in) {
 		if ($line === '') {
 			continue;
 		}
-		list($key, $data) = preg_split('/\s/', $line, 2);
+
+		$pair = preg_split('/\s/', $line, 2);
+		$key  = $pair[0];
+		$data = $pair[1] ?? null;
+
+		if ($data === null) {
+			$continue;
+		}
 
 		switch ($key) {
 			case '#,': // flag...
@@ -109,6 +120,10 @@ function phpmo_parse_po_file($in) {
 				// context
 			case 'msgid':
 				// untranslated-string
+				if (sizeof($temp)) {
+					$hash[] = $temp;
+					$temp  = [];
+				}
 			case 'msgid_plural':
 				// untranslated-string-plural
 				$state        = $key;
@@ -180,6 +195,26 @@ function phpmo_parse_po_file($in) {
 	return $hash;
 }
 
+
+function phpmo_po_text($hash) {
+	$text = '';
+	foreach ($hash as $id => $value) {
+		$msgid = phpmo_clean_helper(addcslashes($value['msgid'] ?? '', '"'));
+		$msgstr = phpmo_clean_helper(addcslashes($value['msgstr'][0] ?? '', '"'));
+		$text .= "msgid \"$msgid\"\nmsgstr \"$msgstr\"\n\n";
+	}
+	
+	return $text;
+}
+
+/* Write a gettext .po file. */
+/* @link http://www.gnu.org/software/gettext/manual/gettext.html#MO-Files */
+function phpmo_write_po_file($hash, $out) {
+	$text = phpmo_po_text($hash);
+	return file_put_contents($out, $text);
+}
+
+
 /* Write a GNU gettext style machine object. */
 /* @link http://www.gnu.org/software/gettext/manual/gettext.html#MO-Files */
 function phpmo_write_mo_file($hash, $out) {
@@ -192,7 +227,13 @@ function phpmo_write_mo_file($hash, $out) {
 	$ids     = '';
 	$strings = '';
 
-	foreach ($hash as $entry) {
+	foreach ($hash as $index => &$entry) {
+		//don't add empty translations
+		if (!$entry['msgstr'] || !$entry['msgstr'][0]) {
+			unset($hash[$index]);
+			continue;
+		}
+
 		$id = $entry['msgid'];
 
 		if (isset($entry['msgid_plural'])) {
@@ -202,8 +243,11 @@ function phpmo_write_mo_file($hash, $out) {
 		if (array_key_exists('msgctxt', $entry)) {
 			$id = $entry['msgctxt'] . "\x04" . $id;
 		}
+
 		// plural msgstrs are NUL-separated
 		$str = implode("\x00", $entry['msgstr']);
+		$str = str_replace('\n',"\n", $str);//restore newlines
+
 		// keep track of offsets
 		$offsets[] = [
 			strlen($ids
@@ -248,5 +292,5 @@ function phpmo_write_mo_file($hash, $out) {
 	// strings
 	$mo .= $strings;
 
-	file_put_contents($out, $mo);
+	return file_put_contents($out, $mo);
 }
