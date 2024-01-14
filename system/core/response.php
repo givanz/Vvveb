@@ -83,16 +83,24 @@ class Response {
 			}
 		}
 
-		if (is_array($data) && $this->type == 'json') {
-			echo json_encode($data);
+		if ($this->type == 'text') {
+			echo $data;
 		} else {
-			$view = View :: getInstance();
+			if ($this->type == 'json') {
+				if (is_array($data)) {
+					echo json_encode($data);
+				} else {
+					echo $data;
+				}
+			} else {
+				$view = View :: getInstance();
 
-			if ($this->type) {
-				$view->setType($this->type);
+				if ($this->type) {
+					$view->setType($this->type);
+				}
+
+				$view->render();
 			}
-
-			$view->render();
 		}
 
 		$this->done = true;

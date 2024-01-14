@@ -30,7 +30,7 @@ use Vvveb\System\Images;
 
 class Revisions extends Base {
 	protected $type = 'post';
-	
+
 	protected $object = 'post';
 
 	//check for other modules permission like revision and editor to enable links like save/delete etc
@@ -42,11 +42,12 @@ class Revisions extends Base {
 	function init() {
 		if (isset($this->request->get['type'])) {
 			$this->type = $this->request->get['type'];
-		}	
+		}
+
 		if (isset($this->request->get['object'])) {
 			$this->object = $this->request->get['object'];
 		}
-		
+
 		$this->revisions   = model($this->object . '_content_revision');
 		$this->post        = model($this->object);
 
@@ -64,9 +65,12 @@ class Revisions extends Base {
 	function delete() {
 		$results = $this->revisions->delete($this->options + $this->global);
 
-		header('Content-type: application/json; charset=utf-8');
+		if ($results) {
+			$message[] = __('Revision deleted!');
+		}
 
-		die();
+		$this->response->setType('json');
+		$this->response->output($message);
 	}
 
 	function save() {
@@ -90,14 +94,18 @@ class Revisions extends Base {
 	}
 
 	function revision() {
-		$view            = $this->view;
-		$results         = $this->revisions->get($this->options);
-
-		if ($results && isset($results['content'])) {
-			echo $results['content'];
+		$view     = $this->view;
+		$results  = $this->revisions->get($this->options);
+		$revision = [];
+		
+		if ($results && $results['content']) {
+			foreach (['content', 'created_at', 'display_name'] as $key) {
+				$revision[$key] = $results[$key];
+			}
 		}
 
-		die();
+		$this->response->setType('json');
+		$this->response->output($revision);
 	}
 
 	function index() {

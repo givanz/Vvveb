@@ -40,8 +40,7 @@ class Robots extends Base {
 			$text = preg_replace('@(sitemap):\s+/@', "$1: $host/", $text);
 		}
 
-		$this->view->text = $text;
-
 		$this->response->setType('text');
+		$this->response->output($text);
 	}
 }
