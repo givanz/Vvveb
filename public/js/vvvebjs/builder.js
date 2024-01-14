@@ -1992,15 +1992,15 @@ Vvveb.Builder = {
 		});		
 	},
 	
-	saveAjax: function(fileName, startTemplateUrl, callback, saveUrl)
+	saveAjax: function(data, callback, saveUrl)
 	{
-		var data = {};
-		data["file"] = (fileName && fileName != "") ? fileName : Vvveb.FileManager.getCurrentFileName();
-		data["startTemplateUrl"] = startTemplateUrl;
-        
+		if (!data["file"]) {
+			data["file"]  = Vvveb.FileManager.getCurrentFileName();
+		}
+
 		data["elements"] = Vvveb.ChangeManager.getChangedElements();
                 
-		if (!startTemplateUrl || startTemplateUrl == null)
+		if (!data["startTemplateUrl"])
 		{
 			data["html"] = this.getHtml();
 		}
@@ -2194,18 +2194,18 @@ Vvveb.Gui = {
 	saveAjax : function () {
 		let btn = $(this);
 		let saveUrl = this.dataset.vvvebUrl;
-		let url = Vvveb.FileManager.getPageData('file');
+		let file = Vvveb.FileManager.getPageData('file');
 		//if offcanvas check if user provided new template name
 		if (btn.hasClass("save-offcanvas")) {
 			if ($("#save-offcanvas [name=template]:checked").val() == "new") {
-				url = $("#save-offcanvas [name=folder]").val() + "/" + $("#save-offcanvas [name=file]").val();
+				file = $("#save-offcanvas [name=folder]").val() + "/" + $("#save-offcanvas [name=file]").val();
 			}
 		}
 
 		$(".loading", btn).toggleClass("d-none");
 		$(".button-text", btn).toggleClass("d-none");
 		
-		return Vvveb.Builder.saveAjax(url, null, null, saveUrl).done(function (data, text) {
+		return Vvveb.Builder.saveAjax({file}, null, saveUrl).done(function (data, text) {
 			/*
 			//use modal to show save status
 			var messageModal = new bootstrap.Modal(document.getElementById('message-modal'), {
@@ -2328,22 +2328,26 @@ Vvveb.Gui = {
 				data[this.name] = this.value;
 			});			
 			
-			data['title']  = data['file'].replace('/', '').replace('.html', '');
-			var name = data['name'] = data['folder'].replace('/', '_') + "-" + data['title'];
-			data['url']  = data['file'] = data['folder'] + "/" + data['file'];
-			data['url']  = Vvveb.themeBaseUrl + data['url'];
-			
-			Vvveb.FileManager.addPage(data.name, data);
+			if (data['file']) {
+				data['title']  = data['file'].replace('/', '').replace('.html', '');
+				//var name = data['name'] = data['folder'].replace('/', '_') + "-" + data['title'];
+				if (!data['name']) {
+					data['name'] = data['title'];
+				}
+				data['url']  = data['file'] = data['folder'] + "/" + data['file'];
+				data['url']  = Vvveb.themeBaseUrl + data['url'];
+			}
+
 			e.preventDefault();
-			
-			return Vvveb.Builder.saveAjax(data.file, data.startTemplateUrl, function (data) {
-					Vvveb.FileManager.loadPage(name);
+
+			return Vvveb.Builder.saveAjax(data, function (data) {
+					data.title = data.name;
+					Vvveb.FileManager.addPage(data.name, data);
+
+					Vvveb.FileManager.loadPage(data.name);
 					Vvveb.FileManager.scrollBottom();
 					newPageModal.modal("hide");
 			}, this.action);
-			
-			e.preventDefault();
-			return false;
 		});
 		
 	},
@@ -2593,7 +2597,6 @@ Vvveb.StyleManager = {
 			var value = this.styles[media][selector][styleProp];
 
 			if (styleProp == 'font-family') {
-				console.log(value);
 			}
 		} else if (window.getComputedStyle) {
 			var value = document.defaultView.getDefaultComputedStyle ? 
@@ -3060,25 +3063,35 @@ Vvveb.FileManager = {
 	deletePage: function(element, e) {
 		let page = element[0].dataset;
 		if (confirm(`Are you sure you want to delete "${page.file}"template?`)) {
-			$.ajax({
-				type: "POST",
-				url: deleteUrl,//set your server side save script url
-				data: {file:page.file},
-				success: function (data, text) {
-					let bg = "bg-success";
-					if (data.success) {		
-						$("#top-panel .save-btn").attr("disabled", "true");
-					} else {
-						bg = "bg-danger";
-					}
 
-					displayToast(bg, "Delete", data.message ?? data);
-				},
-				error: function (data) {
-					displayToast("bg-danger", "Error", data.responseText);
-				}
-			});
-			element.remove();
+			//allow event to change page or cancel by setting page to false
+			let result;
+			if (result = $(window).triggerHandler("vvveb.FileManager.deletePage", page))
+			if (result != undefined) {
+				page = result;
+			}
+			
+			if (page) {
+				$.ajax({
+					type: "POST",
+					url: deleteUrl,//set your server side save script url
+					data: {file:page.file},
+					success: function (data, text) {
+						let bg = "bg-success";
+						if (data.success) {		
+							$("#top-panel .save-btn").attr("disabled", "true");
+						} else {
+							bg = "bg-danger";
+						}
+
+						displayToast(bg, "Delete", data.message ?? data);
+					},
+					error: function (data) {
+						displayToast("bg-danger", "Error", data.responseText);
+					}
+				});
+				element.remove();
+			}
 		}
 	},	
 	
@@ -3087,48 +3100,66 @@ Vvveb.FileManager = {
 		let newfile = prompt(`Enter new file name for "${page.file}"`, page.file);
 		let _self = this;
 		if (newfile) {
-			$.ajax({
-				type: "POST",
-				url: renameUrl,//set your server side save script url
-				data: {file:page.file, newfile:newfile, duplicate},
-				success: function (data) {
-					let bg = "bg-success";
-					if (data.success) {		
-						$("#top-panel .save-btn").attr("disabled", "true");
-					} else {
-						bg = "bg-danger";
-					}
 
-					displayToast(bg, "Rename", data.message ?? data);
-					let baseName = newfile.replace('.html', '');
-					let newName = friendlyName(newfile.replace(/.*[\/\\]+/, '')).replace('.html', '');
-					
-					if (duplicate) {
-						let data = _self.pages[page.page];
-						data["file"] = newfile;
-						data["title"] = newName;
-						Vvveb.FileManager.addPage(baseName, data);
-					} else {
-						_self.pages[page.page]["file"] = newfile;
-						_self.pages[page.page]["title"] = newName;
-						$("> label span", element).html(newName);
-						page.url = page.url.replace(page.file, newfile);
-						page.file = newfile;
-						_self.pages[page.page]["url"] = page.url;
-						_self.pages[page.page]["file"] = page.file;
-					}
-					
-				},
-				error: function (data) {
-					displayToast("bg-danger", "Error", data.responseText);
-				}
-			});
-
+			//allow event to change page or newfile or cancel by setting page to false
+			let result;
+			if (result = $(window).triggerHandler("vvveb.FileManager.renamePage", [page, newfile])) {
+				[page, newfile] = result;
+			}
 			
+			if (page) {
+				$.ajax({
+					type: "POST",
+					url: renameUrl,//set your server side save script url
+					data: {file:page.file, newfile:newfile, duplicate},
+					success: function (data) {
+						let bg = "bg-success";
+						if (data.success) {		
+							$("#top-panel .save-btn").attr("disabled", "true");
+						} else {
+							bg = "bg-danger";
+						}
+
+						displayToast(bg, "Rename", data.message ?? data);
+						let baseName = newfile.replace('.html', '');
+						let newName = friendlyName(newfile.replace(/.*[\/\\]+/, '')).replace('.html', '');
+						
+						if (duplicate) {
+							let data = _self.pages[page.page];
+							data["file"] = newfile;
+							data["title"] = newName;
+							Vvveb.FileManager.addPage(baseName, data);
+						} else {
+							_self.pages[page.page]["file"] = newfile;
+							_self.pages[page.page]["title"] = newName;
+							$("> label span", element).html(newName);
+							page.url = page.url.replace(page.file, newfile);
+							page.file = newfile;
+							_self.pages[page.page]["url"] = page.url;
+							_self.pages[page.page]["file"] = page.file;
+						}
+						
+					},
+					error: function (data) {
+						displayToast("bg-danger", "Error", data.responseText);
+					}
+				});
+			}
 		}
 	},
 	
 	addPage: function(name, data) {
+
+		//allow event to change name or cancel by setting name to false
+		let result;
+		if (result = $(window).triggerHandler("vvveb.FileManager.addPage", [name, data])) {
+			[name, data]  = result;
+		}
+		
+		if (!name) {
+			return false;
+		}
+		
 		this.pages[name] = data;
 		data['name'] = name;
 
@@ -3212,14 +3243,22 @@ Vvveb.FileManager = {
 		this.currentPage = name;
 		var url = this.pages[name]['url'];
 		$(".btn-preview-url").attr("href", url);
+
+		//allow event to change page or url or cancel by setting url to false
+		let result;
+		if (result = $(window).triggerHandler("vvveb.FileManager.loadPage", [name, url, this.pages[name]])) {
+			[name, url, this.pages[name]] = result;
+		}
 		
-		Vvveb.Builder.loadUrl(url + (disableCache ? (url.indexOf('?') > -1 ? '&r=':'?r=') + Math.random():''), 
-			function () { 
-				if (loadComponents) { Vvveb.FileManager.loadComponents(allowedComponents); }
-				Vvveb.SectionList.loadSections(allowedComponents); 
-				Vvveb.StyleManager.init(); 
-           			Vvveb.ChangeManager.setOriginalContent();
-			});
+		if (url) {
+			Vvveb.Builder.loadUrl(url + (disableCache ? (url.indexOf('?') > -1 ? '&r=':'?r=') + Math.random():''), 
+				function () { 
+					if (loadComponents) { Vvveb.FileManager.loadComponents(allowedComponents); }
+					Vvveb.SectionList.loadSections(allowedComponents); 
+					Vvveb.StyleManager.init(); 
+					Vvveb.ChangeManager.setOriginalContent();
+				});
+		}
 	},
 
 	scrollBottom: function() {
@@ -3245,13 +3284,18 @@ Vvveb.Breadcrumb = {
 					}, 500),
 				 100);
 			}
+			
+			$(window).triggerHandler("vvveb.Breadcrumb.click", node);
+			
 			e.preventDefault();
 		}).on("mouseenter", ".breadcrumb-item", function (e) {
 			let node = $($(this).data("node"));
 			node.get(0).dispatchEvent(new MouseEvent("mousemove", {
 				bubbles: true,
 				cancelable: true,
-			}))
+			}));
+			
+			$(window).triggerHandler("vvveb.Breadcrumb.hover", node);
 			//node.css("outline","1px dashed blue");
 			/*
 			delay(
@@ -3292,6 +3336,47 @@ Vvveb.Breadcrumb = {
 			
 			currentElement = currentElement.parentElement;
 		}
+	}
+}
+
+
+Vvveb.Revisions = {
+
+	updateRevisionsDropdown: function (revisions) {
+		let dropdown = $(".revisions-dropdown").html("");
+		$(".revisions-count").html(revisions.length);
+		for (let i in revisions) {
+			dropdown.append(tmpl('vvveb-revision-item', revisions[i]));
+		}
+	},
+	
+	loadRevisions: function (template) {
+		let self = this;
+
+		if (template) {
+			$.ajax({
+				type: "GET",
+				url: revisionsUrl,
+				data: {template},
+			}).done(function (data) {
+				self.updateRevisionsDropdown(data);
+			}).fail(function (data) {
+				alert(data.responseText);
+			});			
+		}
+	},
+	
+	init: function () {
+		let self = this;
+		$(window).on("vvveb.FileManager.loadPage",  function(event, name, url, data) {
+			self.loadRevisions(data['file'] ?? false);
+			return [name, url, data];
+		});
+		
+		$(".revisions-dropdown").on("click", ".btn-revision-delete", function (event) {
+			let item = $(this).parents(".dropdown-item");
+			item.remove();
+		});
 	}
 }
 
