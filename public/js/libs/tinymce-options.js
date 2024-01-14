@@ -98,11 +98,11 @@ var tinyMceOptions = {
 		$(window).trigger("vvveb.tinymce.setup", editor);
     },
     
-  plugins: 'preview importcss searchreplace autolink autosave autoresize save directionality code visualblocks visualchars fullscreen image link template codesample table charmap pagebreak nonbreaking anchor insertdatetime advlist lists wordcount help quickbars emoticons table',
+  plugins: 'preview importcss searchreplace autolink autosave autoresize save directionality code visualblocks visualchars fullscreen image media link codesample table charmap pagebreak nonbreaking anchor insertdatetime advlist lists wordcount help quickbars emoticons table accordion',
   //valid_children : '-p[img],h1[img],h2[img],h3[img],h4[img],+body[img],div[img],div[h1],div[h2],div[h3]',
   //editimage_cors_hosts: ['picsum.photos'],
   menubar: false,//'file edit view insert format tools table help',
-  toolbar: 'undo redo | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | insertfile image media link anchor codesample  | fullscreen  preview save print| ltr rtl | code template |  charmap emoticons table',
+  toolbar: 'undo redo | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | insertfile image media link anchor codesample  | fullscreen  preview save print| ltr rtl | code |  charmap emoticons table accordion',
   toolbar_sticky: true,
   //toolbar_sticky_offset: isSmallScreen ? 102 : 108,
   autosave_ask_before_unload: true,
@@ -111,6 +111,7 @@ var tinyMceOptions = {
   autosave_restore_when_empty: false,
   autosave_retention: '2m',
   image_advtab: true,
+  /*
   link_list: [
 	{ title: 'My page 1', value: 'https://www.tiny.cloud' },
 	{ title: 'My page 2', value: 'http://www.moxiecode.com' }
@@ -119,9 +120,10 @@ var tinyMceOptions = {
 	{ title: 'My page 1', value: 'https://www.tiny.cloud' },
 	{ title: 'My page 2', value: 'http://www.moxiecode.com' }
   ],
+  */
   image_class_list: [
 	{ title: 'None', value: '' },
-	{ title: 'Some class', value: 'class-name' }
+	{ title: 'Fluid', value: 'img-fluid' }
   ],
   importcss_append: true,
   relative_urls : false,
@@ -154,7 +156,7 @@ var tinyMceOptions = {
                 poster: 'https://www.google.com/logos/google.jpg'
             });
 	}
-  },
+  },/*
 	templates: [{
 		title: 'New Table',
 		description: 'creates a new table',
@@ -167,7 +169,7 @@ var tinyMceOptions = {
 		title: 'New list with dates',
 		description: 'New List with dates',
 		content: '<div class="mceTmpl"><span class="cdate">cdate</span><br /><span class="mdate">mdate</span><h2>My List</h2><ul><li></li><li></li></ul></div>'
-	}],
+	}],*/
   template_cdate_format: '[Date Created (CDATE): %m/%d/%Y : %H:%M:%S]',
   template_mdate_format: '[Date Modified (MDATE): %m/%d/%Y : %H:%M:%S]',
   height: 600,
@@ -213,7 +215,7 @@ var tinyMceOptions = {
 				textAlign: "left"
 			}
 		}, {
-			selector: "img,table,video,audio,dl.caption",
+			selector: "img,figure,table,video,audio,dl.caption,iframe",
 			classes: "align-left"
 		}],
 		aligncenter: [{
@@ -222,7 +224,7 @@ var tinyMceOptions = {
 				textAlign: "center"
 			}
 		}, {
-			selector: "img,table,video,audio,dl.caption",
+			selector: "img,figure,table,video,audio,dl.caption,iframe",
 			classes: "align-center"
 		}],
 		alignright: [{
@@ -231,7 +233,7 @@ var tinyMceOptions = {
 				textAlign: "right"
 			}
 		}, {
-			selector: "img,table,video,audio,dl.caption",
+			selector: "img,figure,table,video,audio,dl.caption,iframe",
 			classes: "align-right"
 		}],
 		strikethrough: {
@@ -244,7 +246,7 @@ var tinyMceOptions = {
 		//'test': '../tinymce-plugins/test/plugin.js',
 	},    
 	branding:false,
-	media_live_embeds:false,
+	media_live_embeds:true,
 	media_filter_html:false,
 	visual_table_class:"table mce-item-table",
 	table_default_attributes: {
