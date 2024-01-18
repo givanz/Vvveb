@@ -28,8 +28,12 @@ use function Vvveb\__;
 class Menus extends Categories {
 	function deleteMenu() {
 		$view         = $this->view;
-		$menu_id      = $this->request->get['menu_id'] ?? false;
+		$menu_id      = $this->request->post['menu_id'] ?? $this->request->get['menu_id'] ?? false;
 		$menu         = new menuSQL();
+
+		if (is_numeric($menu_id)) {
+			$menu_id = [$menu_id];
+		}
 
 		if ($menu_id && ($result = $menu->deleteMenu(['menu_id' => $menu_id]))) {
 			if ($result['menu'] > 0) {

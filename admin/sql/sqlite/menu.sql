@@ -64,29 +64,29 @@
 			
 	  	VALUES ( :menu );
 
-	END -- add menu 	
+	END
 	
-	
-	-- add menu 
+	-- delete menu 
 
 	CREATE PROCEDURE deleteMenu(
 
 		-- variables
-		IN  menu_id INT,
+		IN  menu_id ARRAY,
 			
 		-- return affected rows
 		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows
 	)
 	BEGIN
-		DELETE d
-			FROM menu_item_content d LEFT JOIN menu_item i ON i.menu_item_id = d.menu_item_id
-		WHERE menu_id = :menu_id;
+	
+		DELETE FROM menu_item_content WHERE menu_item_id IN (SELECT menu_item_id FROM menu_item WHERE menu_item_id IN (:menu_id));
 		
-		DELETE FROM menu_item WHERE menu_id = :menu_id;
+		DELETE FROM menu_item WHERE menu_id IN (:menu_id);
 
-		DELETE FROM menu WHERE menu_id = :menu_id;
+		DELETE FROM menu WHERE menu_id IN (:menu_id);
 
-	END -- add menu 
+	END 
 	
 	-- get all menus 
 
