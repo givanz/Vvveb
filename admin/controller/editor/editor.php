@@ -22,8 +22,10 @@
 
 namespace Vvveb\Controller\Editor;
 
+use \Vvveb\Sql\menuSQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use function Vvveb\getUrl;
 use function Vvveb\sanitizeFileName;
 use function Vvveb\slugify;
 use Vvveb\Sql\PostSQL;
@@ -34,6 +36,8 @@ use Vvveb\System\Event;
 use Vvveb\System\Sites;
 
 class Editor extends Base {
+	protected $revisionDateFormat = 'Y-m-d_H:i:s';
+
 	private $themeConfig = [];
 
 	private $skipFolders = ['src', 'source', 'backup', 'import'];
@@ -44,6 +48,18 @@ class Editor extends Base {
 		$this->loadThemeConfig();
 
 		return parent::init();
+	}
+
+	function oEmbedProxy() {
+		$url = $this->request->get['url'];
+
+		if (! $url) {
+			return;
+		}
+		$result = getUrl($url, false);
+
+		$this->response->setType('json');
+		$this->response->output($result);
 	}
 
 	function getThemeFolder() {
@@ -143,19 +159,26 @@ class Editor extends Base {
 			$view->pages  = [$name => $current_page] + $view->pages;
 		}
 
-		$admin_path               = \Vvveb\adminPath();
-		$mediaControllerPath      = $admin_path . 'index.php?module=media/media';
-		$controllerPath           = $admin_path . 'index.php?module=editor/editor';
+		$admin_path                    = \Vvveb\adminPath();
+		$mediaControllerPath           = $admin_path . 'index.php?module=media/media';
+		$controllerPath                = $admin_path . 'index.php?module=editor/editor';
+		$revisionsPath                 = $admin_path . 'index.php?module=editor/revisions';
 
-		$this->view->scanUrl         = "$mediaControllerPath&action=scan";
-		$this->view->uploadUrl       = "$mediaControllerPath&action=upload";
-		$this->view->saveUrl         = "$controllerPath&action=save";
-		$this->view->deleteUrl       = "$controllerPath&action=delete";
-		$this->view->renameUrl       = "$controllerPath&action=rename";
-		$this->view->saveReusableUrl = "$controllerPath&action=saveReusable";
-		$view->templates             = \Vvveb\getTemplateList();
-		$view->folders               = \Vvveb\getThemeFolderList();
-		$view->data                  = $this->loadEditorData();
+		$this->view->scanUrl           = "$mediaControllerPath&action=scan";
+		$this->view->uploadUrl         = "$mediaControllerPath&action=upload";
+		$this->view->saveUrl           = "$controllerPath&action=save";
+		$this->view->deleteUrl         = "$controllerPath&action=delete";
+		$this->view->renameUrl         = "$controllerPath&action=rename";
+		$this->view->saveReusableUrl   = "$controllerPath&action=saveReusable";
+		$this->view->oEmbedProxyUrl    = "$controllerPath&action=oEmbedProxy";
+
+		$this->view->revisionsUrl      = "$revisionsPath&action=revisions";
+		$this->view->revisionLoadUrl   = "$revisionsPath&action=revisionLoad";
+		$this->view->revisionDeleteUrl = "$revisionsPath&action=revisionDelete";
+
+		$view->templates               = \Vvveb\getTemplateList();
+		$view->folders                 = \Vvveb\getThemeFolderList();
+		$view->data                    = $this->loadEditorData();
 	}
 
 	function getComponent($html, $options) {
@@ -165,8 +188,8 @@ class Editor extends Base {
 		$themeFolder  = $this->getThemeFolder() . DS;
 		$backupFolder = $themeFolder . 'backup' . DS;
 		$page         = str_replace('.html', '', sanitizeFileName($page));
-		$backupName   =  str_replace(DS, '-', $page) . '|' . date('Y-m-d_H:i:s') . '.html';
-		$file 		      = $themeFolder . $page . '.html';
+		$backupName   =  str_replace(DS, '-', $page) . '|' . date($this->revisionDateFormat) . '.html';
+		$file         = $themeFolder . $page . '.html';
 
 		if (is_dir($backupFolder)) {
 			if (file_exists($file)) {
@@ -252,7 +275,6 @@ class Editor extends Base {
 		$file        = sanitizeFileName($this->request->post['file']);
 		$themeFolder = $this->getThemeFolder();
 		//echo $themeFolder . DS . $file;
-		header('Content-type: application/json; charset=utf-8');
 
 		if (unlink($themeFolder . DS . $file)) {
 			$message = ['success' => true, 'message' => __('File deleted!')];
@@ -260,9 +282,8 @@ class Editor extends Base {
 			$message = ['success' => false, 'message' => __('Error deleting file!')];
 		}
 
-		echo json_encode($message);
-
-		die();
+		$this->response->setType('json');
+		$this->response->output($message);
 	}
 
 	function rename() {
@@ -271,7 +292,6 @@ class Editor extends Base {
 		$duplicate   =  $this->request->post['duplicate'] ?? false;
 		$themeFolder = $this->getThemeFolder();
 
-		header('Content-type: application/json; charset=utf-8');
 		$currentFile = $themeFolder . DS . $file;
 		$targetFile  =  $themeFolder . DS . $newfile;
 
@@ -289,9 +309,8 @@ class Editor extends Base {
 			}
 		}
 
-		echo json_encode($message);
-
-		die();
+		$this->response->setType('json');
+		$this->response->output($message);
 	}
 
 	function saveReusable() {
@@ -303,8 +322,6 @@ class Editor extends Base {
 		$folder      = $themeFolder . DS . $type . 's' . DS . 'reusable' . DS;
 		$file        = "$name.html";
 
-		header('Content-type: application/json; charset=utf-8');
-
 		@mkdir($folder);
 
 		if (file_put_contents($folder . $file, $html)) {
@@ -313,32 +330,106 @@ class Editor extends Base {
 			$message = ['success' => false, 'message' => __('Error saving!')];
 		}
 
-		echo json_encode($message);
-
-		die();
+		$this->response->setType('json');
+		$this->response->output($message);
 	}
 
 	function save() {
-		$page                 = sanitizeFileName($_POST['file']);
+		$file             = $this->request->post['file'] ?? '';
+		$startTemplateUrl = $this->request->post['startTemplateUrl'] ?? '';
+		$name             = $this->request->post['name'] ?? '';
+		$content          = $this->request->post['content'] ?? 'Lorem ipsum';
+		$type             =  $this->request->post['type'] ?? false;
+		$addMenu          =  $this->request->post['add-menu'] ?? false;
+		$menu_id          =  $this->request->post['menu_id'] ?? false;
+		$url              = '';
 
-		$content              = $this->request->post['html'] ?? false;
-		$startTemplateUrl     = $this->request->post['startTemplateUrl'] ?? false;
-		$elements             = $this->request->post['elements'] ?? false;
-		$setTemplate          = $this->request->post['setTemplate'] ?? false;
+		$file             = sanitizeFileName(slugify(str_replace('.html', '', $file))) . '.html';
 
-		header('Content-type: application/json; charset=utf-8');
+		if ($type && $name) {
+			$slug    = slugify($name);
+			$success = false;
+
+			switch ($type) {
+				case 'page':
+				case 'post':
+					$file             = sanitizeFileName("content/$slug.html");
+					$startTemplateUrl = "content/$type.html";
+					$post             = new PostSQL();
+					$result           = $post->add([
+						'post' => [
+							'template'     => $file,
+							'type'         => $type,
+							'image'        => 'posts/2.jpg', //'placeholder.svg'
+							'post_content' => [[
+								'slug'        => $slug,
+								'name'        => $name,
+								'content'     => $content,
+								'language_id' => $this->global['language_id'],
+							]],
+						] + $this->global, ] + $this->global);
+
+					if ($result['post']) {
+						$success    = true;
+						$route      = "content/{$type}/index";
+						$url        = \Vvveb\url($route, ['slug'=> $slug]);
+					}
+
+				break;
+
+				case 'product':
+					$file             = sanitizeFileName("product/$slug.html");
+					$startTemplateUrl = "product/$type.html";
+					$price            =  $this->request->post['price'] ?? 0;
+					$product          = new ProductSQL();
+					$result           = $product->add([
+						'product' => [
+							'model'           => '',
+							'image'           => 'posts/2.jpg', //'placeholder.svg'
+							'status'          => 1, //active
+							'template'        => $file,
+							'price'           => $price,
+							'product_content' => [[
+								'slug'        => $slug,
+								'name'        => $name,
+								'name'        => $name,
+								'content'     => $content,
+								'language_id' => $this->global['language_id'],
+							]],
+						] + $this->global, ] + $this->global);
+
+					if ($result['product']) {
+						$success    = true;
+						$route      = "product/{$type}/index";
+						$url        = \Vvveb\url($route, ['slug'=> $slug]);
+					}
+
+				break;
+			}
+		}
+
+		$content          = $this->request->post['html'] ?? false;
+		$elements         = $this->request->post['elements'] ?? false;
+		$setTemplate      = $this->request->post['setTemplate'] ?? false;
+
 		$view         = View::getInstance();
 		$view->noJson = true;
 		$success      = false;
 		$text      		 = '';
 
 		$themeFolder = $this->getThemeFolder();
+		$baseUrl     = '/themes/' . (Sites::getTheme() ?? 'default') . '/';
 
-		if ($startTemplateUrl && ! $content) {
-			$baseUrl = '/themes/' . (Sites::getTheme() ?? 'default') . '/';
+		if ($startTemplateUrl) {
 			$content = file_get_contents($themeFolder . DS . $startTemplateUrl);
 			$content = preg_replace('@<base href[^>]+>@', '<base href="' . $baseUrl . '">', $content);
 		}
+
+		if (! $url) {
+			$url = "$baseUrl/$file";
+		}
+
+		$data = compact('file', 'name', 'url', 'startTemplateUrl');
 
 		if ($elements) {
 			if ($this->saveElements($elements)) {
@@ -351,18 +442,38 @@ class Editor extends Base {
 		}
 
 		if (! $startTemplateUrl) {
-			if ($this->backup($page)) {
+			if ($this->backup($file)) {
 			} else {
 				$success   = false;
 				$text .= __('Error saving backup!') . "\n";
 			}
 		}
 
+		if ($addMenu && $menu_id) {
+			$menuData = ['menu_item' => [
+				'menu_id'           => $menu_id,
+				'url'               => $url,
+				'menu_item_content' => [[
+					'name'         => $name,
+					'slug'         => $slug,
+					'language_id'  => $this->global['language_id'],
+					'content'      => '',
+				]],
+			]] + $this->global;
+
+			$menus   = new menuSQL();
+			$results = $menus->addMenuItem($menuData);
+
+			if ($results) {
+				$text .= "\n" . __('Menu item added!');
+			}
+		}
+
 		//if plugins template use public path
-		if (substr_compare($page[0],'/plugins/', 0, 9) === 0) {
-			$fileName = DIR_PUBLIC . DS . $page;
+		if (substr_compare($file[0],'/plugins/', 0, 9) === 0) {
+			$fileName = DIR_PUBLIC . DS . $file;
 		} else {
-			$fileName = $themeFolder . DS . $page;
+			$fileName = $themeFolder . DS . $file;
 		}
 
 		if (file_put_contents($fileName, $content)) {
@@ -373,11 +484,9 @@ class Editor extends Base {
 		if (CacheManager::clearCompiledFiles('app') && CacheManager::delete()) {
 		}
 
-		$message   = ['success' => $success, 'message' => $text];
-		echo json_encode($message);
+		$data += ['success' => $success, 'message' => $text];
 
-		die();
-
-		return false;
+		$this->response->setType('json');
+		$this->response->output($data);
 	}
 }

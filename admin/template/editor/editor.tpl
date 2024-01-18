@@ -40,7 +40,7 @@ if(isset($this->themeBlocks) && is_array($this->themeBlocks))
 	foreach ($this->themeBlocks as $id => $file) {?>
 	
 	[data-v-theme-blocks]|src = $file
-	[data-v-theme-blocks]|id = $id
+	[data-v-theme-blocks]|id = <?php echo "theme-$id";?>
 
 	[data-v-theme-blocks]|after = <?php 
 	} 
@@ -55,7 +55,7 @@ if(isset($this->themeSections) && is_array($this->themeSections))
 	foreach ($this->themeSections as $id => $file) {?>
 	
 	[data-v-theme-sections]|src = $file
-	[data-v-theme-sections]|id = $id
+	[data-v-theme-sections]|id = <?php echo "theme-$id";?>
 
 	[data-v-theme-sections]|after = <?php 
 	} 
@@ -70,7 +70,7 @@ if(isset($this->themeJs) && is_array($this->themeJs))
 	foreach ($this->themeJs as $id => $file) {?>
 	
 	[data-v-theme-js]|src = $file
-	[data-v-theme-js]|id = $id
+	[data-v-theme-js]|id = <?php echo "theme-$id";?>"
 
 	[data-v-theme-js]|after = <?php 
 	} 
