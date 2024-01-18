@@ -142,7 +142,7 @@ class Checkout extends Base {
 			if (! $this->global['user_id']) {
 				//password is provided
 				if (isset($this->request->post['register']) && $this->request->post['register'] == 'true') {
-					$rules[] = 'signup';
+					$rules[] = 'checkout_signup';
 				} else {
 					$rules[] = 'guest';
 				}
@@ -200,7 +200,6 @@ class Checkout extends Base {
 				}
 			}
 
-			unset($rules['confirm_password']);
 			$validator                = new Validator($rules);
 			$checkoutInfo             = $validator->filter($this->request->post);
 

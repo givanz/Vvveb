@@ -1,6 +1,6 @@
 [data-v-component-order]|before = <?php
 if (isset($order_idx)) $order_idx++; else $order_idx = 0;
-$order = $this->_component['orders'][$order_idx] ?? [];
+$order = $this->_component['order'][$order_idx] ?? [];
 ?>
 
 @order-product = [data-v-component-order] [data-v-order-product]
