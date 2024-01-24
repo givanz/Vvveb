@@ -134,6 +134,8 @@ class Vtpl {
 
 			if ($command) {
 				$this->template .= " = $command\n";
+			} else {
+				$this->template .= "\n";
 			}
 		}
 	}
@@ -212,7 +214,7 @@ class Vtpl {
 		$this->phpCode   = $phpCode[0];
 	}
 
-	private  function processFroms() {
+	private function processFroms() {
 		/*
 		 *Froms - from(index.html|#element)
 		 */
@@ -1872,7 +1874,7 @@ class Vtpl {
 							}
 							$value   = Vvveb\dotToArrayKey($value);
 
-							$php  = '<_script language="php"><![CDATA[ if (isset(' . $value . ')) echo ' . $value . ';]]></_script>';
+							$php  = '<_script language="php"><![CDATA[ if (isset(' . $value . ')) echo htmlentities(' . $value . ');]]></_script>';
 							$this->setNodeAttribute($node, $name, $php);
 						}
 					}
@@ -1998,7 +2000,7 @@ class Vtpl {
 					  		$script = $self->_scripts[$matches[2]];
 					  	}
 
-					  	return '<script' . $matches[1] . '>' . $script . $matches[3] . '</script>';
+					  	return '<script' . $matches[1] . ' ' . $matches[3] . '>' . $script . '</script>';
 					  }, $html);
 
 		//cleanup modified scripts
