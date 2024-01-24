@@ -21,5 +21,5 @@ RUN apt-get install -y \
   && docker-php-ext-install mysqli
 
 COPY php.ini ${PHP_INI_DIR}
-COPY docker-entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+#COPY docker-entrypoint.sh /entrypoint.sh
+#ENTRYPOINT ["/entrypoint.sh"]

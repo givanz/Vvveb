@@ -72,8 +72,8 @@ RUN chmod -R 666 ${DIR_DIGITAL_ASSETS}
 RUN chmod -R 666 ${DIR_IMAGE_CACHE}
 
 COPY php.ini ${PHP_INI_DIR}
-COPY docker-entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+#COPY docker-entrypoint.sh /entrypoint.sh
+#ENTRYPOINT ["/entrypoint.sh"]
 
 EXPOSE 80
 #CMD ["apachectl", "-D", "FOREGROUND"]
