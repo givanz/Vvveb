@@ -106,7 +106,8 @@ class CacheManager {
 
 	public static function clearPageCache($namespace = '') {
 		$pageCache = PageCache::getInstance();
-		$pageCache->purge($namespace);
+
+		return $pageCache->purge($namespace);
 	}
 
 	public static function delete($namespace = '') {
