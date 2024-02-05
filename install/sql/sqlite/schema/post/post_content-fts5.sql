@@ -8,44 +8,45 @@ CREATE TABLE `post_content` (
 `content` TEXT,
 `excerpt` text,
 `meta_keywords` text NOT NULL DEFAULT "",
-`meta_description` text NOT NULL DEFAULT ""
-,PRIMARY KEY (`post_id`,`language_id`)
--- FULLTEXT `search` (`name`,`content`)
+`meta_description` text NOT NULL DEFAULT "",
+PRIMARY KEY (`post_id`,`language_id`)
 );
 
 CREATE INDEX `post_content_slug` ON `post_content` (`slug`);
 
+DROP TRIGGER IF EXISTS `afterPostContentInsert`;
+DROP TRIGGER IF EXISTS `afterPostContentDelete`;
 DROP TABLE IF EXISTS `post_content_search`;
 
-create virtual table post_content_search using fts5(
+CREATE VIRTUAL TABLE post_content_search USING fts5(
   content='post_content', 
   content_rowid='rowid', 
   name, 
   content 
 );
 
-create trigger afterPostContentInsert after insert on post_content begin
-  insert into post_content_search(
+CREATE TRIGGER afterPostContentInsert AFTER INSERT ON post_content BEGIN
+  INSERT INTO post_content_search(
     rowid, 
     name, 
     content
   )
-  values(
+  VALUES(
     new.rowid,
     new.name, 
     new.content
-);end;
+);END;
 
-create trigger afterPostContentDelete after delete on post_content begin
-  insert into post_content_search(
+CREATE TRIGGER afterPostContentDelete AFTER DELETE ON post_content BEGIN
+  INSERT INTO post_content_search(
     post_content_search,
     rowid,
     name,
     content
   )
-  values(
+  VALUES(
     'delete',
     old.rowid,
     old.name,
     old.content
-);end;
+);END;

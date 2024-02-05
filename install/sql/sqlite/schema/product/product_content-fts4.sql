@@ -19,34 +19,39 @@ CREATE INDEX `product_content_slug` ON `product_content` (`slug`);
 
 DROP TABLE IF EXISTS `product_content_search`;
 
-create virtual table product_content_search using fts4(
+DROP TRIGGER IF EXISTS `afterproductContentInsert`;
+DROP TRIGGER IF EXISTS `afterproductContentDelete`;
+DROP TABLE IF EXISTS `product_content_search`;
+
+CREATE VIRTUAL TABLE product_content_search USING fts4(
   content='product_content', 
 --  content_rowid='rowid', 
   name, 
   content 
 );
 
-create trigger afterProductContentInsert after insert on product_content begin
-  insert into product_content_search(
+create trigger afterproductContentInsert AFTER INSERT ON product_content BEGIN
+  INSERT INTO product_content_search(
     rowid, 
     name, 
     content
   )
-  values(
+  VALUES(
     new.rowid,
     new.name, 
     new.content
-);end;
+);END;
 
-create trigger afterProductContentDelete after delete on product_content begin
-  insert into product_content_search(
+CREATE TRIGGER afterproductContentDelete AFTER DELETE ON product_content BEGIN
+  INSERT INTO product_content_search(
     product_content_search,
     rowid,
     name,
     content
   )
-  values(
+  VALUES(
     'delete',
+    old.rowid,
     old.name,
     old.content
-);end;
+);END;
