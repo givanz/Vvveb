@@ -1868,14 +1868,21 @@ class Vtpl {
 
 						continue;
 					} else {
-						if (isset($value[0]) && $value[0] == '$' && preg_match('/^\$[a-z][\w\.]+$/i', $value)) {
-							if (strpos($value, 'this') === 0) {
-								$value = str_replace('this.', 'this->', $value);
-							}
-							$value   = Vvveb\dotToArrayKey($value);
+						if (strpos($value,'$') !== false) {
+							$value = preg_replace_callback('/{(\$[a-z][\w\.]+)}/i',
+							  function ($matches) {
+							  	$value = $matches[1];
 
-							$php  = '<_script language="php"><![CDATA[ if (isset(' . $value . ')) echo htmlentities(' . $value . ');]]></_script>';
-							$this->setNodeAttribute($node, $name, $php);
+							  	if (strpos($value, '$this') === 0) {
+							  		$value = str_replace('$this.', '$this->', $value);
+							  	}
+							  	$value   = Vvveb\dotToArrayKey($value);
+							  	$php  = '<_script language="php"><![CDATA[ if (isset(' . $value . ')) echo htmlentities(' . $value . ');]]></_script>';
+
+							  	return $php;
+							  }, $value);
+
+							$this->setNodeAttribute($node, $name, $value);
 						}
 					}
 					/*
