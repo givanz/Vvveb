@@ -23,76 +23,86 @@
 namespace Vvveb\Controller\Feed;
 
 use \Vvveb\Controller\Base;
+use \Vvveb\System\Images;
 use function Vvveb\siteSettings;
+use function Vvveb\url;
 
 #[\AllowDynamicProperties]
 class Manifest extends Base {
 	function index() {
 		$site   = siteSettings();
 
-		$manifest = [
-			'short_name' => $site['title'],
-			'lang'       => $this->global['language'],
-			'dir'        => 'ltr',
-			'name'       => $site['description'],
-			'icons'      => [
-				0 => [
-					'src' => $site['logo'],
-					//'type' => 'image/svg+xml',
-					'type'  => 'image/png',
-					'sizes' => '512x512',
-				], /*
-			1 => [
-			  'src' => '/images/icons-192.png',
-			  'type' => 'image/png',
-			  'sizes' => '192x192',
-			],
-			2 => [
-			  'src' => '/images/icons-512.png',
-			  'type' => 'image/png',
-			  'sizes' => '512x512',
-			],*/
-			],
-			'id'               => '/?source=pwa',
-			'start_url'        => '/?source=pwa',
-			'background_color' => '#3367D6',
-			'display'          => 'standalone',
-			//'orientation'      => 'landscape',
-			'scope'            => '/',
-			'theme_color'      => '#3367D6',
-			'shortcuts'        => [
-				0 => [
-					'name'        => $site['description'],
-					'short_name'  => $site['title'],
-					'description' => $site['meta-description'],
-					'url'         => '/?source=pwa',
-					'icons'       => [
-						0 => [
-							'src'   => $site['favicon'],
-							'sizes' => '192x192',
+		if ($site) {
+			$logo    = Images::image($site['logo-src'], 'logo', [144, 144]);
+			$favicon = Images::image($site['favicon-src'], 'favicon', [96, 96]);
+			$url     = url('index/index', ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'https']);
+
+			$manifest = [
+				'short_name' => $site['title'],
+				'lang'       => $this->global['language'],
+				'dir'        => 'ltr',
+				'name'       => $site['title'],
+				'icons'      => [
+					0 => [
+						'src' => $logo, //$site['logo'],
+						//'type' => 'image/svg+xml',
+						'type'  => 'image/png',
+						'sizes' => '144x144',
+					], /*
+				1 => [
+				  'src' => '/images/icons-192.png',
+				  'type' => 'image/png',
+				  'sizes' => '192x192',
+				],
+				2 => [
+				  'src' => '/images/icons-512.png',
+				  'type' => 'image/png',
+				  'sizes' => '512x512',
+				],*/
+				],
+				'id'               => $url,
+				'start_url'        => "$url/?source=pwa",
+				'background_color' => '#3367D6',
+				'display'          => 'standalone',
+				//'orientation'      => 'landscape',
+				'scope'            => '/',
+				'theme_color'      => '#3367D6',
+				'shortcuts'        => [
+					0 => [
+						'name'        => $site['description'],
+						'short_name'  => $site['title'],
+						'description' => $site['meta-description'],
+						'url'         => '/?source=pwa',
+						'icons'       => [
+							0 => [
+								'src'   => $favicon, //$site['favicon'],
+								'sizes' => '96x96',
+							],
 						],
 					],
 				],
-			],
-			'description' => $site['meta-description'],
-			/*
-		  'screenshots' => [
-			0 => [
-			  'src' => '/images/screenshot1.png',
-			  'type' => 'image/png',
-			  'sizes' => '540x720',
-			  'form_factor' => 'narrow',
-			],
-			1 => [
-			  'src' => '/images/screenshot2.jpg',
-			  'type' => 'image/jpg',
-			  'sizes' => '720x540',
-			  'form_factor' => 'wide',
-			],
-		  ],*/
-		];
+				'description' => $site['meta-description'],
+				/*
+			  'screenshots' => [
+				0 => [
+				  'src' => '/images/screenshot1.png',
+				  'type' => 'image/png',
+				  'sizes' => '540x720',
+				  'form_factor' => 'narrow',
+				],
+				1 => [
+				  'src' => '/images/screenshot2.jpg',
+				  'type' => 'image/jpg',
+				  'sizes' => '720x540',
+				  'form_factor' => 'wide',
+				],
+			  ],*/
+			];
 
-		$this->view->json = $manifest;
-		$this->response->setType('json');
+			$this->response->setType('json');
+			$this->response->output($manifest);
+		} else {
+			$this->notFound();
+		}
 	}
 }
