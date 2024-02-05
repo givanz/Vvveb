@@ -30,4 +30,6 @@ abstract class PaymentMethod {
 	}
 
 	abstract public function getMethod();
+
+	abstract public function init();
 }

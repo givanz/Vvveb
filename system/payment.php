@@ -47,10 +47,12 @@ class Payment {
 	public function getMethods() {
 		$data = [];
 
-		foreach ($this->methods as $name => $class) {
+		foreach ($this->methods as $name => $options) {
+			$class                  = $options[0];
+			$params                 = $options[1];
 			$obj                    = new $class(Cart::getInstance());
 			$this->instances[$name] = $obj;
-			$paymentData            = $obj->getMethod();
+			$paymentData            = $obj->getMethod($params);
 			//if payment method returns false or no data then don't add it to the list
 			if ($paymentData) {
 				$data[$name] = $paymentData;
@@ -60,8 +62,8 @@ class Payment {
 		return $data;
 	}
 
-	public function registerMethod($method, $class) {
-		$this->methods[$method] = $class;
+	public function registerMethod($method, $class, $params = []) {
+		$this->methods[$method] = [$class, $params];
 	}
 
 	public function setMethod($method) {
