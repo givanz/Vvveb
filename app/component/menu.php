@@ -22,9 +22,13 @@
 
 namespace Vvveb\Component;
 
+use function Vvveb\sanitizeHTML;
 use Vvveb\Sql\menuSQL;
+use Vvveb\Sql\postSQL;
+use Vvveb\Sql\productSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use function Vvveb\url;
 
 class Menu extends ComponentBase {
 	public static $defaultOptions = [
@@ -45,8 +49,12 @@ class Menu extends ComponentBase {
 		$menuSql               = new menuSQL();
 		$results               = $menuSql->getMenus($options);
 		$current_category_slug = false;
+
 		//count the number of child menus (subcategories) for each category
 		if (isset($results['menus'])) {
+			$productIds = [];
+			$postIds    = [];
+
 			foreach ($results['menus'] as $taxonomy_item_id => &$category) {
 				$parent_id = $category['parent_id'] ?? false;
 
@@ -67,6 +75,66 @@ class Menu extends ComponentBase {
 						$parent['children']++;
 					} else {
 						$parent['children'] = 1;
+					}
+
+					if ($category['type'] == 'text') {
+						$parent['has-text'] = true;
+					}
+				}
+
+				if ($category['type'] == 'product') {
+					$productIds[$taxonomy_item_id] = $category['item_id'];
+				}
+
+				if ($category['type'] == 'post' || $category['type'] == 'page') {
+					$postIds[$taxonomy_item_id] = $category['item_id'];
+				}
+			}
+
+			//get product items
+			if ($productIds) {
+				$productOptions = [
+					'product_id'  => $productIds,
+					'language_id' => $options['language_id'],
+					'site_id'     => $options['site_id'],
+				];
+
+				$productSql = new productSql();
+				$products   = $productSql->getAll($productOptions);
+
+				if (isset($products['products']) && $products['products']) {
+					$productTaxonomy = array_flip($productIds);
+
+					foreach ($products['products'] as $product) {
+						$taxonomy_item_id = $productTaxonomy[$product['product_id']];
+						$category         = &$results['menus'][$taxonomy_item_id];
+						$route            = "product/{$category['type']}/index";
+						$category['url']  = url($route, ['slug'=> $product['slug']]);
+						$category['name'] = $product['name'];
+					}
+				}
+			}
+
+			//get post items
+			if ($postIds) {
+				$postOptions = [
+					'post_id'     => $postIds,
+					'language_id' => $options['language_id'],
+					'site_id'     => $options['site_id'],
+				];
+
+				$postSql = new postSql();
+				$posts   = $postSql->getAll($postOptions);
+
+				if (isset($posts['posts']) && $posts['posts']) {
+					$postTaxonomy = array_flip($postIds);
+
+					foreach ($posts['posts'] as $post) {
+						$taxonomy_item_id = $postTaxonomy[$post['post_id']];
+						$category         = &$results['menus'][$taxonomy_item_id];
+						$route            = "content/{$category['type']}/index";
+						$category['url']  = url($route, ['slug'=> $post['slug']]);
+						$category['name'] = $post['name'];
 					}
 				}
 			}
@@ -91,7 +159,7 @@ class Menu extends ComponentBase {
 				$menu_item_content[$name] = strip_tags($value);
 			} else {
 				if ($name == 'content') {
-					$menu_item_content[$name] = $value;
+					$menu_item_content[$name] = sanitizeHTML($value);
 				} else {
 					$menu_item[$name] = $value;
 				}

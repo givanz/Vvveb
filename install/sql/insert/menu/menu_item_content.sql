@@ -92,32 +92,48 @@ INSERT INTO `menu_item_content` VALUES
 (40,1, 'Tag 2', 'Tag 2', 'tag 2'),
 (41,1, 'Tag 3', 'Tag 3', 'tag 3'),
 -- menu
-(42,1, 'Home', 'Home', 'home'),
-(43,1, 'Shop', 'Shop', 'shop'),
+(42,1, 'Home', 'Home', ''),
+(43,1, 'Shop', 'Shop', ''),
 
 -- (44,1, 'Support', 'Tag 3', 'tag 3'),
 -- (45,1, 'User documentation', 'Tag 3', 'tag 3'),
-(46,1, 'Blog', 'Blog', 'Blog'),
+(46,1, 'Blog', 'Blog', ''),
 -- (47,1, 'Forums', 'Forums', 'Forums'),
 -- (48,1, 'Developer guide', 'Developer', 'Developer'),
 
-(49,1, 'Contact', 'Contact', 'Contact'),
-(59,1, 'About', 'About', 'About'),
+(49,1, 'Contact', 'Contact', ''),
+(59,1, 'About', 'About', ''),
 -- (60,1, 'Support Vvveb', 'Support Vvveb', 'Support Vvveb'),
 -- (61,1, 'Contribute', 'Contribute', 'Contribute'),
 -- (62,1, 'Translations', 'Translations', 'Translations'),
 
-(63,1, 'Services', 'Services', 'Services'),
-(64,1, 'Pricing', 'Pricing', 'Pricing'),
-(65,1, 'Services', 'Services', 'Services'),
-(66,1, 'Portfolio', 'Portfolio', 'Portfolio'),
+(63,1, 'Services', 'Services', ''),
+(64,1, 'Pricing', 'Pricing', ''),
+(65,1, 'Services', 'Services', ''),
+(66,1, 'Portfolio', 'Portfolio', ''),
+(67,1, 'Mega menu', '', '<p><img src="/media/vvveb.svg" height="24" alt="" class="me-2">Mega menu</p>'),
+(68,1, 'Features', '', '<div class="row">
+	<div class="col-6 align-self-center"><img src="/media/posts/4.jpg" alt="Post" width="250" loading="lazy" class="rounded"></div>
+	<div class="col-6">
+		<h4>Features</h4>
+		<p class="text-muted">Just a few mentions, but there is more</p>
+		<ul class="list-unstyled">
+			<li class="text-primary">Page builder</li>
+			<li class="text-primary">Mega menu</li>
+			<li class="text-primary">Multi language</li>
+			<li class="text-primary">Advanced SEO</li>
+			<li class="text-primary">Ecommerce</li>
+		</ul>
+	</div>
+</div>'),
+
 -- footer
-(50,1, 'Vvveb', 'Vvveb', 'Vvveb'),
-(51,1, 'Home', 'Home', 'home'),
-(52,1, 'Shop', 'Shop', 'shop'),
-(53,1, 'Resources', 'Tag 3', 'tag 3'),
+(50,1, 'Vvveb', 'Vvveb', ''),
+(51,1, 'Home', 'Home', ''),
+(52,1, 'Shop', 'Shop', ''),
+(53,1, 'Resources', 'Tag 3', ''),
 (54,1, 'Developer documentation', 'Developer documentation', 'Developer documentation'),
-(55,1, 'User documentation', 'Tag 3', 'tag 3'),
-(56,1, 'Github', 'Tag 3', 'tag 3'),
-(57,1, 'Contact', 'Tag 3', 'tag 3'),
-(58,1, 'Blog', 'Blog', 'Blog');
+(55,1, 'User documentation', 'Tag 3', ''),
+(56,1, 'Github', 'Tag 3', ''),
+(57,1, 'Contact', 'Tag 3', ''),
+(58,1, 'Blog', 'Blog', '');

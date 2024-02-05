@@ -4,8 +4,8 @@
 @submenumenu_item = [data-v-menu] [data-v-menu-item] [data-v-submenu]
 
 
-@menu_item|deleteAllButFirst
-@submenumenu_item [data-v-submenu-item]|deleteAllButFirst
+@menu_item|deleteAllButFirstChild
+@submenumenu_item [data-v-submenu-item]|deleteAllButFirstChild
 
 
 @menu_item|before = <?php

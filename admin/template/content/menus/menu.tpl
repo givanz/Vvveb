@@ -29,8 +29,23 @@ if ($_categories) {
 ?>
 
 	@menu|data-v-id = $menu['menu_item_id']
-	@menu [data-v-url] = $menu['url']
-	@menu [data-v-sort_order] = $menu['sort_order']
+	@menu input[data-v-menu-*] = $menu['@@__data-v-menu-(*)__@@']
+	@menu input[data-v-menu-item_id]|data-text = <?php 
+		$type = '@@__data-type__@@';
+		if ($menu['type'] == $type) {
+			$langtext = reset($menu['languages']); 
+			echo $langtext['name'] ?? '';
+		} else echo ' ';
+	?>
+	
+	@menu select[data-v-menu-*]|before = <?php $name = '@@__data-v-menu-(*)__@@';?>
+	
+	@menu select[data-v-menu-*] option|addNewAttribute = <?php 
+		$value = '@@__value__@@';
+		if (isset($menu[$name]) && ($value == $menu[$name])) {
+			echo 'selected';
+		}
+	?>
 
 	@menu|before = <?php 
 	

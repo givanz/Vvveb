@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS `menu_item`;
 CREATE TABLE `menu_item` (
   `menu_item_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `menu_id` INT UNSIGNED NOT NULL,
+  `type` varchar(191) NOT NULL DEFAULT 'link',
   `image` varchar(191) NOT NULL DEFAULT '',
   `url` varchar(191) NOT NULL DEFAULT '',
   `parent_id` INT UNSIGNED NOT NULL DEFAULT '0',

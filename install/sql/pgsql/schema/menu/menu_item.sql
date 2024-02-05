@@ -7,6 +7,7 @@ CREATE SEQUENCE menu_item_seq;
 CREATE TABLE menu_item (
   "menu_item_id" int check ("menu_item_id" > 0) NOT NULL DEFAULT NEXTVAL ('menu_item_seq'),
   "menu_id" int check ("menu_id" > 0) NOT NULL,
+  "type" varchar(191) NOT NULL DEFAULT 'link',
   "image" varchar(191) NOT NULL DEFAULT '',
   "url" varchar(191) NOT NULL DEFAULT '',
   "parent_id" int check ("parent_id" >= 0) NOT NULL DEFAULT 0,

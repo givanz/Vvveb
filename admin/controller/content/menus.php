@@ -22,8 +22,10 @@
 
 namespace Vvveb\Controller\Content;
 
-use \Vvveb\Sql\menuSQL;
 use function Vvveb\__;
+use function Vvveb\sanitizeHTML;
+use Vvveb\Sql\menuSQL;
+use Vvveb\System\Sites;
 
 class Menus extends Categories {
 	function deleteMenu() {
@@ -93,11 +95,26 @@ class Menus extends Categories {
 
 		$menus  = new menuSQL();
 
+		if (isset($data['item_id']) && ! is_numeric($data['item_id'])) {
+			unset($data['item_id']);
+		}
+
+		if (isset($data['menu_item_content'])) {
+			foreach ($data['menu_item_content'] as &$lang) {
+				$lang['content'] = sanitizeHTML($lang['content']);
+
+				// if autocomplete set text as default name for languages
+				if (isset($data['item_id_text'])) {
+					$lang['name'] = $data['item_id_text'];
+				}
+			}
+		}
+
 		if (isset($data['menu_item_id']) && $data['menu_item_id']) {
 			$results = $menus->editMenuItem(['menu_item' => $data, 'menu_item_id' => $data['menu_item_id']]);
 
 			if ($results) {
-				echo __('Item edited!');
+				echo __('Item saved!');
 			}
 		} else {
 			$results = $menus->addMenuItem(['menu_item' => $data]);
@@ -123,7 +140,8 @@ class Menus extends Categories {
 
 		if ($menuId) {
 			$options = [
-				'menu_id'            	    => $menuId, //menus
+				'menu_id' => $menuId,
+				'limit'   => 100000,
 			] + $this->global;
 
 			$results = $menus->getMenuAllLanguages($options);
@@ -137,7 +155,8 @@ class Menus extends Categories {
 						$menu['languages'][$lang['language_id']] = $lang;
 					}
 
-					$menu['name'] = $menu['languages'][$this->global['language_id']]['name'] ?? $langs[0]['name'] ?? '';
+					$menu['name']    = $menu['languages'][$this->global['language_id']]['name'] ?? $langs[0]['name'] ?? '';
+					$menu['content'] = $menu['languages'][$this->global['language_id']]['content'] ?? $langs[0]['content'] ?? '';
 				}
 			}
 
@@ -171,6 +190,14 @@ class Menus extends Categories {
 		}
 
 		$view->set($results);
+
+		$admin_path      = \Vvveb\adminPath();
+		$controllerPath  = $admin_path . 'index.php?module=media/media';
+		$view->scanUrl   = "$controllerPath&action=scan";
+		$view->uploadUrl = "$controllerPath&action=upload";
+		$theme           = Sites::getTheme() ?? 'default';
+		$view->themeCss  = PUBLIC_PATH . "themes/$theme/css/admin-post-editor.css";
+		//$view->themeCss        = PUBLIC_PATH . "themes/$theme/css/style.css";
 
 		//return 'content/menus/menu.html';
 	}
