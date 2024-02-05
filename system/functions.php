@@ -421,25 +421,31 @@ $vvvebTranslationDomains = ['vvveb', 'landing-theme'];
 
 function addTranslationDomain($domain) {
 	global $vvvebTranslationDomains;
-	
-	if (!in_array($domain, $vvvebTranslationDomains)) {
+
+	if (! in_array($domain, $vvvebTranslationDomains)) {
 		array_push($vvvebTranslationDomains, $domain);
-	} 
+	}
 }
 
 if (function_exists('_')) {
 	function __($text, $plural = false, $count = false) {
 		global $vvvebTranslationDomains;
-		
+
 		if ($plural) {
 			foreach ($vvvebTranslationDomains as $domain) {
 				$translation = dngettext($domain, $text, $plural, $count);
-				if ($translation != $text) break;
+
+				if ($translation != $text) {
+					break;
+				}
 			}
 		} else {
 			foreach ($vvvebTranslationDomains as $domain) {
 				$translation = dgettext($domain, $text);
-				if ($translation != $text) break;
+
+				if ($translation != $text) {
+					break;
+				}
 			}
 		}
 
@@ -1119,7 +1125,7 @@ function setLanguage($langCode = 'en_US', $domain = 'vvveb') {
 	}
 
 	if (function_exists('bindtextdomain')) {
-		foreach ($vvvebTranslationDomains as $tdomain)  {
+		foreach ($vvvebTranslationDomains as $tdomain) {
 			bindtextdomain($tdomain, DIR_ROOT . 'locale');
 		}
 		bindtextdomain($domain, DIR_ROOT . 'locale');
@@ -1185,6 +1191,7 @@ function siteSettings($site_id = SITE_ID) {
 
 			foreach (['favicon', 'logo', 'logo-sticky', 'logo-dark', 'logo-dark-sticky'] as $img) {
 				if (isset($settings[$img])) {
+					$settings["$img-src"] = $settings[$img];
 					$settings[$img] = System\Images::image($settings[$img], '');
 				}
 			}
@@ -1232,7 +1239,6 @@ function truncateWords($text, $limit) {
  * @return bool 
  */
 function email($to, $subject, $template, $data = [], $config = []) {
-	return true;
 	$email = System\Email::getInstance();
 
 	if (is_array($template)) {
@@ -1270,7 +1276,6 @@ function email($to, $subject, $template, $data = [], $config = []) {
 	$email->setSubject($subject);
 
 	return $email->send();
-	//return  file_put_contents(DIR_ROOT . 'mail.html', $html);
 }
 
 /* Recursive rmdir */
@@ -1518,5 +1523,35 @@ function globBrace($path, $glob, $filename = '') {
 function isSecure() {
 	return
 	(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-	|| $_SERVER['SERVER_PORT'] == 443;
+	|| ($_SERVER['SERVER_PORT'] ?? 80) == 443;
+}
+
+function randomDigits($length) {
+	$result = '';
+
+	for ($i = 0; $i < $length; $i++) {
+		$result .= random_int(0, 9);
+	}
+
+	return $result;
+}
+
+function invoiceFormat($format, $data) {
+	$data += ['date_added' => time(), 'year' => date('Y'), 'month' => date('M'), 'day' => date('d')];
+
+	return preg_replace_callback('/{(.+?)}/', function ($matches) use ($data) {
+		$key = $matches[1];
+
+		if (isset($data[$key])) {
+			return $data[$key];
+		}
+
+		if (strpos($key, 'random-') !== false) {
+			$length = (int) str_replace('random-', '', $key);
+
+			return randomDigits($length);
+		}
+
+		return $matches[0];
+	}, $format);
 }
