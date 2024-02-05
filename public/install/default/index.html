@@ -11,6 +11,7 @@
 
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/install.css" rel="stylesheet">
+	<link href="../../admin/default/scss/ionicons.css" rel="stylesheet">
     <style>
     
     </style>
@@ -144,8 +145,11 @@
 								<div class="col-sm-9">
 
 									<div class="input-group">
-									  <input type="password" class="form-control"  id="password" placeholder="Database password" name="password" value="" aria-label="Database password">
-  									  <button class="btn btn-sm px-3 btn-toggle" type="button" onclick="togglePasswordInput(this)">&#x1F512;</button>
+									  <input type="password" class="form-control" id="password" placeholder="Database password" name="password" value="" aria-label="Database password">
+  									  <button class="btn btn-sm px-3 btn-toggle fs-5" type="button" onclick="togglePasswordInput(this,'password')">
+										<i class="icon-eye-off-outline"></i>
+										<!-- &#x1F512; -->
+									  </button>
 									</div>
 								</div>
 							  </div>							 
@@ -201,19 +205,21 @@
 		document.querySelectorAll('.db-field').forEach(el => el.style.display = display);
 	}
 	
-	function togglePasswordInput(element) {
-		var password = document.getElementById("password");
+	function togglePasswordInput(element, id) {
+		let password = document.getElementById(id);
 		if (password.type == "password") {
 			password.type = "text"; 
-			element.innerHTML = "&#x1F513;";
+			//element.innerHTML = "&#x1F513;";
+			element.firstElementChild.className = "icon-eye-outline";
 		} else {
 			password.type = "password";
-			element.innerHTML = "&#x1F512;";
+			//element.innerHTML = "&#x1F512;";
+			element.firstElementChild.className = "icon-eye-off-outline";
 		}
 	}
   </script>   					
 
     <script src="../../js/jquery.min.js"></script>
-    <script type="module" src="../../js/admin.js"></script>
+    <script src="../../admin/default/js/theme.js"></script>
   </body>
 </html>

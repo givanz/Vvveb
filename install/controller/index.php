@@ -232,6 +232,9 @@ class Index extends Base {
 			$this->view->count  = count($themes);
 		}
 
+		$isRootPublic             = (constant('PUBLIC_PATH') == DIRECTORY_SEPARATOR) ? 'true' : 'false';
+		$this->view->isRootPublic = $isRootPublic;
+
 		if ($this->request->post) {
 			//set admin password
 			$user        = $this->request->post['admin'] ?? [];
@@ -239,6 +242,7 @@ class Index extends Base {
 			$theme       = $this->request->post['theme'] ?? 'landing';
 			$noecommerce = $this->request->post['noecommerce'] ?? false;
 			$hostname    = $this->request->post['hostname'] ?? null;
+			$adminPath   = $this->request->post['admin-path'] ?? false;
 
 			$user['status'] = 1;
 			$result         = Admin::update($user, ['username' => 'admin']);
@@ -331,6 +335,22 @@ class Index extends Base {
 				}
 			}
 
+			$error = '';
+
+			if ($isRootPublic && $adminPath &&
+				($adminPath != 'admin' && $adminPath != 'vadmin')) {
+				$from = DIR_PUBLIC . 'vadmin';
+				$to   = DIR_PUBLIC . $adminPath;
+
+				if (@rename($from, $to)) {
+					@\Vvveb\set_config('admin.path', $adminPath);
+					//if succesful remove failsafe /admin login option
+					@unlink(DIR_PUBLIC . 'admin' . DS . 'index.php');
+				} else {
+					$error = sprintf(__('Renaming admin login path from %s to %s failed! use /admin/index.php path to login'), 'vadmin', $adminPath);
+				}
+			}
+
 			@\Vvveb\set_config('app.cronkey', Str::random(32));
 			@\Vvveb\set_config('app.key', Str::random(32));
 
@@ -339,10 +359,14 @@ class Index extends Base {
 				@\Vvveb\set_config('app.cache.driver', 'APCu');
 			}
 
+			if ($error) {
+				$this->view->error[] = $error;
+			}
+
 			$success               = __('Installation succesful!');
 			$this->view->success[] = $success;
 			$admin_path            = \Vvveb\adminPath();
-			$location              = preg_replace('@/install.*$@', $admin_path . "?success=$success", ($_SERVER['REQUEST_URI'] ?? ''));
+			$location              = preg_replace('@/install.*$@', $admin_path . "/index.php?success=$success&errors=$error", ($_SERVER['REQUEST_URI'] ?? ''));
 
 			header("Location: $location");
 		}

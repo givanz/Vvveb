@@ -39,7 +39,7 @@ function is_installed() {
 	return file_exists(DIR_ROOT . 'config' . DS . 'db.php');
 }
 
-$installPathRedirect = '/install/index.php';
+$installPathRedirect = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . '/install/index.php';
 
 if (! defined('APP')) {
 	if (is_installed()) {
@@ -52,7 +52,7 @@ if (! defined('APP')) {
 			die(header("Location: $installPathRedirect"));
 		}
 	}
-} elseif (! is_installed() && (!defined('APP') || APP != 'install')) {
+} elseif (! is_installed() && (! defined('APP') || APP != 'install')) {
 	defined('APP') || define('APP', 'install');
 
 	if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'install') === false) {

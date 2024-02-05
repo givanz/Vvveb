@@ -77,6 +77,12 @@ body {
 	border-color:var(--bs-border-color);
 }
 
+.btn-toggle:hover
+{
+	border-color:var(--bs-border-color);
+	background-color:rgba(var(--bs-body-color-rgb), 0.05);
+}
+
 
 input.form-control
 {

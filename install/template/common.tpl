@@ -1,4 +1,3 @@
-				  
 /*body|prepend = <?php var_dump($this);?>*/
 head base|href = <?php echo Vvveb\themeUrlPath()?>;
 
@@ -95,3 +94,11 @@ if (isset($this->message)) foreach($this->message as $message) {?>
 @message|after = <?php 
 	}
 ?>
+
+
+
+html|addNewAttribute = <?php if (isset($_COOKIE['theme'])) { 
+	echo 'data-bs-theme="';
+	if ($_COOKIE['theme'] == 'dark') echo 'dark'; else if ($_COOKIE['theme'] == 'light') echo 'light';else echo 'auto';  
+	echo '"';
+} ?>

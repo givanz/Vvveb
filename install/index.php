@@ -29,9 +29,9 @@ define('DEBUG', true);
 
 define('APP', 'install');
 
-if (! defined('PUBLIC_PATH')) {
-	define('PUBLIC_PATH', '/public/');
-	define('PUBLIC_THEME_PATH', '/public/install/');
+if (! isset($PUBLIC_PATH)) {
+	$PUBLIC_PATH       = '/public/';
+	$PUBLIC_THEME_PATH = '/public/install/';
 }
 
 define('CRITICAL_EXTENSIONS', ['xml', 'libxml', 'dom', 'pcre']);

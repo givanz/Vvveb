@@ -20,7 +20,7 @@
  *
  */
 
-define('PUBLIC_PATH', DIRECTORY_SEPARATOR);
-define('PUBLIC_THEME_PATH', DIRECTORY_SEPARATOR . 'install/');
+$PUBLIC_PATH       = '/';
+$PUBLIC_THEME_PATH = '/install/';
 
 include __DIR__ . '/../../install/index.php';
