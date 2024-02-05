@@ -57,20 +57,28 @@ class Login {
 			return $this->redirect($admin_path);
 		}
 
-		$this->view->action = "$admin_path/?module=user/login";
+		$this->view->action = $admin_path . 'index.php?module=user/login';
 		$this->view->modal  = $this->request->get['modal'] ?? false;
 
 		//$this->session = Session::getInstance();
 		$language = $this->session->get('language') ?? 'en_US';
 		setLanguage($language);
 
+		if (isset($this->request->get['errors'])) {
+			$view->errors['get'] = htmlentities($this->request->get['errors']);
+		}
+
 		if ($errors = $this->session->get('errors')) {
-			$view->errors[] = $errors;
+			$view->errors['session'] = $errors;
 			$this->session->delete('errors');
 		}
 
+		if (isset($this->request->get['success'])) {
+			$view->success['get'] = htmlentities($this->request->get['success']);
+		}
+
 		if ($success = $this->session->get('success')) {
-			$view->success[] = $success;
+			$view->success['session'] = $success;
 			$this->session->delete('success');
 		}
 

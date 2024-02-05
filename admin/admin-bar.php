@@ -33,7 +33,7 @@ list($top)  = Vvveb\System\Event::trigger('admin-bar', 'top', []);
 
 $template    = Vvveb\getCurrentTemplate();
 $url         =  Vvveb\getCurrentUrl();
-$admin_path  =  Vvveb\adminPath();
+$admin_path  =  Vvveb\adminPath() . 'index.php';
 $design_url  = $admin_path . Vvveb\url(['module' => 'editor/editor', 'template' => $template, 'url' => $url], false, false);
 $urlData     = Vvveb\System\Routes::getUrlData($url);
 $edit_url    = isset($urlData['edit']) ? $admin_path . $urlData['edit'] : '';

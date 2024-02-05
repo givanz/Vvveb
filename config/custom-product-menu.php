@@ -29,6 +29,8 @@ if (APP == 'admin') {
 	$admin_path = \Vvveb\adminPath();
 }
 
+$admin_path .= strpos($admin_path, 'index.php') === false ? 'index.php' : '';
+
 return
 [
 	'name'            => __('Products'),

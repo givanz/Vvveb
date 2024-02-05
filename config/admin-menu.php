@@ -27,7 +27,8 @@ if (APP == 'admin') {
 } else {
 	$admin_path = \Vvveb\adminPath();
 }
-$homeUrl = Vvveb\Url('index/index');
+$admin_path .= strpos($admin_path, 'index.php') === false ? 'index.php' : '';
+$homeUrl     = Vvveb\Url('index/index');
 
 return
  [
@@ -587,7 +588,7 @@ return
  						'name'   => __('Add new'),
  						'url'    => $admin_path . '?module=settings/site',
  						'module' => 'settings/site',
- 						'action' => 'index',
+ 						'action' => 'add',
  						'icon'   => 'la la-plus-circle',
  					],
  				],
@@ -657,19 +658,20 @@ return
  						'icon'   => 'la la-boxes',
  					],
  					'custom-posts' => [
- 						'name'   => __('Custom posts'),
- 						'url'    => $admin_path . '?module=settings/posts',
- 						'module' => 'content/taxonomies',
+ 						'name'   => __('Post types'),
+ 						'url'    => $admin_path . '?module=settings/post-types',
+ 						'module' => 'settings/post-types',
  						'action' => 'index',
  						'icon'   => 'la la-file-alt',
  					],
  					'custom-products' => [
- 						'name'   => __('Custom products'),
- 						'url'    => $admin_path . '?module=settings/products',
- 						'module' => 'content/taxonomies',
+ 						'name'   => __('Product types'),
+ 						'url'    => $admin_path . '?module=settings/product-types',
+ 						'module' => 'settings/product-types',
  						'action' => 'index',
  						'icon'   => 'la la-box',
  					],
+/*
  					'fields' => [
  						'name'   => __('Fields'),
  						'url'    => $admin_path . '?module=field/field-group',
@@ -677,6 +679,7 @@ return
  						'action' => 'index',
  						'icon'   => 'la la-stream',
  					],
+*/
  				],
  			],
  			'ecommerce' => [

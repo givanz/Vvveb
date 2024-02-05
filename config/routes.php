@@ -75,7 +75,7 @@ return [
 	'/{language{2,5}}/shop/{slug}'          => ['module' => 'product/index'],
 	'/{language{2,5}}/shop/{slug}/#page#'   => ['module' => 'product/index'],
 	'/{language{2,5}}/manufacturer/{slug}'  => ['module' => 'product/manufacturer'],
-	'/{language{2,5}}/product/{slug}'       => ['module' => 'product/product/index', 'edit'=>'?module=product/product&slug={slug}'],
+	'/{language{2,5}}/product/{slug}'       => ['module' => 'product/product/index', 'edit'=>'index.php?module=product/product&slug={slug}'],
 
 	//catalog
 	'/shop'                                  => ['module' => 'product/index'],
@@ -86,7 +86,7 @@ return [
 	'/manufacturer/{slug}'                   => ['module' => 'product/manufacturer/index'],
 	'/vendor/{slug}'                         => ['module' => 'product/vendor/index'],
 	'/vendor/{slug}/#page#'                  => ['module' => 'product/vendor/index'],
-	'/product/{slug}'                        => ['module' => 'product/product/index', 'edit'=>'?module=product/product&slug={slug}'],
+	'/product/{slug}'                        => ['module' => 'product/product/index', 'edit'=>'index.php?module=product/product&slug={slug}'],
 
 	//compare
 	'/cart/compare'                     => ['module' => 'cart/compare/index'],
@@ -102,7 +102,7 @@ return [
 	'/{language{2,5}}/manufacturer/{slug}'                   => ['module' => 'product/manufacturer/index'],
 	'/{language{2,5}}/vendor/{slug}'                         => ['module' => 'product/vendor/index'],
 	'/{language{2,5}}/vendor/{slug}/#page#'                  => ['module' => 'product/vendor/index'],
-	'/{language{2,5}}/product/{slug}'                        => ['module' => 'product/product/index', 'edit'=>'?module=product/product&slug={slug}'],
+	'/{language{2,5}}/product/{slug}'                        => ['module' => 'product/product/index', 'edit'=>'index.php?module=product/product&slug={slug}'],
 
 	//checkout
 	'/cart'                         => ['module' => 'cart/cart/index'],
@@ -141,11 +141,11 @@ return [
 	//'/#year#/#month#/#day#'=> ['module' => 'content/archive/index'],
 
 	//post
-	//'/#year{4,4}#-#month{1,2}#-#day#/{slug}'        => ['module' => 'content/post/index', 'edit'=>'?module=content/post&slug={slug}'],
-	'/{slug}'        => ['module' => 'content/post/index', 'edit'=>'?module=content/post&slug={slug}&type=post'],
+	//'/#year{4,4}#-#month{1,2}#-#day#/{slug}'        => ['module' => 'content/post/index', 'edit'=>'index.php?module=content/post&slug={slug}'],
+	'/{slug}'        => ['module' => 'content/post/index', 'edit'=>'index.php?module=content/post&slug={slug}&type=post'],
 	//page
-	//'/{slug}'   	 => ['module' => 'content/page/index', 'edit'=>'?module=content/post&slug={slug}'],
-	'/page/{slug}'   => ['module' => 'content/page/index', 'edit'=>'?module=content/post&slug={slug}&type=page'],
+	//'/{slug}'   	 => ['module' => 'content/page/index', 'edit'=>'index.php?module=content/post&slug={slug}'],
+	'/page/{slug}'   => ['module' => 'content/page/index', 'edit'=>'index.php?module=content/post&slug={slug}&type=page'],
 
 	//multi language content - language code must be at least 2 characters
 	'/{language{2,5}}/'           => ['module' => 'index/index'],
@@ -155,8 +155,8 @@ return [
 	'/{language{2,5}}/blog'         => ['module' => 'content'],
 	'/{language{2,5}}/cat/{slug}'   => ['module' => 'content/category/language'],
 	'/{language{2,5}}/tag/{slug}'   => ['module' => 'content/tag/index'],
-	'/{language{2,5}}/{slug}'       => ['module' => 'content/post/index', 'edit'=>'?module=content/post&slug={slug}'],
-	'/{language{2,5}}/page/{slug}'  => ['module' => 'content/page/index', 'edit'=>'?module=content/post&slug={slug}'],
+	'/{language{2,5}}/{slug}'       => ['module' => 'content/post/index', 'edit'=>'index.php?module=content/post&slug={slug}'],
+	'/{language{2,5}}/page/{slug}'  => ['module' => 'content/page/index', 'edit'=>'index.php?module=content/post&slug={slug}'],
 
 	'/{language{2,5}}/tag/{slug}'            => ['module' => 'content/tag/index'],
 	'/{language{2,5}}/tag/{slug}/#page#'     => ['module' => 'content/tag/index'],
