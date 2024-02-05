@@ -23,6 +23,7 @@
 namespace Vvveb\Component;
 
 use function Vvveb\__;
+use function Vvveb\sanitizeHTML;
 use Vvveb\Sql\PostSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
@@ -91,10 +92,10 @@ class Post  extends ComponentBase {
 			$value = $field['value'];
 
 			if ($name == 'content') {
-				$post_content[$name] = $value;
+				$post_content[$name] = sanitizeHTML($value);
 			} else {
 				if ($name == 'excerpt') {
-					$post_content[$name] = $value;
+					$post_content[$name] = sanitizeHTML($value);
 				} else {
 					if ($name == 'name') {
 						$post_content[$name] =  strip_tags($value);

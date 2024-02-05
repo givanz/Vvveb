@@ -120,18 +120,25 @@ class Breadcrumb extends ComponentBase {
 			break;
 			//post page
 			case 'content/post/index':
-				$post_id = $request->get['post_id'] ?? false;
+				$post_id    = $request->get['post_id'] ?? false;
+				$breadcrumb = [
+					['text' => $homeText, 'url' => '/'],
+				];
 
 				if ($post_id) {
 					$category = new CategorySQL();
 					$result   = $category->getCategory(
 						['post_id' => $post_id, 'limit' => 1, 'type' => 'categories', 'post_type' => 'post']
 						+ self :: $global);
+
+					if ($result && isset($result['category'])) {
+						$breadcrumb += [
+							['text' => $result['name'], 'url' => url('content/category/index', $result)],
+						];
+					}
 				}
 
-				$breadcrumb = [
-					['text' => $homeText, 'url' => '/'],
-					['text' => $result['name'], 'url' => url('content/category/index', $result)],
+				$breadcrumb += [
 					['text' => $slug, 'url' => false],
 				];
 
