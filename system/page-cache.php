@@ -36,6 +36,8 @@ class PageCache {
 
 	private $fileName;
 
+	private $uri;
+
 	private $canCache; //can serve cached page
 
 	private $canSaveCache; //can save page in cache
@@ -63,17 +65,19 @@ class PageCache {
 	}
 
 	function fileName() {
-		$path = $_SERVER['REQUEST_URI'] ?? '/';
+		$uri = $_SERVER['REQUEST_URI'] ?? '/';
 
-		if (strlen($path) > 300) {
+		if (strlen($uri) > 300) {
 			return false;
 		}
 
-		if (substr($path, -1) == '/') {
-			$path .= DS . 'index.html';
+		if (substr($uri, -1) == '/') {
+			$uri .= 'index.html';
 		}
 
-		return $file_cache = $this->cacheFolder . $path;
+		$this->uri = $uri;
+
+		return $file_cache = $this->cacheFolder . $uri;
 	}
 
 	function isGenerating() {
@@ -119,19 +123,36 @@ class PageCache {
 		ob_start();
 	}
 
+	function validUrl($url) {
+		//no ?&\ or .. in the url and the number of levels should not exceed 5
+		$invalid = strpbrk($url, '?&\\') || (strpos($url, '..') !== false) || (substr_count($url,'/') > 5);
+
+		if (! $invalid) {
+			foreach (['/user', '/cart', '/checkout'] as $a) {
+				if (stripos($url,$a) !== false) {
+					$invalid = true;
+
+					break;
+				}
+			}
+		}
+
+		return ! $invalid;
+	}
+
 	function canCache() {
 		if ($this->canCache !== NULL) {
 			return $this->canCache;
 		}
 
-		if (! $this->fileName ||
+		if (! $this->uri ||
 			APP == 'admin' || //no cache for admin
 			APP == 'install' || //no cache for install
 			! empty($_POST) || //forms posts
 			isset($_COOKIE['nocache']) || //cookie set by plugin
 			isset($_COOKIE['cart']) || // cookie set by add to cart
 			isset($_COOKIE['user']) || //cookie set by login
-			strpbrk($this->fileName, '?&') //valid url
+			! $this->validUrl($this->uri) //valid url
 			) {
 			return $this->canCache = false;
 		}
@@ -180,6 +201,16 @@ class PageCache {
 		if (FrontController::getStatus() != 200) {
 			//remove lock
 			unlink($this->fileName . self :: LOCK_EXT);
+
+			//remove all empty created folders
+			while (
+			($dir = dirname($this->fileName)) &&
+			(strpos($dir, $this->cacheFolder . DS) !== false) && //don't go above site cache folder
+			@rmdir($dir) //try to remove empty folder
+			) {
+				//go one level up
+				$this->fileName = $dir;
+			}
 
 			return $data;
 		}
