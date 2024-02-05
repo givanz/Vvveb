@@ -24,6 +24,7 @@ namespace Vvveb\Controller\Settings;
 
 use function Vvveb\__;
 use Vvveb\Controller\Crud;
+use Vvveb\System\Event;
 
 class Taxonomy extends Crud {
 	protected $type = 'taxonomy';
@@ -36,7 +37,22 @@ class Taxonomy extends Crud {
 		parent::index();
 
 		$this->view->type          = ['categories' => __('Categories'), 'tags' => __('Tags')];
-		$this->view->post_type     = ['post' => __('Post'), 'page' => __('Page'), 'product' => __('product')];
+		$postType                  = ['post' => __('Post'), 'page' => __('Page'), 'product' => __('product')];
+
+		$userPostTypes         = \Vvveb\get_setting('post', 'types', []);
+		list($pluginPostTypes) = Event::trigger('Vvveb\Controller\Base', 'customPost', []);
+		$customPost            = $userPostTypes + $pluginPostTypes;
+		array_walk($customPost, fn (&$type, $key) => $type = ucfirst($key));
+		$postType += $customPost;
+
+		$userProductTypes         = \Vvveb\get_setting('product', 'types', []);
+		list($pluginProductTypes) = Event::trigger('Vvveb\Controller\Base', 'customProduct', []);
+		$customProduct            = $userProductTypes + $pluginProductTypes;
+		array_walk($customProduct, fn (&$type, $key) => $type = ucfirst($key));
+		$postType += $customProduct;
+
+		$this->view->post_type     = $postType;
+
 		//$this->view->taxonomy_id = $taxonomy_item_id;
 	}
 }

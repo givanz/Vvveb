@@ -36,6 +36,7 @@ use Vvveb\System\Core\View;
 use Vvveb\System\Event;
 use Vvveb\System\Extensions\Plugins;
 use Vvveb\System\Functions\Str;
+use Vvveb\System\Images;
 use Vvveb\System\PageCache;
 use Vvveb\System\Session;
 use Vvveb\System\Sites;
@@ -64,7 +65,7 @@ class Base {
 		$this->session->set('site_id', $site_id);
 		$this->session->set('site_url', $site['host']);
 		$this->session->set('site', $site['id']);
-		$this->session->set('state', $site['state']);
+		$this->session->set('state', $site['state'] ?? 'live');
 
 		return $site_id;
 	}
@@ -76,7 +77,7 @@ class Base {
 		return $taxonomies['taxonomy'] ?? [];
 	}
 
-	protected function customPosts() {
+	protected function customPost() {
 		//custom posts -- add to menu
 		$default_custom_posts =
 		[
@@ -94,8 +95,9 @@ class Base {
 			],
 		];
 
-		$custom_posts_types             = \Vvveb\get_setting('custom_posts', 'types', $default_custom_posts);
-		list($custom_posts_types)       = Event::trigger(__CLASS__, __FUNCTION__, $custom_posts_types);
+		$custom_posts_types        = \Vvveb\get_setting('post', 'types', []);
+		$custom_posts_types       += $default_custom_posts;
+		list($custom_posts_types) = Event::trigger(__CLASS__, __FUNCTION__, $custom_posts_types);
 
 		$custom_post_menu = \Vvveb\config('custom-post-menu', []);
 		$posts_menu       = [];
@@ -111,7 +113,7 @@ class Base {
 			__(ucfirst($settings['plural']));
 
 			$posts_menu[$type]['icon']     = $settings['icon'] ?? '';
-			$posts_menu[$type]['icon-img'] = $settings['icon-img'] ?? '';
+			$posts_menu[$type]['icon-img'] = (isset($settings['icon-img']) && $settings['icon-img']) ? Images::image($settings['icon-img'], $type) : '';
 			$posts_menu[$type]['url'] .= "&type=$type";
 
 			if (isset($settings['comments']) && ! $settings['comments']) {
@@ -136,7 +138,7 @@ class Base {
 				$tax    = [$key => [
 					'name' => __($taxonomy['name']),
 					//'subtitle' => __('(Flat)'),
-					'url'    => "$admin_path?module=$module&type={$taxonomy['post_type']}&taxonomy_id={$taxonomy['taxonomy_id']}",
+					'url'    => "{$admin_path}index.php?module=$module&type={$taxonomy['post_type']}&taxonomy_id={$taxonomy['taxonomy_id']}",
 					'module' => $module,
 					'action' => 'index',
 					'icon'   => $icon,
@@ -149,7 +151,7 @@ class Base {
 		return $posts_menu;
 	}
 
-	protected function customProducts() {
+	protected function customProduct() {
 		//custom products -- add to menu
 		$default_custom_products =
 		[
@@ -160,8 +162,9 @@ class Base {
 			],
 		];
 
-		$custom_products_types             = \Vvveb\get_setting('custom_products', 'types', $default_custom_products);
-		list($custom_products_types)       = Event::trigger(__CLASS__, __FUNCTION__, $custom_products_types);
+		$custom_products_types       = \Vvveb\get_setting('product', 'types', []);
+		$custom_products_types      += $default_custom_products;
+		list($custom_products_types) = Event::trigger(__CLASS__, __FUNCTION__, $custom_products_types);
 
 		$custom_product_menu = \Vvveb\config('custom-product-menu', []);
 		$products_menu       = [];
@@ -177,7 +180,7 @@ class Base {
 			__(ucfirst($settings['plural']));
 
 			$products_menu[$type]['icon']     = $settings['icon'] ?? '';
-			$products_menu[$type]['icon-img'] = $settings['icon-img'] ?? '';
+			$products_menu[$type]['icon-img'] = (isset($settings['icon-img']) && $settings['icon-img']) ? Images::image($settings['icon-img'], $type) : '';
 			$products_menu[$type]['url'] .= "&type=$type";
 
 			foreach ($products_menu[$type]['items'] as $item => &$values) {
@@ -199,7 +202,7 @@ class Base {
 				$tax    = [$key => [
 					'name' => __($taxonomy['name']),
 					//'subtitle' => __('(Flat)'),
-					'url'    => "$admin_path?module=$module&type={$taxonomy['post_type']}&taxonomy_id={$taxonomy['taxonomy_id']}",
+					'url'    => "{$admin_path}index.php?module=$module&type={$taxonomy['post_type']}&taxonomy_id={$taxonomy['taxonomy_id']}",
 					'module' => $module,
 					'action' => 'index',
 					'icon'   => $icon,
@@ -377,6 +380,21 @@ class Base {
 		//$this->session->delete('csrf');
 		//$this->session = Session::getInstance();
 		//$this->request = Request::getInstance();
+		$view = View :: getInstance();
+		$view->removeVattrs(false);
+
+		if (isset($this->request->get['errors']) && $this->request->get['errors']) {
+			$view->errors['get'] = htmlentities($this->request->get['errors']);
+		}
+
+		if (isset($this->request->get['success']) && $this->request->get['success']) {
+			$view->success['get'] = htmlentities($this->request->get['success']);
+		}
+
+		//prevent admin loading in iframe
+		$this->response->addHeader('X-Frame-Options', 'SAMEORIGIN');
+		$this->response->addHeader('X-Content-Type-Options', 'nosniff');
+
 		$admin = Admin::current();
 
 		if (! $admin) {
@@ -396,9 +414,6 @@ class Base {
 		if (! $site_id) {
 			$site_id = $this->setSite();
 		}
-
-		$view = View :: getInstance();
-		$view->removeVattrs(false);
 
 		$this->language('en_US', 1);
 		$this->currency('USD', 1);
@@ -437,17 +452,9 @@ class Base {
 			Plugins :: loadPlugins($site_id);
 		}
 
-		if (isset($this->request->get['errors'])) {
-			$view->errors['get'] = htmlentities($this->request->get['errors']);
-		}
-
 		if ($errors = $this->session->get('errors')) {
 			$view->errors['session'] = $errors;
 			$this->session->delete('errors');
-		}
-
-		if (isset($this->request->get['success'])) {
-			$view->success['get'] = htmlentities($this->request->get['success']);
 		}
 
 		if ($success = $this->session->get('success')) {
@@ -468,11 +475,11 @@ class Base {
 
 		//custom posts -- add to menu
 		$this->taxonomies = $this->getTaxonomies();
-		$posts_menu       = $this->customPosts();
+		$posts_menu       = $this->customPost();
 		$menu             = array_insert_array_after('edit', $menu, $posts_menu);
 
 		//products - add to menu
-		$products_menu = $this->customProducts();
+		$products_menu = $this->customProduct();
 		$menu          = array_insert_array_after('sales', $menu, $products_menu);
 
 		list($menu)       = Event::trigger(__CLASS__, __FUNCTION__ . '-menu', $menu);
@@ -486,6 +493,8 @@ class Base {
 
 		$view->menu       = $menu;
 
+		$adminPath        = \Vvveb\adminPath();
+		$view->adminPath  = $adminPath;
 		$view->mediaPath  = PUBLIC_PATH . 'media';
 		$view->publicPath = PUBLIC_PATH . 'media';
 	}
@@ -516,7 +525,7 @@ class Base {
 		//return \Vvveb\System\Core\FrontController::redirect('user/login');
 		//$view = view :: getInstance();
 		$admin_path         = \Vvveb\adminPath();
-		$this->view->action = "$admin_path/?module=user/login";
+		$this->view->action = "{$admin_path}index.php?module=user/login";
 		$this->view->template('user/login.html');
 
 		die($this->view->render());
