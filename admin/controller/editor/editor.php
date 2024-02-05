@@ -91,8 +91,8 @@ class Editor extends Base {
 		$data = [];
 
 		//menu list
-		$menuSql               = new \Vvveb\Sql\menuSQL();
-		$results               = $menuSql->getMenusList($this->global);
+		$menuSql = new \Vvveb\Sql\menuSQL();
+		$results = $menuSql->getMenusList($this->global);
 
 		$data += $results;
 
@@ -107,7 +107,7 @@ class Editor extends Base {
 	function loadThemeAssets() {
 		$themeFolder = $this->getThemeFolder();
 		$view        = &$this->view;
-		$themeJs 	   = [];
+		$themeJs     = [];
 
 		foreach (['inputs', 'components', 'blocks', 'sections'] as $type) {
 			$$type = [];
@@ -336,6 +336,7 @@ class Editor extends Base {
 
 	function save() {
 		$file             = $this->request->post['file'] ?? '';
+		$folder           = $this->request->post['folder'] ?? '';
 		$startTemplateUrl = $this->request->post['startTemplateUrl'] ?? '';
 		$name             = $this->request->post['name'] ?? '';
 		$content          = $this->request->post['content'] ?? 'Lorem ipsum';
@@ -344,7 +345,8 @@ class Editor extends Base {
 		$menu_id          =  $this->request->post['menu_id'] ?? false;
 		$url              = '';
 
-		$file             = sanitizeFileName(slugify(str_replace('.html', '', $file))) . '.html';
+		$file             = sanitizeFileName(str_replace('.html', '', $file)) . '.html';
+		$folder           = sanitizeFileName($folder);
 
 		if ($type && $name) {
 			$slug    = slugify($name);
@@ -408,9 +410,9 @@ class Editor extends Base {
 			}
 		}
 
-		$content          = $this->request->post['html'] ?? false;
-		$elements         = $this->request->post['elements'] ?? false;
-		$setTemplate      = $this->request->post['setTemplate'] ?? false;
+		$content     = $this->request->post['html'] ?? false;
+		$elements    = $this->request->post['elements'] ?? false;
+		$setTemplate = $this->request->post['setTemplate'] ?? false;
 
 		$view         = View::getInstance();
 		$view->noJson = true;
@@ -418,7 +420,7 @@ class Editor extends Base {
 		$text      		 = '';
 
 		$themeFolder = $this->getThemeFolder();
-		$baseUrl     = '/themes/' . (Sites::getTheme() ?? 'default') . '/';
+		$baseUrl     = '/themes/' . (Sites::getTheme() ?? 'default') . '/' . ($folder ? $folder . '/' : '');
 
 		if ($startTemplateUrl) {
 			$content = file_get_contents($themeFolder . DS . $startTemplateUrl);
@@ -433,18 +435,18 @@ class Editor extends Base {
 
 		if ($elements) {
 			if ($this->saveElements($elements)) {
-				$success   = true;
-				$text      = __('Elements saved!') . "\n";
+				$success = true;
+				$text    = __('Elements saved!') . "\n";
 			} else {
-				$success   = false;
-				$text      = __('Error saving elements!') . "\n";
+				$success = false;
+				$text    = __('Error saving elements!') . "\n";
 			}
 		}
 
 		if (! $startTemplateUrl) {
 			if ($this->backup($file)) {
 			} else {
-				$success   = false;
+				$success = false;
 				$text .= __('Error saving backup!') . "\n";
 			}
 		}
@@ -471,9 +473,9 @@ class Editor extends Base {
 
 		//if plugins template use public path
 		if (substr_compare($file[0],'/plugins/', 0, 9) === 0) {
-			$fileName = DIR_PUBLIC . DS . $file;
+			$fileName = DIR_PUBLIC . DS . ($folder ? $folder . DS : '') . $file;
 		} else {
-			$fileName = $themeFolder . DS . $file;
+			$fileName = $themeFolder . DS . ($folder ? $folder . DS : '') . $file;
 		}
 
 		if (file_put_contents($fileName, $content)) {
