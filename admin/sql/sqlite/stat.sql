@@ -6,12 +6,11 @@
 		-- variables
 		IN  language_id INT,
 		IN  site_id INT,
-		IN 	post_id INT,
-		IN 	user_id INT,
+		IN  user_id INT,
 		
 		-- interval
-		IN 	start_date DATE,
-		IN 	end_date DATE,
+		IN  start_date DATE,
+		IN  end_date DATE,
 
 		-- return
 		OUT fetch_all, -- orders
@@ -46,7 +45,7 @@
 			
 				END @IF					
 				
-			GROUP BY DATE(orders.created_at),orders.created_at ORDER BY date;
+			GROUP BY date,orders.created_at ORDER BY date;
 			
 			
 			-- users
@@ -67,7 +66,7 @@
 			
 				END @IF	
 			
-			GROUP BY DATE(users.created_at), users.created_at ORDER BY date;			
+			GROUP BY date, users.created_at ORDER BY date;			
 
 	END
 	
@@ -75,16 +74,14 @@
 		-- variables
 		IN  language_id INT,
 		IN  site_id INT,
-		IN 	post_id INT,
-		IN 	user_id INT,
+		IN  user_id INT,
 		
 		-- interval
-		IN 	start_date DATE,
-		IN 	end_date DATE,
+		IN  start_date DATE,
+		IN  end_date DATE,
 
 		-- return
-		OUT fetch_all, 		-- orders
-		OUT fetch_all  		-- users
+		OUT fetch_all, -- orders
 	)
 	BEGIN
 	
@@ -116,18 +113,54 @@
 				END @IF					
 			
 			GROUP BY orders.order_status_id, os.name, orders.order_status_id;		
+	END	
+	
+	
+	CREATE PROCEDURE getUsersCount(
+		-- variables
+		IN  site_id INT,
+		IN  user_id INT,
+		
+		-- interval
+		IN  start_date DATE,
+		IN  end_date DATE,
+
+		-- return
+		OUT fetch_all -- users
+	)
+	BEGIN
+	
+			-- users
+
+			SELECT COUNT(*) AS count, strftime('%Y',users.created_at) as year, strftime('%M',users.created_at) AS month FROM `user` AS users
+			
+			WHERE 1 = 1 
+			
+				@IF isset(:start_date) AND !empty(:start_date)
+				THEN 
+					AND DATE(users.created_at) >= DATE(:start_date)
+			
+				END @IF	
+				
+				@IF isset(:end_date) AND !empty(:end_date)
+				THEN 
+					AND DATE(users.created_at) <= DATE(:end_date)
+			
+				END @IF	
+			
+			GROUP BY month, year;	
+			
 	END
 
 	CREATE PROCEDURE getCommentsCount(
 		-- variables
 		IN  language_id INT,
 		IN  site_id INT,
-		IN 	post_id INT,
-		IN 	user_id INT,
+		IN  user_id INT,
 		
 		-- interval
-		IN 	start_date DATE,
-		IN 	end_date DATE,
+		IN  start_date DATE,
+		IN  end_date DATE,
 
 		-- return
 		OUT fetch_all -- comments
@@ -170,12 +203,11 @@
 		-- variables
 		IN  language_id INT,
 		IN  site_id INT,
-		IN 	post_id INT,
-		IN 	user_id INT,
+		IN  user_id INT,
 		
 		-- interval
-		IN 	start_date DATE,
-		IN 	end_date DATE,
+		IN  start_date DATE,
+		IN  end_date DATE,
 
 		-- return
 		OUT fetch_all -- reviews
@@ -217,12 +249,11 @@
 		-- variables
 		IN  language_id INT,
 		IN  site_id INT,
-		IN 	post_id INT,
-		IN 	user_id INT,
+		IN  user_id INT,
 		
 		-- interval
-		IN 	start_date DATE,
-		IN 	end_date DATE,
+		IN  start_date DATE,
+		IN  end_date DATE,
 
 		-- return
 		OUT fetch_all -- questions
@@ -263,11 +294,11 @@
 	CREATE PROCEDURE getProductStockCount(
 		-- variables
 		IN  language_id INT,
-		IN 	stock_status CHAR,
+		IN  stock_status CHAR,
 		
 		-- interval
-		IN 	start_date DATE,
-		IN 	end_date DATE,
+		IN  start_date DATE,
+		IN  end_date DATE,
 
 		-- return
 		OUT fetch_all -- products

@@ -75,6 +75,30 @@ class Notifications extends ComponentBase {
 	}
 
 	protected function users() {
+		$userCount      = $this->stats->getUsersCount($this->options)['users'] ?? [];
+
+		$currentYear  = intval(date('Y'));
+		$currentMonth = intval(date('n'));
+
+		$monthCount = 0;
+		$yearCount  = 0;
+
+		foreach ($userCount as $m) {
+			if ($m['year'] == $currentYear) {
+				$yearCount += $m['count'];
+			}
+
+			if ($m['year'] == $currentYear && $m['month'] == $currentMonth) {
+				$monthCount += $m['count'];
+			}
+		}
+
+		$url = url(['module' => 'user/users']);
+
+		$this->notifications['users']['month']['count'] = $monthCount;
+		$this->notifications['users']['year']['count']  = $yearCount;
+		$this->notifications['users']['year']['url']    = $url;
+		$this->notifications['users']['month']['url']   = $url;
 	}
 
 	protected function products() {
@@ -203,7 +227,10 @@ class Notifications extends ComponentBase {
 
 		if ($results['menu'] && $index == 0) {
 			$view       = View::getInstance();
-			$view->menu = array_merge_recursive($view->menu, $results['menu']);
+
+			if (isset($view->menu) && $view->menu) {
+				$view->menu = array_merge_recursive($view->menu, $results['menu']);
+			}
 		}
 	}
 
