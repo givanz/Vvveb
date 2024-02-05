@@ -83,10 +83,10 @@ class Response {
 			}
 		}
 
-		if ($this->type == 'text') {
+		if ($this->type == 'text' && $data) {
 			echo $data;
 		} else {
-			if ($this->type == 'json') {
+			if ($this->type == 'json' && $data && (! defined('CLI'))) {
 				if (is_array($data)) {
 					echo json_encode($data);
 				} else {
