@@ -3346,7 +3346,9 @@ Vvveb.Revisions = {
 		let dropdown = $(".revisions-dropdown").html("");
 		$(".revisions-count").html(revisions.length);
 		for (let i in revisions) {
-			dropdown.append(tmpl('vvveb-revision-item', revisions[i]));
+			let revision = revisions[i];
+			revision['url'] =  '' + revision['url'] + ".html";
+			dropdown.append(tmpl('vvveb-revision-item', revision));
 		}
 	},
 	

@@ -83,7 +83,7 @@ class ServerComponent {
 					}, 250);
 				}
 
-				self.element.animate({opacity: 1}, 30);
+				self.element.removeAttr("style");//animate({opacity: 1}, 30);
 				
 				if (callback) callback(data);
 		})
@@ -117,7 +117,7 @@ class ServerComponent {
 					this.throttle = setTimeout(function () {
 						clearTimeout(this.throttle);
 						self.ajax();
-					}, 1000);
+					}, 500);
 				}
 				return element;
 	}
