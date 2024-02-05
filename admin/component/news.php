@@ -28,7 +28,7 @@ use Vvveb\System\Event;
 use Vvveb\System\Import\Rss;
 
 class News extends ComponentBase {
-	protected $domain = 'https://www.vvveb.com';
+	protected $domain = 'https://blog.vvveb.com';
 
 	protected $url = '/feed/news';
 
@@ -61,7 +61,8 @@ class News extends ComponentBase {
 	}
 
 	function results() {
-		// return [];
+		list($this->domain, $this->url) = Event::trigger(__CLASS__, 'url', $this->domain, $this->url);
+
 		$cache = Cache::getInstance();
 		// check for news ~twice a week
 		$news = $cache->cache('vvveb', 'news', function () {
