@@ -160,3 +160,26 @@
 
 	END
 	
+	-- delete site
+
+	CREATE PROCEDURE delete(
+		IN  site_id ARRAY,
+		OUT affected_rows
+		OUT affected_rows
+		OUT affected_rows
+		OUT affected_rows
+		OUT affected_rows
+		OUT affected_rows
+		OUT affected_rows
+	)
+	BEGIN
+		
+		DELETE FROM post_to_site WHERE site_id IN (:site_id);
+		DELETE FROM product_to_site WHERE site_id IN (:site_id);
+		DELETE FROM menu_to_site WHERE site_id IN (:site_id);
+		DELETE FROM taxonomy_to_site WHERE site_id IN (:site_id);
+		DELETE FROM manufacturer_to_site WHERE site_id IN (:site_id);
+		DELETE FROM vendor_to_site WHERE site_id IN (:site_id);
+		DELETE FROM site WHERE site_id IN (:site_id);
+	 
+	END

@@ -292,8 +292,13 @@ class Sites {
 	}
 
 	public static function saveSite($site) {
-		$key    = str_replace('.', ' ',trim($site['key'] ?? $site['host']));
+		$key = self :: siteKey(trim($site['key'] ?? $site['host']));
 		unset($site['key']);
 		$return = \Vvveb\set_config("sites.$key", $site);
+	}
+
+	public static function deleteSite($site) {
+		$key    = self :: siteKey(trim($site['key'] ?? $site['host']));
+		$return = \Vvveb\unset_config("sites.$key", $site);
 	}
 }
