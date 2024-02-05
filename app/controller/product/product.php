@@ -88,7 +88,7 @@ class Product extends Base {
 					if (isset($languageContent['template']) && $languageContent['template']) {
 						$this->view->template($languageContent['template']);
 						//force product template if a different html template is selected
-						$this->view->tplFile("content/{$this->type}.tpl");
+						$this->view->tplFile("product/{$this->type}.tpl");
 					}
 				} else {
 					$this->notFound(true, ['message' => $error, 'title' => $error]);
