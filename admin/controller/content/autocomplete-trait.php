@@ -67,9 +67,11 @@ trait AutocompleteTrait {
 
 		$search = [];
 
-		foreach ($results['manufacturer'] as $manufacturer) {
-			$manufacturer['image']                    = Images::image($manufacturer['image'], 'manufacturer');
-			$search[$manufacturer['manufacturer_id']] = '<img width="32" height="32" src="' . $manufacturer['image'] . '"> ' . $manufacturer['name'];
+		if (isset($results['manufacturer'])) {
+			foreach ($results['manufacturer'] as $manufacturer) {
+				$manufacturer['image']                    = Images::image($manufacturer['image'], 'manufacturer');
+				$search[$manufacturer['manufacturer_id']] = '<img width="32" height="32" src="' . $manufacturer['image'] . '"> ' . $manufacturer['name'];
+			}
 		}
 
 		//echo json_encode($search);
@@ -83,18 +85,20 @@ trait AutocompleteTrait {
 		$vendors = new \Vvveb\Sql\VendorSQL();
 
 		$options = [
-			'start'       => 0,
-			'limit'       => 10,
-			'search'      => '%' . trim($this->request->get['text']) . '%',
+			'start'  => 0,
+			'limit'  => 10,
+			'search' => '%' . trim($this->request->get['text']) . '%',
 		] + $this->global;
 
 		$results = $vendors->getAll($options);
 
 		$search = [];
 
-		foreach ($results['vendor'] as $vendor) {
-			$vendor['image']               = Images::image($vendor['image'], 'vendor');
-			$search[$vendor['vendor_id']]  = '<img width="32" height="32" src="' . $vendor['image'] . '"> ' . $vendor['name'];
+		if (isset($results['vendor'])) {
+			foreach ($results['vendor'] as $vendor) {
+				$vendor['image']               = Images::image($vendor['image'], 'vendor');
+				$search[$vendor['vendor_id']]  = '<img width="32" height="32" src="' . $vendor['image'] . '"> ' . $vendor['name'];
+			}
 		}
 
 		//echo json_encode($search);
@@ -113,13 +117,16 @@ trait AutocompleteTrait {
 			'search'      => trim($this->request->get['text']),
 		] + $this->global;
 
+		unset($options['admin_id']);
 		$results = $products->getAll($options);
 
 		$search = [];
 
-		foreach ($results['products'] as $product) {
-			$product['image']                        = Images::image($product['image'], $this->object);
-			$search[$product[$this->object . '_id']] = '<img width="32" height="32" src="' . $product['image'] . '"> ' . $product['name'];
+		if (isset($results['products'])) {
+			foreach ($results['products'] as $product) {
+				$product['image']                        = Images::image($product['image'], $this->object);
+				$search[$product[$this->object . '_id']] = '<img width="32" height="32" src="' . $product['image'] . '"> ' . $product['name'];
+			}
 		}
 
 		//echo json_encode($search);
@@ -142,16 +149,18 @@ trait AutocompleteTrait {
 
 		$search = [];
 
-		foreach ($results['admin'] as $admin) {
-			$text = '';
+		if (isset($results['admin'])) {
+			foreach ($results['admin'] as $admin) {
+				$text = '';
 
-			if (isset($admin['avatar'])) {
-				$admin['avatar'] = Images::image($admin['avatar'], 'admin');
-				$text            =  '<img width="32" height="32" src="' . $admin['avatar'] . '"> ';
+				if (isset($admin['avatar'])) {
+					$admin['avatar'] = Images::image($admin['avatar'], 'admin');
+					$text            =  '<img width="32" height="32" src="' . $admin['avatar'] . '"> ';
+				}
+				$text .= $admin['username'] . ' (' . $admin['first_name'] . ' ' . $admin['last_name'] . ')';
+
+				$search[$admin['admin_id']] =  $text;
 			}
-			$text .= $admin['username'] . ' (' . $admin['first_name'] . ' ' . $admin['last_name'] . ')';
-
-			$search[$admin['admin_id']] =  $text;
 		}
 		//echo json_encode($search);
 		$this->response->setType('json');
@@ -173,20 +182,22 @@ trait AutocompleteTrait {
 
 		$search = [];
 
-		foreach ($results['attribute'] as $attribute) {
-			$text = '';
+		if (isset($results['attribute'])) {
+			foreach ($results['attribute'] as $attribute) {
+				$text = '';
 
-			$text .= $attribute['name'] . ' (' . $attribute['group'] . ')';
+				$text .= $attribute['name'] . ' (' . $attribute['group'] . ')';
 
-			$search[$attribute['attribute_id']] =  $text;
+				$search[$attribute['attribute_id']] =  $text;
+			}
 		}
 		//echo json_encode($search);
 		$this->response->setType('json');
 		$this->response->output($search);
 
 		return false;
-	}	
-	
+	}
+
 	function optionValuesAutocomplete() {
 		$values = new \Vvveb\Sql\Option_valueSQL();
 
@@ -198,12 +209,14 @@ trait AutocompleteTrait {
 
 		$search = [];
 
-		foreach ($results['option_value'] as $value) {
-			$text = '';
+		if (isset($results['option_value'])) {
+			foreach ($results['option_value'] as $value) {
+				$text = '';
 
-			$text .= $value['name'];
+				$text .= $value['name'];
 
-			$search[$value['option_value_id']] =  $text;
+				$search[$value['option_value_id']] =  $text;
+			}
 		}
 		//echo json_encode($search);
 		$this->response->setType('json');
@@ -225,12 +238,14 @@ trait AutocompleteTrait {
 
 		$search = [];
 
-		foreach ($results['digital_asset'] as $digital_asset) {
-			$text = '';
+		if (isset($results['digital_asset'])) {
+			foreach ($results['digital_asset'] as $digital_asset) {
+				$text = '';
 
-			$text .= $digital_asset['name'] . ' (' . $digital_asset['file'] . ')';
+				$text .= $digital_asset['name'] . ' (' . $digital_asset['file'] . ')';
 
-			$search[$digital_asset['digital_asset_id']] =  $text;
+				$search[$digital_asset['digital_asset_id']] =  $text;
+			}
 		}
 		//echo json_encode($search);
 		$this->response->setType('json');

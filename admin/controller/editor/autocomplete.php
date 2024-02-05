@@ -32,13 +32,16 @@ class Autocomplete extends Base {
 		$text             = $this->request->get['text'];
 
 		$options = [
-			'start'       => 0,
-			'limit'       => 10,
-			'search'      => '%' . $text . '%',
+			'start'  => 0,
+			'limit'  => 10,
+			'search' => '%' . $text . '%',
 		] + $this->global;
 
+		unset($options['admin_id']);
 		$products = new \Vvveb\Sql\ProductSQL();
 		$results  = $products->getAll($options);
+
+		$search = [];
 
 		foreach ($results['products'] as $product) {
 			$search[$product['product_id']] = $product['name'];
@@ -46,22 +49,22 @@ class Autocomplete extends Base {
 
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		die();
 	}
 
 	function categories() {
 		$text             = $this->request->get['text'];
 
 		$options = [
-			'start'       => 0,
-			'limit'       => 10,
-			'search'      => '%' . $text . '%',
+			'start'  => 0,
+			'limit'  => 10,
+			'search' => '%' . $text . '%',
 		] + $this->global;
 
 		$categories = new \Vvveb\Sql\CategorySQL();
 
 		$results = $categories->getCategories($options);
+
+		$search = [];
 
 		foreach ($results['categories'] as $category) {
 			$search[$category['taxonomy_item_id']] = $category['name'];
@@ -69,22 +72,22 @@ class Autocomplete extends Base {
 
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		die();
 	}
 
 	function manufacturers() {
 		$text             = $this->request->get['text'];
 
 		$options = [
-			'start'       => 0,
-			'limit'       => 10,
-			'search'      => '%' . $text . '%',
+			'start'  => 0,
+			'limit'  => 10,
+			'search' => '%' . $text . '%',
 		] + $this->global;
 
 		$manufacturers = new \Vvveb\Sql\ManufacturerSQL();
 
 		$results = $manufacturers->getManufacturers($options);
+
+		$search = [];
 
 		foreach ($results['manufacturers'] as $manufacturer) {
 			$search[$manufacturer['manufacturer_id']] = $manufacturer['name'];
@@ -92,31 +95,34 @@ class Autocomplete extends Base {
 
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		die();
 	}
 
 	function posts() {
-		$text             = $this->request->get['text'];
+		$text = $this->request->get['text'];
+		$type = $this->request->get['type'] ?? 'post';
 
 		$options = [
-			'start'       => 0,
-			'limit'       => 10,
-			'search'      => '%' . $text . '%',
+			'start'  => 0,
+			'limit'  => 10,
+			'type'   => $type,
+			'search' => $text,
+			//s'like' => '%' . $text . '%',
 		] + $this->global;
 
-		$posts = new \Vvveb\Sql\PostSQL();
-
+		unset($options['admin_id']);
+		$posts   = new \Vvveb\Sql\PostSQL();
 		$results = $posts->getAll($options);
 
-		foreach ($results['posts'] as $post) {
-			$search[$post['post_id']] = substr($post['name'],0, 50);
+		$search = [];
+		
+		if (isset($results['posts'])) {
+			foreach ($results['posts'] as $post) {
+				$search[$post['post_id']] = substr($post['name'],0, 50);
+			}
 		}
 
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		die();
 	}
 
 	function tags() {
@@ -127,16 +133,18 @@ class Autocomplete extends Base {
 		$taxonomy_itemSql = new categorySQL();
 
 		$options = [
-			'post_id'    		       => $post_id,
-			'language_id'         => 1,
-			'site_id'             => 1,
-			'taxonomy'		          => $taxonomy,
-			'start'               => 1,
-			'limit'               => 100,
-			'search'              => '%' . $text . '%',
+			'post_id'     => $post_id,
+			'language_id' => 1,
+			'site_id'     => 1,
+			'taxonomy'    => $taxonomy,
+			'start'       => 1,
+			'limit'       => 100,
+			'search'      => '%' . $text . '%',
 		] + $this->global;
 
 		$results = $taxonomy_itemSql->getCategories($options + ['taxonomy_id' => $taxonomy_id]);
+
+		$search = [];
 
 		foreach ($results['categories'] as $id => &$taxonomy_item) {
 			$search[$taxonomy_item['taxonomy_item_id']] = $taxonomy_item['name'];
@@ -144,7 +152,5 @@ class Autocomplete extends Base {
 
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		die();
 	}
 }
