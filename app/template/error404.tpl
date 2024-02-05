@@ -15,5 +15,5 @@ foreach ($this->lines as $index => $line) {?>
 [data-v-exception-lines] [data-v-exception-line]|after = <?php 
 } ?>	
 
-body|prepend = <?php $debug = constant('DEBUG');?>
+body|prepend = <?php $debug = defined('DEBUG') && DEBUG;?>
 [data-debug]|if_exists = $debug

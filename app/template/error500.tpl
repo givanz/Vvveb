@@ -3,9 +3,6 @@ import(ifmacros.tpl)
 
 [data-v-exception-*]|innerText = $this->@@__data-v-exception-(*)__@@
 
-[data-v-debug]|before = <?php if (defined('DEBUG') && DEBUG == true) { ?>
-[data-v-debug]|after = <?php } ?>
-
 [data-v-exception-lines] [data-v-exception-line]|deleteAllButFirstChild
 
 [data-v-exception-lines] [data-v-exception-line]|before = <?php 
@@ -27,5 +24,5 @@ if (isset($lines) && is_array($lines)) {
 	} 
 } ?>
 
-body|prepend = <?php $debug = constant('DEBUG');?>
-
+body|prepend = <?php $debug = defined('DEBUG') && DEBUG;?>
+[data-debug]|if_exists = $debug
