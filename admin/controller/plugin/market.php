@@ -111,7 +111,8 @@ class Market extends Base {
 			$view->errors[] =  $e->getMessage();
 		}
 
-		$view->installUrl = 'admin/?module=plugin/market&action=install&json';
+		$admin_path       = \Vvveb\adminPath();
+		$view->installUrl = $admin_path . 'index.php?module=plugin/market&action=install&json';
 		$view->set($plugins);
 	}
 }
