@@ -22,6 +22,8 @@
 
 namespace Vvveb\System\Core;
 
+use function Vvveb\__;
+use function Vvveb\addTranslationDomain;
 use function Vvveb\config;
 use function Vvveb\isEditor;
 use Vvveb\System\Component\Component;
@@ -77,6 +79,9 @@ class View {
 		} else {
 			$this->theme        = config(APP . '.theme', 'default');
 		}
+
+		$domain = $this->theme . '-domain';
+		addTranslationDomain($domain);
 
 		$this->htmlPath     = DIR_THEME . $this->theme . DS;
 		$this->templatePath = DIR_THEME . $this->theme . DS; //\Vvveb\config(APP . '.theme', 'default') . DS;
@@ -203,7 +208,7 @@ class View {
 				$templateFile = DIR_PUBLIC . $template;
 			} else {
 				FrontController::notFound(true, [
-					'message' => 'Html template not found!',
+					'message' => __('Html template not found!'),
 					'file'    => $templatePath . $template,
 				]);
 			}
@@ -245,7 +250,8 @@ class View {
 			}
 		}
 
-		//$vtpl = new vtpl($selector, $this->componentCount);
+		list($this->template, $filename, $this->tplFile) =
+		Event :: trigger(__CLASS__,__FUNCTION__, $this->template, $filename, $this->tplFile,  $this->templateEngine, $this);
 		$errors = $this->templateEngine->loadHtmlTemplate($filename);
 
 		//if no template defined use the default
@@ -261,7 +267,7 @@ class View {
 			} else {
 				$this->tplFile = DIR_TEMPLATE . 'common.tpl';
 			}
-			//die();
+
 			//$this->tplFile = $pluginName . DS . APP . DS . 'template' . DS . $nameSpace;
 			$this->templateEngine->loadTemplateFile($this->tplFile);
 		/*
@@ -274,12 +280,11 @@ class View {
 			if (! file_exists(DIR_TEMPLATE . $this->tplFile)) {
 				$this->tplFile = 'common.tpl';
 			}
-
 			$this->templateEngine->loadTemplateFileFromPath($this->tplFile);
 		}
 
-		Event :: trigger(__CLASS__,__FUNCTION__, $this->template, $filename, $this->tplFile,  $this->templateEngine, $this);
-
+		list($this->template, $filename, $this->tplFile) =
+		Event :: trigger(__CLASS__,__FUNCTION__ . ':after', $this->template, $filename, $this->tplFile,  $this->templateEngine, $this);
 		$this->templateEngine->saveCompiledTemplate($file);
 	}
 
@@ -303,6 +308,8 @@ class View {
 			. $this->theme . '_'
 			. str_replace([DS, '/', '\\'] , '_', $filename)
 			. ($this->isEditor ? '-edit' : '');
+
+			list($filename, $compiledFilename) = Event :: trigger(__CLASS__,__FUNCTION__, $filename, $compiledFilename, $this);
 
 			$this->compiledTemplate        = $compiledFilename;
 			$this->serviceTemplate         = $compiledFilename;
@@ -346,7 +353,11 @@ class View {
 
 		if ($this->_type == 'text') {
 			if (isset($this->text)) {
-				echo $this->text;
+				if ($output) {
+					echo $this->text;
+				} else {
+					return $this->text;
+				}
 			}
 
 			return;
@@ -359,13 +370,18 @@ class View {
 			$jsonFlags = JSON_PRETTY_PRINT;
 			//}
 			ob_start();
+
 			if (isset($this->json)) {
-				echo json_encode($this->json, $jsonFlags);
+				$json = json_encode($this->json, $jsonFlags);
 			} else {
-				echo json_encode($this, $jsonFlags);
+				$json = json_encode($this, $jsonFlags);
 			}
 
-			return ob_end_flush();
+			if ($output) {
+				echo $json;
+			} else {
+				return $json;
+			}
 		} else { //html
 			if (! $this->template) {
 				self::template();
