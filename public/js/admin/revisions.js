@@ -49,12 +49,13 @@ $(".revisions").on("click", ".btn-delete", function (e) {
 	let item = $(this).parents("[data-v-revision]")
 	let count = $(item).parents(".tab-pane").find("[data-v-" + data.type + "-content-revision_count]");
 
-	revisionAction("delete", data, function (data, text) {
-		displayToast("bg-success", "Revision", "Revision deleted!");
-		item.remove();
-		count.html(Math.max(count.html() - 1, 0));
-	});	
-
+	if (confirm('Are you sure?')) {
+		revisionAction("delete", data, function (data, text) {
+			displayToast("bg-success", "Revision", "Revision deleted!");
+			item.remove();
+			count.html(Math.max(count.html() - 1, 0));
+		});	
+	}
 	//e.preventDefault()
 	return false;
 });
