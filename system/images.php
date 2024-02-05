@@ -36,13 +36,13 @@ use Vvveb\System\Media\Image;
 class Images {
 	static public function resize($src, $dest, $width, $height, $method) {
 		@mkdir(dirname($dest), (0755 & ~umask()), true);
-		$img = new Image($src);
-		$img->resize($width,$height, $method);
+		$img    = new Image($src);
+		$result = $img->resize($width,$height, $method);
 
 		return $img->save($dest);
 	}
 
-	static public function image($image, $type = '', $size = '') {
+	static public function image($image, $type = '', $size = '', $method = 's') {
 		$publicPath = \Vvveb\publicUrlPath();
 
 		list($publicPath, $type, $image, $size) =
@@ -63,10 +63,15 @@ class Images {
 			$src         = $image;
 
 			if ($size) {
-				$site        = siteSettings();
-				$width       = $site["{$type}_{$size}_width"] ?? 0;
-				$height      = $site["{$type}_{$size}_height"] ?? 0;
-				$method      = $site["{$type}_{$size}_method"] ?? 's';
+				if (is_array($size)) {
+					$width       = $size[0];
+					$height      = $size[1];
+				} else {
+					$site        = siteSettings();
+					$width       = $site["{$type}_{$size}_width"] ?? 0;
+					$height      = $site["{$type}_{$size}_height"] ?? 0;
+					$method      = $site["{$type}_{$size}_method"] ?? 's';
+				}
 
 				$image = self::size($image,"{$width}x{$height}");
 

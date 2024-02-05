@@ -39,20 +39,22 @@ class Image {
 
 			$info = getimagesize($file);
 
-			$this->width  = $info[0];
-			$this->height = $info[1];
-			$this->mime   = $info['mime'] ?? '';
+			if ($info) {
+				$this->width  = $info[0];
+				$this->height = $info[1];
+				$this->mime   = $info['mime'] ?? '';
 
-			if ($this->mime == 'image/gif') {
-				$this->image = imagecreatefromgif($file);
-			} elseif ($this->mime == 'image/png') {
-				$this->image = imagecreatefrompng($file);
+				if ($this->mime == 'image/gif') {
+					$this->image = imagecreatefromgif($file);
+				} elseif ($this->mime == 'image/png') {
+					$this->image = imagecreatefrompng($file);
 
-				imageinterlace($this->image, false);
-			} elseif ($this->mime == 'image/jpeg') {
-				$this->image = imagecreatefromjpeg($file);
-			} elseif ($this->mime == 'image/webp') {
-				$this->image = imagecreatefromwebp($file);
+					imageinterlace($this->image, false);
+				} elseif ($this->mime == 'image/jpeg') {
+					$this->image = imagecreatefromjpeg($file);
+				} elseif ($this->mime == 'image/webp') {
+					$this->image = imagecreatefromwebp($file);
+				}
 			}
 		} else {
 			//throw new \Exception("Could not load image $file");
@@ -87,6 +89,8 @@ class Image {
 		$info = pathinfo($file);
 
 		$extension = $extension ?: strtolower($info['extension']);
+
+		$result = false;
 
 		if (is_object($this->image) || is_resource($this->image)) {
 			if ($extension == 'jpeg' || $extension == 'jpg') {
