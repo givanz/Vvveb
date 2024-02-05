@@ -150,7 +150,7 @@
 	)
 	BEGIN
 
-		SELECT td.*,menus.url, menus.sort_order, menus.parent_id, menus.menu_item_id as array_key
+		SELECT td.*,menus.url, menus.sort_order, menus.parent_id, menus.type, menus.item_id, menus.menu_item_id as array_key
 			
 		
 			FROM menu_item AS menus
@@ -190,7 +190,6 @@
 	CREATE PROCEDURE getMenuAllLanguages(
 
 		-- variables
-		IN  language_id INT,
 		IN  user_group_id INT,
 		IN  site_id INT,
 		IN  menu_id INT,

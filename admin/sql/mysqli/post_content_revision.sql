@@ -67,7 +67,7 @@
 	)
 	BEGIN
 		-- post_content_revision
-		SELECT *
+		SELECT _.*, admin.display_name, admin.username,admin.first_name, admin.last_name
 			FROM post_content_revision as _ 
 			LEFT JOIN admin ON (admin.admin_id = _.admin_id)
 		WHERE 

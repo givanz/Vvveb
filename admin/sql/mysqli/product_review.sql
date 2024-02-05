@@ -21,9 +21,10 @@
 	BEGIN
 
 		SELECT user.*,product_review.*,user.user_id as user_id,
-			(SELECT CONCAT('[', GROUP_CONCAT('{"id":"', prm.product_review_media_id, '","image":"' , prm.image, '"}'), ']') 
+		-- (SELECT CONCAT('[', GROUP_CONCAT('{"id":"', prm.product_review_media_id, '","image":"' , prm.image, '"}'), ']') 
+			(SELECT JSON_ARRAYAGG( JSON_OBJECT('id', prm.product_review_media_id, 'image', prm.image) ) 
 				FROM product_review_media as prm 
-			WHERE prm.product_review_id = product_review.product_review_id) as images
+			WHERE prm.product_review_id = product_review.product_review_id GROUP BY prm.product_review_id) as images
 
             FROM product_review
 			LEFT JOIN user ON user.user_id = product_review.user_id

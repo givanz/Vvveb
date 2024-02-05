@@ -59,7 +59,8 @@
 			-- categories
 			@IF !empty(:categories) 
 			THEN 
-				,(SELECT CONCAT('[', GROUP_CONCAT('{"taxonomy_item_id":', taxonomies.taxonomy_item_id, ',"name":"' , td.name, '","slug":"' , td.slug, '"}'), ']')
+				-- ,(SELECT CONCAT('[', GROUP_CONCAT('{"taxonomy_item_id":', taxonomies.taxonomy_item_id, ',"name":"' , td.name, '","slug":"' , td.slug, '"}'), ']')
+				,(SELECT JSON_ARRAYAGG( JSON_OBJECT('taxonomy_item_id', taxonomies.taxonomy_item_id, 'name' , td.name, 'slug' , td.slug) )
 					FROM taxonomy_item AS taxonomies
 				
 					INNER JOIN taxonomy_to_site t2s ON (taxonomies.taxonomy_item_id = t2s.taxonomy_item_id AND t2s.site_id = site_id) 
@@ -81,7 +82,8 @@
 			-- tags
 			@IF !empty(:tags) 
 			THEN 
-				,(SELECT CONCAT('[', GROUP_CONCAT('{"taxonomy_item_id":', taxonomies.taxonomy_item_id, ',"name":"' , td.name, '","slug":"' , td.slug, '"}'), ']')
+			-- ,(SELECT CONCAT('[', GROUP_CONCAT('{"taxonomy_item_id":', taxonomies.taxonomy_item_id, ',"name":"' , td.name, '","slug":"' , td.slug, '"}'), ']')
+				,(SELECT JSON_ARRAYAGG( JSON_OBJECT('taxonomy_item_id', taxonomies.taxonomy_item_id, 'name' , td.name, 'slug' , td.slug) )
 					FROM taxonomy_item AS taxonomies
 				
 					INNER JOIN taxonomy_to_site t2s ON (taxonomies.taxonomy_item_id = t2s.taxonomy_item_id AND t2s.site_id = site_id) 
@@ -103,7 +105,8 @@
 			-- custom taxonomy
 			@IF !empty(:taxonomy) 
 			THEN 
-				,(SELECT CONCAT('[', GROUP_CONCAT('{"taxonomy_item_id":', taxonomies.taxonomy_item_id, ',"name":"' , td.name, '","slug":"' , td.slug, '"}'), ']')
+			-- ,(SELECT CONCAT('[', GROUP_CONCAT('{"taxonomy_item_id":', taxonomies.taxonomy_item_id, ',"name":"' , td.name, '","slug":"' , td.slug, '"}'), ']')
+				,(SELECT JSON_ARRAYAGG( JSON_OBJECT('taxonomy_item_id', taxonomies.taxonomy_item_id, 'name' , td.name, 'slug' , td.slug) )
 					FROM taxonomy_item AS taxonomies
 				
 					INNER JOIN taxonomy_to_site t2s ON (taxonomies.taxonomy_item_id = t2s.taxonomy_item_id AND t2s.site_id = site_id) 
@@ -253,6 +256,7 @@
 		OUT fetch_row,
 		OUT fetch_row,
 		OUT fetch_all,
+		OUT fetch_all,
 	)
 	BEGIN
 
@@ -320,6 +324,10 @@
 		-- meta
 		SELECT `key` as array_key,value as array_value FROM post_meta as _
 			WHERE _.post_id = @result.post_id;	 
+
+		-- post_to_site
+		SELECT site_id as array_key, site_id FROM post_to_site
+			WHERE post_to_site.post_id = @result.post_id;	 
 	 
 	END
 

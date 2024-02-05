@@ -150,7 +150,7 @@
 	)
 	BEGIN
 
-		SELECT td.*,menus.url, menus.sort_order, menus.parent_id, menus.menu_item_id as array_key
+		SELECT td.*,menus.url, menus.sort_order, menus.parent_id, menus.type, menus.item_id, menus.menu_item_id as array_key
 			
 		
 			FROM menu_item AS menus
@@ -190,7 +190,6 @@
 	CREATE PROCEDURE getMenuAllLanguages(
 
 		-- variables
-		IN  language_id INT,
 		IN  user_group_id INT,
 		IN  site_id INT,
 		IN  menu_id INT,
@@ -210,12 +209,17 @@
 		SELECT *, 
 			(
 				SELECT 
-					CONCAT('[', GROUP_CONCAT(
-					'{"language_id":"', cd.language_id, 
-						'","name":"' , cd.name, 
-						'","slug":"' , cd.slug, 
-						'","content":"' , cd.content, 
-						'"}'), ']') 
+				--	CONCAT('[', GROUP_CONCAT(
+				--	'{"language_id":"', cd.language_id, 
+				--		'","name":"' , cd.name, 
+				--		'","slug":"' , cd.slug, 
+				--		'","content":"' , cd.content, 
+				--		'"}'), ']') 
+					JSON_ARRAYAGG( JSON_OBJECT(
+						'language_id', cd.language_id, 
+						'name', cd.name, 
+						'slug', cd.slug, 
+						'content', cd.content)) 
 						
 					FROM menu_item_content as cd 
 				WHERE 

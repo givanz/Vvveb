@@ -27,6 +27,7 @@
 		OUT fetch_all, 
 		OUT fetch_all, 
 		OUT fetch_all, 
+		OUT fetch_all, 
 		OUT fetch_all 
 	)
 	BEGIN
@@ -275,6 +276,10 @@
 			FROM option_value_content
 		LEFT JOIN product_option po ON option_value_content.option_id = po.option_id
 		WHERE po.product_id = @result.product_id AND option_value_content.language_id = :language_id;	
+
+		-- product_to_site
+		SELECT site_id as array_key, site_id FROM product_to_site
+			WHERE product_to_site.product_id = @result.product_id;	 
 
 	END
 	
@@ -785,7 +790,7 @@
 			END @IF
 			
 			-- include special price 	
-			@IF !empty(:special) && !empty(:user_group_id) 
+			@IF !empty(:promotion) && !empty(:user_group_id) 
 			THEN 
 			
 			  ,(SELECT price

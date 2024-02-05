@@ -27,6 +27,7 @@
 		OUT fetch_all, 
 		OUT fetch_all, 
 		OUT fetch_all, 
+		OUT fetch_all, 
 		OUT fetch_all 
 	)
 	BEGIN
@@ -275,6 +276,10 @@
 			FROM option_value_content
 		LEFT JOIN product_option po ON option_value_content.option_id = po.option_id
 		WHERE po.product_id = @result.product_id AND option_value_content.language_id = :language_id;	
+
+		-- product_to_site
+		SELECT site_id as array_key, site_id FROM product_to_site
+			WHERE product_to_site.product_id = @result.product_id;	 
 
 	END
 	
@@ -761,7 +766,9 @@
 			
 			@IF !empty(:product_image) 
 			THEN 
-				,(SELECT CONCAT('[', GROUP_CONCAT('{"id":"', pi.product_image_id, '","image":"' , pi.image, '"}'), ']') FROM product_image as pi WHERE pi.product_id = products.product_id GROUP BY pi.product_id) as images
+				--,(SELECT CONCAT('[', GROUP_CONCAT('{"id":"', pi.product_image_id, '","image":"', pi.image, '"}'), ']') 
+				,(SELECT JSON_ARRAYAGG( JSON_OBJECT('id', pi.product_image_id, 'image', pi.image) ) 
+				FROM product_image as pi WHERE pi.product_id = products.product_id GROUP BY pi.product_id) as images
 			END @IF
 
 			-- include discount 	

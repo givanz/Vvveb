@@ -150,7 +150,7 @@
 	)
 	BEGIN
 
-		SELECT td.*,menus.url, menus.sort_order, menus.parent_id, menus.menu_item_id as array_key
+		SELECT td.*,menus.url, menus.sort_order, menus.parent_id, menus.type, menus.item_id, menus.menu_item_id as array_key
 			
 		
 			FROM menu_item AS menus
@@ -190,7 +190,6 @@
 	CREATE PROCEDURE getMenuAllLanguages(
 
 		-- variables
-		IN  language_id INT,
 		IN  user_group_id INT,
 		IN  site_id INT,
 		IN  menu_id INT,
@@ -210,13 +209,13 @@
 		SELECT *, 
 			(
 				SELECT 
-					'[' || GROUP_CONCAT(
-					'{"language_id":"' || cd.language_id || 
-						'","name":"' || cd.name ||
-						'","slug":"' || cd.slug ||
-						'","content":"' || cd.content ||
-						'"}') || ']' 
-						
+				--	'[' || GROUP_CONCAT(
+				--	'{"language_id":"' || cd.language_id || 
+				--		'","name":"' || cd.name ||
+				--		'","slug":"' || cd.slug ||
+				--		'","content":"' || cd.content ||
+				--		'"}') || ']' 
+				    json_group_array(json_object('language_id',cd.language_id,'name',cd.name,'slug',cd.slug,'content',cd.content))
 					FROM menu_item_content as cd 
 				WHERE 
 					cd.menu_item_id = categories.menu_item_id GROUP BY cd.menu_item_id
@@ -280,7 +279,7 @@
 			
 			VALUES ( :each, :menu_item_id)
 			ON CONFLICT(`menu_item_id`,`language_id`)
-			DO UPDATE SET `name` = :each.name, `content` = :each.content, `slug` = :each.slug 
+			DO UPDATE SET @LIST(:each)
 			WHERE menu_item_id = :menu_item_id AND language_id = :each.language_id;				
 				
 

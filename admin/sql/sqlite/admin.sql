@@ -41,6 +41,7 @@
 				AND admin.username LIKE CONCAT('%',:search,'%') || admin.first_name LIKE CONCAT('%',:search,'%') || admin.last_name LIKE CONCAT('%',:search,'%')
         	END @IF	       
             
+			ORDER BY admin.status DESC, admin.admin_id
 			
 			-- limit
 			@IF isset(:limit)

@@ -166,7 +166,8 @@
 				END @IF	
 			
 			
-			,(SELECT CONCAT('[', GROUP_CONCAT('{"post_id":"', pc.post_id, '","slug":"' , pc.slug,'","sort_order":"' , p.sort_order, '","name":"' , pc.name, '"}'), ']') 
+			--,(SELECT CONCAT('[', GROUP_CONCAT('{"post_id":"', pc.post_id, '","slug":"' , pc.slug,'","sort_order":"' , p.sort_order, '","name":"' , pc.name, '"}'), ']') 
+			,(SELECT JSON_ARRAYAGG( JSON_OBJECT('post_id', pc.post_id, 'slug', pc.slug, 'sort_order', p.sort_order, 'name', pc.name) ) 
 				FROM post_content pc 
 					LEFT JOIN post p ON (pc.post_id = p.post_id)  
 					LEFT JOIN post_to_taxonomy_item ptt ON (ptt.taxonomy_item_id = @taxonomy_item_id AND ptt.post_id = p.post_id)  
@@ -505,14 +506,22 @@
 		SELECT *, 
 			(
 				SELECT 
-					CONCAT('[', GROUP_CONCAT(
-					'{"language_id":"', tc.language_id, 
-						'","name":"' , tc.name, 
-						'","slug":"' , tc.slug, 
-						'","content":"' , tc.content, 
-						'","meta_title":"' , tc.meta_title, 
-						'","meta_description":"' , tc.meta_description, 
-						'","meta_keywords":"' , tc.meta_keywords, '"}'), ']') 
+				--	CONCAT('[', GROUP_CONCAT(
+				--		'{"language_id":"', tc.language_id, 
+				--		'","name":"' , tc.name, 
+				--		'","slug":"' , tc.slug, 
+				--		'","content":"' , tc.content, 
+				--		'","meta_title":"' , tc.meta_title, 
+				--		'","meta_description":"' , tc.meta_description, 
+				--		'","meta_keywords":"' , tc.meta_keywords, '"}'), ']') 
+					JSON_ARRAYAGG( JSON_OBJECT(
+						'language_id', tc.language_id, 
+						'name' , tc.name, 
+						'slug' , tc.slug, 
+						'content' , tc.content, 
+						'meta_title' , tc.meta_title, 
+						'meta_description' , tc.meta_description, 
+						'meta_keywords' , tc.meta_keywords) ) 
 						
 					FROM taxonomy_item_content as tc 
 				WHERE 

@@ -20,7 +20,7 @@
 				AND status = :status
 			END @IF
 			
-			ORDER BY status DESC
+			ORDER BY "default" DESC, status DESC, sort_order
 			
 			-- limit
 			@IF isset(:limit)

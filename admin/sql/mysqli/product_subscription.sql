@@ -67,9 +67,7 @@
 	BEGIN
 		-- product_subscription
 		SELECT *
-			FROM product_subscription as _ WHERE 1 = 1 
-			
-			product_subscription_id = :product_subscription_id;
+			FROM product_subscription as _ WHERE product_subscription_id = :product_subscription_id;
 	END
 	
 	-- add product_subscription
