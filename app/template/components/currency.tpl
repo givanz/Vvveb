@@ -4,6 +4,7 @@
 @currency|deleteAllButFirstChild
 
 @currencies|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
 if (isset($_currency_idx)) $_currency_idx++; else $_currency_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
 $current_component = $this->_component['currency'][$_currency_idx] ?? [];

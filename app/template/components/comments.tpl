@@ -14,6 +14,7 @@ $limit = isset($comments['limit']) ? $comments['limit'] : 5;
 
 
 @comment|before = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
 $_comments = $comments['comment'] ?? [];
 $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['comment_id' => 1, 'content' => '']] : false;
 $_comments = empty($_comments) ? $_default : $_comments;

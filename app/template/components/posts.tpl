@@ -10,6 +10,8 @@
 @posts [data-v-search] = $posts['search']
 
 @posts|prepend = <?php
+	$vvveb_is_page_edit = Vvveb\isEditor();
+	
 	if (isset($_posts_idx)) $_posts_idx++; else $_posts_idx = 0;
 	$previous_component = isset($current_component)?$current_component:null;
 	$posts = $current_component = $this->_component['posts'][$_posts_idx] ?? [];

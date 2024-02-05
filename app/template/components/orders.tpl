@@ -4,6 +4,8 @@
 @order|deleteAllButFirstChild
 
 @ordercomp|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
+
 if (isset($_ordercomp_idx)) $_ordercomp_idx++; else $_ordercomp_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
 $ordercomp = $current_component = $this->_component['orders'][$_ordercomp_idx] ?? [];

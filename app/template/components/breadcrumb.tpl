@@ -5,6 +5,7 @@
 @item|deleteAllButFirstChild
 
 @breadcrumb|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
 if (isset($_breadcrumb_idx)) $_breadcrumb_idx++; else $_breadcrumb_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
 $breadcrumb = $current_component = $this->_component['breadcrumb'][$_breadcrumb_idx] ?? [];

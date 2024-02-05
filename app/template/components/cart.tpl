@@ -2,6 +2,7 @@
 @cart-product|deleteAllButFirstChild
 
 [data-v-component-cart]|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
 if (isset($_cart_idx)) $_cart_idx++; else $_cart_idx = 0;
 
 $previous_component = isset($current_component)?$current_component:null;

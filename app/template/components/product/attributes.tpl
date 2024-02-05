@@ -2,6 +2,7 @@
 @attribute  = [data-v-component-product-attributes] [data-v-attributes]
 
 @attributes|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
 if (isset($_attributes_idx)) $_attributes_idx++; else $_attributes_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
 $attributes = $current_component = $this->_component['product_attributes'][$_attributes_idx] ?? [];
@@ -22,7 +23,7 @@ if($attributes && is_array($attributes['attribute'])) {
 	foreach ($attributes['attribute'] as $index => $attribute) {?>
 		
 		@attribute [data-v-group]|before = <?php 
-			if ($group != $attribute['group']) { 
+			if (isset($attribute['group']) && $group != $attribute['group']) { 
 				$group = $attribute['group'];
 		?>
 		

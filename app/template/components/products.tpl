@@ -8,26 +8,29 @@
 
 //set component variables
 @products|prepend = <?php
-	//use a counter to know which component instance we need to use if there are more than one component on page
-	if (isset($_products_idx)) $_products_idx++; else $_products_idx = 0;
-	$previous_component = isset($current_component)?$current_component:null;
-	$_products = $current_component = $this->_component['products'][$_products_idx] ?? [];
+	$vvveb_is_page_edit = Vvveb\isEditor();
 
-	$count = $_products['count'] ?? 0;
-	$limit = isset($_products['limit'])? $_products['limit'] : 5;
+	//use a counter to know which component instance we need to use if there are more than one component on page
+	if (isset($products_idx)) $products_idx++; else $products_idx = 0;
+	$previous_component = isset($current_component)?$current_component:null;
+	$products = $current_component = $this->_component['products'][$products_idx] ?? [];
+
+	$count = $products['count'] ?? 0;
+	$limit = isset($products['limit'])? $products['limit'] : 5;
+
+	//if page loaded in editor then set a fist empty product if there are no products 
+	//to render an empty product to avoid losing the html on edit
+	$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
+	//$_default = [0 => []];
+	$_products = empty($products['products']) ? $_default : $products['products'];
 ?>
 
-@products [data-v-products-category] = <?php $_category = current($_products['products']);echo $_category['category'];?>
-@products [data-v-products-count] = <?php echo $_products['count'] ?? ''?>
-@products [data-v-products-manufacturer] = <?php $_manufacturer = current($_products['products']);echo $_manufacturer['manufacturer'];?>
+@products [data-v-products-category] = <?php $_category = current($products);echo $_category['category'];?>
+@products [data-v-products-count] = <?php echo $products['count'] ?? ''?>
+@products [data-v-products-manufacturer] = <?php $_manufacturer = current($products);echo $_manufacturer['manufacturer'];?>
 
 
 @product|before = <?php
-//if page loaded in editor then set a fist empty product if there are no products 
-//to render an empty product to avoid losing the html on edit
-$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
-//$_default = [0 => []];
-$_products = empty($_products['products']) ? $_default : $_products['products'];
 
 if ($_products) {
 	foreach ($_products as $index => $_product) { ?>

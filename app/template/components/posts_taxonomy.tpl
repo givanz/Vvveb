@@ -1,6 +1,7 @@
 @post  = [data-v-component-posts] [data-v-post]
 
 @post [data-v-post-categories]|before = <?php 
+$vvveb_is_page_edit = Vvveb\isEditor();
 $categories_count = 0;
 
 $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : [];

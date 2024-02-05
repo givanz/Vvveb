@@ -4,6 +4,8 @@
 @question|deleteAllButFirstChild
 
 @questions|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
+
 if (isset($_questions_idx)) $_questions_idx++; else $_questions_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
 $component_questions = $current_component = $this->_component['questions'][$_questions_idx] ?? [];

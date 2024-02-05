@@ -4,6 +4,7 @@
 @subscription|deleteAllButFirstChild
 
 @subscriptions|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
 if (isset($_subscriptions_idx)) $_subscriptions_idx++; else $_subscriptions_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
 $subscriptions = $current_component = $this->_component['product_subscriptions'][$_subscriptions_idx] ?? [];

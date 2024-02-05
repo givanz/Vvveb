@@ -8,6 +8,8 @@
 @category|deleteAllButFirstChild
 
 @categories|before = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
+
 if (isset($_menu_idx)) $_menu_idx++; else $_menu_idx = 0;
 
 $_categories = [];
@@ -40,6 +42,7 @@ if (isset($this->_component['menu']) && isset($this->_component['menu'][$_menu_i
 
 		//catch all data attributes
 		@category [data-v-menu-item-*]|innerText = $category['@@__data-v-menu-item-(*)__@@']
+		@category [data-v-menu-item-content] = <?php echo $category['content'] ?? '';?>
 		
 		@category [data-v-menu-item-url]|href = <?php if (isset($category['url'])) echo Vvveb\System\Sites::url($category['url']);?>
 		@category [data-v-menu-item-img]|src = $category['images'][0]

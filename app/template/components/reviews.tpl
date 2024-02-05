@@ -6,6 +6,8 @@
 @review|deleteAllButFirstChild
 
 @reviews|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
+
 if (isset($_reviews_idx)) $_reviews_idx++; else $_reviews_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
 $product_review = $current_component = $this->_component['reviews'][$_reviews_idx] ?? [];

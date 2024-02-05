@@ -6,6 +6,8 @@
 @product|data-v-type = 'product'
 
 @product|before = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
+
 if (isset($_product_idx)) $_product_idx++; else $_product_idx = 0;
 $previous_component = isset($component)?$component:null;
 
@@ -33,6 +35,7 @@ $_pagination_limit = isset($product['limit']) ? $product['limit'] : 5;
 
 
 @product img[data-v-product-main-image]|src = <?php echo $product['image'];?>
+@product [data-v-product-main-image-background-image]|style = <?php echo 'background-image: url(\'' . $product['image'] . '\');';?>
 @product a[data-v-product-main-image]|href = <?php echo reset($product['images'])['image'];?>
 
 @images [data-v-product-image]|deleteAllButFirstChild
@@ -43,7 +46,7 @@ $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['produ
 $_images = empty($_images) ? $_default : $_images;
 
 if($_images) {
-	$i = 0;
+	$i = 1;
 	foreach ($_images as $index => $_image) { ?>
 
 		@images [data-bs-slide-to]|data-bs-slide-to = <?php echo $i;?>

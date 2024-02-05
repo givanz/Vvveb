@@ -4,6 +4,7 @@
 @payment|deleteAllButFirstChild
 
 @payments|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
 if (isset($_payments_idx)) $_payments_idx++; else $_payments_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
 $payments = $current_component = $this->_component['checkout_payment'][$_payments_idx] ?? [];

@@ -4,6 +4,7 @@
 @vendor|deleteAllButFirstChild
 
 @vendors|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
 if (isset($_vendors_idx)) $_vendors_idx++; else $_vendors_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
 $vendors = $current_component = $this->_component['product_vendors'][$_vendors_idx] ?? [];

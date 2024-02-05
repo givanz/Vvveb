@@ -6,6 +6,7 @@
 @value|deleteAllButFirstChild
 
 @options|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
 if (isset($_options_idx)) $_options_idx++; else $_options_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
 $product_options = $current_component = $this->_component['product_options'][$_options_idx] ?? [];

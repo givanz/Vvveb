@@ -4,6 +4,7 @@
 @address|deleteAllButFirstChild
 
 @addresscomp|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
 if (isset($_addresscomp_idx)) $_addresscomp_idx++; else $_addresscomp_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
 $addresscomp = $current_component = $this->_component['user_address'][$_addresscomp_idx] ?? [];

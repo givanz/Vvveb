@@ -2,6 +2,7 @@
 @language|deleteAllButFirstChild
 
 [data-v-component-language]|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
 if (isset($_language_idx)) $_language_idx++; else $_language_idx = 0;
 if(isset($this->_component['language']) && $this->_component['language'][$_language_idx]) {
 	$language = $this->_component['language'][$_language_idx];
