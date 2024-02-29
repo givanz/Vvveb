@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS return_resolution;
 
 DROP SEQUENCE IF EXISTS return_resolution_seq;
 CREATE SEQUENCE return_resolution_seq;
+SELECT setval('return_resolution_seq', 4, true); -- last inserted id by sample data
 
 CREATE TABLE return_resolution (
   "return_resolution_id" int check ("return_resolution_id" > 0) NOT NULL DEFAULT NEXTVAL ('return_resolution_seq'),

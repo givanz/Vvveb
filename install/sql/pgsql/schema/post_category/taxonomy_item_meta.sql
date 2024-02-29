@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS taxonomy_item_meta;
 
 DROP SEQUENCE IF EXISTS taxonomy_item_meta_seq;
 CREATE SEQUENCE taxonomy_item_meta_seq;
+-- SELECT setval('taxonomy_item_meta_seq', 0, true); -- last inserted id by sample data
 
 CREATE TABLE taxonomy_item_meta (
   "meta_id" int check ("meta_id" > 0) NOT NULL DEFAULT NEXTVAL ('taxonomy_item_meta_seq'),

@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS menu_item_meta;
 
 DROP SEQUENCE IF EXISTS menu_item_meta_seq;
 CREATE SEQUENCE menu_item_meta_seq;
+-- SELECT setval('menu_item_meta_seq', 0, true); -- last inserted id by sample data
 
 
 CREATE TABLE menu_item_meta (

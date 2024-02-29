@@ -10,7 +10,7 @@ CREATE TABLE product_content_revision (
   "language_id" int check ("language_id" > 0) NOT NULL,
   "content" text DEFAULT NULL,
   "admin_id" int check ("admin_id" > 0) NOT NULL,
-  "created_at" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("product_id","language_id","created_at")
 );
 

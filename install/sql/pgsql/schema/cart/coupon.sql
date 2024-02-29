@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS coupon;
 
 DROP SEQUENCE IF EXISTS coupon_seq;
 CREATE SEQUENCE coupon_seq;
+SELECT setval('coupon_seq', 3, true); -- last inserted id by sample data
 
 
 CREATE TABLE coupon (
@@ -18,7 +19,7 @@ CREATE TABLE coupon (
   "status" smallint NOT NULL,
   "from_date" date NOT NULL DEFAULT '1000-01-01',
   "to_date" date NOT NULL DEFAULT '1000-01-01',
-  "created_at" timestamp(0) NOT NULL DEFAULT clock_timestamp(),
-  "updated_at" timestamp(0) NOT NULL DEFAULT clock_timestamp(),
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
+  "updated_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("coupon_id")
 );

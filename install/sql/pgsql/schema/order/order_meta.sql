@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS order_meta;
 
 DROP SEQUENCE IF EXISTS order_meta_seq;
 CREATE SEQUENCE order_meta_seq;
+-- SELECT setval('order_meta_seq', 0, true); -- last inserted id by sample data
 
 
 CREATE TABLE order_meta (

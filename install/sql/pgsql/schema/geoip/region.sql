@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS region;
 
 DROP SEQUENCE IF EXISTS region_seq;
 CREATE SEQUENCE region_seq;
+SELECT setval('region_seq', 4343, true); -- last inserted id by sample data
 
 
 CREATE TABLE region (

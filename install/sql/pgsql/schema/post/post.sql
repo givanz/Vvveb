@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS post;
 
 DROP SEQUENCE IF EXISTS post_seq;
 CREATE SEQUENCE post_seq;
+-- SELECT setval('post_seq', 15, true); -- last inserted id by sample data
 
 
 CREATE TABLE post (
@@ -17,8 +18,8 @@ CREATE TABLE post (
   "template" varchar(191) NOT NULL DEFAULT '',
   "comment_count" int NOT NULL DEFAULT 0,
   "views" int NOT NULL DEFAULT 0,
-  "created_at" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',
-  "updated_at" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
+  "updated_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("post_id")
 );
 

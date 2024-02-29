@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS subscription;
 
 DROP SEQUENCE IF EXISTS subscription_seq;
 CREATE SEQUENCE subscription_seq;
+-- SELECT setval('subscription_seq', 0, true); -- last inserted id by sample data
 
 CREATE TABLE "subscription" (
   "subscription_id" int check ("subscription_status_id" > 0) NOT NULL DEFAULT NEXTVAL ('subscription_seq'),
@@ -27,7 +28,7 @@ CREATE TABLE "subscription" (
   "trial_length" smallint NOT NULL,
   "trial_left" smallint NOT NULL,
   "trial_status" smallint NOT NULL,
-  "date_next" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',
+  "date_next" timestamp(0) NOT NULL DEFAULT now(),
   "note" text NOT NULL,
   "subscription_status_id" INT NOT NULL,
   "language_id" INT NOT NULL,
@@ -35,8 +36,8 @@ CREATE TABLE "subscription" (
   "ip" TEXT NOT NULL,
   "forwarded_ip" TEXT NOT NULL,
   "user_agent" TEXT NOT NULL,
-  "created_at" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',
-  "updated_at" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
+  "updated_at" timestamp(0) NOT NULL DEFAULT now(),
 PRIMARY KEY ("subscription_id")
 );
 

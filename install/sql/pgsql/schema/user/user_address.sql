@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS user_address;
 
 DROP SEQUENCE IF EXISTS user_address_seq;
 CREATE SEQUENCE user_address_seq;
+-- SELECT setval('user_address_seq', 0, true); -- last inserted id by sample data
 
 CREATE TABLE user_address (
   "user_address_id" int check ("user_address_id" > 0) NOT NULL DEFAULT NEXTVAL ('user_address_seq'),

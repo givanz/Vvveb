@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS return_status;
 
 DROP SEQUENCE IF EXISTS return_status_seq;
 CREATE SEQUENCE return_status_seq;
+SELECT setval('return_status_seq', 5, true); -- last inserted id by sample data
 
 
 CREATE TABLE return_status (

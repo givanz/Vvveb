@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS order_product;
 
 DROP SEQUENCE IF EXISTS order_product_seq;
 CREATE SEQUENCE order_product_seq;
+-- SELECT setval('order_product_seq', 0, true); -- last inserted id by sample data
 
 
 CREATE TABLE order_product (

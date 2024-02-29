@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS return_log;
 
 DROP SEQUENCE IF EXISTS return_log_seq;
 CREATE SEQUENCE return_log_seq;
+-- SELECT setval('return_log_seq', 0, true); -- last inserted id by sample data
 
 
 CREATE TABLE return_log (
@@ -10,6 +11,6 @@ CREATE TABLE return_log (
   "return_status_id" int check ("return_status_id" > 0) NOT NULL,
   "notify" smallint NOT NULL,
   "note" text NOT NULL,
-  "created_at" timestamp(0) NOT NULL,
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("return_log_id")
 );

@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS "user";
 
 DROP SEQUENCE IF EXISTS "user_seq";
 CREATE SEQUENCE "user_seq";
+SELECT setval('"user_seq"', 1, true); -- last inserted id by sample data
 
 
 CREATE TABLE "user" (
@@ -20,10 +21,11 @@ CREATE TABLE "user" (
   "avatar" varchar(250) NOT NULL DEFAULT '',
   "bio" varchar(250) NOT NULL DEFAULT '',
   "token" varchar(32) NOT NULL DEFAULT '',
-  "created_at" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',
-  "updated_at" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
+  "updated_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("user_id")
 );
 
 CREATE INDEX "user_username" ON "user" ("username");
 CREATE INDEX "user_email" ON "user" ("email");
+CREATE INDEX "user_created_at" ON "user" ("created_at");

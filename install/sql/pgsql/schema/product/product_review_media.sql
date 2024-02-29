@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS product_review_media;
 
 DROP SEQUENCE IF EXISTS product_review_media_seq;
 CREATE SEQUENCE product_review_media_seq;
+-- SELECT setval('product_review_media_seq', 14, true); -- last inserted id by sample data
 
 
 CREATE TABLE product_review_media (

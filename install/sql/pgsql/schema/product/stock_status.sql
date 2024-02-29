@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS stock_status;
 
 DROP SEQUENCE IF EXISTS stock_status_seq;
 CREATE SEQUENCE stock_status_seq;
+SELECT setval('stock_status_seq', 7, true); -- last inserted id by sample data
 
 
 CREATE TABLE stock_status (

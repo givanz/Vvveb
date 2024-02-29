@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS vendor;
 
 DROP SEQUENCE IF EXISTS vendor_seq;
 CREATE SEQUENCE vendor_seq;
+SELECT setval('vendor_seq', 6, true); -- last inserted id by sample data
 
 
 CREATE TABLE vendor (

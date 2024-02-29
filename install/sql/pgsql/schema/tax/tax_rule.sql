@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS tax_rule;
 
 DROP SEQUENCE IF EXISTS tax_rule_seq;
 CREATE SEQUENCE tax_rule_seq;
+SELECT setval('tax_rule_seq', 2, true); -- last inserted id by sample data
 
 CREATE TABLE tax_rule (
   "tax_rule_id" int check ("tax_rule_id" > 0) NOT NULL DEFAULT NEXTVAL ('tax_rule_seq'),

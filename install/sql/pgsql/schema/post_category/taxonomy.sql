@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS taxonomy;
 
 DROP SEQUENCE IF EXISTS taxonomy_seq;
 CREATE SEQUENCE taxonomy_seq;
+SELECT setval('taxonomy_seq', 5, true); -- last inserted id by sample data
 
 
 CREATE TABLE taxonomy (

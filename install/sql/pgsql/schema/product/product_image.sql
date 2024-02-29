@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS product_image;
 
 DROP SEQUENCE IF EXISTS product_image_seq;
 CREATE SEQUENCE product_image_seq;
+SELECT setval('product_image_seq', 53, true); -- last inserted id by sample data
 
 
 CREATE TABLE product_image (

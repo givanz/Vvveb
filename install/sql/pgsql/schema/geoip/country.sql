@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS country;
 
 DROP SEQUENCE IF EXISTS country_seq;
 CREATE SEQUENCE country_seq;
+SELECT setval('country_seq', 257, true); -- last inserted id by sample data
 
 
 CREATE TABLE country (

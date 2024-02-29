@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS product_option_value;
 
 DROP SEQUENCE IF EXISTS product_option_value_seq;
 CREATE SEQUENCE product_option_value_seq;
+SELECT setval('product_option_value_seq', 9, true); -- last inserted id by sample data
 
 
 CREATE TABLE product_option_value (

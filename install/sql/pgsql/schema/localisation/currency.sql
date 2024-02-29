@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS currency;
 
 DROP SEQUENCE IF EXISTS currency_seq;
 CREATE SEQUENCE currency_seq;
+SELECT setval('currency_seq', 8, true); -- last inserted id by sample data
 
 
 CREATE TABLE currency (
@@ -13,6 +14,6 @@ CREATE TABLE currency (
   "sign_end" varchar(12) NOT NULL,
   "decimal_place" char(1) NOT NULL,
   "status" smallint NOT NULL,
-  "updated_at" timestamp(0) NOT NULL DEFAULT current_timestamp,
+  "updated_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("currency_id")
 );

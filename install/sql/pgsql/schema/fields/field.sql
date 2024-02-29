@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS field;
 
 DROP SEQUENCE IF EXISTS field_seq;
 CREATE SEQUENCE field_seq;
+-- SELECT setval('field_seq', 0, true); -- last inserted id by sample data
 
 
 CREATE TABLE field (

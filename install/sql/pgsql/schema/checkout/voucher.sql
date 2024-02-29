@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS voucher;
 
 DROP SEQUENCE IF EXISTS voucher_seq;
 CREATE SEQUENCE voucher_seq;
+SELECT setval('voucher_seq', 1, true); -- last inserted id by sample data
 
 
 CREATE TABLE voucher (
@@ -15,6 +16,6 @@ CREATE TABLE voucher (
   "message" text NOT NULL,
   "credit" decimal(15,4) NOT NULL,
   "status" smallint NOT NULL,
-  "created_at" timestamp(0) NOT NULL,
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("voucher_id")
 );

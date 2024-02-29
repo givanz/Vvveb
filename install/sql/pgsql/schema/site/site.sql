@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS site;
 
 DROP SEQUENCE IF EXISTS site_seq;
 CREATE SEQUENCE site_seq;
+SELECT setval('site_seq', 1, true); -- last inserted id by sample data
 
 CREATE TABLE site (
   "site_id" smallint NOT NULL DEFAULT NEXTVAL ('site_seq'),

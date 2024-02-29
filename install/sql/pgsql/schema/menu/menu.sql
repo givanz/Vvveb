@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS menu;
 
 DROP SEQUENCE IF EXISTS menu_seq;
 CREATE SEQUENCE menu_seq;
+SELECT setval('menu_seq', 5, true); -- last inserted id by sample data
 
 
 CREATE TABLE menu (

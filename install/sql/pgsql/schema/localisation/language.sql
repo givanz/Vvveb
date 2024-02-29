@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS language;
 
 DROP SEQUENCE IF EXISTS language_seq;
 CREATE SEQUENCE language_seq;
+SELECT setval('language_seq', 8, true); -- last inserted id by sample data
 
 
 CREATE TABLE language (

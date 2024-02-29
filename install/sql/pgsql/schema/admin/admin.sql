@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS "admin";
 
 DROP SEQUENCE IF EXISTS admin_seq;
 CREATE SEQUENCE admin_seq;
+SELECT setval('admin_seq', 10, true); -- last inserted id by sample data
 
 CREATE TABLE "admin" (
   "admin_id" int check ("admin_id" > 0) NOT NULL DEFAULT NEXTVAL ('admin_seq'),
@@ -19,8 +20,8 @@ CREATE TABLE "admin" (
   "site_access" text NOT NULL,
   "status" int check ("status" >= 0) NOT NULL DEFAULT 0,
   "token" varchar(32) NOT NULL DEFAULT '',
-  "created_at" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',
-  "updated_at" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
+  "updated_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("admin_id")
 );
 

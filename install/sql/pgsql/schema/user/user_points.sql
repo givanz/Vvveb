@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS user_points;
 
 DROP SEQUENCE IF EXISTS user_points_seq;
 CREATE SEQUENCE user_points_seq;
+-- SELECT setval('user_points_seq', 0, true); -- last inserted id by sample data
 
 
 CREATE TABLE user_points (
@@ -10,6 +11,6 @@ CREATE TABLE user_points (
   "order_id" int check ("order_id" > 0) NOT NULL DEFAULT 0,
   "content" text NOT NULL,
   "points" int NOT NULL DEFAULT 0,
-  "created_at" timestamp(0) NOT NULL,
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("user_points_id")
 );

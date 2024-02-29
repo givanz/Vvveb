@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS return;
 
 DROP SEQUENCE IF EXISTS return_seq;
 CREATE SEQUENCE return_seq;
+-- SELECT setval('return_seq', 0, true); -- last inserted id by sample data
 
 
 CREATE TABLE return (
@@ -22,7 +23,7 @@ CREATE TABLE return (
   "return_status_id" int check ("return_status_id" > 0) NOT NULL,
   "note" text NOT NULL,
   "date_ordered" date NOT NULL,
-  "created_at" timestamp(0) NOT NULL,
-  "updated_at" timestamp(0) NOT NULL,
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
+  "updated_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("return_id")
 );

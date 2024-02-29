@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS coupon_product;
 
 DROP SEQUENCE IF EXISTS coupon_product_seq;
 CREATE SEQUENCE coupon_product_seq;
+-- SELECT setval('coupon_product_seq', 0, true); -- last inserted id by sample data
 
 
 CREATE TABLE coupon_product (

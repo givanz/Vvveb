@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS weight_type;
 
 DROP SEQUENCE IF EXISTS weight_type_seq;
 CREATE SEQUENCE weight_type_seq;
+SELECT setval('weight_type_seq', 5, true); -- last inserted id by sample data
 
 CREATE TABLE weight_type (
   "weight_type_id" int check ("weight_type_id" > 0) NOT NULL DEFAULT NEXTVAL ('weight_type_seq'),

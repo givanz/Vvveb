@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS message;
 
 DROP SEQUENCE IF EXISTS message_seq;
 CREATE SEQUENCE message_seq;
+-- SELECT setval('message_seq', 0, true); -- last inserted id by sample data
 
 -- CREATE TABLE IF NOT EXISTS message (
 CREATE TABLE message (
@@ -10,8 +11,8 @@ CREATE TABLE message (
   "data" text DEFAULT NULL,
   "meta" text DEFAULT NULL,
   "status" smallint NOT NULL DEFAULT 0, -- unread = 0, read = 1
-  "created_at" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',
-  "updated_at" timestamp(0) NOT NULL DEFAULT '2022-05-01 00:00:00',
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
+  "updated_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("message_id")
 );
 

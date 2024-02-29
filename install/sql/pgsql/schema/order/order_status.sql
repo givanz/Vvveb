@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS order_status;
 
 DROP SEQUENCE IF EXISTS order_status_seq;
 CREATE SEQUENCE order_status_seq;
+SELECT setval('order_status_seq', 20, true); -- last inserted id by sample data
 
 
 CREATE TABLE order_status (

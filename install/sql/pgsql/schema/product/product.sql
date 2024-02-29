@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS product;
 
 DROP SEQUENCE IF EXISTS product_seq;
 CREATE SEQUENCE product_seq;
+-- SELECT setval('product_seq', 19, true); -- last inserted id by sample data
 
 
 CREATE TABLE product (
@@ -38,8 +39,8 @@ CREATE TABLE product (
   "type" varchar(20) NOT NULL DEFAULT 'product',
   "status" smallint NOT NULL DEFAULT 0,
   "sort_order" int check ("sort_order" >= 0) NOT NULL DEFAULT 0,
-  "created_at" timestamp(0) NOT NULL DEFAULT current_timestamp,
-  "updated_at" timestamp(0) NOT NULL DEFAULT current_timestamp,
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
+  "updated_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("product_id")
 );
 

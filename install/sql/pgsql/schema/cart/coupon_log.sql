@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS coupon_log;
 
 DROP SEQUENCE IF EXISTS coupon_log_seq;
 CREATE SEQUENCE coupon_log_seq;
+-- SELECT setval('coupon_log_seq', 0, true); -- last inserted id by sample data
 
 CREATE TABLE coupon_log (
   "coupon_log_id" int check ("coupon_log_id" > 0) NOT NULL DEFAULT NEXTVAL ('coupon_log_seq'),
@@ -9,6 +10,6 @@ CREATE TABLE coupon_log (
   "order_id" int check ("order_id" > 0) NOT NULL,
   "user_id" int check ("user_id" > 0) NOT NULL,
   "discount" decimal(15,4) NOT NULL,
-  "created_at" timestamp(0) NOT NULL,
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("coupon_log_id")
 );

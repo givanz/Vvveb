@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS post_content_revision (
   "language_id" int check ("language_id" > 0) NOT NULL,
   "content" text DEFAULT NULL,
   "admin_id" int check ("admin_id" > 0) NOT NULL,
-  "created_at" timestamp(0) NOT NULL DEFAULT clock_timestamp(),
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("post_id","language_id","created_at")
 );
 

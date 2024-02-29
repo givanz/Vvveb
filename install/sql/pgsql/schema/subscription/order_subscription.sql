@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS order_subscription;
 
 DROP SEQUENCE IF EXISTS order_subscription_seq;
 CREATE SEQUENCE order_subscription_seq;
+-- SELECT setval('order_subscription_seq', 0, true); -- last inserted id by sample data
 
 CREATE TABLE "order_subscription" (
   "order_subscription_id" int check ("order_subscription_id" > 0) NOT NULL DEFAULT NEXTVAL ('order_subscription_seq'),

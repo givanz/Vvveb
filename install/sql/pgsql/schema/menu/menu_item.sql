@@ -2,16 +2,17 @@ DROP TABLE IF EXISTS menu_item;
 
 DROP SEQUENCE IF EXISTS menu_item_seq;
 CREATE SEQUENCE menu_item_seq;
+SELECT setval('menu_item_seq', 68, true); -- last inserted id by sample data
 
 
 CREATE TABLE menu_item (
   "menu_item_id" int check ("menu_item_id" > 0) NOT NULL DEFAULT NEXTVAL ('menu_item_seq'),
   "menu_id" int check ("menu_id" > 0) NOT NULL,
   "type" varchar(191) NOT NULL DEFAULT 'link',
-  "image" varchar(191) NOT NULL DEFAULT '',
   "url" varchar(191) NOT NULL DEFAULT '',
   "parent_id" int check ("parent_id" >= 0) NOT NULL DEFAULT 0,
   "item_id" int check ("item_id" > 0) DEFAULT NULL,
+  "options" varchar(191) NOT NULL DEFAULT '',
   "sort_order" int NOT NULL DEFAULT 0,
   "status" smallint NOT NULL DEFAULT 0,
   PRIMARY KEY ("menu_item_id")

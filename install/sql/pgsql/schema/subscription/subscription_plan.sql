@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS subscription_plan;
 
 DROP SEQUENCE IF EXISTS subscription_plan_seq;
 CREATE SEQUENCE subscription_plan_seq;
+SELECT setval('subscription_plan_seq', 5, true); -- last inserted id by sample data
 
 
 CREATE TABLE "subscription_plan" (

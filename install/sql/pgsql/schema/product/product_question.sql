@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS product_question;
 
 DROP SEQUENCE IF EXISTS product_question_seq;
 CREATE SEQUENCE product_question_seq;
+SELECT setval('product_question_seq', 5, true); -- last inserted id by sample data
 
 
 CREATE TABLE product_question (
@@ -12,8 +13,8 @@ CREATE TABLE product_question (
   "content" text NOT NULL,
   "status" smallint NOT NULL DEFAULT 0,
   "parent_id" int check ("parent_id" >= 0) NOT NULL DEFAULT 0,
-  "created_at" timestamp(0) NOT NULL,
-  "updated_at" timestamp(0) NOT NULL,
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
+  "updated_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("product_question_id")
 );
 

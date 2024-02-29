@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS comment;
 
 DROP SEQUENCE IF EXISTS comment_seq;
 CREATE SEQUENCE comment_seq;
+SELECT setval('comment_seq', 4, true); -- last inserted id by sample data
 
 
 CREATE TABLE comment (
@@ -17,8 +18,8 @@ CREATE TABLE comment (
   "votes" smallint check ("votes" >= 0) NOT NULL DEFAULT 0,
   "type" varchar(20) NOT NULL DEFAULT '',
   "parent_id" int check ("parent_id" >= 0) NOT NULL DEFAULT 0,
-  "created_at" timestamp(0) NOT NULL,
-  "updated_at" timestamp(0) NOT NULL,
+  "created_at" timestamp(0) NOT NULL DEFAULT now(),
+  "updated_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("comment_id")
 );
 

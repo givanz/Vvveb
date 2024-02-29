@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS user_group;
 
 DROP SEQUENCE IF EXISTS user_group_seq;
 CREATE SEQUENCE user_group_seq;
+SELECT setval('user_group_seq', 1, true); -- last inserted id by sample data
 
 
 CREATE TABLE user_group (

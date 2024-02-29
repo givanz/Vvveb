@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS return_reason;
 
 DROP SEQUENCE IF EXISTS return_reason_seq;
 CREATE SEQUENCE return_reason_seq;
+SELECT setval('return_reason_seq', 11, true); -- last inserted id by sample data
 
 
 CREATE TABLE return_reason (
