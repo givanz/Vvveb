@@ -254,8 +254,16 @@ class PageCache {
 					continue;
 				}
 
-				if (! @unlink($file)) {
-					clearstatcache(false, $file);
+				if (is_file($file)) {
+					if (! @unlink($file)) {
+						clearstatcache(false, $file);
+					}
+				} else {
+					/*
+					if (! @rmdir($file)) {
+						clearstatcache(false, $file);
+					}
+					*/ 
 				}
 			}
 		}
