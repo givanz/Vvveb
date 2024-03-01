@@ -20,7 +20,7 @@
 	
 			-- orders
 
-			SELECT COUNT(*) AS orders, DATE(created_at) as date, orders.created_at FROM "order" AS orders
+			SELECT COUNT(*) AS orders, DATE(created_at) as date FROM "order" AS orders
 			
 				LEFT JOIN order_status AS os ON (orders.order_status_id = os.order_status_id AND os.language_id = :language_id) 
 				
@@ -45,12 +45,12 @@
 			
 				END @IF					
 				
-			GROUP BY date,orders.created_at ORDER BY date;
+			GROUP BY date ORDER BY date;
 			
 			
 			-- users
 
-			SELECT COUNT(*) AS users, DATE(created_at) as date, users.created_at FROM "user" AS users
+			SELECT COUNT(*) AS users, DATE(created_at) as date FROM "user" AS users
 			
 			WHERE 1 = 1 
 			
@@ -66,7 +66,7 @@
 			
 				END @IF	
 			
-			GROUP BY date, users.created_at ORDER BY date;			
+			GROUP BY date ORDER BY date;			
 
 	END
 	
@@ -88,7 +88,7 @@
 			-- orders
 
 			SELECT COUNT(*) AS count, os.name, orders.order_status_id, orders.order_status_id as array_key 
-				FROM `order` AS orders
+				FROM "order" AS orders
 				LEFT JOIN order_status AS os ON (orders.order_status_id = os.order_status_id AND os.language_id = :language_id) 
 				
 			WHERE 1 = 1 
@@ -132,7 +132,7 @@
 	
 			-- users
 
-			SELECT COUNT(*) AS count, YEAR(users.created_at) AS year, MONTH(users.created_at) AS month FROM `user` AS users
+			SELECT COUNT(*) AS count, date_part('year',users.created_at) AS year, date_part('month',users.created_at) AS month FROM "user" AS users
 			
 			WHERE 1 = 1 
 			
@@ -148,7 +148,7 @@
 			
 				END @IF	
 			
-			GROUP BY MONTH(users.created_at), YEAR(users.created_at);	
+			GROUP BY month, year;	
 			
 	END
 

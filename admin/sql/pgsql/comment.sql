@@ -23,9 +23,9 @@
 	)
 	BEGIN
 
-		SELECT user.*, comment.*, comment_id as array_key
+		SELECT "user".*, comment.*, comment_id as array_key
 			FROM comment AS comment
-			LEFT JOIN user ON (comment.user_id = comment.user_id)	
+			LEFT JOIN "user" ON (comment.user_id = comment.user_id)	
 
 			@IF isset(:post_title) AND :post_title
 			THEN 
@@ -110,18 +110,18 @@
 
 	CREATE PROCEDURE add(
 		IN comment ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:comment, comment);
+		@FILTER(:comment, comment)
 		
 		INSERT INTO comment 
 			
 			( @KEYS(:comment) )
 			
-	  	VALUES ( :comment )
+	  	VALUES ( :comment ) RETURNING comment_id;
         
 	END
 
@@ -134,7 +134,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:comment, comment);
+		@FILTER(:comment, comment)
 
 		UPDATE comment 
 			

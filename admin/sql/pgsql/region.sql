@@ -69,19 +69,19 @@
 	PROCEDURE add(
 		IN region ARRAY,
 		IN language_id INT,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:region_data  = @FILTER(:region, region);
+		:region_data  = @FILTER(:region, region)
 		
 		
 		INSERT INTO region 
 			
 			( @KEYS(:region_data) )
 			
-	  	VALUES ( :region_data );
+	  	VALUES ( :region_data ) RETURNING region_id;
 
 	END
 	
@@ -95,7 +95,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:region, region);
+		@FILTER(:region, region)
 
 		UPDATE region 
 			

@@ -57,21 +57,21 @@
 	PROCEDURE add(
 		IN user_group ARRAY,
 		IN language_id INT,
-		OUT insert_id
+		OUT fetch_one
 		OUT insert_id
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:user_group_data  = @FILTER(:user_group, user_group);
+		:user_group_data  = @FILTER(:user_group, user_group)
 		
 		INSERT INTO user_group 
 			
 			( @KEYS(:user_group_data) )
 			
-	  	VALUES ( :user_group_data );
+	  	VALUES ( :user_group_data ) RETURNING user_group_id;
 	  	
-	  	:user_group_content  = @FILTER(:user_group, user_group_content);
+	  	:user_group_content  = @FILTER(:user_group, user_group_content)
 	  	
 		INSERT INTO user_group_content 
 			
@@ -91,7 +91,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		:user_group_data = @FILTER(:user_group, user_group);
+		:user_group_data = @FILTER(:user_group, user_group)
 
 		UPDATE user_group
 			
@@ -100,7 +100,7 @@
 		WHERE user_group_id = :user_group_id;
 
 		-- allow only table fields and set defaults for missing values
-		:user_group_content  = @FILTER(:user_group, user_group_content);
+		:user_group_content  = @FILTER(:user_group, user_group_content)
 
 		UPDATE user_group_content
 			

@@ -22,25 +22,25 @@
 
             @IF isset(:status) AND !empty(:status)
 			THEN 
-				AND user.status = :status 
+				AND "user".status = :status 
         	END @IF	
 			
 			@IF isset(:email) AND !empty(:email)
 			THEN 
-				AND user.email = :email 
+				AND "user".email = :email 
         	END @IF	
 
 			@IF isset(:phone_number) AND !empty(:phone_number)
 			THEN 
-				AND user.phone_number = :phone_number 
+				AND "user".phone_number = :phone_number 
         	END @IF	
 
             -- search
             @IF isset(:search) AND !empty(:search)
 			THEN 
-				AND user.username LIKE '%' || :search || '%' OR 
-				user.first_name LIKE '%' || :search || '%' OR 
-				user.last_name LIKE '%' || :search || '%'
+				AND "user".username LIKE '%' || :search || '%' OR 
+				"user".first_name LIKE '%' || :search || '%' OR 
+				"user".last_name LIKE '%' || :search || '%'
         	END @IF	     
             
 			
@@ -53,7 +53,7 @@
 		-- SELECT FOUND_ROWS() as count;
 		SELECT count(*) FROM (
 			
-			@SQL_COUNT(user.user_id, user) -- this takes previous query removes limit and replaces select columns with parameter user_id
+			@SQL_COUNT("user".user_id, user) -- this takes previous query removes limit and replaces select columns with parameter user_id
 			
 		) as count;				
         
@@ -70,7 +70,7 @@
 	)
 	BEGIN
         
-        SELECT * FROM user AS _ WHERE 1 = 1 
+        SELECT * FROM "user" AS _ WHERE 1 = 1 
 
             @IF isset(:username)
 			THEN 
@@ -106,18 +106,18 @@
 
 	CREATE PROCEDURE add(
 		IN user ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:user, user);
+		@FILTER(:user, user)
 		
-		INSERT INTO user 
+		INSERT INTO "user" 
 			
 			( @KEYS(:user) )
 			
-	  	VALUES ( :user );	 
+	  	VALUES ( :user ) RETURNING user_id;	 
 	END    
     
 
@@ -132,9 +132,9 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:user, user);
+		@FILTER(:user, user)
 
-		UPDATE user 
+		UPDATE "user" 
 			
 			SET @LIST(:user) 
 			
@@ -164,7 +164,7 @@
 	)
 	BEGIN
 
-		DELETE FROM user WHERE user_id IN (:user_id);
+		DELETE FROM "user" WHERE user_id IN (:user_id);
 		
 	END	
 	
@@ -179,7 +179,7 @@
 	BEGIN
 		
 	
-		UPDATE user 
+		UPDATE "user" 
 			
 			SET  
             

@@ -20,13 +20,13 @@
 	)
 	BEGIN
 
-		SELECT user.*,product_review.*,user.user_id as user_id,
+		SELECT "user".*, product_review.*, "user".user_id as user_id,
 			(SELECT json_agg(json_build_object('id',prm.product_review_media_id,'image',prm.image))
 				FROM product_review_media as prm 
 			WHERE prm.product_review_id = product_review.product_review_id) as images
 
             FROM product_review
-	    LEFT JOIN user ON user.user_id = product_review.user_id
+			LEFT JOIN "user" ON "user".user_id = product_review.user_id
 		
 			WHERE 1 = 1
             
@@ -75,7 +75,7 @@
 		-- review
 		SELECT *
 			FROM product_review as _ -- (underscore) _ means that data will be kept in main array
-		INNER JOIN user on user.user_id = _.user_id
+		INNER JOIN "user" on "user".user_id = _.user_id
 		WHERE product_review_id = :product_review_id LIMIT 1;
 
 	END	
@@ -162,18 +162,18 @@
 
 	CREATE PROCEDURE add(
 		IN product_review ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:product_review, product_review);
+		@FILTER(:product_review, product_review)
 		
 		INSERT INTO product_review 
 			
 			( @KEYS(:product_review) )
 			
-	  	VALUES ( :product_review )
+	  	VALUES ( :product_review ) RETURNING product_review_id
         
 	END
 
@@ -186,7 +186,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:product_review, product_review);
+		@FILTER(:product_review, product_review)
 
 		UPDATE product_review 
 			

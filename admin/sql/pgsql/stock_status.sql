@@ -46,19 +46,19 @@
 	PROCEDURE add(
 		IN stock_status ARRAY,
 		IN language_id INT,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:stock_status_data  = @FILTER(:stock_status, stock_status);
+		:stock_status_data  = @FILTER(:stock_status, stock_status)
 		
 		
 		INSERT INTO stock_status 
 			
 			( @KEYS(:stock_status_data), language_id )
 			
-	  	VALUES ( :stock_status_data, :language_id );
+	  	VALUES ( :stock_status_data, :language_id ) RETURNING role_id;
 
 	END
 	
@@ -71,7 +71,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:stock_status, stock_status);
+		@FILTER(:stock_status, stock_status)
 
 		UPDATE stock_status 
 			

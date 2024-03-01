@@ -49,19 +49,19 @@
 
 	PROCEDURE add(
 		IN return ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:return_data  = @FILTER(:return, return);
+		:return_data  = @FILTER(:return, return)
 		
 		
 		INSERT INTO return 
 			
 			( @KEYS(:return_data) )
 			
-	  	VALUES ( :return_data );
+	  	VALUES ( :return_data ) RETURNING return_id;
 
 	END
 	
@@ -74,7 +74,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:return, return);
+		@FILTER(:return, return)
 
 		UPDATE return
 			

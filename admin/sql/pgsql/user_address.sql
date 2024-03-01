@@ -59,7 +59,7 @@
         LIMIT 1; 
 		
 		
-		-- SELECT `key` as array_key,value as array_value FROM user_address_meta as _
+		-- SELECT "key" as array_key,value as array_value FROM user_address_meta as _
 			-- WHERE _.user_address_id = @result.user_address_id
 		
           
@@ -69,18 +69,18 @@
 
 	CREATE PROCEDURE add(
 		IN user_address ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:user_address, user_address);
+		@FILTER(:user_address, user_address)
 		
 		INSERT INTO user_address 
 			
 			( @KEYS(:user_address) )
 			
-	  	VALUES ( :user_address )
+	  	VALUES ( :user_address ) RETURNING user_address_id;
         
 	END
 
@@ -94,7 +94,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:user_address, user_address);
+		@FILTER(:user_address, user_address)
 
 		UPDATE user_address 
 			

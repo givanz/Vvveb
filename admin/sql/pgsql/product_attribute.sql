@@ -46,19 +46,19 @@
 
 	PROCEDURE add(
 		IN product_attribute ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:product_attribute_data  = @FILTER(:product_attribute, product_attribute);
+		:product_attribute_data  = @FILTER(:product_attribute, product_attribute)
 		
 		
 		INSERT INTO product_attribute 
 			
 			( @KEYS(:product_attribute_data) )
 			
-	  	VALUES ( :product_attribute_data );
+	  	VALUES ( :product_attribute_data ) RETURNING product_attribute_id;
 
 	END
 	
@@ -72,7 +72,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:product_attribute, product_attribute);
+		@FILTER(:product_attribute, product_attribute)
 
 		UPDATE product_attribute
 			

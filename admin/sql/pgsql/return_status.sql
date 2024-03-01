@@ -46,19 +46,19 @@
 	PROCEDURE add(
 		IN return_status ARRAY,
 		IN language_id INT,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:return_status_data  = @FILTER(:return_status, return_status);
+		:return_status_data  = @FILTER(:return_status, return_status)
 		
 		
 		INSERT INTO return_status 
 			
 			( @KEYS(:return_status_data), language_id )
 			
-	  	VALUES ( :return_status_data, :language_id );
+	  	VALUES ( :return_status_data, :language_id ) RETURNING return_status_id;
 
 	END
 	
@@ -72,7 +72,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:return_status, return_status);
+		@FILTER(:return_status, return_status)
 
 		UPDATE return_status 
 			

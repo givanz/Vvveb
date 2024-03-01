@@ -50,7 +50,7 @@
 		-- SELECT * FROM manufacturer_option WHERE manufacturer_id = :manufacturer_id;
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:manufacturer, manufacturer);
+		@FILTER(:manufacturer, manufacturer)
 		
 		UPDATE manufacturer 
 			
@@ -65,18 +65,19 @@
 
 	CREATE PROCEDURE add(
 		IN manufacturer ARRAY,
+		OUT fetch_one,
 		OUT insert_id
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:manufacturer  = @FILTER(:manufacturer, manufacturer);
+		:manufacturer  = @FILTER(:manufacturer, manufacturer)
 
 		INSERT INTO manufacturer 
 		
 			( @KEYS(:manufacturer) )
 			
-		VALUES ( :manufacturer );
+		VALUES ( :manufacturer ) RETURNING manufacturer_id;
 		
 		INSERT INTO manufacturer_to_site 
 		

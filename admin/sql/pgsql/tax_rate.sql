@@ -46,19 +46,19 @@
 
 	PROCEDURE add(
 		IN tax_rate ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:tax_rate_data  = @FILTER(:tax_rate, tax_rate);
+		:tax_rate_data  = @FILTER(:tax_rate, tax_rate)
 		
 		
 		INSERT INTO tax_rate 
 			
 			( @KEYS(:tax_rate_data) )
 			
-	  	VALUES ( :tax_rate_data);
+	  	VALUES ( :tax_rate_data) RETURNING tax_rate_id;
 
 	END
 	
@@ -71,7 +71,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:tax_rate, tax_rate);
+		@FILTER(:tax_rate, tax_rate)
 
 		UPDATE tax_rate
 			

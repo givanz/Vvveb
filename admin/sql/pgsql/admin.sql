@@ -116,18 +116,18 @@
 
 	CREATE PROCEDURE add(
 		IN admin ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:admin, admin);
+		@FILTER(:admin, admin)
 		
 		INSERT INTO admin 
 			
 			( @KEYS(:admin) )
 			
-	  	VALUES ( :admin )	 
+	  	VALUES ( :admin ) RETURNING admin_id; 
 	END    
     
 
@@ -143,7 +143,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:admin, admin);
+		@FILTER(:admin, admin)
 
 		UPDATE admin 
 			

@@ -76,19 +76,19 @@
 
 	PROCEDURE add(
 		IN tax_type ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:tax_type_data  = @FILTER(:tax_type, tax_type);
+		:tax_type_data  = @FILTER(:tax_type, tax_type)
 		
 		
 		INSERT INTO tax_type 
 			
 			( @KEYS(:tax_type_data) )
 			
-	  	VALUES ( :tax_type_data );
+	  	VALUES ( :tax_type_data ) RETURNING tax_type_id;
 
 	END
 	
@@ -101,7 +101,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:tax_type, tax_type);
+		@FILTER(:tax_type, tax_type)
 
 		UPDATE tax_type
 			

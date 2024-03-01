@@ -47,7 +47,7 @@
 		-- SELECT * FROM vendor_option WHERE vendor_id = :vendor_id;
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:vendor, vendor);
+		@FILTER(:vendor, vendor)
 		
 		UPDATE vendor 
 			
@@ -62,18 +62,19 @@
 
 	CREATE PROCEDURE add(
 		IN vendor ARRAY,
+		OUT fetch_one
 		OUT insert_id
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:vendor  = @FILTER(:vendor, vendor);
+		:vendor  = @FILTER(:vendor, vendor)
 
 		INSERT INTO vendor 
 		
 			( @KEYS(:vendor) )
 			
-		VALUES ( :vendor );
+		VALUES ( :vendor ) RETURNING vendor_id;
 		
 		INSERT INTO vendor_to_site 
 		

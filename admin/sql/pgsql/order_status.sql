@@ -46,19 +46,19 @@
 	PROCEDURE add(
 		IN order_status ARRAY,
 		IN language_id INT,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:order_status_data  = @FILTER(:order_status, order_status);
+		:order_status_data  = @FILTER(:order_status, order_status)
 		
 		
 		INSERT INTO order_status 
 			
 			( @KEYS(:order_status_data), language_id )
 			
-	  	VALUES ( :order_status_data, :language_id );
+	  	VALUES ( :order_status_data, :language_id ) RETURNING order_status_id;
 
 	END
 	
@@ -71,7 +71,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:order_status, order_status);
+		@FILTER(:order_status, order_status)
 
 		UPDATE order_status 
 			

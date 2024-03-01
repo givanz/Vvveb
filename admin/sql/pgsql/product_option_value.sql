@@ -77,19 +77,19 @@
 
 	PROCEDURE add(
 		IN product_option_value ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:product_option_value_data  = @FILTER(:product_option_value, product_option_value);
+		:product_option_value_data  = @FILTER(:product_option_value, product_option_value)
 		
 		
 		INSERT INTO product_option_value 
 			
 			( @KEYS(:product_option_value_data) )
 			
-	  	VALUES ( :product_option_value_data );		
+	  	VALUES ( :product_option_value_data ) RETURNING product_option_value_id;		
 		
 
 	END
@@ -105,7 +105,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		:product_option_value_data = @FILTER(:product_option_value, product_option_value);
+		:product_option_value_data = @FILTER(:product_option_value, product_option_value)
 
 		UPDATE product_option_value
 			

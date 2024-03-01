@@ -18,9 +18,9 @@
 	)
 	BEGIN
 
-		SELECT user.*,product_question.*,user.user_id as user_id
+		SELECT "user".*, product_question.*, "user".user_id as user_id
             FROM product_question AS product_question
-	    LEFT JOIN user on user.user_id = product_question.user_id
+	    LEFT JOIN "user" on "user".user_id = product_question.user_id
 		
 			WHERE 1 = 1
             
@@ -69,7 +69,7 @@
 		-- question
 		SELECT *
 			FROM product_question as _ -- (underscore) _ means that data will be kept in main array
-		INNER JOIN user on user.user_id = _.user_id
+		INNER JOIN "user" on "user".user_id = _.user_id
 		WHERE product_question_id = :product_question_id LIMIT 1;
 
 	END
@@ -78,18 +78,18 @@
 
 	CREATE PROCEDURE add(
 		IN product_question ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:product_question, product_question);
+		@FILTER(:product_question, product_question)
 		
 		INSERT INTO product_question 
 			
 			( @KEYS(:product_question) )
 			
-	  	VALUES ( :product_question )
+	  	VALUES ( :product_question ) RETURNING product_question_id;
         
 	END
 
@@ -102,7 +102,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:product_question, product_question);
+		@FILTER(:product_question, product_question)
 
 		UPDATE product_question 
 			

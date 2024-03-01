@@ -41,19 +41,19 @@
 
 	PROCEDURE add(
 		IN voucher ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:voucher_data  = @FILTER(:voucher, voucher);
+		:voucher_data  = @FILTER(:voucher, voucher)
 		
 		
 		INSERT INTO voucher 
 			
 			( @KEYS(:voucher_data) )
 			
-	  	VALUES ( :voucher_data );
+	  	VALUES ( :voucher_data ) RETURNING vendor_id;
 
 	END
 	
@@ -66,7 +66,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:voucher, voucher);
+		@FILTER(:voucher, voucher)
 
 		UPDATE voucher
 			

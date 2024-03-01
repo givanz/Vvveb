@@ -20,7 +20,7 @@
 		-- return array of categories for categories query
 		OUT fetch_all,
 		-- return categories count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -153,11 +153,11 @@
 		-- return array of categories for categories query
 		OUT fetch_all,
 		-- return categories count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
-		SELECT DISTINCT categories.taxonomy_item_id, @taxonomy_item_id = categories.taxonomy_item_id, categories.*, tc.*, tc.content as content, categories.taxonomy_item_id as array_key
+		SELECT DISTINCT categories.taxonomy_item_id, categories.*, tc.*, tc.content as content, categories.taxonomy_item_id as array_key
 			
 				@IF isset(:post_id)
 				THEN 
@@ -165,11 +165,12 @@
 				END @IF	
 			
 			
-			,(SELECT CONCAT('[', GROUP_CONCAT('{"post_id":"', pc.post_id, '","slug":"' , pc.slug,'","sort_order":"' , p.sort_order, '","name":"' , pc.name, '"}'), ']') 
+			-- ,(SELECT CONCAT('[', GROUP_CONCAT('{"post_id":"', pc.post_id, '","slug":"' , pc.slug,'","sort_order":"' , p.sort_order, '","name":"' , pc.name, '"}'), ']') 
+			,(SELECT json_agg(json_build_object('post_id',pc.post_id,'slug',pc.slug,'slug',pc.slug,'sort_order',pc.sort_order,'name',pc.name))
 				FROM post_content pc 
 					LEFT JOIN post p ON (pc.post_id = p.post_id)  
-					LEFT JOIN post_to_taxonomy_item ptt ON (ptt.taxonomy_item_id = @taxonomy_item_id AND ptt.post_id = p.post_id)  
-				WHERE ptt.taxonomy_item_id = @taxonomy_item_id ORDER by p.sort_order
+					LEFT JOIN post_to_taxonomy_item ptt ON (ptt.taxonomy_item_id = categories.taxonomy_item_id AND ptt.post_id = p.post_id)  
+				WHERE ptt.taxonomy_item_id =  categories.taxonomy_item_id ORDER by p.sort_order
 			) AS posts
 		
 			FROM taxonomy_item AS categories
@@ -246,7 +247,7 @@
 		IN post_type CHAR,
 		IN type CHAR,
 		IN slug CHAR,
-		OUT fetch_row, 
+		OUT fetch_row
 	)
 	BEGIN
 		-- taxonomy_item
@@ -330,7 +331,7 @@
 		IN language_id INT,
 		IN post_type CHAR,
 		IN slug CHAR,
-		OUT fetch_row, 
+		OUT fetch_row
 	)
 	BEGIN
 	
@@ -408,7 +409,7 @@
 
 		DELETE FROM taxonomy_item_content WHERE taxonomy_item_id = :taxonomy_item_id;
 		
-		@FILTER(:taxonomy_item_content, taxonomy_item_content);
+		@FILTER(:taxonomy_item_content, taxonomy_item_content)
 		
 		@EACH(:taxonomy_item_content) 
 			INSERT INTO taxonomy_item_content 
@@ -421,7 +422,7 @@
 		-- SELECT * FROM taxonomy_item_option WHERE taxonomy_item_id = :taxonomy_item_id;
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:taxonomy_item, taxonomy_item);
+		@FILTER(:taxonomy_item, taxonomy_item)
 		
 		UPDATE taxonomy_item 
 			
@@ -438,30 +439,23 @@
 		IN taxonomy_item ARRAY,
 		IN taxonomy_item_content ARRAY,
 		IN site_id INT,
+		OUT fetch_one,
 		OUT insert_id,
-		OUT insert_id,
-		OUT insert_id,
+		OUT insert_id
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:taxonomy_item  = @FILTER(:taxonomy_item, taxonomy_item);
-		:taxonomy_item_content = @FILTER(:taxonomy_item_content, taxonomy_item_content);
+		:taxonomy_item  = @FILTER(:taxonomy_item, taxonomy_item)
+		:taxonomy_item_content = @FILTER(:taxonomy_item_content, taxonomy_item_content)
 
 		INSERT INTO taxonomy_item 
 		
 			( @KEYS(:taxonomy_item) )
 			
-		VALUES ( :taxonomy_item );
+		VALUES ( :taxonomy_item ) RETURNING taxonomy_item_id;
 			
 
-		-- SET :taxonomy_item_content.taxonomy_item_id = last_insert_id;
-       --  SET @taxonomy_item_id = LAST_INSERT_ID();
-
-		-- UPDATE taxonomy_item SET image = :image WHERE taxonomy_item_id = :taxonomy_item_id;
-		
-		-- :taxonomy_item  = @FILTER(:taxonomy_item, taxonomy_item);
-		
 		INSERT INTO taxonomy_item_content 
 		
 			( taxonomy_item_id, @KEYS(:taxonomy_item_content) )
@@ -475,8 +469,6 @@
 			
 		VALUES ( @result.taxonomy_item, :site_id );
 		
-	 
-        SELECT @taxonomy_item_id as taxonomy_item_id;
 	END
 
 
@@ -497,22 +489,22 @@
 		-- return array of categories for categories query
 		OUT fetch_all,
 		-- return categories count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
 		SELECT *, 
 			(
 				SELECT 
-					CONCAT('[', GROUP_CONCAT(
-					'{"language_id":"', tc.language_id, 
-						'","name":"' , tc.name, 
-						'","slug":"' , tc.slug, 
-						'","content":"' , tc.content, 
-						'","meta_title":"' , tc.meta_title, 
-						'","meta_description":"' , tc.meta_description, 
-						'","meta_keywords":"' , tc.meta_keywords, '"}'), ']') 
-						
+					json_agg(json_build_object(
+						'language_id', tc.language_id, 
+						'name' , tc.name, 
+						'slug' , tc.slug, 
+						'content' , tc.content, 
+						'meta_title' , tc.meta_title, 
+						'meta_description' , tc.meta_description, 
+						'meta_keywords' , tc.meta_keywords) ) 
+	
 					FROM taxonomy_item_content as tc 
 				WHERE 
 					tc.taxonomy_item_id = categories.taxonomy_item_id GROUP BY tc.taxonomy_item_id
@@ -581,7 +573,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		:taxonomy_item_content_data = @FILTER(:taxonomy_item.taxonomy_item_content, taxonomy_item_content);
+		:taxonomy_item_content_data = @FILTER(:taxonomy_item.taxonomy_item_content, taxonomy_item_content)
 
 		@EACH(:taxonomy_item_content_data) 
 			INSERT INTO taxonomy_item_content 
@@ -589,10 +581,11 @@
 				( @KEYS(:each), taxonomy_item_id)
 			
 			VALUES ( :each, :taxonomy_item_id)
-				ON DUPLICATE KEY UPDATE @LIST(:each);
+			ON CONFLICT("taxonomy_item_id","language_id")
+			DO UPDATE SET @LIST(:each);				
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:taxonomy_item, taxonomy_item);
+		@FILTER(:taxonomy_item, taxonomy_item)
 		
 		UPDATE taxonomy_item 
 			
@@ -608,19 +601,20 @@
 	CREATE PROCEDURE addTaxonomyItem(
 		IN taxonomy_item ARRAY,
 		IN site_id INT,
+		OUT fetch_one,
 		OUT insert_id
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:taxonomy_item_content_data = @FILTER(:taxonomy_item.taxonomy_item_content, taxonomy_item_content);
-		:taxonomy_item_data  = @FILTER(:taxonomy_item, taxonomy_item);
+		:taxonomy_item_content_data = @FILTER(:taxonomy_item.taxonomy_item_content, taxonomy_item_content)
+		:taxonomy_item_data  = @FILTER(:taxonomy_item, taxonomy_item)
 		
 		INSERT INTO taxonomy_item 
 		
 			( @KEYS(:taxonomy_item_data) )
 			
-		VALUES ( :taxonomy_item_data );
+		VALUES ( :taxonomy_item_data ) RETURNING taxonomy_item_id;
 			
 
 		INSERT INTO taxonomy_to_site 
@@ -636,8 +630,6 @@
 			
 			VALUES ( @result.taxonomy_item, :each );
 			
-	 
-        	SELECT @taxonomy_item as taxonomy_item;
 
 	END
 
@@ -649,7 +641,7 @@
 	)
 	BEGIN
 		
-		:taxonomy_item_data  = @FILTER(:taxonomy_items, taxonomy_item);
+		:taxonomy_item_data  = @FILTER(:taxonomy_items, taxonomy_item)
 		
 		@EACH(:taxonomy_item_data) 
 			UPDATE taxonomy_item

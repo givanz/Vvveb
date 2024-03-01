@@ -53,22 +53,23 @@
 
 	PROCEDURE add(
 		IN option ARRAY,
+		OUT fetch_one,
 		OUT insert_id
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:option_data  = @FILTER(:option, option);
+		:option_data  = @FILTER(:option, option)
 		
 		
 		INSERT INTO "option" 
 			
 			( @KEYS(:option_data) )
 			
-	  	VALUES ( :option_data );		
+	  	VALUES ( :option_data ) RETURNING option_id;		
 		
 		
-		:option_content  = @FILTER(:option, option_content);
+		:option_content  = @FILTER(:option, option_content)
 	  	
 		INSERT INTO option_content 
 			
@@ -89,7 +90,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		:option_data = @FILTER(:option, option);
+		:option_data = @FILTER(:option, option)
 
 		UPDATE "option"
 			
@@ -98,7 +99,7 @@
 		WHERE option_id = :option_id;
 		
 		-- allow only table fields and set defaults for missing values
-		:option_content = @FILTER(:option, option_content);
+		:option_content = @FILTER(:option, option_content)
 
 		UPDATE option_content
 			

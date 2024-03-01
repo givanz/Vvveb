@@ -46,20 +46,20 @@
 	PROCEDURE add(
 		IN return_resolution ARRAY,
 		IN language_id INT,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:return_resolution_data  = @FILTER(:return_resolution, return_resolution);
+		:return_resolution_data  = @FILTER(:return_resolution, return_resolution)
 		
 		
 		INSERT INTO return_resolution 
 			
 			( @KEYS(:return_resolution_data), language_id )
 			
-	  	VALUES ( :return_resolution_data, :language_id );
-
+	  	VALUES ( :return_resolution_data, :language_id ) RETURNING return_resolution_id;
+		
 	END
 	
 	-- edit return_resolution
@@ -71,7 +71,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:return_resolution, return_resolution);
+		@FILTER(:return_resolution, return_resolution)
 
 		UPDATE return_resolution 
 			

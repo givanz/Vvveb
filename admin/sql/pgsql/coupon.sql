@@ -67,19 +67,19 @@
 
 	PROCEDURE add(
 		IN coupon ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:coupon_data  = @FILTER(:coupon, coupon);
+		:coupon_data  = @FILTER(:coupon, coupon)
 		
 		
 		INSERT INTO coupon 
 			
 			( @KEYS(:coupon_data) )
 			
-	  	VALUES ( :coupon_data );
+	  	VALUES ( :coupon_data ) RETURNING coupon_id;
 
 	END
 	
@@ -93,7 +93,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:coupon, coupon);
+		@FILTER(:coupon, coupon)
 
 		UPDATE coupon
 			

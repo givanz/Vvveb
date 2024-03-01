@@ -13,7 +13,7 @@
 	)
 	BEGIN
 		-- attribute
-		SELECT attribute_content.name, attribute_group_content.name as `group`, attribute.*
+		SELECT attribute_content.name, attribute_group_content.name as "group", attribute.*
 				@IF isset(:product_id)
 				THEN		
 					,pa.value
@@ -83,22 +83,23 @@
 
 	PROCEDURE add(
 		IN attribute ARRAY,
+		OUT fetch_one,
 		OUT insert_id
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:attribute_data  = @FILTER(:attribute, attribute);
+		:attribute_data  = @FILTER(:attribute, attribute)
 		
 		
 		INSERT INTO attribute 
 			
 			( @KEYS(:attribute_data) )
 			
-	  	VALUES ( :attribute_data );		
+	  	VALUES ( :attribute_data ) RETURNING attribute_id;		
 		
 		
-		:attribute_content  = @FILTER(:attribute, attribute_content);
+		:attribute_content  = @FILTER(:attribute, attribute_content)
 	  	
 		INSERT INTO attribute_content 
 			
@@ -119,7 +120,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		:attribute_data = @FILTER(:attribute, attribute);
+		:attribute_data = @FILTER(:attribute, attribute)
 
 		UPDATE attribute
 			
@@ -128,7 +129,7 @@
 		WHERE attribute_id = :attribute_id;
 		
 		-- allow only table fields and set defaults for missing values
-		:attribute_content = @FILTER(:attribute, attribute_content);
+		:attribute_content = @FILTER(:attribute, attribute_content)
 
 		UPDATE attribute_content
 			

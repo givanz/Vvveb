@@ -51,18 +51,18 @@
 
 	CREATE PROCEDURE add(
 		IN role ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:role, role);
+		@FILTER(:role, role)
 		
 		INSERT INTO role 
 			
 			( @KEYS(:role) )
 			
-	  	VALUES ( :role )	 
+	  	VALUES ( :role ) RETURNING role_id;	 
 	END    
     
 
@@ -75,7 +75,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:role, role);
+		@FILTER(:role, role)
 
 		UPDATE role 
 			

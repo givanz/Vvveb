@@ -46,19 +46,19 @@
 	PROCEDURE add(
 		IN subscription_status ARRAY,
 		IN language_id INT,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:subscription_status_data  = @FILTER(:subscription_status, subscription_status);
+		:subscription_status_data  = @FILTER(:subscription_status, subscription_status)
 		
 		
 		INSERT INTO subscription_status 
 			
 			( @KEYS(:subscription_status_data), language_id )
 			
-	  	VALUES ( :subscription_status_data, :language_id );
+	  	VALUES ( :subscription_status_data, :language_id ) RETURNING subscription_status_id;
 
 	END
 	
@@ -71,7 +71,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:subscription_status, subscription_status);
+		@FILTER(:subscription_status, subscription_status)
 
 		UPDATE subscription_status 
 			

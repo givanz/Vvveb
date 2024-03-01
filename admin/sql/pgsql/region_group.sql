@@ -81,7 +81,7 @@
 		DELETE FROM region_to_region_group WHERE region_group_id = :region_group_id;
 		
 		-- allow only table fields and set defaults for missing values
-		:region_to_region_group_data  = @FILTER(:region_to_region_group, region_to_region_group);
+		:region_to_region_group_data  = @FILTER(:region_to_region_group, region_to_region_group)
 		
 		
 		@EACH(:region_to_region_group_data) 
@@ -111,19 +111,19 @@
 
 	PROCEDURE add(
 		IN region_group ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:region_group_data  = @FILTER(:region_group, region_group);
+		:region_group_data  = @FILTER(:region_group, region_group)
 		
 		
 		INSERT INTO region_group 
 			
 			( @KEYS(:region_group_data) )
 			
-	  	VALUES ( :region_group_data );
+	  	VALUES ( :region_group_data ) RETURNING region_id;
 
 	END
 	
@@ -137,7 +137,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:region_group, region_group);
+		@FILTER(:region_group, region_group)
 
 		UPDATE region_group
 			

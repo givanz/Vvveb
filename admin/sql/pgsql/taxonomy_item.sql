@@ -39,19 +39,19 @@
 
 	PROCEDURE add(
 		IN taxonomy_item ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:taxonomy_item_data  = @FILTER(:taxonomy_item, taxonomy_item);
+		:taxonomy_item_data  = @FILTER(:taxonomy_item, taxonomy_item)
 		
 		
 		INSERT INTO taxonomy_item 
 			
 			( @KEYS(:taxonomy_item_data) )
 			
-	  	VALUES ( :taxonomy_item_data );
+	  	VALUES ( :taxonomy_item_data ) RETURNING taxonomy_item_id;
 
 	END
 	
@@ -64,7 +64,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:taxonomy_item, taxonomy_item);
+		@FILTER(:taxonomy_item, taxonomy_item)
 
 		UPDATE taxonomy_item
 			

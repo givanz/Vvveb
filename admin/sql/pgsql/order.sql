@@ -260,22 +260,23 @@
 
 	CREATE PROCEDURE add(
 		IN order ARRAY,
-		OUT insert_id,
-		OUT insert_id,
-		OUT insert_id,
-		OUT insert_id
+		OUT fetch_one,
+		OUT fetch_one,
+		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
-		:products  = @FILTER(:"order".products, order_product, false, true);
-		:totals  = @FILTER(:"order".totals, order_total, false, true);
-		@FILTER(:order, order);
+		:products  = @FILTER(:order.products, order_product, false, true)
+		:totals  = @FILTER(:order.totals, order_total, false, true)
+		
+		@FILTER(:order, order)
 		
 		INSERT INTO "order" 
 			
 			( @KEYS(:order) )
 			
-	  	VALUES ( :order );
+	  	VALUES ( :order ) RETURNING order_id;
 
 		-- insert order products
 		@EACH(:products) 
@@ -287,7 +288,7 @@
 		@EACH(:product_options) 
 			INSERT INTO order_product_option 
 				( order_id, @KEYS(:each) )
-			VALUES ( @result.order, 0,  :each  );
+			VALUES ( @result.order, :each  );
 		
 		-- insert order products
 		@EACH(:totals) 
@@ -306,7 +307,7 @@
 	)
 	BEGIN
 		
-		@FILTER(:order, order);
+		@FILTER(:order, order)
 	
 		UPDATE "order" 
 			

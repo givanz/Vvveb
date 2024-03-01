@@ -44,19 +44,19 @@
 
 	PROCEDURE add(
 		IN subscription ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:subscription_data  = @FILTER(:subscription, subscription);
+		:subscription_data  = @FILTER(:subscription, subscription)
 		
 		
 		INSERT INTO subscription 
 			
 			( @KEYS(:subscription_data) )
 			
-	  	VALUES ( :subscription_data );
+	  	VALUES ( :subscription_data ) RETURNING subscription_id;
 
 	END
 	
@@ -70,7 +70,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:subscription, subscription);
+		@FILTER(:subscription, subscription)
 
 		UPDATE subscription
 			

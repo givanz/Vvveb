@@ -17,7 +17,7 @@
 		SELECT *, site_id as array_key
 			FROM site as sites
 
-		WHERE 1
+		WHERE 1 = 1
 		
 		-- site_id
 		@IF isset(:site_id) && !empty(:site_id)
@@ -124,19 +124,19 @@
 
 	PROCEDURE add(
 		IN site ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:site_data  = @FILTER(:site, site);
+		:site_data  = @FILTER(:site, site)
 		
 		
 		INSERT INTO site 
 			
 			( @KEYS(:site_data) )
 			
-	  	VALUES ( :site_data );
+	  	VALUES ( :site_data ) RETURNING site_id;
 
 	END
 	
@@ -149,7 +149,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:site_data  = @FILTER(:site, site);
+		:site_data  = @FILTER(:site, site)
 	
 		UPDATE site 
 			

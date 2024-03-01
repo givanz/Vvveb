@@ -58,23 +58,22 @@
 	PROCEDURE add(
 		IN length_type ARRAY,
 		IN language_id INT,
-		OUT insert_id
-		OUT affected_rows
+		OUT fetch_one
 		OUT insert_id
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:length_type_data  = @FILTER(:length_type, length_type);
+		:length_type_data  = @FILTER(:length_type, length_type)
 		
 		INSERT INTO length_type 
 			
 			( @KEYS(:length_type_data) )
 			
-	  	VALUES ( :length_type_data);
+	  	VALUES ( :length_type_data) RETURNING length_type_id;
 
 		-- allow only table fields and set defaults for missing values
-		:length_type_content_data  = @FILTER(:length_type, length_type_content);
+		:length_type_content_data  = @FILTER(:length_type, length_type_content)
 		
 		INSERT INTO length_type_content 
 			
@@ -94,7 +93,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		:length_type_data  = @FILTER(:length_type, length_type);
+		:length_type_data  = @FILTER(:length_type, length_type)
 
 		UPDATE length_type 
 			
@@ -103,7 +102,7 @@
 		WHERE length_type_id = :length_type_id;
 		
 		-- allow only table fields and set defaults for missing values
-		:length_type_content_data  = @FILTER(:length_type, length_type_content);
+		:length_type_content_data  = @FILTER(:length_type, length_type_content)
 
 		UPDATE length_type_content 
 			

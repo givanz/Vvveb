@@ -75,18 +75,18 @@
 
 	CREATE PROCEDURE add(
 		IN product_review_media ARRAY,
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:product_review_media, product_review_media);
+		@FILTER(:product_review_media, product_review_media)
 		
 		INSERT INTO product_review_media 
 			
 			( @KEYS(:product_review_media) )
 			
-	  	VALUES ( :product_review_media )
+	  	VALUES ( :product_review_media ) RETURNING product_review_id;
         
 	END
 
@@ -99,7 +99,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:product_review_media, product_review_media);
+		@FILTER(:product_review_media, product_review_media)
 
 		UPDATE product_review_media 
 			
