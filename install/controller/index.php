@@ -112,7 +112,7 @@ class Index extends Base {
 	}
 
 	function writeConfig($data) {
-		return \Vvveb\set_config('db', $data);
+		return \Vvveb\setConfig('db', $data);
 		$configFile = DIR_ROOT . 'config/db.php';
 		file_put_contents($configFile, "<?php\n return " . var_export($data, true) . ';');
 		clearstatcache(true, $configFile);
@@ -247,14 +247,14 @@ class Index extends Base {
 			$user['status'] = 1;
 			$result         = Admin::update($user, ['username' => 'admin']);
 			$sites          = new SiteSQL();
-			//$result         = \Vvveb\set_settings('site',$settings);
+			//$result         = \Vvveb\setMultiSetting('site',$settings);
 
 			$site             = [];
 			$site['site_id']  = 1;
 			$site['settings'] = json_encode($settings);
 
 			if ($theme) {
-				//@\Vvveb\set_config('sites.* * *.theme', $theme);
+				//@\Vvveb\setConfig('sites.* * *.theme', $theme);
 				$site['theme']  = $theme;
 			}
 
@@ -279,7 +279,7 @@ class Index extends Base {
 
 			$site = [
 				'host'     => $hostname ?? '*.*.*', //$_SERVER['HTTP_HOST']
-				'id'       => 1,
+				'site_id'  => 1,
 				'name'     => 'Default',
 				'theme'    => $theme,
 				'settings' => json_encode($settings),
@@ -314,7 +314,7 @@ class Index extends Base {
 			}
 
 			unset($site['settings']);
-			@\Vvveb\set_config('sites.* * *', $site);
+			@\Vvveb\setConfig('sites.* * *', $site);
 
 			$lang = \Vvveb\session('language');
 
@@ -343,7 +343,7 @@ class Index extends Base {
 				$to   = DIR_PUBLIC . $adminPath;
 
 				if (@rename($from, $to)) {
-					@\Vvveb\set_config('admin.path', $adminPath);
+					@\Vvveb\setConfig('admin.path', $adminPath);
 					//if succesful remove failsafe /admin login option
 					@unlink(DIR_PUBLIC . 'admin' . DS . 'index.php');
 				} else {
@@ -351,12 +351,12 @@ class Index extends Base {
 				}
 			}
 
-			@\Vvveb\set_config('app.cronkey', Str::random(32));
-			@\Vvveb\set_config('app.key', Str::random(32));
+			@\Vvveb\setConfig('app.cronkey', Str::random(32));
+			@\Vvveb\setConfig('app.key', Str::random(32));
 
 			//set APCu memory cache if available instead of default file cache
 			if (function_exists('apcu_cache_info') && ini_get('apc.enabled')) {
-				@\Vvveb\set_config('app.cache.driver', 'APCu');
+				@\Vvveb\setConfig('app.cache.driver', 'APCu');
 			}
 
 			if ($error) {
