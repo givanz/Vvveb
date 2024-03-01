@@ -22,13 +22,16 @@
 
 namespace Vvveb\Component;
 
+use function Vvveb\model;
 use function Vvveb\sanitizeHTML;
 use Vvveb\Sql\ProductSQL;
 use Vvveb\System\Cart\Currency;
 use Vvveb\System\Cart\Tax;
 use Vvveb\System\Component\ComponentBase;
+use Vvveb\System\Core\Request;
 use Vvveb\System\Event;
 use Vvveb\System\Images;
+use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
 class Product extends ComponentBase {
@@ -36,7 +39,7 @@ class Product extends ComponentBase {
 		'product_id'    => 'url',
 		'slug'          => 'url',
 		'status'        => 1,
-		'language_id'   => null,
+		'language_id'   => 'url',
 		'site_id'       => null,
 		'user_id'       => null,
 		'user_group_id' => null,
@@ -82,6 +85,29 @@ class Product extends ComponentBase {
 		}
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+
+		return $results;
+	}
+
+	//called on each request
+	function request(&$results, $index = 0) {
+		$request    = Request::getInstance();
+		$created_at = $request->get['created_at'] ?? ''; //revision preview
+
+		if ($created_at && $results['product_id']) {
+			//check if admin user to allow revision preview
+			$admin = Admin::current();
+
+			if ($admin) {
+				$revisions = model('post_content_revision');
+				$revision  = $revisions->get(['created_at' => $created_at, 'product_id' => $results['product_id'], 'language_id' => $results['language_id']]);
+
+				if ($revision && isset($revision['content'])) {
+					$results['content']    = $revision['content'];
+					$results['created_at'] = $revision['created_at'];
+				}
+			}
+		}
 
 		return $results;
 	}

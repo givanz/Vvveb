@@ -23,17 +23,20 @@
 namespace Vvveb\Component;
 
 use function Vvveb\__;
+use function Vvveb\model;
 use function Vvveb\sanitizeHTML;
 use Vvveb\Sql\PostSQL;
 use Vvveb\System\Component\ComponentBase;
+use Vvveb\System\Core\Request;
 use Vvveb\System\Event;
 use Vvveb\System\Images;
+use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
 class Post  extends ComponentBase {
 	public static $defaultOptions = [
 		'post_id'        => 'url',
-		'language_id'    => null,
+		'language_id'    => 'url',
 		'site_id'        => null,
 		'slug'           => 'url',
 		'status'         => 'publish',
@@ -76,7 +79,26 @@ class Post  extends ComponentBase {
 	}
 
 	//called on each request
-	function request($results, $index = 0) {
+	function request(&$results, $index = 0) {
+		$request    = Request::getInstance();
+		$created_at = $request->get['created_at'] ?? ''; //revision preview
+
+		if ($created_at && $results['post_id']) {
+			//check if admin user to allow revision preview
+			$admin = Admin::current();
+
+			if ($admin) {
+				$revisions = model('post_content_revision');
+				$revision  = $revisions->get(['created_at' => $created_at, 'post_id' => $results['post_id'], 'language_id' => $results['language_id']]);
+
+				if ($revision && isset($revision['content'])) {
+					$results['content']    = $revision['content'];
+					$results['created_at'] = $revision['created_at'];
+				}
+			}
+		}
+
+		return $results;
 	}
 
 	//called by editor on page save for each component on page

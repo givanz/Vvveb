@@ -97,7 +97,7 @@ class Revisions extends Base {
 		$view     = $this->view;
 		$results  = $this->revisions->get($this->options);
 		$revision = [];
-		
+
 		if ($results && $results['content']) {
 			foreach (['content', 'created_at', 'display_name'] as $key) {
 				$revision[$key] = $results[$key];
@@ -109,11 +109,13 @@ class Revisions extends Base {
 	}
 
 	function index() {
-		$view      = $this->view;
-		$revisions = model($this->object . '_content_revision');
+		$view           = $this->view;
+		$revisions      = model($this->object . '_content_revision');
 		$this->options += $this->global;
+		$allOptions     = $this->options;
+		unset($allOptions['created_at']);
 
-		$revisions = $this->revisions->getAll($this->options); // all post/product revisions
+		$revisions = $this->revisions->getAll($allOptions); // all post/product revisions
 		$revision  = $this->revisions->get($this->options); // latest or selected revision
 		$post      = $this->post->get($this->options); // post/product content
 
@@ -131,7 +133,13 @@ class Revisions extends Base {
 
 		$view->limit            = $this->options['limit'];
 		$view->type             = $this->type;
-		$view->revisionUrl      = \Vvveb\url(['module' => 'content/revisions', 'action' => 'revision', 'type' => $this->type, 'object' => $this->object]);
+		$view->options          = $this->options;
+		$view->revisionUrl      = \Vvveb\url([
+			'module'              => 'content/revisions',
+			'action'              => 'revision',
+			'type'                => $this->type,
+			'object'              => $this->object,
+			$this->object . '_id' => $this->options[$this->object . '_id'], ]);
 		$view->type_name        = humanReadable(__($this->type));
 		$view->type_name_plural = humanReadable(__($view->type . 's'));
 	}
