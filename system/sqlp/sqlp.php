@@ -289,7 +289,8 @@ class SqlP {
 					preg_replace_callback(
 						$this->config['varRegex'],
 						function ($matches) {
-							return '$params[\'' . $matches[1] . '\']';
+							return '$' . \Vvveb\dotToArrayKey('params.' . $matches[1]);
+						//return '$params[\'' . $matches[1] . '\']';
 						},
 					$match[$varMatch[1]]);
 				},
@@ -319,6 +320,7 @@ class SqlP {
 				$each = "\n" . TAB . 'if (isset($params' . $resultKey . ') && is_array($params' . $resultKey . '))' .
 				'foreach ($params' . $resultKey . ' as $key => $rowParent) { ' . "\n" . TAB . ' 
 					$params[\'each\'] = $rowParent;
+					$params[\'each_key\'] = $key;
 					if (is_array($params[\'each\'])) {
 						$paramTypes[\'each\'] = \'a\';
 					} else if (is_int($params[\'each\'])) {

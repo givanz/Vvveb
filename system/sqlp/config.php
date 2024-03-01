@@ -36,7 +36,7 @@ return
 
 	'filterRegex'   => '/\s*:?(?<return>[\w_\.]+)?\s*=?\s*@FILTER\s*\(\s*:(?<data>[\w\._]+)\s*\,\s*(?<columns>[\w_]+),?\s*(?<addmissing>true|false)?,?\s*(?<array>true|false)?\s*\)\s*/ms',
 
-	'varRegex'      => '/:(\w+)/ms',
+	'varRegex'      => '/:([\w+\.])/ms',
 
 	'importRegex'   => '/import\(([\w\-\_\.\/]+?)\);?/',
 
@@ -114,7 +114,7 @@ PHP
 		$sql .= '
 PHP
 		],
-		
+
 		'T_SQL_LIMIT'      => [
 			'/\s*@SQL_LIMIT\s*\(\s*(?<start>.+?),\s*(?<limit>.+?)\s*\)\s*/ms',
 			<<<'PHP'

@@ -201,9 +201,10 @@ class Lexer {
 				function ($varMatch) use ($match) {
 					return
 					preg_replace_callback(
-						'/:(\w+)/ms',
+						'/:([\w\.]+)/ms',
 						function ($matches) {
-							return '$params[\'' . $matches[1] . '\']';
+							return '$' . \Vvveb\dotToArrayKey('params.' . $matches[1]);
+						//return '$params[\'' . $matches[1] . '\']';
 						},
 					$match[$varMatch[1]]);
 				},
