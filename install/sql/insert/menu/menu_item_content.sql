@@ -113,7 +113,7 @@ INSERT INTO `menu_item_content` VALUES
 (66,1, 'Portfolio', 'Portfolio', ''),
 (67,1, 'Mega menu', '', '<p><img src="/media/vvveb.svg" height="24" alt="" class="me-2">Mega menu</p>'),
 (68,1, 'Features', '', '<div class="row">
-	<div class="col-6 align-self-center"><img src="/media/posts/4.jpg" alt="Post" width="250" loading="lazy" class="rounded"></div>
+	<div class="col-6 align-self-center"><img src="../../media/posts/4.jpg" alt="Post" width="250" loading="lazy" class="rounded img-fluid"></div>
 	<div class="col-6">
 		<h4>Features</h4>
 		<p class="text-muted">Just a few mentions, but there is more</p>

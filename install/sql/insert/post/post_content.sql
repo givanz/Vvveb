@@ -1,5 +1,3 @@
--- LOCK TABLES `post_content` WRITE;
-
 INSERT INTO `post_content` VALUES 
 
             
@@ -279,5 +277,3 @@ INSERT INTO `post_content` VALUES
 (12,2,'Servicii','servicii','Servicii', '','',''),
 (13,2,'Preturi','preturi','Preturi', '','',''),
 (14,2,'Portfoliu','portfoliu','Portfoliu', '','','');
-
--- UNLOCK TABLES
