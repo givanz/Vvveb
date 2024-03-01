@@ -142,6 +142,7 @@ trait AutocompleteTrait {
 		$options = [
 			'start'       => 0,
 			'limit'       => 10,
+			'status'      => 1,
 			'search'      => trim($this->request->get['text']),
 		] + $this->global;
 
