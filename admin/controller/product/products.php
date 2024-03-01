@@ -71,7 +71,7 @@ class Products extends Base {
 		$view     = View :: getInstance();
 		$products = new ProductSQL();
 
-		$this->filter = $this->request->get['filter'] ?? [];
+		$this->filter = array_filter($this->request->get['filter'] ?? []);
 
 		$options = [
 			'type'        => $this->type,
@@ -107,9 +107,9 @@ class Products extends Base {
 				$product['url']        = url(['module' => 'product/product', 'product_id' => $product['product_id'], 'type' => $product['type']]);
 				$product['edit-url']   = url(['module' => 'product/product', 'product_id' => $product['product_id'], 'type' => $product['type']]);
 				$product['delete-url'] = url(['module' => 'product/products', 'action' => 'delete', 'product_id[]' => $product['product_id'], 'type' => $product['type']]);
-				$product['view-url']   =  url('product/product/index', $product);
+				$product['view-url']   = url('product/product/index', $product + ['host' => $this->global['host']]);
 				$admin_path            = \Vvveb\config('admin.path', 'admin') . '/';
-				$product['design-url'] = '/' . $admin_path . url(['module' => 'editor/editor', 'url' => $product['view-url'], 'template' => $template], false, false);
+				$product['design-url'] = url(['module' => 'editor/editor', 'url' => $product['view-url'], 'template' => $template, 'host' => $this->global['host'] . $admin_path], false, false);
 			}
 		}
 

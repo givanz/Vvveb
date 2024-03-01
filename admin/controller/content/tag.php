@@ -68,6 +68,7 @@ class Tag extends Base {
 		] + $this->global;
 		unset($options['user_id']);
 
+		$view->status           = [0 => __('Disabled'), 1 => __('Enabled')];
 		$view->tag              = $tags->getCategoryBySlug($options);
 		$view->tag['image_url'] = Images::image($view->tag['image'], 'tag', 'thumb');
 	}

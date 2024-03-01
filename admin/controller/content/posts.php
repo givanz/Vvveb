@@ -74,6 +74,8 @@ class Posts extends Base {
 
 		$archives = $this->posts->getArchives($options);
 
+		$return = [];
+
 		$df	= false;
 
 		if (class_exists('\IntlDateFormatter')) {
@@ -81,6 +83,32 @@ class Posts extends Base {
 			$df = new \IntlDateFormatter(\Vvveb\getLanguage(), \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, NULL, NULL, 'MMMM');
 		}
 
+		foreach ($archives['archives'] as $index => &$archive) {
+			if (isset($archive['month'])) {
+				$monthNum              = $archive['month'];
+				//$dateObj               = \DateTime::createFromFormat('!m', $monthNum);
+				//$monthName             = $dateObj->format('F');
+
+				$archive['month_text'] = $monthNum;
+
+				if ($df) {
+					$archive['month_text'] = ucfirst(datefmt_format($df, $dt));
+					$dt->setDate(0, $archive['month'], 0);
+				} else {
+					$archive['month_text'] = date('F',mktime(0,0,0,$monthNum,1,$archive['year']));
+				}
+			}
+
+			$name =
+				(isset($archive['day']) ? $archive['day'] . ' ' : '') .
+				(isset($archive['month']) ? $archive['month_text'] . ' ' : '') .
+				(isset($archive['year']) ? $archive['year'] . ' ' : '');
+
+			$archive['month'] = sprintf('%02d', $archive['month']);
+
+			$return[$archive['year'] . '/' . $archive['month']] = $name;
+		}
+/*
 		$return = [];
 
 		if (isset($archives['archives'])) {
@@ -104,7 +132,7 @@ class Posts extends Base {
 				$return[$archive['year'] . '/' . $archive['month']] = $name;
 			}
 		}
-
+*/
 		return $return;
 	}
 
@@ -113,7 +141,7 @@ class Posts extends Base {
 		$this->posts = new postSQL();
 
 		$this->type   = $this->request->get['type'] ?? 'post';
-		$this->filter = $this->request->get['filter'] ?? [];
+		$this->filter = array_filter($this->request->get['filter'] ?? []);
 
 		$options      =  [
 			'type'          => $this->type,
@@ -155,10 +183,10 @@ class Posts extends Base {
 				$post['url']        = \Vvveb\url($url);
 				$post['edit-url']   = $post['url'];
 
-				$post['admin-url']   =  \Vvveb\url(['module' => 'content/posts']) . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
+				$post['admin-url']   = \Vvveb\url(['module' => 'content/posts']) . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
 				$post['delete-url']  = \Vvveb\url(['module' => 'content/posts', 'action' => 'delete'] + $url + ['post_id[]' => $post['post_id']]);
-				$post['view-url']    =  \Vvveb\url("content/{$this->type}/index", $post);
-				$post['design-url']  = $admin_path . \Vvveb\url(['module' => 'editor/editor', 'url' => $post['view-url'], 'template' => $template], false, false);
+				$post['view-url']    = \Vvveb\url("content/{$this->type}/index", $post + $url + ['host' => $this->global['host']]);
+				$post['design-url']  = \Vvveb\url(['module' => 'editor/editor', 'url' => $post['view-url'], 'template' => $template, 'host' => $this->global['host'] . $admin_path], false, false);
 			}
 		}
 
