@@ -35,7 +35,11 @@ use Vvveb\System\Media\Image;
 
 class Images {
 	static public function resize($src, $dest, $width, $height, $method) {
-		@mkdir(dirname($dest), (0755 & ~umask()), true);
+		$destDir = dirname($dest);
+
+		if (! file_exists($destDir)) {
+			@mkdir(dirname($dest), (0755 & ~umask()), true);
+		}
 		$img    = new Image($src);
 		$result = $img->resize($width,$height, $method);
 
