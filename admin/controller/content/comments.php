@@ -96,6 +96,10 @@ class Comments extends Listing {
 				$comment['image'] = Images::image($type, $comment['image']);
 			}
 
+			if (isset($comment['avatar'])) {
+				$comment['avatar'] = Images::image($comment['avatar'], 'user');
+			}
+
 			$url                    = ['module' => "$module/$listController", 'action' => 'save', 'status' => $status, $type . '_id' => $comment[$type . '_id']];
 			$postUrl                = ['module' => "$module/$controller", $type . '_id' => $comment[$type . '_id']];
 			$comment['edit-url']    = \Vvveb\url($postUrl);
