@@ -346,7 +346,7 @@ class Component {
 		$xpath = new \DOMXpath($document);
 
 		//include froms in case any component_ is included
-		$elements = $xpath->query('//*[ @data-v-copy-from ]');
+		$elements = $xpath->query('//*[ @data-v-copy-from or @data-v-save-global ]');
 
 		if ($elements && $elements->length) {
 			$fromDocument                      = new \DomDocument();
@@ -359,7 +359,7 @@ class Component {
 			$fromDocument->xmlStandalone       = true;
 
 			foreach ($elements as $element) {
-				$attribute = $element->getAttribute('data-v-copy-from');
+				$attribute = $element->getAttribute('data-v-copy-from') ?: $element->getAttribute('data-v-save-global');
 
 				if (preg_match('/([^\,]+)\,([^$,]+)/', $attribute , $from)) {
 					$file     = html_entity_decode(trim($from[1]));
