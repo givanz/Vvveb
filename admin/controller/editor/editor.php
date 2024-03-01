@@ -36,6 +36,8 @@ use Vvveb\System\Event;
 use Vvveb\System\Sites;
 
 class Editor extends Base {
+	use GlobalTrait;
+
 	protected $revisionDateFormat = 'Y-m-d_H:i:s';
 
 	private $themeConfig = [];
@@ -62,13 +64,15 @@ class Editor extends Base {
 		$this->response->output($result);
 	}
 
-	function getThemeFolder() {
-		$theme = $this->request->get['theme'] ?? Sites::getTheme() ?? 'default';
-
-		return DIR_THEMES . DS . $theme;
+	private function getTheme() {
+		return $theme = sanitizeFileName($this->request->get['theme'] ?? Sites::getTheme() ?? 'default');
 	}
 
-	function loadThemeConfig() {
+	private function getThemeFolder() {
+		return DIR_THEMES . $this->getTheme();
+	}
+
+	private function loadThemeConfig() {
 		$config = $this->getThemeFolder() . DS . 'theme.php';
 
 		if (file_exists($config)) {
@@ -78,16 +82,16 @@ class Editor extends Base {
 		}
 	}
 
-	function loadTemplateList() {
+	private function loadTemplateList($theme = null) {
 		$list = $this->themeConfig['pages'] ?? [];
 
-		$pages       = $list + \Vvveb\getTemplateList();
+		$pages       = $list + \Vvveb\getTemplateList($theme);
 		list($pages) = Event::trigger(__CLASS__, __FUNCTION__, $pages);
 
 		return $pages;
 	}
 
-	function loadEditorData() {
+	private function loadEditorData() {
 		$data = [];
 
 		//menu list
@@ -104,7 +108,7 @@ class Editor extends Base {
 	/*
 		Load theme sections, components and inputs
 	 */
-	function loadThemeAssets() {
+	private function loadThemeAssets() {
 		$themeFolder = $this->getThemeFolder();
 		$view        = &$this->view;
 		$themeJs     = [];
@@ -136,9 +140,11 @@ class Editor extends Base {
 	}
 
 	function index() {
+		$theme              = sanitizeFileName($this->request->get['theme'] ?? false);
+		$themeParam         = ($theme ? '&theme=' . $theme : '');
 		$view               = View::getInstance();
-		$view->themeBaseUrl = PUBLIC_PATH . 'themes/' . (Sites::getTheme() ?? 'default') . '/';
-		$view->pages        = $this->loadTemplateList();
+		$view->themeBaseUrl = PUBLIC_PATH . 'themes/' . ($this->getTheme() ?? 'default') . '/';
+		$view->pages        = $this->loadTemplateList($theme);
 
 		$this->loadThemeAssets();
 
@@ -155,45 +161,51 @@ class Editor extends Base {
 				$name  = 'homepage-live';
 			}
 
-			$current_page = ['name' => $name, 'file' => $file, 'url' => $url, 'title' => $title, 'folder' => '', 'className' => 'page'];
+			$current_page = ['name' => $name,
+				'file'                 => $file,
+				'url'                  => $url . ($theme ? '?theme=' . $theme : ''),
+				'title'                => $title,
+				'folder'               => '',
+				'className'            => 'page', ];
+
 			$view->pages  = [$name => $current_page] + $view->pages;
 		}
 
 		$admin_path                    = \Vvveb\adminPath();
 		$mediaControllerPath           = $admin_path . 'index.php?module=media/media';
-		$controllerPath                = $admin_path . 'index.php?module=editor/editor';
-		$revisionsPath                 = $admin_path . 'index.php?module=editor/revisions';
+		$controllerPath                = $admin_path . 'index.php?module=editor/editor' . $themeParam;
+		$revisionsPath                 = $admin_path . 'index.php?module=editor/revisions' . $themeParam;
+		$reusablePath                  = $admin_path . 'index.php?module=editor/reusable' . $themeParam;
 
 		$this->view->scanUrl           = "$mediaControllerPath&action=scan";
 		$this->view->uploadUrl         = "$mediaControllerPath&action=upload";
 		$this->view->saveUrl           = "$controllerPath&action=save";
 		$this->view->deleteUrl         = "$controllerPath&action=delete";
 		$this->view->renameUrl         = "$controllerPath&action=rename";
-		$this->view->saveReusableUrl   = "$controllerPath&action=saveReusable";
+		$this->view->saveReusableUrl   = "$reusablePath&action=save";
 		$this->view->oEmbedProxyUrl    = "$controllerPath&action=oEmbedProxy";
 
 		$this->view->revisionsUrl      = "$revisionsPath&action=revisions";
-		$this->view->revisionLoadUrl   = "$revisionsPath&action=revisionLoad";
-		$this->view->revisionDeleteUrl = "$revisionsPath&action=revisionDelete";
+		$this->view->revisionLoadUrl   = "$revisionsPath&action=load";
+		$this->view->revisionDeleteUrl = "$revisionsPath&action=delete";
 
-		$view->templates               = \Vvveb\getTemplateList();
-		$view->folders                 = \Vvveb\getThemeFolderList();
+		$view->templates               = \Vvveb\getTemplateList($theme);
+		$view->folders                 = \Vvveb\getThemeFolderList($theme);
 		$view->data                    = $this->loadEditorData();
 	}
 
-	function getComponent($html, $options) {
-	}
-
-	function backup($page) {
+	private function backup($page) {
 		$themeFolder  = $this->getThemeFolder() . DS;
 		$backupFolder = $themeFolder . 'backup' . DS;
 		$page         = str_replace('.html', '', sanitizeFileName($page));
-		$backupName   =  str_replace(DS, '-', $page) . '|' . date($this->revisionDateFormat) . '.html';
+		$backupName   = str_replace(DS, '-', $page) . '@' . str_replace(':',';', date($this->revisionDateFormat)) . '.html';
 		$file         = $themeFolder . $page . '.html';
 
 		if (is_dir($backupFolder)) {
 			if (file_exists($file)) {
 				$content = file_get_contents($themeFolder . $page . '.html');
+				$base    = str_replace('/admin', '', PUBLIC_THEME_PATH) . 'themes/' . $this->getTheme() . '/';
+				$content = preg_replace('/<base(.*)href=["\'](.*?)["\'](.*?)>/', '<base$1href="' . $base . '"$3>', $content);
 
 				return file_put_contents($backupFolder . $backupName, $content);
 			}
@@ -202,7 +214,7 @@ class Editor extends Base {
 		return false;
 	}
 
-	function saveElements($elements) {
+	private function saveElements($elements) {
 		$products   = new ProductSQL();
 		$posts      = new PostSQL();
 		$components = [];
@@ -313,36 +325,16 @@ class Editor extends Base {
 		$this->response->output($message);
 	}
 
-	function saveReusable() {
-		$name        = slugify(sanitizeFileName($this->request->post['name']));
-		$type        = $this->request->post['type'];
-		$html        = $this->request->post['html'];
-
-		$themeFolder = $this->getThemeFolder();
-		$folder      = $themeFolder . DS . $type . 's' . DS . 'reusable' . DS;
-		$file        = "$name.html";
-
-		@mkdir($folder);
-
-		if (file_put_contents($folder . $file, $html)) {
-			$message = ['success' => true, 'message' => __('Element saved!')];
-		} else {
-			$message = ['success' => false, 'message' => __('Error saving!')];
-		}
-
-		$this->response->setType('json');
-		$this->response->output($message);
-	}
-
 	function save() {
 		$file             = $this->request->post['file'] ?? '';
 		$folder           = $this->request->post['folder'] ?? '';
 		$startTemplateUrl = $this->request->post['startTemplateUrl'] ?? '';
 		$name             = $this->request->post['name'] ?? '';
 		$content          = $this->request->post['content'] ?? 'Lorem ipsum';
-		$type             =  $this->request->post['type'] ?? false;
-		$addMenu          =  $this->request->post['add-menu'] ?? false;
-		$menu_id          =  $this->request->post['menu_id'] ?? false;
+		$type             = $this->request->post['type'] ?? false;
+		$addMenu          = $this->request->post['add-menu'] ?? false;
+		$menu_id          = $this->request->post['menu_id'] ?? false;
+		$theme            = sanitizeFileName($this->request->get['theme'] ?? false);
 		$url              = '';
 
 		$file             = sanitizeFileName(str_replace('.html', '', $file)) . '.html';
@@ -369,7 +361,8 @@ class Editor extends Base {
 								'content'     => $content,
 								'language_id' => $this->global['language_id'],
 							]],
-						] + $this->global, ] + $this->global);
+						] + $this->global,
+						'site_id' => [$this->global['site_id']], ] + $this->global);
 
 					if ($result['post']) {
 						$success    = true;
@@ -398,7 +391,8 @@ class Editor extends Base {
 								'content'     => $content,
 								'language_id' => $this->global['language_id'],
 							]],
-						] + $this->global, ] + $this->global);
+						] + $this->global,
+						'site_id' => [$this->global['site_id']], ] + $this->global);
 
 					if ($result['product']) {
 						$success    = true;
@@ -419,8 +413,8 @@ class Editor extends Base {
 		$success      = false;
 		$text      		 = '';
 
+		$baseUrl     = '/themes/' . $this->getTheme() . '/' . ($folder ? $folder . '/' : '');
 		$themeFolder = $this->getThemeFolder();
-		$baseUrl     = '/themes/' . (Sites::getTheme() ?? 'default') . '/' . ($folder ? $folder . '/' : '');
 
 		if ($startTemplateUrl) {
 			$content = file_get_contents($themeFolder . DS . $startTemplateUrl);
@@ -477,6 +471,8 @@ class Editor extends Base {
 		} else {
 			$fileName = $themeFolder . DS . ($folder ? $folder . DS : '') . $file;
 		}
+
+		$this->saveGlobalElements($content);
 
 		if (file_put_contents($fileName, $content)) {
 			$success = true;
