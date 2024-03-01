@@ -72,7 +72,7 @@ class Response {
 		}
 	}
 
-	public function output($data = false) {
+	public function output($data = null) {
 		if ($this->done) {
 			return false;
 		}
@@ -82,11 +82,11 @@ class Response {
 				header("$header: $value", true);
 			}
 		}
-
-		if ($this->type == 'text' && $data) {
+		
+		if ($this->type == 'text' && $data !== null) {
 			echo $data;
 		} else {
-			if ($this->type == 'json' && $data && (! defined('CLI'))) {
+			if ($this->type == 'json' && $data !== null && (! defined('CLI'))) {
 				if (is_array($data)) {
 					echo json_encode($data);
 				} else {
