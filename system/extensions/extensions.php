@@ -115,7 +115,7 @@ abstract class Extensions {
 			}
 
 			// plugin folder does not match slug
-			if ($info['slug'] != $info['folder']) {
+			if (! isset($info['slug']) || ($info['slug'] != $info['folder'])) {
 				$info['status'] = 'slug_folder_mismatch';
 				$info['slug']   = $info['folder'];
 			}
