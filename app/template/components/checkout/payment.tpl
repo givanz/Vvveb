@@ -27,7 +27,7 @@ if($payments && is_array($payments['payment'])) {
 		
 		@payment img[data-v-payment-*]|src = $payment['@@__data-v-payment-(*)__@@']
 		
-		@payment [data-v-payment-description]|innerText = <?php echo $payment['@@__data-v-payment-(*)__@@'];?>
+		@payment [data-v-payment-render]|innerText = <?php echo $payment['@@__data-v-payment-(*)__@@'] ?? '';?>
 		@payment [data-v-payment-*]|innerText = $payment['@@__data-v-payment-(*)__@@']
 		
 		@payment a[data-v-payment-*]|href = $payment['@@__data-v-payment-(*)__@@']

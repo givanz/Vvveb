@@ -1,5 +1,6 @@
 // example <div data-v-copy-from="index.html,#element">
 [data-v-copy-from]|outerHTML = from(@@__data-v-copy-from:([^\,]+)__@@|@@__data-v-copy-from:[^\,]+\,([^\,]+)__@@)
+[data-v-save-global]|outerHTML = from(@@__data-v-save-global:([^\,]+)__@@|@@__data-v-save-global:[^\,]+\,([^\,]+)__@@)
 
 a[data-v-url]|href = <?php echo htmlentities(Vvveb\url('@@__data-v-url__@@'));?>
 form[data-v-url]|action = <?php echo htmlentities(Vvveb\url('@@__data-v-url__@@'));?>
@@ -54,13 +55,20 @@ if (isset($this->global) && $path) {
 }
 ?>
 
+link[data-v-global-*]|href = <?php 
+$name = '@@__data-v-global-(*)__@@';
+$path = str_replace('-', '.', $name);
+if (isset($this->global) && $path) {
+	echo \Vvveb\arrayPath($this->global, $path);
+}
+?>
+
 
 head > link[hreflang]|deleteAllButFirst
 
 head > link[hreflang]|before = <?php
 	if (isset($this->hreflang)) {
-		foreach ($this->hreflang as $lang => $url) {
-?>
+		foreach ($this->hreflang as $lang => $url) { ?>
 
 	head > link[hreflang]|hreflang = $lang
 	head > link[hreflang]|href = $url
@@ -69,3 +77,7 @@ head > link[hreflang]|after = <?php
 	}
 }
 ?>
+
+head > title                            = <?php echo $this->global['site']['description']['title'] ?? '@@__innerText__@@';?>
+head > meta[name="description"]|content = <?php echo $this->global['site']['description']['meta-description'] ?? '@@__content__@@';?>
+head > meta[name="keywords"]|content    = <?php echo $this->global['site']['description']['meta-keywords'] ?? '@@__content__@@';?>

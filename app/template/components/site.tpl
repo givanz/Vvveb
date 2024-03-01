@@ -5,6 +5,7 @@
 	//$site = \Vvveb\session('site');
 ?>
 
+[data-v-component-site] [data-v-site-description-*]|innerText = $site['description']['@@__data-v-site-description-(*)__@@']
 [data-v-component-site] [data-v-site-*]|innerText = $site['@@__data-v-site-(*)__@@']
 [data-v-component-site] img[data-v-site-*]|src = $site['@@__data-v-site-(*)__@@']
 [data-v-component-site] a[data-v-site-*]|href = $site['@@__data-v-site-(*)__@@']
