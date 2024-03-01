@@ -399,13 +399,14 @@
 	PROCEDURE edit(
 		IN product ARRAY,
 		IN product_id INT,
-		OUT insert_id
-		OUT affected_rows
-		OUT affected_rows
+		IN site_id ARRAY,
+		OUT insert_id,
+		OUT affected_rows,
+		OUT affected_rows,
 		OUT insert_id
 	)
 	BEGIN
-		:product.product_content  = @FILTER(:product.product_content, product_content, false);
+		:product.product_content  = @FILTER(:product.product_content, product_content, false)
 		
 		@EACH(:product.product_content) 
 			INSERT INTO product_content 
@@ -417,7 +418,10 @@
 			ON CONFLICT("product_id", "language_id") DO UPDATE SET @LIST(:each);
 
 
-		DELETE FROM product_to_taxonomy_item WHERE product_id = :product_id;
+		@IF isset(:product.taxonomy_item) 
+		THEN
+			DELETE FROM product_to_taxonomy_item WHERE product_id = :product_id
+		END @IF;
 
 		@EACH(:product.taxonomy_item) 
 			INSERT INTO product_to_taxonomy_item 
@@ -427,13 +431,26 @@
 			VALUES ( :each, :product_id);
 			-- ON CONFLICT("taxonomy_item_id", "product_id") DO UPDATE SET "taxonomy_item_id" = :each;
 
-			-- SELECT * FROM product_option WHERE product_id = :product_id;
+		
+		@IF isset(:site_id) 
+		THEN
+			DELETE FROM product_to_site WHERE product_id = :product_id
+		END @IF;
+
+		@EACH(:site_id) 
+			INSERT INTO product_to_site 
+			
+				( product_id, site_id )
+				
+			VALUES ( :product_id, :each );
+
+		-- SELECT * FROM product_option WHERE product_id = :product_id;
 		
 
 		-- SELECT * FROM product_option WHERE product_id = :product_id;
 
 		-- allow only table fields and set defaults for missing values
-		:product_update  = @FILTER(:product, product, false);
+		:product_update  = @FILTER(:product, product, false)
 
 		
 		UPDATE product 
@@ -455,7 +472,7 @@
 	)
 	BEGIN
 	
-		:product_content  = @FILTER(:product_content, product_content);
+		:product_content  = @FILTER(:product_content, product_content)
 	
 		UPDATE product_content 
 			
@@ -469,15 +486,16 @@
 
 	CREATE PROCEDURE add(
 		IN product ARRAY,
+		IN site_id ARRAY,
 		OUT insert_id,
-		OUT insert_id
-		OUT insert_id
+		OUT insert_id,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:product_data  = @FILTER(:product, product);
+		:product_data  = @FILTER(:product, product)
 		
 		INSERT INTO product 
 		
@@ -505,13 +523,14 @@
 		
 		-- UPDATE product SET image = :image WHERE product_id = :product_id;
 		
-		-- :product  = @FILTER(:product_data, product);
+		-- :product  = @FILTER(:product_data, product)
 		
+		@EACH(:site_id) 
 		INSERT INTO product_to_site 
 		
 			( product_id, site_id )
 			
-		VALUES ( @result.product, :site_id );
+		VALUES ( @result.product, :each );
 	 
 	END
 

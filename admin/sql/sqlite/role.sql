@@ -56,7 +56,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:role, role);
+		@FILTER(:role, role)
 		
 		INSERT INTO role 
 			
@@ -75,7 +75,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:role, role);
+		@FILTER(:role, role)
 
 		UPDATE role 
 			

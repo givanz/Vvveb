@@ -44,7 +44,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:taxonomy_item_data  = @FILTER(:taxonomy_item, taxonomy_item);
+		:taxonomy_item_data  = @FILTER(:taxonomy_item, taxonomy_item)
 		
 		
 		INSERT INTO taxonomy_item 
@@ -64,7 +64,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:taxonomy_item, taxonomy_item);
+		@FILTER(:taxonomy_item, taxonomy_item)
 
 		UPDATE taxonomy_item
 			

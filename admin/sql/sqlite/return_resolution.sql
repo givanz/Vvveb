@@ -51,7 +51,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:return_resolution_data  = @FILTER(:return_resolution, return_resolution);
+		:return_resolution_data  = @FILTER(:return_resolution, return_resolution)
 		
 		
 		INSERT INTO return_resolution 
@@ -71,7 +71,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:return_resolution, return_resolution);
+		@FILTER(:return_resolution, return_resolution)
 
 		UPDATE return_resolution 
 			

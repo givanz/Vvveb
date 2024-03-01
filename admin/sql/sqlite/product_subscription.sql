@@ -79,7 +79,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:product_subscription_data  = @FILTER(:product_subscription, product_subscription);
+		:product_subscription_data  = @FILTER(:product_subscription, product_subscription)
 		
 		
 		INSERT INTO product_subscription 
@@ -100,7 +100,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:product_subscription, product_subscription);
+		@FILTER(:product_subscription, product_subscription)
 
 		UPDATE product_subscription
 			

@@ -49,7 +49,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:subscription_data  = @FILTER(:subscription, subscription);
+		:subscription_data  = @FILTER(:subscription, subscription)
 		
 		
 		INSERT INTO subscription 
@@ -70,7 +70,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:subscription, subscription);
+		@FILTER(:subscription, subscription)
 
 		UPDATE subscription
 			

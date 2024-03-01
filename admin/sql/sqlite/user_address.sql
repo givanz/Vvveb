@@ -74,7 +74,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:user_address, user_address);
+		@FILTER(:user_address, user_address)
 		
 		INSERT INTO user_address 
 			
@@ -94,7 +94,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:user_address, user_address);
+		@FILTER(:user_address, user_address)
 
 		UPDATE user_address 
 			

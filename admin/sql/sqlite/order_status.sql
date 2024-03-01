@@ -51,7 +51,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:order_status_data  = @FILTER(:order_status, order_status);
+		:order_status_data  = @FILTER(:order_status, order_status)
 		
 		
 		INSERT INTO order_status 
@@ -71,7 +71,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:order_status, order_status);
+		@FILTER(:order_status, order_status)
 
 		UPDATE order_status 
 			

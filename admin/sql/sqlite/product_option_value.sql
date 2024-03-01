@@ -82,7 +82,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:product_option_value_data  = @FILTER(:product_option_value, product_option_value);
+		:product_option_value_data  = @FILTER(:product_option_value, product_option_value)
 		
 		
 		INSERT INTO product_option_value 
@@ -105,7 +105,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		:product_option_value_data = @FILTER(:product_option_value, product_option_value);
+		:product_option_value_data = @FILTER(:product_option_value, product_option_value)
 
 		UPDATE product_option_value
 			

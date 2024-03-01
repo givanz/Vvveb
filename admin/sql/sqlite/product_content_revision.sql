@@ -100,7 +100,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:product_content_revision_data  = @FILTER(:revision, product_content_revision);
+		:product_content_revision_data  = @FILTER(:revision, product_content_revision)
 		
 		
 		INSERT INTO product_content_revision 
@@ -123,7 +123,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:revision, product_content_revision);
+		@FILTER(:revision, product_content_revision)
 
 		UPDATE product_content_revision 
 			

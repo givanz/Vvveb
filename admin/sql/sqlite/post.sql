@@ -270,13 +270,16 @@
 
 	CREATE PROCEDURE add(
 		IN post ARRAY,
-		IN site_id INT,
+		IN site_id ARRAY,
+		OUT insert_id,
+		OUT insert_id,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:post_data  = @FILTER(:post, post);
+		:post_data  = @FILTER(:post, post)
 		
 		
 		INSERT INTO post 
@@ -285,7 +288,7 @@
 			
 	  	VALUES ( :post_data );
 
-		:post.post_content  = @FILTER(:post.post_content, post_content, false, true);
+		:post.post_content  = @FILTER(:post.post_content, post_content, false, true)
 
 
 		@EACH(:post.post_content) 
@@ -303,11 +306,12 @@
 			VALUES ( :each, @result.post)
 			ON CONFLICT(`post_id`,`taxonomy_item_id`) DO UPDATE SET `taxonomy_item_id` = :each;
 
+		@EACH(:site_id) 
 		INSERT INTO post_to_site 
 		
 			( `post_id`, `site_id` )
 			
-		VALUES ( @result.post, :site_id );			
+			VALUES ( @result.post, :each );		
 
 	END
 
@@ -316,12 +320,12 @@
 	CREATE PROCEDURE edit(
 		IN post ARRAY,
 		IN post_id INT,
-		IN site_id INT,
+		IN site_id ARRAY,
 		OUT affected_rows
 	)
 	BEGIN
 		BEGIN TRANSACTION;
-		:post.post_content  = @FILTER(:post.post_content, post_content, false, true);
+		:post.post_content  = @FILTER(:post.post_content, post_content, false, true)
 		
 		@EACH(:post.post_content) 
 			INSERT INTO post_content 
@@ -332,10 +336,10 @@
 
 			ON CONFLICT(post_id, language_id) DO UPDATE SET @LIST(:each);
 
-
-		-- @IF isset(:post.taxonomy_item) 
-
-			-- DELETE FROM post_to_taxonomy_item WHERE post_id = :post_id;
+		@IF isset(:post.taxonomy_item)
+		THEN
+			DELETE FROM post_to_taxonomy_item WHERE post_id = :post_id
+		END @IF;
 
 			@EACH(:post.taxonomy_item) 
 				INSERT INTO post_to_taxonomy_item 
@@ -345,17 +349,21 @@
 				VALUES ( :each, :post_id)
 				ON CONFLICT(`post_id`,`taxonomy_item_id`) DO UPDATE SET `taxonomy_item_id` = :each;
 
-		-- END @IF
+		@IF isset(:site_id) 
+		THEN
+			DELETE FROM post_to_site WHERE post_id = :post_id
+		END @IF;
 
-		INSERT OR IGNORE INTO post_to_site 
+		@EACH(:site_id)
+		INSERT INTO post_to_site 
 		
 			( `post_id`, `site_id` )
 			
-		VALUES ( :post_id, :site_id );			
+		VALUES ( :post_id, :each );			
 
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:post, post);
+		@FILTER(:post, post)
 	
 		@IF !empty(:post) 
 		THEN
@@ -380,7 +388,7 @@
 	)
 	BEGIN
 	
-		:post_content  = @FILTER(:post_content, post_content);
+		:post_content  = @FILTER(:post_content, post_content)
 	
 		UPDATE post_content 
 			
@@ -395,9 +403,9 @@
 	CREATE PROCEDURE delete(
 		IN  post_id ARRAY,
 		IN  site_id INT,
-		OUT affected_rows
-		OUT affected_rows
-		OUT affected_rows
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows,
 		OUT affected_rows
 	)
 	BEGIN

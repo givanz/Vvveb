@@ -51,7 +51,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:stock_status_data  = @FILTER(:stock_status, stock_status);
+		:stock_status_data  = @FILTER(:stock_status, stock_status)
 		
 		
 		INSERT INTO stock_status 
@@ -71,7 +71,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:stock_status, stock_status);
+		@FILTER(:stock_status, stock_status)
 
 		UPDATE stock_status 
 			

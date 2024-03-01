@@ -58,14 +58,14 @@
 	PROCEDURE add(
 		IN field_group ARRAY,
 		IN language_id INT,
-		OUT insert_id
-		OUT affected_rows
+		OUT insert_id,
+		OUT affected_rows,
 		OUT insert_id
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:field_group_data  = @FILTER(:field_group, field_group);
+		:field_group_data  = @FILTER(:field_group, field_group)
 		
 		INSERT INTO field_group 
 			
@@ -74,7 +74,7 @@
 	  	VALUES ( :field_group_data);
 
 		-- allow only table fields and set defaults for missing values
-		:field_group_content_data  = @FILTER(:field_group, field_group_content);
+		:field_group_content_data  = @FILTER(:field_group, field_group_content)
 		
 		INSERT INTO field_group_content 
 			
@@ -94,7 +94,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		:field_group_data  = @FILTER(:field_group, field_group);
+		:field_group_data  = @FILTER(:field_group, field_group)
 
 		UPDATE field_group 
 			
@@ -103,7 +103,7 @@
 		WHERE field_group_id = :field_group_id;
 		
 		-- allow only table fields and set defaults for missing values
-		:field_group_content_data  = @FILTER(:field_group, field_group_content);
+		:field_group_content_data  = @FILTER(:field_group, field_group_content)
 
 		UPDATE field_group_content 
 			

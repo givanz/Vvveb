@@ -74,7 +74,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:region_data  = @FILTER(:region, region);
+		:region_data  = @FILTER(:region, region)
 		
 		
 		INSERT INTO region 
@@ -95,7 +95,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:region, region);
+		@FILTER(:region, region)
 
 		UPDATE region 
 			

@@ -72,7 +72,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:coupon_data  = @FILTER(:coupon, coupon);
+		:coupon_data  = @FILTER(:coupon, coupon)
 		
 		
 		INSERT INTO coupon 
@@ -93,7 +93,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:coupon, coupon);
+		@FILTER(:coupon, coupon)
 
 		UPDATE coupon
 			

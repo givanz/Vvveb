@@ -81,7 +81,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:tax_type_data  = @FILTER(:tax_type, tax_type);
+		:tax_type_data  = @FILTER(:tax_type, tax_type)
 		
 		
 		INSERT INTO tax_type 
@@ -101,7 +101,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:tax_type, tax_type);
+		@FILTER(:tax_type, tax_type)
 
 		UPDATE tax_type
 			

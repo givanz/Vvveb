@@ -60,7 +60,7 @@
 		DELETE FROM tax_rule WHERE tax_type_id = :tax_type_id;
 		
 		-- allow only table fields and set defaults for missing values
-		:tax_rule_data  = @FILTER(:tax_rule, tax_rule);
+		:tax_rule_data  = @FILTER(:tax_rule, tax_rule)
 		
 		
 		@EACH(:tax_rule_data) 
@@ -84,7 +84,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:tax_rule, tax_rule);
+		@FILTER(:tax_rule, tax_rule)
 
 		UPDATE tax_rule
 			

@@ -73,7 +73,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:taxonomy_data  = @FILTER(:taxonomy, taxonomy);
+		:taxonomy_data  = @FILTER(:taxonomy, taxonomy)
 		
 		
 		INSERT INTO taxonomy 
@@ -93,7 +93,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:taxonomy, taxonomy);
+		@FILTER(:taxonomy, taxonomy)
 
 		UPDATE taxonomy
 			

@@ -50,7 +50,7 @@
 		-- SELECT * FROM manufacturer_option WHERE manufacturer_id = :manufacturer_id;
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:manufacturer, manufacturer);
+		@FILTER(:manufacturer, manufacturer)
 		
 		UPDATE manufacturer 
 			
@@ -70,7 +70,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:manufacturer  = @FILTER(:manufacturer, manufacturer);
+		:manufacturer  = @FILTER(:manufacturer, manufacturer)
 
 		INSERT INTO manufacturer 
 		

@@ -64,7 +64,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:country_data  = @FILTER(:country, country);
+		:country_data  = @FILTER(:country, country)
 		
 		
 		INSERT INTO country 
@@ -85,7 +85,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:country, country);
+		@FILTER(:country, country)
 
 		UPDATE country 
 			

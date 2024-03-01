@@ -65,7 +65,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:length_type_data  = @FILTER(:length_type, length_type);
+		:length_type_data  = @FILTER(:length_type, length_type)
 		
 		INSERT INTO length_type 
 			
@@ -74,7 +74,7 @@
 	  	VALUES ( :length_type_data);
 
 		-- allow only table fields and set defaults for missing values
-		:length_type_content_data  = @FILTER(:length_type, length_type_content);
+		:length_type_content_data  = @FILTER(:length_type, length_type_content)
 		
 		INSERT INTO length_type_content 
 			
@@ -94,7 +94,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		:length_type_data  = @FILTER(:length_type, length_type);
+		:length_type_data  = @FILTER(:length_type, length_type)
 
 		UPDATE length_type 
 			
@@ -103,7 +103,7 @@
 		WHERE length_type_id = :length_type_id;
 		
 		-- allow only table fields and set defaults for missing values
-		:length_type_content_data  = @FILTER(:length_type, length_type_content);
+		:length_type_content_data  = @FILTER(:length_type, length_type_content)
 
 		UPDATE length_type_content 
 			

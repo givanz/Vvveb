@@ -47,7 +47,7 @@
 		-- SELECT * FROM vendor_option WHERE vendor_id = :vendor_id;
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:vendor, vendor);
+		@FILTER(:vendor, vendor)
 		
 		UPDATE vendor 
 			
@@ -67,7 +67,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:vendor  = @FILTER(:vendor, vendor);
+		:vendor  = @FILTER(:vendor, vendor)
 
 		INSERT INTO vendor 
 		

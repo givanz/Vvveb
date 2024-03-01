@@ -83,7 +83,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:product_question, product_question);
+		@FILTER(:product_question, product_question)
 		
 		INSERT INTO product_question 
 			
@@ -102,7 +102,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:product_question, product_question);
+		@FILTER(:product_question, product_question)
 
 		UPDATE product_question 
 			
