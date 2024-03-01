@@ -20,29 +20,10 @@
  *
  */
 
-namespace Vvveb\Controller\Settings;
+namespace Vvveb\System\Meta;
 
-use function Vvveb\__;
-use Vvveb\Controller\Base;
-use Vvveb\System\Validator;
+class PostMeta extends Meta {
+	protected $model = 'post_meta';
 
-class Notifications extends Base {
-	function save() {
-		$this->index();
-	}
-
-	function index() {
-		$validator = new Validator(['settings']);
-		$settings  = $this->request->post['settings'] ?? false;
-		$errors    = [];
-
-		if ($settings &&
-			($errors = $validator->validate($settings)) === true) {
-			$settings              = $validator->filter($settings);
-			$results               = \Vvveb\setMultiSetting($settings);
-			$this->view->success[] = __('Settings saved!');
-		} else {
-			$this->view->errors = $errors;
-		}
-	}
+	protected $item_id = 'post_id';
 }

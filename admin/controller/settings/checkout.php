@@ -39,7 +39,7 @@ class Checkout extends Base {
 		if ($settings &&
 			($errors = $validator->validate($settings)) === true) {
 			$settings              = $validator->filter($settings);
-			$results               = \Vvveb\set_settings('checkout',$settings);
+			$results               = \Vvveb\setMultiSetting('checkout',$settings);
 			$this->view->success[] = __('Settings saved!');
 		} else {
 			$this->view->errors = $errors;

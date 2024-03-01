@@ -28,6 +28,7 @@ use Vvveb\Sql\CountrySQL;
 use Vvveb\Sql\regionSQL;
 use Vvveb\Sql\SiteSQL;
 use Vvveb\System\CacheManager;
+use Vvveb\System\Event;
 use Vvveb\System\Extensions\Themes;
 use Vvveb\System\Images;
 use Vvveb\System\Sites;
@@ -116,8 +117,8 @@ class Site extends Base {
 
 			$site['key'] = strtolower(Sites::siteKey($site['host']));
 
-			if (isset($this->request->get['site_id'])) {
-				$data['site_id']  = (int)$this->request->get['site_id'];
+			if (isset($this->request->get['site_id']) && ($site_id = $this->request->get['site_id'])) {
+				$data['site_id']  = (int)$site_id;
 				$site['settings'] = json_encode($settings);
 				$data['site']     = $site;
 				$site['id']       = $data['site_id'];
@@ -127,6 +128,8 @@ class Site extends Base {
 				unset($site['settings']);
 
 				Sites::setSiteDataById($data['site_id'], null, $site);
+
+				list($data, $settings, $site_id) = Event :: trigger(__CLASS__,__FUNCTION__, $data, $settings, $site_id);
 
 				if ($result >= 0) {
 					//CacheManager::delete('site');
@@ -141,19 +144,21 @@ class Site extends Base {
 				$data['site']             = $site;
 				$data['site']['settings'] = json_encode($settings);
 				$return                   = $sites->add($data);
-				$id                       = $return['site'];
+				$site_id                  = $return['site'];
 				$site['state']            = 'live';
 				$site['id']               = $id;
 				Sites::saveSite($site);
 
-				if (! $id) {
+				list($site, $setting, $site_id, $data) = Event :: trigger(__CLASS__,__FUNCTION__, $site, $setting, $site_id, $data);
+
+				if (! $site_id) {
 					$view->errors = [$sites->error];
 				} else {
 					//CacheManager::delete('site');
 					CacheManager::delete();
 					$message       = __('Site saved!');
 					$view->success = [$message];
-					$this->redirect(['module'=>'settings/site', 'success'=> $message, 'site_id' => $id]);
+					$this->redirect(['module'=>'settings/site', 'success'=> $message, 'site_id' => $site_id]);
 				}
 			}
 		} else {
@@ -189,7 +194,7 @@ class Site extends Base {
 		}
 
 		$data                       = $siteSql->getData(($setting ?? []) + $this->global);
-		$data['complete_status_id'] = $data['processing_status_id'] = $data['order_status_id'];
+		$data['complete_status_id'] = $data['processing_status_id'] = ($data['order_status_id'] ?? 1);
 
 		$data['timezone'] = [];
 
@@ -219,6 +224,8 @@ class Site extends Base {
 		foreach ($time_format as $format) {
 			$data['time_format'][$format] = date($format);
 		}
+
+		list($site, $setting, $site_id, $data) = Event :: trigger(__CLASS__,__FUNCTION__, $site, $setting, $site_id, $data);
 
 		if (! defined('CLI')) {
 			$view->domain = '';

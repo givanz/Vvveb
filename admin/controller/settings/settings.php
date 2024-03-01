@@ -35,7 +35,7 @@ class Settings extends Base {
 		if ($settings /*&&
 			($errors = $validator->validate($settings)) === true*/) {
 			//$settings              = $validator->filter($settings);
-			$results               = \Vvveb\set_settings('settings',$settings);
+			$results               = \Vvveb\setMultiSetting('settings',$settings);
 
 			if ($results) {
 				$this->view->success[] = __('Settings saved!');

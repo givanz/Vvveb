@@ -81,14 +81,14 @@ class Plugins extends Extensions {
 
 		if (file_exists($file)) {
 			$key    = "plugins.$site_id.$pluginName.status";
-			$status = \Vvveb\get_config($key);
+			$status = \Vvveb\getConfig($key);
 
 			if (! $status) {
 				//if no plugin info then this is first activation, run plugin setup
 				Event :: trigger(__CLASS__, 'setup', $pluginName, $site_id);
 			}
 
-			$return = \Vvveb\set_config($key, 'active');
+			$return = \Vvveb\setConfig($key, 'active');
 			Event :: trigger(__CLASS__, __FUNCTION__, $pluginName, $site_id);
 
 			self :: clearPluginsCache($site_id);
@@ -105,10 +105,10 @@ class Plugins extends Extensions {
 			return;
 		}
 		$key    = "plugins.$site_id.$pluginName.status";
-		$return = \Vvveb\set_config($key, 'inactive');
+		$return = \Vvveb\setConfig($key, 'inactive');
 		/*
 		$key    = "plugins.$site_id.$pluginName";
-		$return = \Vvveb\unset_config($key, []);
+		$return = \Vvveb\unsetConfig($key, []);
 		*/
 		Event :: trigger(__CLASS__, __FUNCTION__, $pluginName, $site_id);
 
@@ -150,7 +150,7 @@ class Plugins extends Extensions {
 		$success = rrmdir($pluginDir);
 
 		$key    = "plugins.$site_id.$pluginName";
-		\Vvveb\unset_config($key, []);
+		\Vvveb\unsetConfig($key, []);
 		self :: clearPluginsCache($site_id);
 
 		Event :: trigger(__CLASS__, __FUNCTION__, $pluginName, $success);

@@ -199,11 +199,11 @@ class Sites {
 
 			//key has changed replace site
 			if (isset($value['key']) && ($value['key'] != $site['key'])) {
-				$config = \Vvveb\get_config($key);
+				$config = \Vvveb\getConfig($key);
 
 				if ($config) {
 					$value += $config;
-					$config = \Vvveb\unset_config($key);
+					$config = \Vvveb\unsetConfig($key);
 					$key    = "sites.{$value['key']}";
 				}
 			}
@@ -212,7 +212,7 @@ class Sites {
 				$key .= ".$name";
 			}
 
-			return \Vvveb\set_config($key, $value);
+			return \Vvveb\setConfig($key, $value);
 		}
 
 		return false;
@@ -230,7 +230,7 @@ class Sites {
 				$key .= ".$name";
 			}
 
-			return \Vvveb\set_config($key, $value);
+			return \Vvveb\setConfig($key, $value);
 		}
 
 		return false;
@@ -294,11 +294,11 @@ class Sites {
 	public static function saveSite($site) {
 		$key = self :: siteKey(trim($site['key'] ?? $site['host']));
 		unset($site['key']);
-		$return = \Vvveb\set_config("sites.$key", $site);
+		$return = \Vvveb\setConfig("sites.$key", $site);
 	}
 
 	public static function deleteSite($site) {
 		$key    = self :: siteKey(trim($site['key'] ?? $site['host']));
-		$return = \Vvveb\unset_config("sites.$key", $site);
+		$return = \Vvveb\unsetConfig("sites.$key", $site);
 	}
 }

@@ -87,32 +87,80 @@ function config($key = null, $default = null) {
 	return System\Config::getInstance()->get($key, $default);
 }
 
-function get_config($key = null, $default = null) {
+function getConfig($key = null, $default = null) {
 	return System\Config::getInstance()->get($key, $default);
 }
 
-function set_config($key, $value = null) {
+function setConfig($key, $value = null) {
 	return System\Config::getInstance()->set($key, $value);
 }
 
-function unset_config($key) {
+function unsetConfig($key) {
 	return System\Config::getInstance()->unset($key);
 }
 
-function get_setting($namespace, $key = null, $default = null, $site_id = SITE_ID) {
+//setting
+function getSetting($namespace, $key = null, $default = null, $site_id = SITE_ID) {
 	return System\Setting::getInstance()->get($namespace, $key, $default, $site_id);
 }
 
-function set_setting($namespace, $key = null, $value = null, $site_id = SITE_ID) {
+function setSetting($namespace, $key = null, $value = null, $site_id = SITE_ID) {
 	return System\Setting::getInstance()->set($namespace, $key, $value, $site_id);
 }
 
-function delete_setting($namespace, $key = null, $site_id = SITE_ID) {
+function deleteSetting($namespace, $key = null, $site_id = SITE_ID) {
 	return System\Setting::getInstance()->delete($namespace, $key, $value, $site_id);
 }
 
-function set_settings($namespace, $settings, $site_id = SITE_ID) {
-	return System\Setting::getInstance()->multiSet($namespace, $settings, $site_id);
+function setMultiSetting($namespace, $settings, $site_id = SITE_ID) {
+	return System\Setting::getInstance()->setMulti($namespace, $settings, $site_id);
+}
+
+//setting content
+function getMultiSettingContent($site_id, $namespace, $key = null, $default = null, $language_id = false) {
+	return System\Meta\SettingContent::getInstance()->getMulti($site_id, $namespace, $key, $default, $language_id);
+}
+
+function setMultiSettingContent($site_id, $meta) {
+	return System\Meta\SettingContent::getInstance()->setMulti($site_id, $meta);
+}
+
+// post meta
+function getPostMeta($post_id, $namespace, $key = null, $default = null) {
+	return System\Meta\PostMeta::getInstance()->get($post_id, $namespace, $key, $default);
+}
+
+function setPostMeta($post_id, $namespace, $key = null, $value = null) {
+	return System\Meta\PostMeta::getInstance()->set($post_id, $namespace, $key, $value);
+}
+
+function deletePostMeta($post_id, $namespace, $key = null) {
+	return System\Meta\PostMeta::getInstance()->delete($post_id, $namespace, $key, $value);
+}
+
+function setMultiPostMeta($post_id, $namespace, $meta) {
+	return System\Meta\PostMeta::getInstance()->setMulti($post_id, $namespace, $meta);
+}
+
+// post meta content
+function getPostContentMeta($post_id, $namespace, $key = null, $default = null, $language_id = false) {
+	return System\Meta\PostContentMeta::getInstance()->get($post_id, $namespace, $key, $default, $language_id);
+}
+
+function getMultiPostContentMeta($post_id, $namespace, $key = null, $default = null, $language_id = false) {
+	return System\Meta\PostContentMeta::getInstance()->getMulti($post_id, $namespace, $key, $default, $language_id);
+}
+
+function setPostContentMeta($post_id, $namespace, $key = null, $value = null, $language_id = false) {
+	return System\Meta\PostContentMeta::getInstance()->set($post_id, $namespace, $key, $value, $language_id);
+}
+
+function deletePostContentMeta($post_id, $namespace, $key = null, $language_id = false) {
+	return System\Meta\PostContentMeta::getInstance()->delete($post_id, $namespace, $key, $value, $language_id);
+}
+
+function setMultiPostContentMeta($post_id, $meta) {
+	return System\Meta\PostContentMeta::getInstance()->setMulti($post_id, $meta);
 }
 
 function getCurrentTemplate() {
@@ -431,11 +479,15 @@ if (function_exists('_')) {
 	function __($text, $plural = false, $count = false) {
 		global $vvvebTranslationDomains;
 
+		$text = substr($text, 0, 1024);
+
 		if ($plural) {
+			$plural = substr($plural, 0, 1024);
+
 			foreach ($vvvebTranslationDomains as $domain) {
 				$translation = dngettext($domain, $text, $plural, $count);
 
-				if ($translation != $text) {
+				if ($translation && ($translation != $text)) {
 					break;
 				}
 			}
@@ -443,7 +495,7 @@ if (function_exists('_')) {
 			foreach ($vvvebTranslationDomains as $domain) {
 				$translation = dgettext($domain, $text);
 
-				if ($translation != $text) {
+				if ($translation && ($translation != $text)) {
 					break;
 				}
 			}
@@ -670,9 +722,9 @@ function getActionName() {
  * @return
  *   The new array if the key exists, otherwise the unchanged array.
  *
- * @see array_insert_after()
+ * @see arrayInsertAfter()
  */
-function array_insert_before($key, array &$array, $new_key, $new_value) {
+function arrayInsertBefore($key, array &$array, $new_key, $new_value) {
 	if (array_key_exists($key, $array)) {
 		$new = [];
 
@@ -704,9 +756,9 @@ function array_insert_before($key, array &$array, $new_key, $new_value) {
  * @return
  *   The new array if the key exists, otherwise the unchanged array.
  *
- * @see array_insert_after()
+ * @see arrayInsertAfter()
  */
-function array_insert_array_before($key, array &$array, $new_array) {
+function arrayInsertArrayBefore($key, array &$array, $new_array) {
 	if (array_key_exists($key, $array)) {
 		$new = [];
 
@@ -738,9 +790,9 @@ function array_insert_array_before($key, array &$array, $new_array) {
  * @return
  *   The new array if the key exists, otherwise the unchanged array.
  *
- * @see array_insert_before()
+ * @see arrayInsertBefore()
  */
-function array_insert_after($key, array &$array, $new_key, $new_value) {
+function arrayInsertAfter($key, array &$array, $new_key, $new_value) {
 	if (array_key_exists($key, $array)) {
 		$new = [];
 
@@ -773,9 +825,9 @@ function array_insert_after($key, array &$array, $new_key, $new_value) {
  * @return
  *   The new array if the key exists, otherwise the unchanged array.
  *
- * @see array_insert_before()
+ * @see arrayInsertBefore()
  */
-function array_insert_array_after($key, array &$array, $new_array) {
+function arrayInsertArrayAfter($key, array &$array, $new_array) {
 	if (array_key_exists($key, $array)) {
 		$new = [];
 
@@ -807,7 +859,7 @@ function isEditor() {
 	return isset($_GET['r']);
 }
 
-function log_error($message) {
+function logError($message) {
 	error_log($message);
 }
 
@@ -818,7 +870,7 @@ function getThemeFolderList($theme = false) {
 		$theme = \Vvveb\System\Sites::getTheme() ?? 'default';
 	}
 
-	$themeFolder = DIR_THEMES . DS . $theme;
+	$themeFolder = DIR_THEMES . $theme;
 	$files       = glob("$themeFolder/*", GLOB_ONLYDIR);
 	$pages['/']  = ['name' => '/', 'title' => '/', 'filename' => '/', 'file' => '/', 'path' => '/', 'folder' => $theme];
 
@@ -862,8 +914,10 @@ function getTemplateList($theme = null, $skip = []) {
 		$theme = \Vvveb\System\Sites::getTheme() ?? 'default';
 	}
 	$pages       = [];
-	$themeFolder = DIR_THEMES . DS . $theme;
-	$files       = glob("$themeFolder/{,*/*/,*/}*.html", GLOB_BRACE);
+	$themeFolder = DIR_THEMES . $theme;
+	//$files       = glob("$themeFolder/{,*/*/,*/}*.html", GLOB_BRACE);
+	$glob        = ['', '*/*/', '*/'];
+	$files       = globBrace($themeFolder, $glob, '*.html');
 
 	foreach ($files as $file) {
 		$file     = preg_replace('@^.*/themes/[^/]+/@', '', $file);
@@ -903,6 +957,10 @@ function getTemplateList($theme = null, $skip = []) {
 }
 
 function sanitizeFileName($file) {
+	if (! $file) {
+		return $file;
+	}
+
 	//sanitize, remove double dot .. and remove get parameters if any
 	$file = preg_replace('@\?.*$|\.{2,}|[^\/\\a-zA-Z0-9\-\._]@' , '', $file);
 	$file = preg_replace('@[^\/\w\s\d\.\-_~,;:\[\]\(\)\\]|[\.]{2,}@', '', $file);
@@ -1180,7 +1238,7 @@ function getLanguage() {
 	return session('language', 'en_US');
 }
 
-function siteSettings($site_id = SITE_ID) {
+function siteSettings($site_id = SITE_ID, $language_id = false) {
 	$cache     = System\Cache::getInstance();
 	$site      = $cache->cache(APP,'site.' . $site_id, function () use ($site_id) {
 		$siteSql             = new Sql\SiteSQL();
@@ -1201,6 +1259,10 @@ function siteSettings($site_id = SITE_ID) {
 
 		return [];
 	}, 259200);
+
+	if ($language_id && $site) {
+		$site['description'] = $site['description'][$language_id] ?? $site['description'][1] ?? '';
+	}
 
 	return $site;
 }
@@ -1262,8 +1324,8 @@ function email($to, $subject, $template, $data = [], $config = []) {
 	}
 
 	//get site contact email for sender and reply to
-	$site   = siteSettings();
-	$sender = $config['sender'] ?? $site['title'];
+	$site   = siteSettings(SITE_ID, session('language_id') ?? 1);
+	$sender = $config['sender'] ?? $site['description']['title'];
 	$from   = $config['from'] ?? $site['contact-email'];
 	$reply  = $config['reply'] ?? $site['contact-email'];
 
@@ -1508,7 +1570,7 @@ function globBrace($path, $glob, $filename = '') {
 	//$glob = ['*','*/*','*/*/*'];
 	$files = [];
 
-	if (false && defined('GLOB_BRACE')) {
+	if (defined('GLOB_BRACE')) {
 		$path .= '{' . implode(',', $glob) . '}' . $filename;
 		$files = glob($path, GLOB_BRACE);
 	} else {

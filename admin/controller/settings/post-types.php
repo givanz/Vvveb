@@ -32,7 +32,7 @@ class PostTypes extends Listing {
 		$userType = $this->request->get['type'] ?? false;
 
 		if ($userType) {
-			$userPostTypes = \Vvveb\get_setting($this->type, 'types', []);
+			$userPostTypes = \Vvveb\getSetting($this->type, 'types', []);
 
 			if ($userPostTypes) {
 				if (! is_array($userType)) {
@@ -44,7 +44,7 @@ class PostTypes extends Listing {
 						unset($userPostTypes[$type]);
 					}
 				}
-				$userPostTypes = \Vvveb\set_setting($this->type, 'types', $userPostTypes);
+				$userPostTypes = \Vvveb\setSetting($this->type, 'types', $userPostTypes);
 			}
 		}
 
@@ -77,7 +77,7 @@ class PostTypes extends Listing {
 		list($pluginTypes) = Event::trigger('Vvveb\Controller\Base', "custom$type", []);
 		array_walk($pluginTypes, function (&$type,$key) {$type['source'] = 'plugin'; $type['name'] = ucfirst($key); });
 
-		$userTypes = \Vvveb\get_setting($this->type, 'types', []);
+		$userTypes = \Vvveb\getSetting($this->type, 'types', []);
 
 		$params            = ['module' => "settings/{$this->type}-type"];
 		$paramsList        = ['module' => "settings/{$this->type}-types"];

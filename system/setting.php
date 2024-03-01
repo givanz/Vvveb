@@ -49,7 +49,7 @@ class Setting {
 		}
 
 		if (is_array($key) || empty($key)) {
-			$result = $this->settingSql->getSettings(['namespace' => $namespace, 'key' => $key, 'site_id' => $site_id]);
+			$result = $this->settingSql->getMulti(['namespace' => $namespace, 'key' => $key, 'site_id' => $site_id]);
 
 			if ($result) {
 				$return = [];
@@ -83,7 +83,7 @@ class Setting {
 				return $this->setting[$namespace][$key];
 			}
 
-			$result = $this->settingSql->getSetting(['namespace' => $namespace, 'key' => $key, 'site_id' => $site_id]) ?? $default;
+			$result = $this->settingSql->get(['namespace' => $namespace, 'key' => $key, 'site_id' => $site_id]) ?? $default;
 
 			if ($result && is_string($result) && $result[0] == '{') {
 				$json    = json_decode($result, true);
@@ -105,7 +105,7 @@ class Setting {
 			$value = json_encode($value);
 		}
 
-		return $this->settingSql->setSetting(['namespace' => $namespace, 'key' => $key, 'value' => $value, 'site_id' => $site_id]);
+		return $this->settingSql->set(['namespace' => $namespace, 'key' => $key, 'value' => $value, 'site_id' => $site_id]);
 	}
 
 	public function delete($namespace, $key, $value, $site_id = SITE_ID) {
@@ -118,21 +118,31 @@ class Setting {
 		return $this->settingSql->delete(['namespace' => $namespace, 'key' => $key, 'site_id' => $site_id]);
 	}
 
-	public function multiSet($namespace, $settings, $site_id = SITE_ID) {
+	public function setMulti($namespace, $settings, $site_id = SITE_ID) {
 		if (! $site_id) {
 			$site_id = 0;
 		}
 
 		$result = false;
 
+		foreach ($settings as &$item) {
+			if (is_array($item)) {
+				$item = json_encode($item);
+			}
+		}
+
+		$result = $this->settingSql->setMulti(['site_id' => $site_id, 'namespace' => $namespace, 'settings' => $settings]);
+
 		if ($settings) {
+			/*
 			foreach ($settings as $key => $value) {
 				if (is_array($value)) {
 					$value = json_encode($value);
 				}
 				$this->setting[$namespace][$key] = $value;
-				$result                          = $this->settingSql->setSetting(['namespace' => $namespace, 'key' => $key, 'value' => $value, 'site_id' => $site_id]);
+				$result                          = $this->settingSql->set(['namespace' => $namespace, 'key' => $key, 'value' => $value, 'site_id' => $site_id]);
 			}
+			 */
 		}
 
 		return $result;

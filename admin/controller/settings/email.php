@@ -26,7 +26,7 @@ use function Vvveb\__;
 use function Vvveb\config;
 use Vvveb\Controller\Base;
 use function Vvveb\email;
-use function Vvveb\set_config;
+use function Vvveb\setConfig;
 use Vvveb\System\Config;
 use Vvveb\System\Validator;
 
@@ -64,8 +64,8 @@ class Email extends Base {
 		if ($settings /*&&
 			($errors = $validator->validate($settings)) === true*/) {
 			//$settings              = $validator->filter($settings);
-			//$results               = \Vvveb\set_settings('mail',$settings);
-			$results               = set_config('mail',$settings);
+			//$results               = \Vvveb\setMultiSetting('mail',$settings);
+			$results               = setConfig('mail',$settings);
 
 			if ($results) {
 				$this->view->success[] = __('Settings saved!');

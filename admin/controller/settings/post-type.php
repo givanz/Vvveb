@@ -35,7 +35,7 @@ class PostType extends Base {
 		$userType = $this->request->get['type'] ?? false;
 
 		if ($postType) {
-			$userPostTypes = \Vvveb\get_setting($this->type, 'types', []);
+			$userPostTypes = \Vvveb\getSetting($this->type, 'types', []);
 
 			if ($userType) {
 				//edit
@@ -54,7 +54,7 @@ class PostType extends Base {
 				$userPostTypes[$postType['type']] = $postType;
 			}
 
-			$userPostTypes = \Vvveb\set_setting($this->type, 'types', $userPostTypes);
+			$userPostTypes = \Vvveb\setSetting($this->type, 'types', $userPostTypes);
 
 			$successMessage        = humanReadable(__($this->type)) . ' ' . __('type saved!');
 			$this->view->success[] = $successMessage;
@@ -70,7 +70,7 @@ class PostType extends Base {
 
 	function index() {
 		$type                  = ucfirst($this->type);
-		$userPostTypes         = \Vvveb\get_setting($this->type, 'types', []);
+		$userPostTypes         = \Vvveb\getSetting($this->type, 'types', []);
 
 		$userType   = $this->request->get['type'] ?? false;
 		$customType = [];

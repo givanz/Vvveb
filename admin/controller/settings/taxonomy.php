@@ -39,13 +39,13 @@ class Taxonomy extends Crud {
 		$this->view->type          = ['categories' => __('Categories'), 'tags' => __('Tags')];
 		$postType                  = ['post' => __('Post'), 'page' => __('Page'), 'product' => __('product')];
 
-		$userPostTypes         = \Vvveb\get_setting('post', 'types', []);
+		$userPostTypes         = \Vvveb\getSetting('post', 'types', []);
 		list($pluginPostTypes) = Event::trigger('Vvveb\Controller\Base', 'customPost', []);
 		$customPost            = $userPostTypes + $pluginPostTypes;
 		array_walk($customPost, fn (&$type, $key) => $type = ucfirst($key));
 		$postType += $customPost;
 
-		$userProductTypes         = \Vvveb\get_setting('product', 'types', []);
+		$userProductTypes         = \Vvveb\getSetting('product', 'types', []);
 		list($pluginProductTypes) = Event::trigger('Vvveb\Controller\Base', 'customProduct', []);
 		$customProduct            = $userProductTypes + $pluginProductTypes;
 		array_walk($customProduct, fn (&$type, $key) => $type = ucfirst($key));
