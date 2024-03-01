@@ -32,18 +32,6 @@ $(".revisions").on("click", ".btn-load", function (e) {
 	return false;
 });
 
-$(".revisions").on("click", ".btn-compare", function (e) {
-	let data = revision(this);
-	let item = $(this).parents("[data-v-revision]")
-
-	revisionAction("revision", data, function (data, text) {
-		item.remove();
-	});	
-
-	//e.preventDefault();
-	return false;
-});
-
 $(".revisions").on("click", ".btn-delete", function (e) {
 	let data = revision(this);
 	let item = $(this).parents("[data-v-revision]")

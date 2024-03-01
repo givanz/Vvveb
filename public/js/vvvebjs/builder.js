@@ -79,7 +79,7 @@ Vvveb.preservePropertySections = true;
 //icon = use component icon when dragging | html = use component html to create draggable element
 Vvveb.dragIcon = 'icon';
 //if empty the html of the component is used to view dropping in real time but for large elements it can jump around for this you can set a html placeholder with this option
-Vvveb.dragElementStyle = "background:limegreen;;width:100%;height:3px;border:1px solid limegreen;box-shadow:0px 0px 2px 1px rgba(0,0,0,0.14);overflow:hidden;";
+Vvveb.dragElementStyle = "background:limegreen;width:100%;height:3px;border:1px solid limegreen;box-shadow:0px 0px 2px 1px rgba(0,0,0,0.14);overflow:hidden;";
 Vvveb.dragHtml = '<div style="' + Vvveb.dragElementStyle + '"></div>';
 
 Vvveb.baseUrl =  document.currentScript?document.currentScript.src.replace(/[^\/]*?\.js$/,''):'';
@@ -791,6 +791,10 @@ Vvveb.Builder = {
 		self.leftPanelWidth = $("#left-panel").width();
 		
 		self.adjustListsHeight();
+		
+		$(window).on("scroll resize", function(event) {
+			self.adjustListsHeight();
+		});
 	},
 	
 /* controls */    	
@@ -978,14 +982,11 @@ Vvveb.Builder = {
 		 function adjust(elements) {	
 			 elements.each(function (i,e) {
 				 e.style.height = "";
-				 maxOffset = Math.max(maxOffset, e.getBoundingClientRect()["top"]);
+				 maxOffset = Math.max(0, e.getBoundingClientRect()["top"]);
 				 e.style.height = (wHeight -  maxOffset) + "px";
 			});
-			/*
-			 elements.each(function (i,e) {
-				 e.style.height = (wHeight - maxOffset) + "px";
-			});*/
 		}
+		
 		adjust(lists);
 		adjust(properties);
 	},
@@ -1060,8 +1061,6 @@ Vvveb.Builder = {
 							
 							//addSectionBox.hide();
 						}
-						
-						self.adjustListsHeight();
 						
 				});
 			
@@ -1173,6 +1172,8 @@ Vvveb.Builder = {
 		{
 			$(node).parent().before(node);
 		}
+		
+		Vvveb.Builder.selectNode(node);
 
 		newParent = node.parentNode;
 		newNextSibling = node.nextSibling;
@@ -1203,6 +1204,8 @@ Vvveb.Builder = {
 			{
 				$(node).parent().after(node);
 			}
+			
+			Vvveb.Builder.selectNode(node);
 			
 			newParent = node.parentNode;
 			newNextSibling = node.nextSibling;
@@ -1295,9 +1298,9 @@ Vvveb.Builder = {
 				self.highlightEl = target = $(event.target);
 				var offset = target.offset();
 				var height = target.outerHeight();
-				var halfHeight = Math.max(height / 2, 50);
+				var halfHeight = Math.max(height / 2, 5);
 				var width = target.outerWidth();
-				var halfWidth = Math.max(width / 2, 50);
+				var halfWidth = Math.max(width / 2, 5);
 				var prepend = true;
 				
 				var x = event.originalEvent.x;
@@ -1373,16 +1376,41 @@ Vvveb.Builder = {
 				if (self.isDragging)
 				{
 					var parent = self.highlightEl;
-
+					let parentTagName = parent[0].tagName.toLowerCase();
+					
+					let noChildren = {
+						input: true,
+						textarea: true,
+						img: true,
+						svg: true,
+						iframe: true,
+						embed: true,
+						col: true,
+						area: true,
+						hr: true,
+						br: true,
+						wbr: true
+					};
+					
 					try {
-							if ((offset.top  < (y - halfHeight)) || (offset.left  < (x - halfWidth)))
+							if ((offset.top  < (event.originalEvent.pageY - halfHeight)) || (offset.left  < (x - halfWidth)))
 							{
+								if (noChildren[parentTagName]) { 
+									self.dragElement.insertAfter(parent);
+								} else {
 									self.dragElement.appendTo(parent);
+								}
+
 								prepend = true;
 							} else
 							{
-								prepend = false;
+								if (noChildren[parentTagName]) { 
+									self.dragElement.insertBefore(parent);
+								} else {
 									self.dragElement.prependTo(parent);
+								}
+
+								prepend = false;
 							};
 							
 							if (self.designerMode)
@@ -1463,18 +1491,17 @@ Vvveb.Builder = {
 				{				
 					if (self.component.dragHtml || Vvveb.dragHtml) { //if dragHtml is set for dragging then set real component html
 						if (self.component) {
-						newElement = $(self.component.html);
-						self.dragElement.replaceWith(newElement);
-						self.dragElement = newElement;
-					}
+							newElement = $(self.component.html);
+							self.dragElement.replaceWith(newElement);
+							self.dragElement = newElement;
+						}
 					} 
 					
 					if (self.component.afterDrop) self.dragElement = self.component.afterDrop(self.dragElement);
 				} else {
-					self.dragElement.attr("style", "");
+					self.dragElement.replaceWith(self.selectedEl.removeClass("is-dragged"));
+					self.dragElement = self.selectedEl;
 				}
-				
-				self.dragElement.css("border", "");
 				
 				node = self.dragElement.get(0);
 				self.selectNode(node);
@@ -1569,11 +1596,20 @@ Vvveb.Builder = {
 		var self = this;
 		
 		$("#drag-btn").on("mousedown", function(event) {
-			self.dragElement = self.selectedEl.attr("style",Vvveb.dragElementStyle);
+			//self.dragElement = self.selectedEl.attr("style",Vvveb.dragElementStyle);
 			self.isDragging = true;
 			$("#section-actions, #highlight-name, #select-box").hide();
 			
-			node = self.dragElement.get(0);
+			
+			if (self.designerMode) {
+				self.dragElement = self.selectedEl;
+			} else {
+				self.selectedEl.css("position", "" ).css("top", "" ).css("left", "" );
+				self.selectedEl.addClass("is-dragged");
+				self.dragElement = $(Vvveb.dragHtml);
+			}
+
+			node = self.selectedEl.get(0);			
 
 			self.dragMoveMutation = {type: 'move', 
 								target: node,
@@ -1660,7 +1696,32 @@ Vvveb.Builder = {
 			//let value = selectedEl.outerHTML;
 			Vvveb.ModalCodeEditor.show();
 			Vvveb.ModalCodeEditor.setValue(value);
+			
+			let oldValue = value;
 
+			$(window).one("vvveb.ModalCodeEditor.save",  function(event, value) {
+				selectedEl.innerHTML = value;
+				//selectedEl.outerHTML = value;
+				
+				node = selectedEl;
+				Vvveb.Undo.addMutation({type:'characterData', 
+										target: node, 
+										oldValue: oldValue, 
+										newValue: node.innerHTML});				
+			});
+			
+			return false;
+		});
+		
+		$("#translate-code-btn").on("click", function(event) {
+			let selectedEl = Vvveb.Builder.selectedEl.get(0);
+			let value = selectedEl.innerHTML.trim();
+			// uncomment to use outerHTML, not recommended
+			//let value = selectedEl.outerHTML;
+			Vvveb.ModalCodeEditor.show();
+			Vvveb.ModalCodeEditor.setValue(value);
+
+			//$(window).one("vvveb.ModalTranslateEditor.save",  function(event, value) {
 			$(window).one("vvveb.ModalCodeEditor.save",  function(event, value) {
 				selectedEl.innerHTML = value;
 				//selectedEl.outerHTML = value;
@@ -1668,7 +1729,7 @@ Vvveb.Builder = {
 			
 			return false;
 		});
-		
+
 		$("#delete-btn").on("click", function(event) {
 			$("#select-box").hide();
 			
@@ -1718,9 +1779,9 @@ Vvveb.Builder = {
 			addSectionBox.hide();
 		});
 		
-		function addSectionComponent(html, after = true) 
+		function addSectionComponent(component, after = true) 
 		{
-			var node = $(html);
+			var node = $(component.html);
 			
 			if (after)
 			{
@@ -1730,8 +1791,14 @@ Vvveb.Builder = {
 				addSectionElement.append(node);
 			}
 			
+			if (component.afterDrop) {
+				node = component.afterDrop(node);
+			}
+
 			node = node.get(0);
-			
+			self.selectNode(node);
+			self.loadNodeComponent(node);
+
 			Vvveb.Undo.addMutation({type: 'childList', 
 									target: node.parentNode, 
 									addedNodes: [node], 
@@ -1739,7 +1806,7 @@ Vvveb.Builder = {
 		}
 		
 		$(".components-list li ol li", addSectionBox).on("click", function(event) {
-			var html = Vvveb.Components.get(this.dataset.type).html;
+			var html = Vvveb.Components.get(this.dataset.type);
 
 			addSectionComponent(html, ($("[name='add-section-insert-mode']:checked").val() == "after"));
 
@@ -1747,7 +1814,7 @@ Vvveb.Builder = {
 		});
 
 		$(".blocks-list li ol li", addSectionBox).on("click", function(event) {
-			var html = Vvveb.Blocks.get(this.dataset.type).html;
+			var html = Vvveb.Blocks.get(this.dataset.type);
 
 			addSectionComponent(html, ($("[name='add-section-insert-mode']:checked").val() == "after"));
 
@@ -1756,7 +1823,7 @@ Vvveb.Builder = {
 		
 
 		$(".sections-list li ol li", addSectionBox).on("click", function(event) {
-			var html = Vvveb.Sections.get(this.dataset.type).html;
+			var html = Vvveb.Sections.get(this.dataset.type);
 
 			addSectionComponent(html, ($("[name='add-section-insert-mode']:checked").val() == "after"));
 
@@ -1940,7 +2007,7 @@ Vvveb.Builder = {
 		//set head html only if changed to avoid page flicker
 		let headHtml = getTag(html, "head");
 		if (window.FrameDocument.head.innerHTML != headHtml) {
-			window.FrameDocument.head.innerHTML = getTag(html, "head");
+			window.FrameDocument.head.innerHTML = headHtml;
 		}
 	},
 
@@ -2340,8 +2407,17 @@ Vvveb.Gui = {
 
 			e.preventDefault();
 
-			return Vvveb.Builder.saveAjax(data, function (data) {
+			return Vvveb.Builder.saveAjax(data, function (savedData) {
 					data.title = data.name;
+
+					if (typeof savedData === 'object' && savedData !== null) {
+						//Object.assign(data, savedData);
+						data.name = savedData.name ?? data.name;
+						data.url = savedData.url ?? data.url;
+						data.file = savedData.file ?? data.file;
+						data.title = savedData.title ?? data.title;
+					}
+					
 					Vvveb.FileManager.addPage(data.name, data);
 
 					Vvveb.FileManager.loadPage(data.name);
@@ -2354,7 +2430,7 @@ Vvveb.Gui = {
 	
 	setDesignerMode : function () {
 		//aria-pressed attribute is updated after action is called and we check for false instead of true
-		var designerMode = this.attributes["aria-pressed"].value != "true";
+		var designerMode = this.attributes["aria-pressed"].value == "true";
 		Vvveb.Builder.setDesignerMode(designerMode);
 	},
 //layout
@@ -2415,7 +2491,7 @@ Vvveb.StyleManager = {
 			var _style = false;
 			
 			//check if editor style is present
-			for (let i=0; i < doc.styleSheets.length; i++) {	
+			for (let i = 0; i < doc.styleSheets.length; i++) {
 					_style = doc.styleSheets[i];
 					if (_style.ownerNode.id && _style.ownerNode.id == "vvvebjs-styles") {
 						style = _style;
@@ -2431,7 +2507,7 @@ Vvveb.StyleManager = {
 			}
 			
 			//if style exist then load all css styles for editor
-			for (let j=0; j < style.cssRules.length; j++) {				
+			for (let j = 0; j < style.cssRules.length; j++) {
 				media = (typeof style.cssRules[j].media === "undefined") ? 
 					"desktop" : (style.cssRules[j].media[0] === "screen and (max-width: 1220px)") 
 					? "tablet" : (style.cssRules[j].media[0] === "screen and (max-width: 320px)") 
@@ -2441,21 +2517,21 @@ Vvveb.StyleManager = {
 				styles = (media === "desktop") ? style.cssRules[j].style : style.cssRules[j].cssRules[0].style;
 
 				if (media) {
-					this.styles[media] = {};
-				if (selector) {
+					this.styles[media] = this.styles[media] ?? {};
+					if (selector) {
 						this.styles[media][selector] = {};
 					
-					for (let k=0; k < styles.length; k++) {	
+						for (let k = 0; k < styles.length; k++) {
 									
-						property = styles[k];
-						value = styles[property];
+							property = styles[k];
+							value = styles[property];
 						
 							this.styles[media][selector][property] = value;
 						}
 					}
 				}
 			}
-			
+
 			return this.cssContainer = $("#vvvebjs-styles", doc); 
 		}
 	},	
@@ -2506,7 +2582,16 @@ Vvveb.StyleManager = {
 		if (typeof(element) == "string") {
 			selector = element;
 		} else {
-		selector = this.getSelectorForElement(element.get(0));	
+			let node = element.get(0);
+
+			//if propert is set with inline style attribute then override it and don't save to css
+			//inline text editor sets properties like font-size inline that can't be later overriten from css
+			if (node.style && node.style[styleProp]) {
+				node.style[styleProp] = value;
+				return element;
+			}
+
+			selector = this.getSelectorForElement(node);	
 		}
 		
 		media = $("#canvas").hasClass("tablet") ? "tablet" : $("#canvas").hasClass("mobile") ? "mobile" : "desktop";
@@ -3232,6 +3317,12 @@ Vvveb.FileManager = {
 	},
 	
 	loadPage: function(name, allowedComponents = false, disableCache = true, loadComponents = false) {
+		let url = this.pages[name]['url'] ?? "";
+		
+		if (!url) {
+			return;
+		}
+		
 		let page = $("[data-page='" + name + "']", this.tree);
 		//remove active from current active page
 		$("[data-page]", this.tree).removeClass("active");
@@ -3241,7 +3332,6 @@ Vvveb.FileManager = {
 		$("> input[type=checkbox]", $(page).parents("[data-folder]")).prop("checked", true);
 		
 		this.currentPage = name;
-		var url = this.pages[name]['url'];
 		$(".btn-preview-url").attr("href", url);
 
 		//allow event to change page or url or cancel by setting url to false
@@ -3344,10 +3434,12 @@ Vvveb.Revisions = {
 
 	updateRevisionsDropdown: function (revisions) {
 		let dropdown = $(".revisions-dropdown").html("");
-		$(".revisions-count").html(revisions.length);
+		let count = Object.keys(revisions).length;
+		$(".revisions-count").html(count);
+
 		for (let i in revisions) {
 			let revision = revisions[i];
-			revision['url'] =  '' + revision['url'] + ".html";
+			//revision['url'] =  '' + revision['file'] + ".html";
 			dropdown.append(tmpl('vvveb-revision-item', revision));
 		}
 	},
@@ -3375,9 +3467,58 @@ Vvveb.Revisions = {
 			return [name, url, data];
 		});
 		
+		$(".revisions-dropdown").on("click", ".btn-revision-load", function (event) {
+			let file = this.dataset.file;
+
+			if (file) {
+				$.ajax({
+					type: "POST",
+					url: revisionLoadUrl,//set your server side save script url
+					data: {file},
+					success: function (data, text) {
+						Vvveb.Builder.setHtml(data);
+						displayToast("bg-success", "Load", "Revision loaded");
+						$("#top-panel .save-btn").removeAttr("disabled");
+					},
+					error: function (data) {
+						displayToast("bg-danger", "Error", data.responseText);
+					}
+				});
+			}			
+		});
+		
 		$(".revisions-dropdown").on("click", ".btn-revision-delete", function (event) {
-			let item = $(this).parents(".dropdown-item");
-			item.remove();
+			if (confirm("Are you sure?")) {
+
+				let item = $(this).parents(".dropdown-item");
+				let file = this.dataset.file;
+
+				if (file) {
+					$.ajax({
+						type: "POST",
+						url: revisionDeleteUrl,//set your server side save script url
+						data: {file},
+						success: function (data, text) {
+							let bg = "bg-success";
+							if (data.success) {	
+								item.remove();
+							} else {
+								bg = "bg-danger";
+							}
+
+							displayToast(bg, "Delete", data.message ?? data);
+							
+							$(".revisions-count").html(function (i, html) {
+								let count = parseInt(html);
+								return Math.max(0, count - 1);
+							});
+						},
+						error: function (data) {
+							displayToast("bg-danger", "Error", data.responseText);
+						}
+					});
+				}
+			}
 		});
 	}
 }

@@ -370,7 +370,7 @@ Vvveb.Components.extend("_base","elements/svg-icon", {
         col:4,
         inline:true,
 		section: style_section,
-		htmlAttr: "color",
+        htmlAttr: "stroke",
         inputtype: ColorInput,
   	}]
 });   

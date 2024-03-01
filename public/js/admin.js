@@ -78,7 +78,7 @@ function displayToast(bg, title, message, id = "bottom-toast") {
 	$("#" + id + " .toast").addClass("showing");
 	delay(() => $("#" + id + " .toast").addClass("show").removeClass("showing"), 500);
 	delay(() => $("#" + id + " .toast").removeClass("show"), 5000);*/
-	let toast = new bootstrap.Toast(document.getElementById(id));
+	let toast = new bootstrap.Toast(document.getElementById(id), {animation:false});
     toast.show()
 }
 

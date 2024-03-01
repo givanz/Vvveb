@@ -144,7 +144,7 @@ VvvebTheme.Cart = {
 
 VvvebTheme.Wishlist = {
 	
-	module: 'cart/wishlist',
+	module: 'user/wishlist',
 	component: 'wishlist',
 	component_id: '0',
 	
@@ -157,21 +157,50 @@ VvvebTheme.Wishlist = {
 	},
 	
 	callback: function(data) {
-		/*
-			let miniWishlist = $("[data-v-component-wishlist]");
-			if (miniWishlist.length) {
-				miniWishlist[0].outerHTML = data;
-			}*/
 	},
 	
-	add: function(productId, quantity, element,  selector, callback = false) {
+	add: function(productId, element,  selector, callback = false) {
 		if (!callback) callback = this.callback;
-		return this.ajax('add',{'product_id':productId, 'quantity':quantity}, element, selector, callback);
+		return this.ajax('add',{'product_id':productId}, element, selector, callback);
 	},
 	
 	update: function(productId, quantity, element,  selector, callback = false) {
 		if (!callback) callback = this.callback;
 		return this.ajax('update',{'product_id':productId, 'quantity':quantity}, element, selector, callback);
+	},
+ 
+	remove: function(productId, element, selector, callback = false) {
+		if (!callback) callback = this.callback;
+		return this.ajax('remove', {'product_id':productId}, element, selector, callback);
+	}
+
+}
+
+VvvebTheme.Compare = {
+	
+	module: 'cart/compare',
+	component: 'compare',
+	component_id: '0',
+	
+	ajax: function(action, parameters, element, selector, callback) {
+		parameters['module'] = this.module;
+		parameters['action'] = action;
+		parameters['component'] = this.component;
+		parameters['component_id'] = this.component_id;
+		VvvebTheme.Ajax.call(parameters, element,  selector, callback);
+	},
+	
+	callback: function(data) {
+	},
+	
+	add: function(productId, element,  selector, callback = false) {
+		if (!callback) callback = this.callback;
+		return this.ajax('add',{'product_id':productId}, element, selector, callback);
+	},
+	
+	update: function(productId, quantity, element,  selector, callback = false) {
+		if (!callback) callback = this.callback;
+		return this.ajax('update',{'product_id':productId}, element, selector, callback);
 	},
  
 	remove: function(productId, element, selector, callback = false) {
@@ -269,6 +298,19 @@ function objectSerialize(serializeArray) {
     return returnObject;
 }
 
+
+function elementProduct(element) {
+	let product = $(element).parents("[data-v-product]");
+	if (!product.length) {
+		product = $(element).parents("[data-v-component-product]");
+	}
+	if (!product.length) {
+		product = $(element).parents("[data-v-cart-product]");
+	}	
+	
+	return product;
+}
+
 VvvebTheme.Gui = {
 	
 	init: function() {
@@ -298,13 +340,8 @@ VvvebTheme.Gui = {
 	},
 	
 	addToCart : function (e) {
-		let product = $(this).parents("[data-v-product]");
-		if (!product.length) {
-			product = $(this).parents("[data-v-component-product]");
-		}
-		if (!product.length) {
-			product = $(this).parents("[data-v-cart-product]");
-		}
+		
+		let product = elementProduct(this);
 		
 		let img = $("img[data-v-product-image], img[data-v-product-image-src], img[data-v-product-image]", product);
 		let name = $("[data-v-product-name]:first", product).text();
@@ -375,7 +412,7 @@ VvvebTheme.Gui = {
 			}
 		}
 		
-		VvvebTheme.Cart.remove(id, this, selector, function(data) {
+		VvvebTheme.Cart.add(id, {}, this, '.mini-cart', function() {
 			VvvebTheme.Alert.show('<img height=50 src="' + img + '"> &ensp; <strong>' +  name +'</strong> was removed from cart');
 			product.remove();
 		});
@@ -384,10 +421,40 @@ VvvebTheme.Gui = {
 	},
 	
 	addToWishlist : function (e) {
+		let product = elementProduct(this);
+		let id = this.dataset.product_id;
+		let img = $("[data-v-product-image],[data-v-product-image], [data-v-cart-product-image]", product).attr("src");
+
+		if (!id) {
+			id = product[0].dataset.product_id;
+			if (!id) {
+				id = $('input[name="product_id"]', product).val();
+			}
+		}
+
+		VvvebTheme.Wishlist.add(id, this, false, function(data) {
+			VvvebTheme.Alert.show('<img height=50 src="' + img + '"> &ensp; <strong>' +  name +'</strong> was added to wishlist');
+		});
+		
 		return false;
 	},
 	
 	addToCompare : function (e) {
+		let product = elementProduct(this);
+		let id = this.dataset.product_id;
+		let img = $("[data-v-product-image],[data-v-product-image], [data-v-cart-product-image]", product).attr("src");
+
+		if (!id) {
+			id = product[0].dataset.product_id;
+			if (!id) {
+				id = $('input[name="product_id"]', product).val();
+			}
+		}
+
+		VvvebTheme.Wishlist.add(id, this, false, function(data) {
+			VvvebTheme.Alert.show('<img height=50 src="' + img + '"> &ensp; <strong>' +  name +'</strong> was added to compare');
+		});
+		
 		return false;
 	},
 	
