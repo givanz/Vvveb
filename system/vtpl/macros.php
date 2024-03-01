@@ -68,7 +68,7 @@ function vtplKeyValue($vtpl, $node, $selector, $keyAttribute, $valueAttribute) {
  variable = variable ex product.price = price this will result in $product['price'] == $price
  variable = 'string' ex this.stock = 'available' this will result in $this->price == $price
  */
-function vtplIfCondition($vtpl, $node, $string = false) {
+function ifCondition($string = '') {
 	$logic      = ['&&', '\|\|', 'AND', 'OR'];
 	$regex      = '/\s+(' . implode(')\s+|\s+(', $logic) . ')\s+/i';
 	$conditions = preg_split($regex, $string, 0, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
@@ -125,6 +125,10 @@ function vtplIfCondition($vtpl, $node, $string = false) {
 	return $return;
 }
 
+function vtplIfCondition($vtpl, $node, $string = '') {
+	return ifCondition($string);
+}
+
 /*
 Remove class from node, used by  data-v-class-if
  */
@@ -137,4 +141,49 @@ function vtplRemoveClass($vtpl, $node, $className = '') {
 	if (strpos($value, $className) !== false) {
 		$node->setAttribute('class', str_replace($className, '', $value));
 	}
+}
+
+function vtplIfClass($vtpl, $node) {
+	$if      = [];
+	$ifnot   = [];
+	$length  = $node->attributes->length;
+
+	for ($i = 0; $i < $length; ++$i) {
+		if ($item = $node->attributes->item($i)) {
+			$name = $item->name;
+
+			if (strpos($name, 'data-v-class-if-not-') !== false) {
+				$name           = str_replace('data-v-class-if-not-', '', $name);
+				$ifnot[$name]   = $item->value;
+			} else {
+				if (strpos($name, 'data-v-class-if-') !== false) {
+					$name           = str_replace('data-v-class-if-', '', $name);
+					$if[$name]      = $item->value;
+				}
+			}
+		}
+	}
+
+	$return = '';
+	$value  = $node->getAttribute('class');
+
+	foreach ($ifnot as $class => $cond) {
+		$value = str_replace($class, '',$value);
+		//$node->removeAttribute("data-v-class-if-not-$class");
+		$condition = ifCondition($cond);
+		$return .= "if  (!($condition)) {echo ' $class';}";
+	}
+
+	foreach ($if as $class => $cond) {
+		$value = str_replace($class, '',$value);
+		//$node->removeAttribute("data-v-class-if-$class");
+		$condition = ifCondition($cond);
+		$return .= "if  ($condition) {echo ' $class';}";
+	}
+
+	$value = preg_replace('/\s+/', ' ', $value);
+
+	$node->setAttribute('class', $value);
+
+	return $return;
 }

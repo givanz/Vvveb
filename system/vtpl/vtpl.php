@@ -974,7 +974,7 @@ class Vtpl {
 
 		$value = preg_replace_callback('/@@__innerText__@@/',
 					   function ($matches) use ($node) {
-					   	$value = $this->innerHtml([$node]);
+					   	$value = $this->innerText([$node]);
 
 					   	if (isset($value[0]) && $value[0] == '{') {
 					   		$value = json_decode($value, 1);
@@ -1004,7 +1004,6 @@ class Vtpl {
 		$value = preg_replace_callback('/@@__([\.a-zA-Z*_-]+)__@@/',
 					   function ($matches) use ($node) {
 					   	$attributeName = $matches[1];
-					   	$value = '';
 
 					   	if (strpos($attributeName, '*') !== false) {
 					   		//wildcard attribute
@@ -1702,7 +1701,7 @@ class Vtpl {
 		$this->debug->log('SELECTOR_FROM', $filename);
 
 		if (! ($html = @file_get_contents($filename))) {
-			Vvveb\log_error("can't load html $filename");
+			Vvveb\logError("can't load html $filename");
 			$this->debug->log('LOAD', '<b>EXTERNAL ERROR</b> ' . $filename . ' ' . $selector);
 
 			return false;
@@ -1741,7 +1740,7 @@ class Vtpl {
 		}
 
 		if (! ($html = @file_get_contents($filename))) {
-			Vvveb\log_error("can't load template $filename");
+			Vvveb\logError("can't load template $filename");
 			$this->debug->log('LOAD', '<b>ERROR</b> ' . $filename);
 
 			return false;
@@ -1782,9 +1781,9 @@ class Vtpl {
 		}
 
 		if ($this->isHTML) {
-			@$this->document->loadHTML($html);
+			@$this->document->loadHTML($html, LIBXML_NOERROR);
 		} else {
-			@$this->document->loadXML($html);
+			@$this->document->loadXML($html, LIBXML_NOERROR);
 		}
 
 		$errors = libxml_get_errors();
@@ -1831,6 +1830,7 @@ class Vtpl {
 
 			if ($head->length > 0) {
 				$base = $this->document->createElement('base');
+				$base->setAttribute('href','');
 				$head->item(0)->insertBefore($base, $head->item(0)->firstChild);
 			}
 		}
@@ -1892,8 +1892,12 @@ class Vtpl {
 				}
 			}
 
+			$tagName = isset($node->parentNode->tagName) ? strtolower($node->parentNode->tagName) : false;
+
 			if ($node && $node->nodeType == XML_TEXT_NODE &&
-				(! isset($node->parentNode->tagName) || $node->parentNode->tagName != '_script')) {
+				(! $tagName || ($tagName != 'textarea' && $tagName != '_script'
+					&& $tagName != 'code' && $tagName != 'iframe'
+					&& $tagName != 'noscript'))) {
 				if (isset($node->wholeText)) {
 					$text = $node->wholeText;
 				} else {
@@ -1911,13 +1915,16 @@ class Vtpl {
 
 				if ($trimmed != '') {
 					$trimmed = addcslashes($trimmed, "'");
-					$php     = '<_script language="php"><![CDATA[ echo ' . $this->translationFunction . '(\'' . $trimmed . '\');]]></_script>';
-					//keep space around text for html spacing
-					$php = str_replace($trimmed, $php, $text);
-					$f   = $this->document->createDocumentFragment();
-					$f->appendXML($php);
-					$node = $node->parentNode->replaceChild($f, $node);
-				//$node->parentNode->replaceChild($f, $node);
+
+					if (strlen($trimmed) < 1024) {
+						$php     = '<_script language="php"><![CDATA[ echo ' . $this->translationFunction . '(\'' . $trimmed . '\');]]></_script>';
+						//keep space around text for html spacing
+						$php = str_replace($trimmed, $php, $text);
+						$f   = $this->document->createDocumentFragment();
+						$f->appendXML($php);
+						$node = $node->parentNode->replaceChild($f, $node);
+					}
+					//$node->parentNode->replaceChild($f, $node);
 				} else {
 					if ($this->removeWhitespace) {
 						//remove empty space
@@ -2102,7 +2109,7 @@ class Vtpl {
 		}
 
 		if (empty($html)) {
-			Vvveb\log_error("compiled template is empty for $compiledFile");
+			Vvveb\logError("compiled template is empty for $compiledFile");
 
 			return false;
 		}
