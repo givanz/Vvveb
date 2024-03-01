@@ -60,7 +60,15 @@ class Menus extends Categories {
 		$view         = $this->view;
 		$menus        = new menuSQL();
 
-		if ($menu_item_id && ($result = $menus->deleteMenuItem(['menu_item_id' => $menu_item_id]))) {
+		if ($menu_item_id) {
+			try {
+				//will fail on mysql 5
+				$result = $menus->deleteMenuItemRecursive(['menu_item_id' => $menu_item_id]);
+			} catch (\Exception $ex) {
+				//older mysql versions don't have recursive CTE
+				$result = $menus->deleteMenuItem(['menu_item_id' => $menu_item_id]);
+			}
+
 			if ($result['menu_item'] > 0) {
 				$success = __('Item deleted!');
 			} else {
@@ -183,8 +191,9 @@ class Menus extends Categories {
 				if (! $id) {
 					$view->errors = [$menu->error];
 				} else {
-					$view->success[] = __('Menu saved!');
-					$this->redirect(['module'=>'content/menus', 'action' => 'menu', 'menu_id' => $id]);
+					$success         = __('Menu saved!');
+					$view->success[] = $success;
+					$this->redirect(['module'=>'content/menus', 'action' => 'menu', 'menu_id' => $id, 'success' => $success]);
 				}
 			}
 		}
