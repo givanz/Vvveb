@@ -20,7 +20,7 @@
 	
 			-- orders
 
-			SELECT COUNT(*) AS orders, DATE(created_at) as date, orders.created_at FROM `order` AS orders
+			SELECT COUNT(*) AS orders, DATE(created_at) as date FROM `order` AS orders
 			
 				LEFT JOIN order_status AS os ON (orders.order_status_id = os.order_status_id AND os.language_id = :language_id) 
 				
@@ -45,12 +45,12 @@
 			
 				END @IF					
 				
-			GROUP BY date,orders.created_at ORDER BY date;
+			GROUP BY date ORDER BY date;
 			
 			
 			-- users
 
-			SELECT COUNT(*) AS users, DATE(created_at) as date, users.created_at FROM `user` AS users
+			SELECT COUNT(*) AS users, DATE(created_at) as date FROM `user` AS users
 			
 			WHERE 1 = 1 
 			
@@ -66,7 +66,7 @@
 			
 				END @IF	
 			
-			GROUP BY date, users.created_at ORDER BY date;			
+			GROUP BY date ORDER BY date;			
 
 	END
 	

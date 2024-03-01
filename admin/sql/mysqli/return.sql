@@ -57,7 +57,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:return_data  = @FILTER(:return, return);
+		:return_data  = @FILTER(:return, return)
 		
 		
 		INSERT INTO `return` 
@@ -77,7 +77,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:return, return);
+		@FILTER(:return, return)
 
 		UPDATE `return`
 			

@@ -51,7 +51,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:product_attribute_data  = @FILTER(:product_attribute, product_attribute);
+		:product_attribute_data  = @FILTER(:product_attribute, product_attribute)
 		
 		
 		INSERT INTO product_attribute 
@@ -72,7 +72,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:product_attribute, product_attribute);
+		@FILTER(:product_attribute, product_attribute)
 
 		UPDATE product_attribute
 			

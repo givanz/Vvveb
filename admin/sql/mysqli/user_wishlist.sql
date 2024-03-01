@@ -62,7 +62,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:user_wishlist, user_wishlist);
+		@FILTER(:user_wishlist, user_wishlist)
 		
 		INSERT INTO user_wishlist 
 			

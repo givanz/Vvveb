@@ -56,7 +56,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:subscription_plan_data  = @FILTER(:subscription_plan, subscription_plan);
+		:subscription_plan_data  = @FILTER(:subscription_plan, subscription_plan)
 		
 		
 		INSERT INTO subscription_plan 
@@ -77,7 +77,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:subscription_plan, subscription_plan);
+		@FILTER(:subscription_plan, subscription_plan)
 
 		UPDATE subscription_plan
 			

@@ -267,9 +267,10 @@
 	)
 	BEGIN
 
-		:products  = @FILTER(:order.products, order_product, false, true);
-		:totals  = @FILTER(:order.totals, order_total, false, true);
-		@FILTER(:order, order);
+		:products  = @FILTER(:order.products, order_product, false, true)
+		:totals  = @FILTER(:order.totals, order_total, false, true)
+		
+		@FILTER(:order, order)
 		
 		INSERT INTO `order` 
 			
@@ -287,7 +288,7 @@
 		@EACH(:product_options) 
 			INSERT INTO order_product_option 
 				( order_id, @KEYS(:each) )
-			VALUES ( @result.order, 0,  :each  );
+			VALUES ( @result.order, :each  );
 
 		-- insert order products
 		@EACH(:totals) 
@@ -306,7 +307,7 @@
 	)
 	BEGIN
 		
-		@FILTER(:order, order);
+		@FILTER(:order, order)
 	
 		UPDATE `order` 
 			
@@ -325,8 +326,8 @@
 	)
 	BEGIN
 	
-		:products  		  = @FILTER(:products, order_product, false, true);
-		:product_options  = @FILTER(:product_options, order_product_option, false, true);
+		:products  		  = @FILTER(:products, order_product, false, true)
+		:product_options  = @FILTER(:product_options, order_product_option, false, true)
 
 		-- insert products
 		@EACH(:products) 

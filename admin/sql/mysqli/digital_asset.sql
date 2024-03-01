@@ -58,7 +58,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:digital_asset_data  = @FILTER(:digital_asset, digital_asset);
+		:digital_asset_data  = @FILTER(:digital_asset, digital_asset)
 		
 		
 		INSERT INTO digital_asset 
@@ -68,7 +68,7 @@
 	  	VALUES ( :digital_asset_data );		
 		
 		
-		:digital_asset_content  = @FILTER(:digital_asset, digital_asset_content);
+		:digital_asset_content  = @FILTER(:digital_asset, digital_asset_content)
 	  	
 		INSERT INTO digital_asset_content 
 			
@@ -89,7 +89,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		:digital_asset_data = @FILTER(:digital_asset, digital_asset);
+		:digital_asset_data = @FILTER(:digital_asset, digital_asset)
 
 		UPDATE digital_asset
 			
@@ -98,7 +98,7 @@
 		WHERE digital_asset_id = :digital_asset_id;
 		
 		-- allow only table fields and set defaults for missing values
-		:digital_asset_content = @FILTER(:digital_asset, digital_asset_content);
+		:digital_asset_content = @FILTER(:digital_asset, digital_asset_content)
 
 		UPDATE digital_asset_content
 			

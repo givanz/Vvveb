@@ -51,7 +51,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:tax_rate_data  = @FILTER(:tax_rate, tax_rate);
+		:tax_rate_data  = @FILTER(:tax_rate, tax_rate)
 		
 		
 		INSERT INTO tax_rate 
@@ -71,7 +71,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:tax_rate, tax_rate);
+		@FILTER(:tax_rate, tax_rate)
 
 		UPDATE tax_rate
 			

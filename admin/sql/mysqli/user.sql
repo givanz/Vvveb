@@ -111,7 +111,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:user, user);
+		@FILTER(:user, user)
 		
 		INSERT INTO user 
 			
@@ -132,7 +132,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:user, user);
+		@FILTER(:user, user)
 
 		UPDATE user 
 			

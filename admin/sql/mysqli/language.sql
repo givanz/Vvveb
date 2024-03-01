@@ -70,7 +70,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:language_data  = @FILTER(:language, language);
+		:language_data  = @FILTER(:language, language)
 		
 		
 		INSERT INTO language 
@@ -103,7 +103,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:language, language);
+		@FILTER(:language, language)
 		
 		
 		UPDATE language 

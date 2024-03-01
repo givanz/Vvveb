@@ -10,7 +10,7 @@
 		IN  site_id INT,
 			
 		-- return menus count for count query
-		OUT fetch_row,
+		OUT fetch_row
 	)
 	BEGIN
 
@@ -34,7 +34,7 @@
 		IN  name CHAR,
 			
 		-- return menus count for count query
-		OUT affected_rows,
+		OUT affected_rows
 	)
 	BEGIN
 
@@ -53,10 +53,10 @@
 		IN  menu ARRAY,
 			
 		-- return menus count for count query
-		OUT insert_id,
+		OUT insert_id
 	)
 	BEGIN
-		@FILTER(:menu, menu);
+		@FILTER(:menu, menu)
 
 		INSERT INTO menu 
 			
@@ -146,7 +146,7 @@
 		-- return array of menus for menus query
 		OUT fetch_all,
 		-- return menus count for count query
-		-- OUT fetch_one,
+		-- OUT fetch_one
 	)
 	BEGIN
 
@@ -275,7 +275,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		:menu_item_content_data = @FILTER(:menu_item.menu_item_content, menu_item_content);
+		:menu_item_content_data = @FILTER(:menu_item.menu_item_content, menu_item_content)
 
 		@EACH(:menu_item_content_data) 
 			INSERT INTO menu_item_content 
@@ -286,7 +286,7 @@
 				ON DUPLICATE KEY UPDATE @LIST(:each);
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:menu_item, menu_item);
+		@FILTER(:menu_item, menu_item)
 		
 		UPDATE menu_item 
 			
@@ -301,13 +301,14 @@
 
 	CREATE PROCEDURE addMenuItem(
 		IN menu_item ARRAY,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:menu_item_content_data = @FILTER(:menu_item.menu_item_content, menu_item_content);
-		:menu_item_data  = @FILTER(:menu_item, menu_item);
+		:menu_item_content_data = @FILTER(:menu_item.menu_item_content, menu_item_content)
+		:menu_item_data  = @FILTER(:menu_item, menu_item)
 
 		INSERT INTO menu_item 
 		
@@ -323,8 +324,6 @@
 			
 			VALUES ( @result.menu_item, :each );
 			
-	 
-        SELECT @menu_item as menu_item;
 	END
 
 	-- Reorder menu items
@@ -335,7 +334,7 @@
 	)
 	BEGIN
 		
-		:menu_item_data  = @FILTER(:menu_items, menu_item);
+		:menu_item_data  = @FILTER(:menu_items, menu_item)
 		
 		@EACH(:menu_item_data) 
 			UPDATE menu_item
@@ -346,9 +345,9 @@
 		
 	END	
 	
-	-- Delete menu item
+	-- Delete menu item recursive
 
-	CREATE PROCEDURE deleteMenuItem(
+	CREATE PROCEDURE deleteMenuItemRecursive(
 		IN menu_item_id INT,
 		OUT affected_rows,
 		OUT affected_rows,
@@ -388,5 +387,23 @@
 					 JOIN tree t ON t.menu_item_id = p.parent_id
 				)
 		SELECT menu_item_id FROM tree);
+		
+	END
+	
+	-- Delete menu item
+
+	CREATE PROCEDURE deleteMenuItem(
+		IN menu_item_id INT,
+		OUT affected_rows,
+		OUT affected_rows
+	)
+	BEGIN
+	
+		-- non CTE for older mysql versions, does not delete grand child menu items
+		DELETE FROM menu_item_content WHERE menu_item_id IN (SELECT menu_item_id FROM menu_item WHERE parent_id = :menu_item_id);
+		DELETE FROM menu_item_content WHERE menu_item_id = :menu_item_id;
+
+		DELETE FROM menu_item WHERE menu_item_id IN (SELECT menu_item_id FROM (SELECT menu_item_id FROM menu_item) as mi WHERE parent_id = :menu_item_id);
+		DELETE FROM menu_item WHERE menu_item_id = :menu_item_id;
 		
 	END

@@ -115,7 +115,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:comment, comment);
+		@FILTER(:comment, comment)
 		
 		INSERT INTO comment 
 			
@@ -134,7 +134,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:comment, comment);
+		@FILTER(:comment, comment)
 
 		UPDATE comment 
 			

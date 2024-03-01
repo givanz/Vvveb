@@ -121,7 +121,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:admin, admin);
+		@FILTER(:admin, admin)
 		
 		INSERT INTO admin 
 			
@@ -143,7 +143,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:admin, admin);
+		@FILTER(:admin, admin)
 
 		UPDATE admin 
 			

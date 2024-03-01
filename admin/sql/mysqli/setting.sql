@@ -2,17 +2,17 @@
 
 	-- get one setting
 
-	CREATE PROCEDURE getSetting(
+	CREATE PROCEDURE get(
+		IN site_id INT,
 		IN namespace CHAR,
 		IN key CHAR,
-		IN site_id INT,
 		
 		OUT fetch_one,
 	)
 	BEGIN
 
 		SELECT value
-            FROM setting AS _
+			FROM setting AS _
 		WHERE _.`key` = :key 
 		
 		@IF !empty(:namespace) 
@@ -28,49 +28,44 @@
 		
 	END
     
-	CREATE PROCEDURE setSetting(
+	CREATE PROCEDURE set(
+		IN site_id INT,
 		IN namespace CHAR,
 		IN key CHAR,
 		IN value CHAR,
-        IN site_id INT,
 		
 		OUT insert_id
 	)
 	BEGIN
 
-        INSERT INTO setting
-            (namespace, `key`, value, site_id)
+            INSERT INTO setting
+            (site_id, namespace, `key`, value)
         
-        VALUES ( :namespace, :key, :value, :site_id )
+            VALUES ( :site_id, :namespace, :key, :value )
         
         ON DUPLICATE KEY 
             UPDATE value = values(value);
 		
 	END
-    
-	CREATE PROCEDURE delete(
-		IN namespace CHAR,
-		IN key CHAR,
-	)
-	BEGIN
 
-        DELETE FROM 
-            setting 
-        WHERE `key` = :key;
-		
-	END
 
-    CREATE PROCEDURE getSettings(
+    CREATE PROCEDURE getMulti(
+		IN site_id INT,
 		IN namespace CHAR,
 		IN key ARRAY,
-		IN site_id INT,
-		OUT fetch_all,
+		OUT fetch_all
 	)
 	BEGIN
 
 		SELECT namespace, `key`, value
-            FROM setting AS _
+			FROM setting AS _
 		WHERE 1 = 1
+
+
+		@IF !empty(:site_id) 
+		THEN 
+			AND _.site_id = :site_id
+		END @IF	
 		
 		@IF !empty(:namespace) 
 		THEN 
@@ -79,59 +74,60 @@
 		
 		@IF !empty(:key) 
 		THEN 
-			AND _.`key`IN (:key)
-		END @IF	
-
-		@IF !empty(:site_id) 
-		THEN 
-			AND _.site_id = :site_id
+			AND _.`key` IN (:key)
 		END @IF	
 		;
 		
 	END    
     
     
-	CREATE PROCEDURE setSettings(
+	CREATE PROCEDURE setMulti(
+		IN site_id INT,
 		IN namespace CHAR,
 		IN settings ARRAY,
-		IN site_id INT,
+		
+		OUT insert_id
 	)
 	BEGIN
 
-        INSERT INTO setting
-            (namespace, `key`, value, site_id)
-        
-		-- @EACH(:settings) 
-			VALUES (namespace, :each, :site_id)
-		-- END @EACH	
+	   -- :settings = @FILTER(:settings, setting, false, true)
+	
+		@EACH(:settings) 
+			INSERT INTO setting 
 		
-        -- @VALUES(:settings) --@VALUES expands the array to the following expression
-        --    ( :settings.each.`key`, :settings.each.value, :site_id )
+				( site_id, namespace, `key`, value )
+			
+			VALUES ( :site_id, :namespace, :each_key, :each )  
         
         ON DUPLICATE KEY 
             UPDATE value = VALUES(value);
 		
 	END
     
-	CREATE PROCEDURE deleteSettings(
-		IN namespace CHAR,
-		IN keys ARRAY,
+	CREATE PROCEDURE delete(
 		IN site_id,
+		IN namespace CHAR,
+		IN key ARRAY
 	)
 	BEGIN
 
-        DELETE FROM 
-            setting 
-        WHERE `key` IN (:keys) 
+		DELETE FROM 
+			setting 
+		WHERE 1 = 1  
 		
 		@IF !empty(:namespace) 
 		THEN 
-			AND _.namespace = :namespace
+			AND namespace = :namespace
+		END @IF	
+
+		@IF !empty(:key) 
+		THEN 
+			AND `key` IN (:key)
 		END @IF	
 
 		@IF !empty(:site_id) 
 		THEN 
-			AND _.site_id = :site_id
+			AND site_id = :site_id
 		END @IF	
 		;		
 		

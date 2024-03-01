@@ -48,7 +48,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:currency_data  = @FILTER(:currency, currency);
+		:currency_data  = @FILTER(:currency, currency)
 		
 		
 		INSERT INTO currency 
@@ -68,7 +68,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:currency, currency);
+		@FILTER(:currency, currency)
 
 		UPDATE currency 
 			

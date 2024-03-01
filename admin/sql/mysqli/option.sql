@@ -58,7 +58,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:option_data  = @FILTER(:option, option);
+		:option_data  = @FILTER(:option, option)
 		
 		
 		INSERT INTO `option` 
@@ -68,7 +68,7 @@
 	  	VALUES ( :option_data );		
 		
 		
-		:option_content  = @FILTER(:option, option_content);
+		:option_content  = @FILTER(:option, option_content)
 	  	
 		INSERT INTO option_content 
 			
@@ -89,7 +89,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		:option_data = @FILTER(:option, option);
+		:option_data = @FILTER(:option, option)
 
 		UPDATE `option`
 			
@@ -98,7 +98,7 @@
 		WHERE option_id = :option_id;
 		
 		-- allow only table fields and set defaults for missing values
-		:option_content = @FILTER(:option, option_content);
+		:option_content = @FILTER(:option, option_content)
 
 		UPDATE option_content
 			

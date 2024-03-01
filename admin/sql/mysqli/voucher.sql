@@ -46,7 +46,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:voucher_data  = @FILTER(:voucher, voucher);
+		:voucher_data  = @FILTER(:voucher, voucher)
 		
 		
 		INSERT INTO voucher 
@@ -66,7 +66,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:voucher, voucher);
+		@FILTER(:voucher, voucher)
 
 		UPDATE voucher
 			

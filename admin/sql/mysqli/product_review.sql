@@ -168,7 +168,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:product_review, product_review);
+		@FILTER(:product_review, product_review)
 		
 		INSERT INTO product_review 
 			
@@ -187,7 +187,7 @@
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:product_review, product_review);
+		@FILTER(:product_review, product_review)
 
 		UPDATE product_review 
 			

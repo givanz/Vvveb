@@ -51,7 +51,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:return_status_data  = @FILTER(:return_status, return_status);
+		:return_status_data  = @FILTER(:return_status, return_status)
 		
 		
 		INSERT INTO return_status 
@@ -72,7 +72,7 @@
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:return_status, return_status);
+		@FILTER(:return_status, return_status)
 
 		UPDATE return_status 
 			
