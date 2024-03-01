@@ -36,6 +36,7 @@ use Vvveb\System\CacheManager;
 use Vvveb\System\Cart\Cart;
 use Vvveb\System\Cart\Order;
 use Vvveb\System\Core\View;
+use Vvveb\System\Event;
 use Vvveb\System\Payment;
 use Vvveb\System\Shipping;
 use Vvveb\System\Sites;
@@ -252,16 +253,20 @@ class Checkout extends Base {
 
 				$this->view->errors = [];
 
-				$order = $order->add($checkoutInfo);
+				list($checkoutInfo) = Event::trigger(__CLASS__, 'add', $checkoutInfo);
 
-				if ($order && is_array($order)) {
-					$order_id                           = $order['order'];
+				$order_id = $order->add($checkoutInfo);
+
+				if ($order_id) {
 					$this->request->request['order_id'] = $order_id;
+					$checkoutInfo['order_id']           = $order_id;
 
 					$this->view->messages[] = __('Order placed!');
-					$this->session->set('order', $order);
+					$this->session->set('order', $checkoutInfo);
 					$cart->empty();
 					$site = siteSettings();
+
+					list($checkoutInfo, $order_id, $site) = Event::trigger(__CLASS__, 'add:after', $checkoutInfo, $order_id, $site);
 
 					try {
 						$error =  __('Error sending order confirmation mail!');

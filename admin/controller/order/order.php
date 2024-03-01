@@ -31,6 +31,7 @@ use Vvveb\Sql\Order_LogSQL;
 use Vvveb\Sql\OrderSQL;
 use Vvveb\System\Cart\Cart;
 use Vvveb\System\Cart\Currency;
+use Vvveb\System\Cart\Order as SystemOrder;
 use Vvveb\System\Core\View;
 use Vvveb\System\Images;
 use Vvveb\System\Payment;
@@ -107,6 +108,7 @@ class Order extends Base {
 				$url                    = ['module' => 'order/order', 'action' => 'print', 'order_id' => $order['order_id']];
 				$view->printUrl 	       = \Vvveb\url($url);
 				$view->printShippingUrl = \Vvveb\url(['action' => 'printShipping'] + $url);
+				$view->printInvoiceUrl  = \Vvveb\url(['action' => 'printInvoice'] + $url);
 			} else {
 				return $this->notFound(true, __('Order not found!'));
 			}
@@ -123,6 +125,10 @@ class Order extends Base {
 	}
 
 	function printShipping() {
+		return $this->index();
+	}
+
+	function printInvoice() {
 		return $this->index();
 	}
 
@@ -196,11 +202,14 @@ class Order extends Base {
 					$view->errors = [$orders->error];
 				}
 			} else {
-				$result = $orders->add(['order' => $order + $this->global]);
+				$order['user_id'] = 0;
+				$systemOrder      = SystemOrder::getInstance();
+				$order_id         = $systemOrder->add($order + $this->global);
+				//$result = $orders->add(['order' => $order + $this->global]);
 
-				if (isset($result['order'])) {
+				if (isset($order_id)) {
 					$view->success = __('Order saved!');
-					$url           = ['module' => 'order/order', 'order_id' => $result['order']];
+					$url           = ['module' => 'order/order', 'order_id' => $order_id];
 					$this->redirect($url);
 				} else {
 					$view->errors = [$orders->error];

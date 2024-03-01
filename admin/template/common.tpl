@@ -7,6 +7,7 @@ import(notifications.tpl)
 
 import(components/posts.tpl)
 import(components/products.tpl)
+import(components/product.tpl)
 import(components/orders.tpl)
 import(components/users.tpl)
 import(components/languages.tpl)
@@ -23,6 +24,7 @@ import(menu.tpl)
 
 
 [data-v-check-permission-*]|if_exists = $this->actionPermissions['@@__data-v-check-permission-(*)__@@']
+[data-v-check-action-permission]|if_exists = $this->actionPermissions['@@__data-v-check-action-permission__@@']
 [data-v-check-permission]|if_exists = $this->modulePermissions['@@__data-v-check-permission__@@']
 
 html|addNewAttribute = <?php if (isset($_COOKIE['theme'])) { 

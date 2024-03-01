@@ -48,7 +48,7 @@ class Order {
 
 	public function add($data) {
 		//set defaults
-		$defaults = ['invoice_prefix', 'order_status_id', 'remote_ip', 'forwarded_for_ip'];
+		$defaults = ['invoice_format', 'order_status_id', 'remote_ip', 'forwarded_for_ip'];
 
 		$site                     = siteSettings();
 		$site['remote_ip']        = $_SERVER['REMOTE_ADDR'] ?? false;
@@ -63,7 +63,19 @@ class Order {
 			}
 		}
 
-		//check if email is already registerd
-		return $this->model->add(['order' => $data]);
+		$data['invoice_no'] = \Vvveb\invoiceFormat($data['invoice_format'], $data);
+
+		//todo: check if email is already registerd for new accounts
+		$result   = $this->model->add(['order' => $data]);
+		$order_id = $result['order'] ?? false;
+
+		if ($order_id) {
+			//update invoice to set {order_id} variable
+			$data['order_id']   = $order_id;
+			$data['invoice_no'] = \Vvveb\invoiceFormat($data['invoice_format'], $data);
+			$result             = $this->model->edit(['order' => ['invoice_no' => $data['invoice_no']], 'order_id' => $order_id]);
+		}
+
+		return $order_id;
 	}
 }

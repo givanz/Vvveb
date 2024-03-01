@@ -64,6 +64,7 @@ if(is_array($logs)) foreach ($logs as $index => $log) {
 
 [data-v-order-print-url]|href = $this->printUrl
 [data-v-order-print-shipping-url]|href = $this->printShippingUrl
+[data-v-order-print-invoice-url]|href = $this->printInvoiceUrl
 
 
 @payment  = [data-v-payments] [data-v-payment]

@@ -22,6 +22,7 @@
 
 namespace Vvveb\System\Cart;
 
+use function \Vvveb\model;
 use function \Vvveb\url;
 use Vvveb\Sql\Product_Option_ValueSQL;
 use Vvveb\Sql\ProductSQL;
@@ -36,6 +37,10 @@ class Cart {
 	private $currency;
 
 	private $tax;
+
+	protected $productModel = 'product';
+
+	protected $sessionKey = 'cart';
 
 	protected $options;
 
@@ -118,7 +123,7 @@ class Cart {
 				'product_id'            => $productIds,
 			] + $this->options;
 
-			$productSql = new ProductSQL();
+			$productSql = model($this->productModel); //new ProductSQL();
 			$results    = $productSql->getAll(
 				$options
 			);
@@ -200,6 +205,13 @@ class Cart {
 		}
 
 		$this->addTotal('sub_total', 'Sub-total', $this->total);
+
+		//set cart cookie to disable cache if products in cart
+		if ($this->total_items) {
+			setcookie('cart', '1', 0, '/');
+		} else {
+			setcookie('cart', '', time() - 3600, '/');
+		}
 		//write is done by addTotal
 		//$this->write();
 
@@ -399,7 +411,7 @@ class Cart {
 	}
 
 	protected function read() {
-		$data = $this->session->get('cart');
+		$data = $this->session->get($this->sessionKey);
 
 		if (is_array($data)) {
 			foreach ($data as $property => $value) {
@@ -414,10 +426,12 @@ class Cart {
 			$data[$property] = $this->$property;
 		}
 
-		$this->session->set('cart', $data);
+		$this->session->set($this->sessionKey, $data);
 	}
 
 	public function empty() {
-		$this->session->set('cart', []);
+		$this->session->set($this->sessionKey, []);
+		//enable cache back by clearing the cart cookie
+		setcookie('cart', '', time() - 3600, '/');
 	}
 }
