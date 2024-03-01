@@ -22,6 +22,8 @@
 
 namespace Vvveb\System\Import;
 
+use function Vvveb\globBrace;
+
 class Theme {
 	private $theme;
 
@@ -34,10 +36,13 @@ class Theme {
 
 	function getStructure() {
 		$path   = $this->path;
-		$glob   = glob($this->path . '{*,*/*,*/*/*}', GLOB_BRACE | GLOB_ONLYDIR);
+		//$glob   = glob($this->path . '{*,*/*,*/*/*}', GLOB_BRACE | GLOB_ONLYDIR);
+		$glob   = ['', '*,*/*,*/*/*'];
+		
+		$files  = globBrace($path, $glob);
 		$result = [];
 
-		foreach ($glob as $path => &$value) {
+		foreach ($files as $path => &$value) {
 			$dir  = str_replace($this->path,'', $value);
 			$temp = &$result;
 
