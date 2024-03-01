@@ -51,7 +51,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:site_data  = @FILTER(:site, site);
+		:site_data  = @FILTER(:site, site)
 		
 		
 		INSERT INTO site 
