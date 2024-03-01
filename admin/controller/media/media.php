@@ -182,8 +182,8 @@ class Media extends Base {
 							$files[] = [
 								'name'  => $f,
 								'type'  => 'folder',
-								'path'  => str_replace($scandir, '', $dir) . DS . $f,
-								'items' => $scan($dir . DS . $f), // Recursively get the contents of the folder
+								'path'  => str_replace([$scandir, '\\'], ['', '/'], $dir) . '/' . $f,
+								'items' => $scan("$dir/$f"), // Recursively get the contents of the folder
 							];
 						} else {
 							// It is a file
@@ -191,8 +191,8 @@ class Media extends Base {
 							$files[] = [
 								'name' => $f,
 								'type' => 'file',
-								'path' => str_replace($scandir, '', $dir) . DS . $f,
-								'size' => filesize($dir . DS . $f), // Gets the size of this file
+								'path' => str_replace([$scandir, '\\'], ['', '/'], $dir) . '/' . $f,
+								'size' => filesize("$dir/$f"), // Gets the size of this file
 							];
 						}
 					}
