@@ -20,13 +20,4 @@
  *
  */
 
-return [
-	'title' => [
-		'notEmpty'   => '',
-		'maxLength'  => 100,
-	],
-	'description' => [
-		'notEmpty'   => '',
-		'maxLength'  => 255,
-	],
-];
+return [];

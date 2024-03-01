@@ -32,6 +32,7 @@ use function Vvveb\setLanguage;
 use function Vvveb\siteSettings;
 use Vvveb\System\Core\View;
 use Vvveb\System\PageCache;
+use Vvveb\System\Sites;
 use Vvveb\System\User\Admin;
 use Vvveb\System\User\User;
 
@@ -40,17 +41,18 @@ class Base {
 	protected function language($defaultLanguage, $defaultLanguageId) {
 		$languages = availableLanguages();
 
-		if (($language = ($this->request->post['language'] ?? false)) && ! is_array($language)) {
-			$language  = filter('/[A-Za-z_-]+/', $language, 50);
+		$default_language    = $this->session->get('default_language');
+		$default_language_id = $this->session->get('default_language_id');
+		$language            = $this->session->get('language');
+		$language_id         = $this->session->get('language_id');
+
+		if (($lang = ($this->request->post['language'] ?? false)) && ! is_array($lang)) {
+			$language  = filter('/[A-Za-z_-]+/', $lang, 50);
 			$this->session->set('language', $language);
-			$this->session->set('language_id', $languages[$language]['language_id'] ?? $defaultLanguageId);
+			$this->session->set('language_id', $languages[$language]['language_id']);
+			$default_language = false; //recheck default language
 			clearLanguageCache($language);
 		}
-
-		$default_language    = $this->session->get('default_language') ?? $default_language = $defaultLanguage;
-		$default_language_id = $this->session->get('default_language_id') ?? $default_language_id = $defaultLanguageId;
-		$language            = $this->session->get('language') ?? $language = $default_language;
-		$language_id         = $this->session->get('language_id') ?? $language_id = $defaultLanguageId;
 
 		if (! $default_language) {
 			foreach ($languages as $code => $lang) {
@@ -150,18 +152,38 @@ class Base {
 			}
 		}
 
+		$siteData = Sites :: getSiteData();
+
+		if (isset($siteData['state']) && $siteData['state'] != 'live') {
+			$admin = Admin::current();
+
+			if (! $admin) {
+				$template = Sites::getStates()[$siteData['state']]['template'];
+				$this->view->template($template);
+
+				//die($this->view->render());
+				$this->response->output();
+			}
+		}
+
 		$site = siteSettings();
 		$user = User::current();
-		$site['url'] = '//' . $_SERVER['HTTP_HOST'] ?? '';
+		$site['url'] = '//' . ($_SERVER['HTTP_HOST'] ?? '');
 
 		$this->global['site_id']       = SITE_ID ?? 1;
 		$this->global['user_id']       = $user['user_id'] ?? false;
 		$this->global['user_group_id'] = $user['user_group_id'] ?? 1;
-		$this->global['site']          = $site;
+		$this->global['site']          = &$site;
 		$this->global['user']          = $user ?? [];
 
 		$this->language($site['language'] ?? 'en_US', $site['language_id'] ?? 1);
 		$this->currency($site['currency'] ?? 'USD', $site['currency_id'] ?? 1);
+
+		$language_id = $this->global['language_id'];
+
+		if (isset($site['description'][$language_id])) {
+			$site['description'] = $site['description'][$language_id];
+		}
 
 		$this->view->global = $this->global;
 

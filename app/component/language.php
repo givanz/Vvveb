@@ -68,7 +68,7 @@ class Language extends ComponentBase {
 		$view   	   = View::getInstance();
 
 		if ($results) {
-			$results['current']    = $code    = Session::getInstance()->get('language') ?? 'en_US';
+			$results['current']    = $code    = $request->request['language'] ?? Session::getInstance()->get('language') ?? 'en_US';
 			$language              = $results['language'][$code] ?? [];
 
 			if (! $language) {

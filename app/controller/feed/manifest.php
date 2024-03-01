@@ -30,7 +30,8 @@ use function Vvveb\url;
 #[\AllowDynamicProperties]
 class Manifest extends Base {
 	function index() {
-		$site   = siteSettings();
+		$site        = siteSettings();
+		$description = $site['description'][$this->global['language_id']] ?? [];
 
 		if ($site) {
 			$logo    = Images::image($site['logo-src'], 'logo', [144, 144]);
@@ -38,13 +39,13 @@ class Manifest extends Base {
 			$url     = url('index/index', ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'https']);
 
 			$manifest = [
-				'short_name' => $site['title'],
+				'short_name' => $description['title'] ?? '',
 				'lang'       => $this->global['language'],
 				'dir'        => 'ltr',
-				'name'       => $site['title'],
+				'name'       => $description['title'] ?? '',
 				'icons'      => [
 					0 => [
-						'src' => $logo, //$site['logo'],
+						'src' => $logo, //$description['logo'] ?? '',
 						//'type' => 'image/svg+xml',
 						'type'  => 'image/png',
 						'sizes' => '144x144',
@@ -69,19 +70,19 @@ class Manifest extends Base {
 				'theme_color'      => '#3367D6',
 				'shortcuts'        => [
 					0 => [
-						'name'        => $site['description'],
-						'short_name'  => $site['title'],
-						'description' => $site['meta-description'],
+						'name'        => $description['description'] ?? '',
+						'short_name'  => $description['title'] ?? '',
+						'description' => $description['meta-description'] ?? '',
 						'url'         => '/?source=pwa',
 						'icons'       => [
 							0 => [
-								'src'   => $favicon, //$site['favicon'],
+								'src'   => $favicon, //$description['favicon'],
 								'sizes' => '96x96',
 							],
 						],
 					],
 				],
-				'description' => $site['meta-description'],
+				'description' => $description['meta-description'] ?? '',
 				/*
 			  'screenshots' => [
 				0 => [

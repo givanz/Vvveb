@@ -23,7 +23,7 @@
 namespace Vvveb\Controller;
 
 use function Vvveb\__;
-use function Vvveb\array_insert_array_after;
+use function Vvveb\arrayInsertArrayAfter;
 use function Vvveb\availableCurrencies;
 use function Vvveb\availableLanguages;
 use function Vvveb\clearLanguageCache;
@@ -65,6 +65,7 @@ class Base {
 		$this->session->set('site_id', $site_id);
 		$this->session->set('site_url', $site['host']);
 		$this->session->set('site', $site['id']);
+		$this->session->set('host', $site['host']);
 		$this->session->set('state', $site['state'] ?? 'live');
 
 		return $site_id;
@@ -95,7 +96,7 @@ class Base {
 			],
 		];
 
-		$custom_posts_types        = \Vvveb\get_setting('post', 'types', []);
+		$custom_posts_types        = \Vvveb\getSetting('post', 'types', []);
 		$custom_posts_types       += $default_custom_posts;
 		list($custom_posts_types) = Event::trigger(__CLASS__, __FUNCTION__, $custom_posts_types);
 
@@ -144,7 +145,7 @@ class Base {
 					'icon'   => $icon,
 				]];
 
-				$posts_menu[$type]['items'] = array_insert_array_after('taxonomy-heading', $posts_menu[$type]['items'], $tax);
+				$posts_menu[$type]['items'] = arrayInsertArrayAfter('taxonomy-heading', $posts_menu[$type]['items'], $tax);
 			}
 		}
 
@@ -162,7 +163,7 @@ class Base {
 			],
 		];
 
-		$custom_products_types       = \Vvveb\get_setting('product', 'types', []);
+		$custom_products_types       = \Vvveb\getSetting('product', 'types', []);
 		$custom_products_types      += $default_custom_products;
 		list($custom_products_types) = Event::trigger(__CLASS__, __FUNCTION__, $custom_products_types);
 
@@ -208,7 +209,7 @@ class Base {
 					'icon'   => $icon,
 				]];
 
-				$products_menu[$type]['items'] = array_insert_array_after('taxonomy-heading', $products_menu[$type]['items'], $tax);
+				$products_menu[$type]['items'] = arrayInsertArrayAfter('taxonomy-heading', $products_menu[$type]['items'], $tax);
 			}
 		}
 
@@ -287,17 +288,18 @@ class Base {
 	protected function language($defaultLanguage, $defaultLanguageId) {
 		$languages = availableLanguages();
 
-		if (($language = ($this->request->post['language'] ?? false)) && ! is_array($language)) {
-			$language  = filter('/[A-Za-z_-]+/', $language, 50);
+		$default_language    = $this->session->get('default_language');
+		$default_language_id = $this->session->get('default_language_id');
+		$language            = $this->session->get('language');
+		$language_id         = $this->session->get('language_id');
+
+		if (($lang = ($this->request->post['language'] ?? false)) && ! is_array($lang)) {
+			$language  = filter('/[A-Za-z_-]+/', $lang, 50);
 			$this->session->set('language', $language);
-			$this->session->set('language_id', $languages[$language]['language_id'] ?? $defaultLanguageId);
+			$this->session->set('language_id', $languages[$language]['language_id']);
+			$default_language = false; //recheck default language
 			clearLanguageCache($language);
 		}
-
-		$default_language    = $this->session->get('default_language') ?? $default_language = $defaultLanguage;
-		$default_language_id = $this->session->get('default_language_id') ?? $default_language_id = $defaultLanguageId;
-		$language            = $this->session->get('language') ?? $language = $default_language;
-		$language_id         = $this->session->get('language_id') ?? $language_id = $defaultLanguageId;
 
 		if (! $default_language) {
 			foreach ($languages as $code => $lang) {
@@ -423,6 +425,7 @@ class Base {
 			if (Admin::hasPermission('settings/site/save')) {
 				if (Sites::setSiteDataById($site_id, 'state', $state)) {
 					$this->session->set('state', $state);
+					PageCache::getInstance()->purge();
 				}
 			} else {
 				$message              = __('Your role does not have permission to access this action!');
@@ -434,6 +437,7 @@ class Base {
 		$limit       = $this->request->get['limit'] ?? 10;
 
 		$this->global['site_id']  = $site_id;
+		$this->global['host']     = $this->session->get('host');
 		$this->global['admin_id'] = $admin['admin_id'];
 		$this->global['state']    = $state;
 		$this->global['page']     = $page;
@@ -476,11 +480,11 @@ class Base {
 		//custom posts -- add to menu
 		$this->taxonomies = $this->getTaxonomies();
 		$posts_menu       = $this->customPost();
-		$menu             = array_insert_array_after('edit', $menu, $posts_menu);
+		$menu             = arrayInsertArrayAfter('edit', $menu, $posts_menu);
 
 		//products - add to menu
 		$products_menu = $this->customProduct();
-		$menu          = array_insert_array_after('sales', $menu, $products_menu);
+		$menu          = arrayInsertArrayAfter('sales', $menu, $products_menu);
 
 		list($menu)       = Event::trigger(__CLASS__, __FUNCTION__ . '-menu', $menu);
 
@@ -525,6 +529,7 @@ class Base {
 		//return \Vvveb\System\Core\FrontController::redirect('user/login');
 		//$view = view :: getInstance();
 		$admin_path         = \Vvveb\adminPath();
+		$this->view->redir  = $_SERVER['REQUEST_URI'] ?? '';
 		$this->view->action = "{$admin_path}index.php?module=user/login";
 		$this->view->template('user/login.html');
 
