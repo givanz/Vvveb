@@ -33,7 +33,7 @@ class Cron {
 		if (defined('CLI')) {
 		} else {
 			$key     = $this->request->get['key'];
-			$cronkey = \Vvveb\get_config('app.cronkey');
+			$cronkey = \Vvveb\getConfig('app.cronkey');
 
 			if ($key != $cronkey) {
 				die('Invalid key!');
@@ -57,7 +57,7 @@ class Cron {
 	}
 
 	function call() {
-		$cronkey  = \Vvveb\get_config('app.cronkey');
+		$cronkey  = \Vvveb\getConfig('app.cronkey');
 		echo $url = url('cron/index', ['key' => $cronkey]);
 		$options  = [
 			'timeout'   => 0.01,

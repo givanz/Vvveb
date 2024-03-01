@@ -44,7 +44,6 @@ class User extends Base {
 			$sqlModel   = 'Vvveb\Sql\\' . ucfirst($this->type) . 'SQL';
 			$users      = new $sqlModel();
 			$user       = $users->get($options);
-			$view->user = $user;
 
 			if (isset($user['password'])) {
 				//don't show password hash

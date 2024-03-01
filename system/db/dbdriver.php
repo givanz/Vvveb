@@ -292,8 +292,12 @@ class DBDriver {
 		function ($matches) use (&$parameters, &$sql, &$index) {
 			$value = $parameters[$index++];
 
+			if (is_array($value)) {
+				$value = var_export($value, 1);
+			} else {
 			if (! is_numeric($value)) {
 				$value = "'$value'";
+				}
 			}
 
 			return $value;

@@ -541,7 +541,7 @@ return
  				'url'    => $admin_path . '?module=field/field-groups',
  				'module' => 'field/field-groups',
  				'action' => 'index',
- 				'icon'   => 'la la-brush',
+ 				'icon'   => 'la la-stream',
  			],
  			'new' => [
  				'name'   => __('Add new'),
@@ -931,7 +931,7 @@ return
  		'url'    => $admin_path . '?module=tools/cache',
  		'module' => 'tools/cache',
  		'action' => 'index',
- 		'icon'   => 'icon-globe-outline',
+ 		'icon'   => 'icon-build-outline',
  		'class'  => 'align-top',
  		'items'  => [
  			'cache' => [

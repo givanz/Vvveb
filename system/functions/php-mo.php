@@ -55,7 +55,7 @@ function phpmo_clean_helper($x) {
 		$x = str_replace("\"\n\"", '', $x);
 		$x = str_replace('$', '\\$', $x);
 		$x = str_replace('\\\\', '\\', $x);
-		$x = preg_replace('/\+(["\$n])/', '\$1', $x);	
+		$x = preg_replace('/\+(["\$n])/', '\$1', $x);
 	}
 
 	return $x;
@@ -122,8 +122,9 @@ function phpmo_parse_po_file($in) {
 				// untranslated-string
 				if (sizeof($temp)) {
 					$hash[] = $temp;
-					$temp  = [];
+					$temp   = [];
 				}
+
 			case 'msgid_plural':
 				// untranslated-string-plural
 				$state        = $key;
@@ -195,15 +196,15 @@ function phpmo_parse_po_file($in) {
 	return $hash;
 }
 
-
 function phpmo_po_text($hash) {
 	$text = '';
+
 	foreach ($hash as $id => $value) {
-		$msgid = phpmo_clean_helper(addcslashes($value['msgid'] ?? '', '"'));
+		$msgid  = phpmo_clean_helper(addcslashes($value['msgid'] ?? '', '"'));
 		$msgstr = phpmo_clean_helper(addcslashes($value['msgstr'][0] ?? '', '"'));
 		$text .= "msgid \"$msgid\"\nmsgstr \"$msgstr\"\n\n";
 	}
-	
+
 	return $text;
 }
 
@@ -211,9 +212,9 @@ function phpmo_po_text($hash) {
 /* @link http://www.gnu.org/software/gettext/manual/gettext.html#MO-Files */
 function phpmo_write_po_file($hash, $out) {
 	$text = phpmo_po_text($hash);
+
 	return file_put_contents($out, $text);
 }
-
 
 /* Write a GNU gettext style machine object. */
 /* @link http://www.gnu.org/software/gettext/manual/gettext.html#MO-Files */
@@ -229,8 +230,9 @@ function phpmo_write_mo_file($hash, $out) {
 
 	foreach ($hash as $index => &$entry) {
 		//don't add empty translations
-		if (!$entry['msgstr'] || !$entry['msgstr'][0]) {
+		if (! $entry['msgstr'] || ! $entry['msgstr'][0]) {
 			unset($hash[$index]);
+
 			continue;
 		}
 
@@ -246,7 +248,7 @@ function phpmo_write_mo_file($hash, $out) {
 
 		// plural msgstrs are NUL-separated
 		$str = implode("\x00", $entry['msgstr']);
-		$str = str_replace('\n',"\n", $str);//restore newlines
+		$str = str_replace('\n',"\n", $str); //restore newlines
 
 		// keep track of offsets
 		$offsets[] = [

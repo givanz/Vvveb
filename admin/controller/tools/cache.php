@@ -36,7 +36,7 @@ class Cache extends Base {
 
 		return $this->index();
 	}
-	
+
 	function delete() {
 		return $this->clear('delete');
 	}
@@ -56,7 +56,7 @@ class Cache extends Base {
 	function asset() {
 		return $this->clear('clearFrontend');
 	}
-	
+
 	function model() {
 		return $this->clear('clearModelCache');
 	}
@@ -68,7 +68,8 @@ class Cache extends Base {
 	function stale() {
 		return $this->index();
 	}
-	
+
 	function index() {
+		$this->view->isPageCacheDirWritable = is_writable(DIR_PUBLIC . PAGE_CACHE_DIR);
 	}
 }

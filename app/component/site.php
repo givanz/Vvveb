@@ -42,7 +42,7 @@ class Site extends ComponentBase {
 	}
 
 	function results() {
-		$results = siteSettings($this->options['site_id']);
+		$results = siteSettings($this->options['site_id'], $this->options['language_id']);
 
 		if (! $results) {
 			$results    = ['logo'=>'logo.png', 'logo-sticky' => 'logo.png', 'logo-dark' => 'logo-white.png', 'logo-dark-sticky' => 'logo-white.png', 'favicon' => 'favicon.ico'];

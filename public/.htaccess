@@ -73,7 +73,7 @@ RewriteRule ^ index.php [L]
     </FilesMatch>  
 </IfModule>
 
-FileETag None
+#FileETag None
 
 <IfModule mod_expires.c>
     ExpiresActive On

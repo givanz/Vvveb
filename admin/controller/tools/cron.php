@@ -33,7 +33,7 @@ class Cron extends Base {
 		$site           = Sites::getSiteById($this->global['site_id']);
 
 		$view->cron     = CronList::getCrons();
-		$view->cronkey  = \Vvveb\get_config('app.cronkey');
+		$view->cronkey  = \Vvveb\getConfig('app.cronkey');
 		$view->cron_url = $site['href'] . '/run-cron/' . $view->cronkey;
 		$view->cron_cli = 'php ' . DIR_ROOT . 'cli.php app module=cron/index';
 	}

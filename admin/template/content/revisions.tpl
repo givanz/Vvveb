@@ -10,8 +10,9 @@ img[data-v-post-*]|src = $this->post['@@__data-v-post-(*)__@@']
 
 @revision|before = <?php 
 foreach ($this->revisions as $revision) {?>
-	@revision|value = $revision['created_at'] 
-	@revision       = <?php echo Vvveb\friendlyDate($revision['created_at']) . ' | ' . $revision['created_at'] . ' | ' .$revision['display_name'];?>
+	@revision                 = <?php echo Vvveb\friendlyDate($revision['created_at']) . ' | ' . $revision['created_at'] . ' | ' .$revision['display_name'];?>
+	@revision|value           = $revision['created_at'] 
+	@revision|addNewAttribute = <?php if (isset($this->options['created_at']) && ($this->options['created_at'] == $revision['created_at'])) echo 'selected';?> 
 	
 @revision|after = <?php 
 	} 

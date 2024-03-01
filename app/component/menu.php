@@ -57,6 +57,7 @@ class Menu extends ComponentBase {
 
 			foreach ($results['menus'] as $taxonomy_item_id => &$category) {
 				$parent_id = $category['parent_id'] ?? false;
+				$type      = $category['type'] ?? 'link';
 
 				if ($current_category_slug == $category['slug']) {
 					$category['active'] = true;
@@ -77,16 +78,16 @@ class Menu extends ComponentBase {
 						$parent['children'] = 1;
 					}
 
-					if ($category['type'] == 'text') {
+					if ($type == 'text') {
 						$parent['has-text'] = true;
 					}
 				}
 
-				if ($category['type'] == 'product') {
+				if ($type == 'product') {
 					$productIds[$taxonomy_item_id] = $category['item_id'];
 				}
 
-				if ($category['type'] == 'post' || $category['type'] == 'page') {
+				if ($type == 'post' || $type == 'page') {
 					$postIds[$taxonomy_item_id] = $category['item_id'];
 				}
 			}

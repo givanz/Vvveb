@@ -35,7 +35,7 @@ class Themes extends Base {
 		$theme = sanitizeFileName(basename($this->request->get['theme'] ?? ''));
 
 		if ($theme) {
-			if (rrmdir(DIR_THEMES . DS . $theme)) {
+			if (rrmdir(DIR_THEMES . $theme)) {
 				$this->view->success[] = _('Theme removed!');
 			} else {
 				$this->view->errors[] = _('Error removing theme!');

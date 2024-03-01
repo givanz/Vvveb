@@ -24,6 +24,7 @@ namespace Vvveb\Controller\Tools;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\System\Event;
 
 class SystemInfo extends Base {
 	function index() {
@@ -46,30 +47,35 @@ class SystemInfo extends Base {
 			$database .= ' | ' . sprintf(__('Server version: %s'), $info);
 		}
 
+		(extension_loaded('gd') && $imageLibrary = 'gd') ||
+		(extension_loaded('imagick') && $imageLibrary = 'imagick') ||
+		($imageLibrary = 'mockup (Imagick or GD not enabled!)');
+
 		$info = [
 			'general' => [
-				__('Vvveb version')                    => V_VERSION,
-				__('Admin path')                       => \Vvveb\adminPath(),
-				__('PHP version')                      => phpversion() . ' | ' . php_sapi_name(),
-				__('Server')                           => $_SERVER['SERVER_SOFTWARE'] ?? '',
-				__('OS version')                       => php_uname(),
-				__('Database driver & version')        => $database,
-				__('PHP time limit')                   => ini_get('max_execution_time'),
-				__('PHP memory limit')                 => ini_get('memory_limit'),
-				__('Max input time')                   => ini_get('max_input_time'),
-				__('Upload max filesize')              => ini_get('upload_max_filesize'),
-				__('PHP post max size')                => ini_get('post_max_size'),
-				__('Extensions')                       => implode(' ', get_loaded_extensions()),
-				__('Page cache')                       => (defined('PAGE_CACHE') && PAGE_CACHE) ? __('enabled') : __('disabled'),
-				__('Object cache')                     => \Vvveb\get_config('app.cache.driver'),
-				__('Email Driver')                     => \Vvveb\get_config('app.email.driver'),
-				__('Session Driver')                   => \Vvveb\get_config('app.session.driver'),
-				__('Debug')                            => DEBUG ? __('enabled') : __('disabled'),
-				__('Sql changes check')                => SQL_CHECK ? __('enabled') : __('disabled'),
+				__('Vvveb version')             => V_VERSION,
+				__('Admin path')                => \Vvveb\adminPath(),
+				__('PHP version')               => phpversion() . ' | ' . php_sapi_name(),
+				__('Server')                    => $_SERVER['SERVER_SOFTWARE'] ?? '',
+				__('OS version')                => php_uname(),
+				__('Database driver & version') => $database,
+				__('PHP time limit')            => ini_get('max_execution_time'),
+				__('PHP memory limit')          => ini_get('memory_limit'),
+				__('Max input time')            => ini_get('max_input_time'),
+				__('Upload max filesize')       => ini_get('upload_max_filesize'),
+				__('PHP post max size')         => ini_get('post_max_size'),
+				__('Extensions')                => implode(' ', get_loaded_extensions()),
+				__('Page cache')                => (defined('PAGE_CACHE') && PAGE_CACHE) ? __('enabled') : __('disabled'),
+				__('Object cache')              => \Vvveb\getConfig('app.cache.driver'),
+				__('Email Driver')              => \Vvveb\getConfig('app.email.driver'),
+				__('Session Driver')            => \Vvveb\getConfig('app.session.driver'),
+				__('Debug')                     => DEBUG ? __('enabled') : __('disabled'),
+				__('Sql changes check')         => SQL_CHECK ? __('enabled') : __('disabled'),
+				__('Image library')             => $imageLibrary,
 			],
 			'server' => [
-				__('Document root')               	   => $_SERVER['DOCUMENT_ROOT'] ?? '',
-				__('Public path')               	     => PUBLIC_PATH ?? '',
+				__('Document root') => $_SERVER['DOCUMENT_ROOT'] ?? '',
+				__('Public path')   => PUBLIC_PATH ?? '',
 			],
 		];
 
@@ -77,6 +83,8 @@ class SystemInfo extends Base {
 			$key                  = __(\Vvveb\humanReadable(strtolower($key)));
 			$info['server'][$key] = $value;
 		}
+
+		list($info) = Event::trigger(__CLASS__, __FUNCTION__, $info);
 
 		$this->view->info = $info;
 		/*
