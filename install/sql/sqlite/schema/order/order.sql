@@ -2,7 +2,7 @@ DROP TABLE IF EXISTS `order`;
 
 CREATE TABLE `order` (
 `order_id` INTEGER PRIMARY KEY AUTOINCREMENT,
-`invoice_no` INT NOT NULL DEFAULT '0',
+`invoice_no` TEXT NOT NULL DEFAULT '0',
 `invoice_prefix` TEXT NOT NULL DEFAULT 'I-',
 `site_id` TINYINT NOT NULL DEFAULT '0',
 `site_name` TEXT NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE `order` (
 `billing_region_id` INT NOT NULL,
 `billing_address_format` text NOT NULL  DEFAULT '',
 `billing_fields` text NOT NULL DEFAULT '',
-`payment_method` text NOT NULL,
+`payment_method` text NOT NULL DEFAULT '',
 `payment_data` text,
 `shipping_first_name` TEXT NOT NULL DEFAULT '',
 `shipping_last_name` TEXT NOT NULL DEFAULT '',
@@ -41,7 +41,7 @@ CREATE TABLE `order` (
 `shipping_region_id` INT NOT NULL DEFAULT 0,
 `shipping_address_format` text NOT NULL NULL DEFAULT '',
 `shipping_fields` text NOT NULL NULL DEFAULT '',
-`shipping_method` TEXT NOT NULL,
+`shipping_method` TEXT NOT NULL DEFAULT '',
 `shipping_data` TEXT NOT NULL NULL DEFAULT '',
 `total` decimal(15,4) NOT NULL DEFAULT '0.0000',
 `order_status_id` INT NOT NULL DEFAULT '0',

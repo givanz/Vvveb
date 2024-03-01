@@ -22,5 +22,6 @@ CREATE TABLE `user` (
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`),
   KEY `username` (`username`),
-  KEY `email` (`email`)
+  KEY `email` (`email`),
+  KEY `created_at` (`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

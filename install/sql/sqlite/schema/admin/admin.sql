@@ -1,8 +1,3 @@
-pragma journal_mode = WAL;
-pragma synchronous = normal;
-pragma temp_store = memory;
-pragma mmap_size = 30000000000;
-  
 DROP TABLE IF EXISTS `admin`;
 
 CREATE TABLE `admin` (
@@ -23,7 +18,6 @@ CREATE TABLE `admin` (
 `token` TEXT NOT NULL DEFAULT '',
 `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
--- PRIMARY KEY (`admin_id`)
 );
 
 CREATE INDEX `admin_user` ON `admin` (`username`);

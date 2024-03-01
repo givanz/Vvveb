@@ -24,3 +24,4 @@ CREATE TABLE `user` (
 
 CREATE INDEX `user_username` ON `user` (`username`);
 CREATE INDEX `user_email` ON `user` (`email`);
+CREATE INDEX `user_created_at` ON `user` (`created_at`);

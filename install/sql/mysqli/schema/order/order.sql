@@ -2,11 +2,11 @@ DROP TABLE IF EXISTS `order`;
 
 CREATE TABLE `order` (
   `order_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `invoice_no` INT UNSIGNED NOT NULL DEFAULT '0',
+  `invoice_no` varchar(191) NOT NULL DEFAULT '0',
   `invoice_prefix` varchar(26) NOT NULL DEFAULT 'I-',
   `site_id` tinyint(6) NOT NULL DEFAULT '0',
   `site_name` varchar(64) NOT NULL,
-  `user_id` INT UNSIGNED NOT NULL DEFAULT '0',
+  `user_id` INT UNSIGNED NOT NULL DEFAULT 0,
   `user_group_id` INT UNSIGNED NOT NULL DEFAULT '0',
   `first_name` varchar(32) NOT NULL,
   `last_name` varchar(32) NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE `order` (
   `billing_region` varchar(128) NOT NULL DEFAULT '',
   `billing_region_id` INT UNSIGNED NOT NULL,
 --  `billing_fields` text,
-  `payment_method` varchar(128) NOT NULL,
+  `payment_method` varchar(128) NOT NULL DEFAULT '',
   `payment_data` text,
 -- shipping
   `shipping_first_name` varchar(32) NOT NULL DEFAULT '',
