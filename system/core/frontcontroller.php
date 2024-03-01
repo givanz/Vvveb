@@ -330,7 +330,8 @@ class FrontController {
 		if (! $module && (APP != 'admin' && APP != 'install' && (Routes::init() && $parameters = Routes::match($uri)))) {
 			$_GET = array_merge($parameters, $_GET);
 		} else {
-			$module = $module ?? ((APP == 'app') ? 'error404' : 'index');
+			$module         = $module ?? ((APP == 'app') ? 'error404' : 'index');
+			self :: $status = 404;
 		}
 
 		if (isset($_GET['route'])) {
