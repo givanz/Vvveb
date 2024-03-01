@@ -76,34 +76,37 @@ class Crud extends Base {
 	}
 
 	function index() {
-		$type                = $this->type;
-		$type_id             = "{$type}_id";
-		$view                = View :: getInstance();
-		$data_id             = $this->request->get[$type_id] ?? false;
-		$admin_path          = \Vvveb\adminPath();
+		$type       = $this->type;
+		$type_id    = "{$type}_id";
+		$view       = View :: getInstance();
+		$data_id    = $this->request->get[$type_id] ?? false;
+		$admin_path = \Vvveb\adminPath();
+		$data       = [];
 
-		if (isset($this->model)) {
-			$modelName = $this->model;
-		} else {
-			$modelName = $type;
+		if ($data_id) {
+			if (isset($this->model)) {
+				$modelName = $this->model;
+			} else {
+				$modelName = $type;
+			}
+
+			$model = model($modelName);
+
+			$options = [
+				$type_id         => $data_id,
+			] + $this->global;
+			unset($options['user_id']);
+
+			$data = $model->get($options);
+
+			if (isset($data['image'])) {
+				$data['image_url'] = Images::image($data['image'], $type);
+			}
 		}
-
-		$model = model($modelName);
 
 		$controllerPath  = $admin_path . 'index.php?module=media/media';
 		$view->scanUrl   = "$controllerPath&action=scan";
 		$view->uploadUrl = "$controllerPath&action=upload";
-
-		$options = [
-			$type_id         => $data_id,
-		] + $this->global;
-		unset($options['user_id']);
-
-		$data = $model->get($options);
-
-		if (isset($data['image'])) {
-			$data['image_url'] = Images::image($data['image'], $type);
-		}
 
 		$this->view->status = [0 => __('Inactive'), 1 => __('Active')];
 		$this->view->$type  = $data;
