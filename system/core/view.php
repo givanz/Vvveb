@@ -137,7 +137,7 @@ class View {
 				$this->theme = config(APP . '.theme', 'default');
 			}
 		} else {
-			$theme       = \Vvveb\filter('/[a-z0-9-]*/', $theme, 15);
+			$theme       = \Vvveb\filter('/[a-z0-9-]*/', $theme, 30);
 			$this->theme = $theme;
 		}
 		$this->htmlPath       = DIR_THEME . $this->theme . DS;
