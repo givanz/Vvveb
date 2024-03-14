@@ -26,8 +26,9 @@ return [
 
 	//homepage
 	'/'           => ['module' => 'index/index'],
-	//pagination for blog posts
-	'/page/#page#'  => ['module' => 'index/index'],
+	
+	//pagination for blog posts when home has blog posts
+	'/p/#page#'  => ['module' => 'index/index'],
 
 	//user
 	'/user/login'    			             => ['module' => 'user/login/index'],
@@ -150,7 +151,7 @@ return [
 	//multi language content - language code must be at least 2 characters
 	'/{language{2,5}}/'           => ['module' => 'index/index'],
 	//pagination for blog posts
-	'/{language{2,5}}/page/#page#'  => ['module' => 'index/index'],
+	'/{language{2,5}}/p/#page#'  => ['module' => 'index/index'],
 	//content
 	'/{language{2,5}}/blog'         => ['module' => 'content'],
 	'/{language{2,5}}/cat/{slug}'   => ['module' => 'content/category/language'],
