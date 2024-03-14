@@ -146,7 +146,7 @@ class Site extends Base {
 				$return                   = $sites->add($data);
 				$site_id                  = $return['site'];
 				$site['state']            = 'live';
-				$site['id']               = $id;
+				$site['id']               = $site_id;
 				Sites::saveSite($site);
 
 				list($site, $setting, $site_id, $data) = Event :: trigger(__CLASS__,__FUNCTION__, $site, $setting, $site_id, $data);
