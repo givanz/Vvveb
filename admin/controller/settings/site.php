@@ -104,7 +104,7 @@ class Site extends Base {
 		$settingsValidator	  = new Validator(['site-settings']);
 
 		$view      = $this->view;
-		$site 	    = $this->request->post['site'] ?? [];
+		$site 	   = $this->request->post['site'] ?? [];
 		$settings  = $this->request->post['settings'] ?? [];
 
 		if (($errors = $siteValidator->validate($site)) === true &&
@@ -129,7 +129,7 @@ class Site extends Base {
 
 				Sites::setSiteDataById($data['site_id'], null, $site);
 
-				list($data, $settings, $site_id) = Event :: trigger(__CLASS__,__FUNCTION__, $data, $settings, $site_id);
+				list($site, $settings, $site_id, $data) = Event :: trigger(__CLASS__,__FUNCTION__, $site, $settings, $site_id, $data);
 
 				if ($result >= 0) {
 					//CacheManager::delete('site');
@@ -149,7 +149,7 @@ class Site extends Base {
 				$site['id']               = $site_id;
 				Sites::saveSite($site);
 
-				list($site, $setting, $site_id, $data) = Event :: trigger(__CLASS__,__FUNCTION__, $site, $setting, $site_id, $data);
+				list($site, $settings, $site_id, $data) = Event :: trigger(__CLASS__,__FUNCTION__, $site, $settings, $site_id, $data);
 
 				if (! $site_id) {
 					$view->errors = [$sites->error];
