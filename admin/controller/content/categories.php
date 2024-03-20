@@ -52,7 +52,8 @@ class Categories extends Base {
 	}
 
 	function add() {
-		$data = $this->request->post;
+		$data                = $this->request->post;
+		$data['taxonomy_id'] = $data['taxonomy_id'] ?? $this->request->get['taxonomy_id'];
 
 		$categories  = new categorySQL();
 
@@ -86,13 +87,13 @@ class Categories extends Base {
 
 		$page        = $this->request->get['page'] ?? 1;
 		$type        = $this->request->get['type'] ?? 1;
+		$taxonomy_id = $this->request->get['taxonomy_id'];
 		$limit       = 1000;
-		$taxonomy_id = 1;
 
 		$options = [
 			'start'       => ($page - 1) * $limit,
 			'limit'       => $limit,
-			//'taxonomy_id' => $taxonomy_id,
+			'taxonomy_id' => $taxonomy_id,
 			'post_type'   => $type,
 			'type'        => 'categories',
 		] + $this->global;
