@@ -24,7 +24,7 @@
 			AND region.country_id = :country_id
 		END @IF				
 		
-		@IF !empty(:status) 
+		@IF isset(:status) AND :status != "" 
 		THEN			
 			AND region.status = :status
 		END @IF		

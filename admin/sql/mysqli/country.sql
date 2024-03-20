@@ -15,7 +15,7 @@
 		SELECT *
 			FROM country AS country WHERE 1 = 1
 			
-		@IF !empty(:status) 
+		@IF isset(:status) AND :status != ""
 		THEN			
 			AND status = :status
 		END @IF		

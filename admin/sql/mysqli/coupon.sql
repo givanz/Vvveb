@@ -55,7 +55,7 @@
 			AND coupon_id = :coupon_id
 		END @IF		
 
-		@IF !empty(:status) 
+		@IF isset(:status) AND :status != "" 
 		THEN			
 			AND status = :status
 		END @IF
