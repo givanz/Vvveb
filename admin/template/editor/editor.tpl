@@ -87,7 +87,7 @@ if (isset($this->$name)) {
 	$options = 	$this->$name;
 	foreach($options as $key => $option){
 	
-		if ($optgroup != $option['folder']) {
+		if (isset($option['folder']) && ($optgroup != $option['folder'])) {
 			$optgroup = $option['folder'];
 			echo '<optgroup label="' . ucfirst($optgroup) . '">';
 		}
