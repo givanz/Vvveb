@@ -29,7 +29,7 @@ use Vvveb\System\Event;
 class Attributes extends ComponentBase {
 	public static $defaultOptions = [
 		'start'       => 0,
-		'limit'       => 7,
+		'limit'       => 100,
 		'site_id'     => NULL,
 		'language_id' => NULL,
 		'product_id'  => 'url',
@@ -43,17 +43,7 @@ class Attributes extends ComponentBase {
 		$attributes = [];
 		$group      = false;
 
-		if ($results['attribute']) {
-			foreach ($results['attribute'] as $data) {
-				if ($group != $data['group']) {
-					$group = $data['group'];
-				}
-
-				$attributes[$group] = $data;
-			}
-		}
-
-		$results['attribute'] = $attributes;
+		$results['attribute'] = $results['attribute'] ?? [];
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 
