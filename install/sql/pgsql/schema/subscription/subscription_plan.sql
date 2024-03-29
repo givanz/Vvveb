@@ -14,7 +14,7 @@ CREATE TABLE "subscription_plan" (
   "trial_length" INT NOT NULL,
   "trial_cycle" INT NOT NULL,
   "trial_status" smallint NOT NULL,
-  "status" smallint NOT NULL,
-  "sort_order" INT NOT NULL,
+  "status" smallint NOT NULL DEFAULT 0,
+  "sort_order" INT NOT NULL DEFAULT 0,
 PRIMARY KEY ("subscription_plan_id")
 );

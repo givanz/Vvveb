@@ -56,11 +56,11 @@ INSERT INTO `menu_item` (`menu_item_id`, `menu_id`, `type`, `url`, `parent_id`, 
 -- (61,1,'link','/page/contact',59,null,3,1),
 -- (62,1,'link','/page/contact',59,null,2,1),
 
-(63,1,'link','/page/contact',0,null,4,1),
+(63,1,'link','/page/services',0,null,4,1),
 (64,1,'link','/page/pricing',63,null,0,1),
 (65,1,'link','/page/services',63,null,0,1),
 (66,1,'link','/page/portfolio',63,null,0,1),
-(67,1,'text','/page/about',0,NULL,3,	0),
+(67,1,'text','/page/portfolio',0,NULL,3,	0),
 (68,1,'text','/page/about',67,NULL,0,0),
 -- footer
 (50,5,'link','',0,null,0,1),

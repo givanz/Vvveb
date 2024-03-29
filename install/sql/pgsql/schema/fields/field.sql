@@ -11,6 +11,6 @@ CREATE TABLE field (
   "type" varchar(32) NOT NULL,
   "value" text NOT NULL,
   "status" smallint NOT NULL,
-  "sort_order" int NOT NULL,
+  "sort_order" int NOT NULL DEFAULT 0,
   PRIMARY KEY ("field_id")
 );

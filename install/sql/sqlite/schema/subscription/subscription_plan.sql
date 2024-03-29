@@ -10,6 +10,6 @@ CREATE TABLE `subscription_plan` (
   `trial_cycle` INT NOT NULL,
   `trial_status` tinyint(4) NOT NULL,
   `status` tinyint NOT NULL,
-  `sort_order` int(3) NOT NULL
+  `sort_order` int(3) NOT NULL DEFAULT 0
 --  PRIMARY KEY (`subscription_plan_id`)
 );

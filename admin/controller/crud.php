@@ -32,6 +32,8 @@ class Crud extends Base {
 	protected $module = '';
 
 	protected $type = '';
+	
+	protected $redirect = true;
 
 	function save() {
 		$type        = $this->type;
@@ -49,22 +51,25 @@ class Crud extends Base {
 			if (! $data_id) {
 				$data['created_at'] = $data['created_at'] ?? date('Y-m-d H:i:s');
 			}
-			$data['updated_at']    = $data['updated_at'] ?? date('Y-m-d H:i:s');
-			$options               = [$type => $data] + $this->global;
-
+			$data['updated_at'] = $data['updated_at'] ?? date('Y-m-d H:i:s');
+			$options            = [$type => $data] + $this->global;
+			
 			if ($data_id) {
-				$options[$type_id]       = $data_id;
-				$result                  = $model->edit($options);
+				$options[$type_id] = $data_id;
+				$this->$type_id    = $data_id;
+				$result            = $model->edit($options);
 			} else {
-				$result        = $model->add($options);
+				$result         = $model->add($options);
+				$this->$type_id = $result[$type] ?? false;
 			}
 
 			if ($result && isset($result[$type])) {
 				$successMessage        = humanReadable(__($type)) . __(' saved!');
 				$this->view->success[] = $successMessage;
 
-				if (! $data_id) {
-					$this->session->set('success', $successMessage);
+				$this->session->set('success', $successMessage);
+				
+				if (! $data_id && $this->redirect) {
 					$this->redirect(['module' => "$module/$controller", $type_id => $result[$type]]);
 				}
 			} else {
@@ -72,7 +77,9 @@ class Crud extends Base {
 			}
 		}
 
-		return $this->index();
+		if ($this->redirect) {
+			return $this->index();
+		}
 	}
 
 	function index() {

@@ -6,6 +6,6 @@ SELECT setval('attribute_group_seq', 4, true); -- last inserted id by sample dat
 
 CREATE TABLE "attribute_group" (
  "attribute_group_id" int check ("attribute_group_id" > 0) NOT NULL DEFAULT NEXTVAL ('attribute_group_seq'),
- "sort_order" INT NOT NULL,
+ "sort_order" INT NOT NULL DEFAULT 0,
  PRIMARY KEY ("attribute_group_id")
 );
