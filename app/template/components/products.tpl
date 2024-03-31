@@ -15,6 +15,7 @@
 	$previous_component = isset($current_component)?$current_component:null;
 	$products = $current_component = $this->_component['products'][$products_idx] ?? [];
 
+	$index = 0;
 	$count = $products['count'] ?? 0;
 	$limit = isset($products['limit'])? $products['limit'] : 5;
 
@@ -33,7 +34,7 @@
 @product|before = <?php
 
 if ($_products) {
-	foreach ($_products as $index => $_product) { ?>
+	foreach ($_products as $index => $_product) { $index++;?>
 	
 	@product [data-v-product-*]|innerText = $_product['@@__data-v-product-(*)__@@']
 	@product a[data-v-product-*]|href = $_product['@@__data-v-product-(*)__@@']

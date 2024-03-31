@@ -46,6 +46,7 @@ class Breadcrumb extends ComponentBase {
 		$slug     = $request->get['slug'] ?? '';
 		$name     = $request->get['name'] ?? '';
 		$homeText = __('Home');
+		$shopText = __('Shop');
 
 		$breadcrumb = [
 			['text' => $homeText, 'url' => '/'],
@@ -89,7 +90,7 @@ class Breadcrumb extends ComponentBase {
 			case 'product/index':
 				$breadcrumb = [
 					['text' => $homeText, 'url' => '/'],
-					['text' => 'shop', 'url' => false],
+					['text' => $shopText, 'url' => false],
 				];
 
 			break;
@@ -97,6 +98,7 @@ class Breadcrumb extends ComponentBase {
 			case 'product/manufacturer/index':
 				$breadcrumb = [
 					['text' => $homeText, 'url' => '/'],
+					['text' => $shopText, 'url' => url('product/index')],
 					['text' => $slug, 'url' => false],
 				];
 
@@ -105,6 +107,7 @@ class Breadcrumb extends ComponentBase {
 			case 'product/vendor/index':
 				$breadcrumb = [
 					['text' => $homeText, 'url' => '/'],
+					['text' => $shopText, 'url' => url('product/index')],
 					['text' => $slug, 'url' => false],
 				];
 

@@ -40,13 +40,22 @@ class Vendors extends ComponentBase {
 		'parents_only'             => false,
 		'parents_children_only'    => false,
 		'parents_without_children' => false,
+		'filter'                   => false,
 	];
 
 	function results() {
 		$category = new \Vvveb\Sql\VendorSQL();
 		$results  = $category->getAll($this->options);
 
+		$filter = [];
+		if ($this->options['filter']) {
+			$filter = $this->options['filter']['vendor_id'] ?? [];
+		}
+
 		foreach ($results['vendor']  as &$vendor) {
+			if ($filter) {
+				$vendor['active'] = in_array($vendor['vendor_id'], $filter);
+			}
 			$vendor['url'] = url('product/vendor/index', $vendor);
 		}
 

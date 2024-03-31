@@ -52,6 +52,7 @@ class Products extends ComponentBase {
 		'related'          => null,
 		'variant'          => null,
 		'image_size'       => 'medium',
+		'filter'           => null,
 	];
 
 	public $options = [];
@@ -62,8 +63,13 @@ class Products extends ComponentBase {
 		if ($page = $this->options['page']) {
 			$this->options['start'] = ($page - 1) * $this->options['limit'];
 		}
-
-		if ($this->options['related']) {
+		
+		if ($this->options['filter']) {
+			foreach ($this->options['filter'] as $name => $values) {
+				if ($name == 'manufacturer_id' || $name == 'vendor_id') {
+					$this->options[$name] = $values;
+				}
+			}
 		}
 
 		if (isset($this->options['product_id']) &&
@@ -89,6 +95,16 @@ class Products extends ComponentBase {
 		//if only one slug is provided then add it to array
 		if (isset($this->options['slug']) && ! is_array($this->options['slug'])) {
 			$this->options['slug'] = [$this->options['slug']];
+		}
+
+		//if only one manufacturer_id is provided then add it to array
+		if (isset($this->options['manufacturer_id']) && ! is_array($this->options['manufacturer_id'])) {
+			$this->options['manufacturer_id'] = [$this->options['manufacturer_id']];
+		}
+
+		//if only one vendor_id is provided then add it to array
+		if (isset($this->options['vendor_id']) && ! is_array($this->options['vendor_id'])) {
+			$this->options['vendor_id'] = [$this->options['vendor_id']];
 		}
 
 		$results = $products->getAll($this->options) + $this->options;
@@ -120,8 +136,8 @@ class Products extends ComponentBase {
 				//rfc
 				$product['pubDate'] = date('r', strtotime($product['created_at']));
 
-				$url                         =  ['slug' => $product['slug'], 'product_id' => $product['product_id']] + $language;
-				$product['url']      	       = url('product/product/index', $url);
+				$url                         = ['slug' => $product['slug'], 'product_id' => $product['product_id']] + $language;
+				$product['url']      	     = url('product/product/index', $url);
 				$product['add_cart_url']     = url('cart/cart/add', ['product_id' => $product['product_id']]);
 				$product['buy_url']          = url('checkout/checkout/index', ['product_id' => $product['product_id']]);
 				$product['add_wishlist_url'] = url('user/wishlist/add', ['product_id' => $product['product_id']]);

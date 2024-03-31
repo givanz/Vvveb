@@ -738,12 +738,13 @@
 		IN admin_id INT,
 		IN product_id ARRAY,
 		IN taxonomy_item_id INT,
-		IN manufacturer_id INT,
-		IN vendor_id INT,
+		IN manufacturer_id ARRAY,
+		IN vendor_id ARRAY,
 		IN related INT,
 		IN variant INT,
 		IN status INT,
 		IN search CHAR,
+		IN like CHAR,
 		IN slug ARRAY,
 		
 		-- pagination
@@ -946,75 +947,81 @@
 			
 			WHERE p2s.site_id = :site_id
 
-            -- search
-            @IF isset(:search) && !empty(:search)
+			-- search
+			@IF isset(:search) && !empty(:search)
 			THEN 
-				-- AND pd.name LIKE CONCAT('%',:search,'%')
+				-- AND pd.name ILIKE '%' || :search || '%'
 				-- AND MATCH(pd.name, pd.content) AGAINST(:search)
 				  AND to_tsvector(name) || to_tsvector(content) @@ plainto_tsquery(:search)
-        	END @IF     
+			END @IF     
+
+			-- like
+			@IF isset(:like) && !empty(:like)
+			THEN 
+				AND pd.name ILIKE '%' || :like || '%'
+			END @IF     
                        
 					   
 			@IF isset(:type) && !empty(:type)
 			THEN  
 				AND products.type = :type
-        	END @IF		
+			END @IF		
 			
 			@IF isset(:manufacturer_id) && !empty(:manufacturer_id)
 			THEN 
-				AND products.manufacturer_id = :manufacturer_id
-        	END @IF	   		
+				AND products.manufacturer_id IN (:manufacturer_id)
+			END @IF	   		
 
 			@IF isset(:admin_id) && !empty(:admin_id)
 			THEN 
 				AND products.admin_id = :admin_id
-        	END @IF	   		
+			END @IF	   		
 			
 			@IF isset(:vendor_id) && !empty(:vendor_id)
 			THEN 
-				AND products.vendor_id = :vendor_id
-        	END @IF	    			
+				AND products.vendor_id IN (:vendor_id)
+			END @IF	    			
 			
 			@IF isset(:price) && :price !== ""
 			THEN 
 				AND products.price = :price
-        	END @IF	  			
+			END @IF	  			
 			
 			@IF isset(:quantity) && :quantity !== ""
 			THEN 
 				AND products.quantity = :quantity
-        	END @IF				
+			END @IF				
 			
 			@IF isset(:model) && :model !== ""
 			THEN 
 				AND products.model = :model
-        	END @IF				
+			END @IF				
 			
 			@IF isset(:sku) && :sku !== ""
 			THEN 
 				AND products.sku = :sku
-        	END @IF	 
+			END @IF	 
 			
 			@IF isset(:upc) && :upc !== ""
 			THEN 
 				AND products.upc = :upc
-        	END @IF	 	
+			END @IF	 	
 			
 			@IF isset(:ean) && :ean !== ""
 			THEN 
 				AND products.ean = :ean
-        	END @IF	    
+			END @IF	    
 			
 			@IF isset(:isbn) && :isbn !== ""
 			THEN 
 				AND products.isbn = :isbn
-        	END @IF				
+			END @IF				
 			
  
 			@IF isset(:status) && :status !== ""
 			THEN 
 				AND products.status = :status
-        	END @IF				
+			END @IF				
 
             
 			@IF isset(:product_id) && count(:product_id) > 0

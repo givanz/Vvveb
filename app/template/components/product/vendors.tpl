@@ -32,6 +32,12 @@ if($vendors && is_array($vendors['vendor'])) {
 		@vendor [data-v-vendor-*]|innerText = $vendor['@@__data-v-vendor-(*)__@@']
 		
 		@vendor a[data-v-vendor-*]|href = $vendor['@@__data-v-vendor-(*)__@@']
+
+		@vendor input[data-v-vendor-vendor_id]|addNewAttribute = <?php 
+			if (isset($vendor['active']) && $vendor['active']) {
+				echo 'checked';
+			}
+		?>
 	
 	@vendor|after = <?php 
 	} 

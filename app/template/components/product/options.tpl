@@ -55,7 +55,7 @@ if($options && is_array($options)) {
 		@option [data-v-option-*]|innerText = $option['@@__data-v-option-(*)__@@']
 		
 		@option [data-v-option-input]|value = $option['value']
-		@option [data-v-option-input]|name = <?php echo 'option[' . $option['option_id'] . ']';?>
+		@option [data-v-option-input]|name = <?php echo 'option[' . $option['product_option_id'] . ']';?>
 		
 		@option a[data-v-option-*]|href = $option['@@__data-v-option-(*)__@@']
 		
@@ -68,7 +68,7 @@ if($options && is_array($options)) {
 
 			@value [data-v-value-*]|innerText = $value['@@__data-v-value-(*)__@@']
 			
-			@value [data-v-value-input]|name = <?php echo 'option[' . $option['option_id'] . ']';?>
+			@value [data-v-value-input]|name = <?php echo 'option[' . $option['product_option_id'] . ']';?>
 			@value [data-v-value-input]|addNewAttribute = <?php if ($option['required']) echo 'required';?>
 			@value [data-v-value-input]|value = $value['product_option_value_id']
 			

@@ -32,6 +32,11 @@ if($manufacturers && is_array($manufacturers['manufacturer'])) {
 		@manufacturer [data-v-manufacturer-*]|innerText = $manufacturer['@@__data-v-manufacturer-(*)__@@']
 		
 		@manufacturer a[data-v-manufacturer-*]|href = $manufacturer['@@__data-v-manufacturer-(*)__@@']
+		@manufacturer input[data-v-manufacturer-manufacturer_id]|addNewAttribute = <?php 
+			if (isset($manufacturer['active']) && $manufacturer['active']) {
+				echo 'checked';
+			}
+		?>
 	
 	@manufacturer|after = <?php 
 	} 

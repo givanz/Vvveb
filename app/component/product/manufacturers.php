@@ -40,13 +40,22 @@ class Manufacturers extends ComponentBase {
 		'parents_only'             => false,
 		'parents_children_only'    => false,
 		'parents_without_children' => false,
+		'filter'                   => null,
 	];
 
 	function results() {
 		$category = new \Vvveb\Sql\ManufacturerSQL();
 		$results  = $category->getAll($this->options);
+		
+		$filter = [];
+		if ($this->options['filter']) {
+			$filter = $this->options['filter']['manufacturer_id'] ?? [];
+		}
 
 		foreach ($results['manufacturer']  as &$manufacturer) {
+			if ($filter) {
+				$manufacturer['active'] = in_array($manufacturer['manufacturer_id'], $filter);
+			}
 			$manufacturer['url'] = url('product/manufacturer/index', $manufacturer);
 		}
 
