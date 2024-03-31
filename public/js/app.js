@@ -412,7 +412,7 @@ VvvebTheme.Gui = {
 			}
 		}
 		
-		VvvebTheme.Cart.add(id, {}, this, '.mini-cart', function() {
+		VvvebTheme.Cart.remove(id, this, '.mini-cart', function() {
 			VvvebTheme.Alert.show('<img height=50 src="' + img + '"> &ensp; <strong>' +  name +'</strong> was removed from cart');
 			product.remove();
 		});
