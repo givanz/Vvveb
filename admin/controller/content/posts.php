@@ -185,8 +185,8 @@ class Posts extends Base {
 
 				$post['admin-url']   = \Vvveb\url(['module' => 'content/posts']) . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
 				$post['delete-url']  = \Vvveb\url(['module' => 'content/posts', 'action' => 'delete'] + $url + ['post_id[]' => $post['post_id']]);
-				$post['view-url']    = \Vvveb\url("content/{$this->type}/index", $post + $url + ['host' => $this->global['host']]);
-				$post['design-url']  = \Vvveb\url(['module' => 'editor/editor', 'url' => $post['view-url'], 'template' => $template, 'host' => $this->global['host'] . $admin_path], false, false);
+				$post['view-url']    = \Vvveb\url("content/{$this->type}/index", $post + $url + ['host' => $this->global['site_url']]);
+				$post['design-url']  = \Vvveb\url(['module' => 'editor/editor', 'url' => $post['view-url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
 			}
 		}
 
@@ -198,7 +198,7 @@ class Posts extends Base {
 			}, 259200);
 
 		$view->set($results);
-		$view->status           = ['publish' => 'publish', 'pending' => 'pending'];
+		$view->status           = ['publish' => 'Publish', 'pending' => 'Pending', 'draft' => 'Draft', 'private' => 'Private', 'password' => 'Password'];
 		$view->archives         = $archives;
 		$view->filter           = $this->filter;
 		$view->limit            = $options['limit'];

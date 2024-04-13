@@ -107,9 +107,9 @@ class Products extends Base {
 				$product['url']        = url(['module' => 'product/product', 'product_id' => $product['product_id'], 'type' => $product['type']]);
 				$product['edit-url']   = url(['module' => 'product/product', 'product_id' => $product['product_id'], 'type' => $product['type']]);
 				$product['delete-url'] = url(['module' => 'product/products', 'action' => 'delete', 'product_id[]' => $product['product_id'], 'type' => $product['type']]);
-				$product['view-url']   = url('product/product/index', $product + ['host' => $this->global['host']]);
+				$product['view-url']   = url('product/product/index', $product + ['host' => $this->global['site_url']]);
 				$admin_path            = \Vvveb\config('admin.path', 'admin') . '/';
-				$product['design-url'] = url(['module' => 'editor/editor', 'url' => $product['view-url'], 'template' => $template, 'host' => $this->global['host'] . $admin_path], false, false);
+				$product['design-url'] = url(['module' => 'editor/editor', 'url' => $product['view-url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
 			}
 		}
 

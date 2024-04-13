@@ -30,6 +30,7 @@ use function Vvveb\sanitizeHTML;
 use function Vvveb\slugify;
 use Vvveb\Sql\categorySQL;
 use Vvveb\Sql\SiteSQL;
+use Vvveb\System\Cache;
 use Vvveb\System\CacheManager;
 use Vvveb\System\Core\View;
 use Vvveb\System\Event;
@@ -171,7 +172,7 @@ class Edit extends Base {
 		}
 
 		//get site host for current selected site to use for absolute url
-		$url = ['host' => $this->global['host']];
+		$url = ['host' => $this->global['site_url']];
 
 		$revisionsUrl = \Vvveb\url(['module' => "$controller/revisions", 'object' => $this->object, 'type' => $this->type, $this->object . '_id' => $post_id]);
 
@@ -225,7 +226,7 @@ class Edit extends Base {
 		$themeFolder     = $this->getThemeFolder();
 
 		if (isset($post['url'])) {
-			$design_url         = \Vvveb\url(['module' => 'editor/editor', 'url' => $post['url'], 'template' => $template, 'host' => $this->global['host'] . $admin_path], false, false);
+			$design_url         = \Vvveb\url(['module' => 'editor/editor', 'url' => $post['url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
 			$post['design_url'] = $design_url;
 		}
 
@@ -258,7 +259,11 @@ class Edit extends Base {
 		$object          = $this->object;
 		$view->$object   = $post;
 		$view->status    = ['publish' => 'Publish', 'draft' => 'Draft', 'pending' => 'Pending', 'private' => 'Private', 'password' => 'Password'];
-		$view->templates = \Vvveb\getTemplateList(false, ['email']);
+
+		$view->templates = Cache::getInstance()->cache(APP,'template-list.' . $this->global['site_id'],function () {
+			return \Vvveb\getTemplateList(false, ['email']);
+		}, 604800);
+
 		//$validator                 = new Validator([$this->object]);
 		//$view->validatorJson       = $validator->getJSON();
 		$view->type           = __($this->type);

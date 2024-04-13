@@ -21,7 +21,7 @@ if(isset($this->_component['sites']) && $this->_component['sites'][$_sites_idx])
 		
 		@site [data-v-site-name] = $site['name']
 		@site [data-v-site-icon]|addClass = <?php echo $sites['states'][$state]['icon'];?>
-		@site a[data-v-site-href]|href = <?php echo '//' . $site['href'];?>
+		@site a[data-v-site-url]|href = <?php echo '//' . $site['url'];?>
 		
 		@site button[data-v-site-site_id]|value = $site['id']
 		

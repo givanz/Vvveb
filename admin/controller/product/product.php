@@ -175,7 +175,7 @@ class Product extends Edit {
 		$view->product['manufacturer_id'] = (($view->product['manufacturer_id'] ?? 0) ? $view->product['manufacturer_id'] : '');
 		$view->product['vendor_id']       = (($view->product['vendor_id'] ?? 0) ? $view->product['vendor_id'] : '');
 		$view->product['status']          = $view->product['status'] ?? 1;
-		$data['subtract']                 = [1 => __('Yes'), 0 => __('No')]; //Subtract stock options
+		$data['subtract_stock']           = [1 => __('Yes'), 0 => __('No')]; //Subtract stock options
 		$data['status']                   = [0 => __('Disabled'), 1 => __('Enabled')];
 		$view->set($data);
 	}

@@ -62,7 +62,7 @@ class Sites {
 			self :: $sites = \Vvveb\config('sites');
 
 			foreach (self::$sites as &$site) {
-				$site['href'] = self :: url($site['host']);
+				$site['url'] = self :: url($site['host']);
 			}
 
 			return self :: $sites;
@@ -177,7 +177,7 @@ class Sites {
 				$matches['subdomain'] = $matches['tld'] = $matches['prefix'] = '';
 			}
 
-			return ($matches['prefix'] ? $matches['prefix'] : '') .
+			$url = ($matches['prefix'] ? $matches['prefix'] : '') .
 				   (! empty($matches['subdomain']) ? $matches['subdomain'] . '.' : '') .
 				   ($matches['domain'] ?? '') .
 				   (! empty($matches['tld']) ? '.' . $matches['tld'] : '') .
