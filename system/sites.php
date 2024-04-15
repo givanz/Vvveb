@@ -157,13 +157,13 @@ class Sites {
 				&& ! is_numeric($host_matches['domain'] ?? null)) {
 				self :: $host_matches[$host] = $host_matches;
 
-				$has_subdomain = ! empty($host_matches['subdomain']) || ($matches['subdomain'] != '*');
-				$has_tld       = ! empty($host_matches['tld']) || ($matches['tld'] != '*');
+				$subdomain = str_replace('*', $host_matches['subdomain'], $matches['subdomain']);
+				$domain    = str_replace('*', $host_matches['domain'], $matches['domain']);
+				$tld       = str_replace('*', $host_matches['tld'], $matches['tld']);
 
 				return $matches['prefix'] .
-					   str_replace('*', $host_matches['subdomain'], $matches['subdomain']) . ($has_subdomain ? '.' : '') .
-					   str_replace('*', $host_matches['domain'], $matches['domain']) . ($has_tld ? '.' : '') .
-					   str_replace('*', $host_matches['tld'], $matches['tld']) .
+					   $subdomain . ($subdomain ? '.' : '') .
+					   $domain . ($tld ? '.' : '') . $tld .
 					   ($matches['path'] ?? '');
 			}
 
