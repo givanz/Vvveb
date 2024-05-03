@@ -112,9 +112,9 @@ trait AutocompleteTrait {
 		$products = new \Vvveb\Sql\ProductSQL();
 
 		$options = [
-			'start'       => 0,
-			'limit'       => 10,
-			'search'      => trim($this->request->get['text']),
+			'start' => 0,
+			'limit' => 10,
+			'like'  => trim($this->request->get['text']),
 		] + $this->global;
 
 		unset($options['admin_id']);
