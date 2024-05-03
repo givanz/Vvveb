@@ -24,11 +24,14 @@ namespace Vvveb\Component;
 
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use Vvveb\System\Images;
 use Vvveb\System\User\User as UserClass;
+use function Vvveb\url;
 
 class User extends ComponentBase {
 	public static $defaultOptions = [
 		'user_id'  => null,
+		'username' => null,
 	];
 
 	protected $options = [];
@@ -41,12 +44,22 @@ class User extends ComponentBase {
 	}
 
 	function results() {
-		if ($this->options['user_id']) {
+		if ($this->options['user_id'] || $this->options['username']) {
 			$users = new \Vvveb\Sql\UserSQL();
 
 			$results = $users->get($this->options);
 		} else {
 			$results = UserClass::current();
+		}
+
+		if ($results) {
+			if (isset($results['avatar'])) {
+				$results['avatar_url'] = Images::image($results['avatar'], 'user');
+			}
+
+			//$results['url'] = url('content/user/index', ['username' => $results['username']]);
+		} else {
+			$results = [];
 		}
 
 		if (! $results) {
