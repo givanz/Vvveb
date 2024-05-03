@@ -26,6 +26,7 @@ use \Vvveb\Sql\ProductSQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use Vvveb\Controller\Content\CommentTrait;
+use function Vvveb\setLanguage;
 use Vvveb\System\Event;
 
 class Product extends Base {
@@ -69,21 +70,27 @@ class Product extends Base {
 					if (isset($content[$this->global['language']])) {
 						$languageContent = $content[$this->global['language']];
 					} else {
-						$languageContent = $content[$this->global['default_language']] ?? [];
+						$languageContent = &$content[$this->global['default_language']] ?? [];
 					}
 				}
 
 				if ($languageContent) {
+					if ($this->global['language'] != $languageContent['code']) {
+						setLanguage($languageContent['code']);
+					}
+
 					$this->global['language']    = $languageContent['code'];
 					$this->global['language_id'] = $languageContent['language_id'];
 
-					$this->session->set('language', $languageContent['code']);
-					$this->session->set('language_id', $languageContent['language_id']);
+					//$this->session->set('language', $languageContent['code']);
+					//$this->session->set('language_id', $languageContent['language_id']);
 
 					$this->request->get['product_id']     = $languageContent['product_id'];
 					$this->request->request['product_id'] = $languageContent['product_id'];
 					$this->request->get['name']      	    = $languageContent['name'];
 					$this->request->request['name']       = $languageContent['name'];
+					$this->request->request['code']        = $languageContent['code'];
+					$this->request->request['language_id'] = $languageContent['language_id'];
 
 					if (isset($languageContent['template']) && $languageContent['template']) {
 						$this->view->template($languageContent['template']);

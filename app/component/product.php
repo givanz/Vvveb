@@ -39,7 +39,7 @@ class Product extends ComponentBase {
 		'product_id'    => 'url',
 		'slug'          => 'url',
 		'status'        => 1,
-		'language_id'   => 'url',
+		'language_id'   => null,
 		'site_id'       => null,
 		'user_id'       => null,
 		'user_group_id' => null,

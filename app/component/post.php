@@ -36,7 +36,7 @@ use function Vvveb\url;
 class Post  extends ComponentBase {
 	public static $defaultOptions = [
 		'post_id'        => 'url',
-		'language_id'    => 'url',
+		'language_id'    => null,
 		'site_id'        => null,
 		'slug'           => 'url',
 		'status'         => 'publish',

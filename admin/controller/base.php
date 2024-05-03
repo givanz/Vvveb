@@ -63,7 +63,7 @@ class Base {
 		$site_id = $site['id'];
 		$this->session->set('site', $site);
 		$this->session->set('site_id', $site_id);
-		$this->session->set('site_url', $site['host']);
+		$this->session->set('site_url', $site['url']);
 		$this->session->set('site', $site['id']);
 		$this->session->set('host', $site['host']);
 		$this->session->set('state', $site['state'] ?? 'live');
@@ -285,13 +285,14 @@ class Base {
 		}
 	}
 
-	protected function language($defaultLanguage, $defaultLanguageId) {
+	protected function language($defaultLanguage = false, $defaultLanguageId = false) {
 		$languages = availableLanguages();
 
 		$default_language    = $this->session->get('default_language');
 		$default_language_id = $this->session->get('default_language_id');
 		$language            = $this->session->get('language');
 		$language_id         = $this->session->get('language_id');
+		$site_language       = false;
 
 		if (($lang = ($this->request->post['language'] ?? false)) && ! is_array($lang)) {
 			$language  = filter('/[A-Za-z_-]+/', $lang, 50);
@@ -303,6 +304,12 @@ class Base {
 
 		if (! $default_language) {
 			foreach ($languages as $code => $lang) {
+				//set site language
+				if ($defaultLanguageId && ($defaultLanguageId == $lang['language_id'])) {
+					$site_language    = $code;
+					$site_language_id = $lang['language_id'];
+				}
+				//set global default language
 				if ($lang['default']) {
 					$default_language    = $code;
 					$default_language_id = $lang['language_id'];
@@ -310,7 +317,13 @@ class Base {
 					break;
 				}
 			}
-			//no default language? set english as default
+
+			if ($site_language) {
+				$default_language    = $site_language;
+				$default_language_id = $site_language_id;
+			}
+
+			//no valid default site or global language? set english as default
 			if (! $default_language) {
 				$default_language    = 'en_US';
 				$default_language_id = 1;
@@ -335,8 +348,8 @@ class Base {
 			$this->session->set('language_id', $languages[$language]['language_id'] ?? $defaultLanguageId);
 		}
 
-		$language    = $this->session->get('language') ?? 'en_US';
-		$language_id = $this->session->get('language_id') ?? $defaultLanguageId;
+		$language    = $request->request['language'] ?? $this->session->get('language') ?? 'en_US';
+		$language_id = $request->request['language_id'] ?? $this->session->get('language_id') ?? $defaultLanguageId;
 
 		$this->global['language']            = $language;
 		$this->global['language_id']         = $language_id;
@@ -351,7 +364,7 @@ class Base {
 		}
 	}
 
-	protected function currency($defaultCurrency, $defaultCurrencyId) {
+	protected function currency($defaultCurrency = false, $defaultCurrencyId = false) {
 		if (($currency = ($this->request->post['currency'] ?? false)) && ! is_array($currency)) {
 			$currency   = filter('/[A-Za-z_-]+/', $currency, 50);
 			$currencies = availableCurrencies();
@@ -359,19 +372,38 @@ class Base {
 			if (isset($currencies[$currency])) {
 				$this->session->set('currency_id', $currencies[$currency]['currency_id']);
 				$this->session->set('currency', $currency);
+
+				\Vvveb\System\Cart\Cart::getInstance($this->global)->updateCart();
 			}
 		}
 
-		$currency    = $this->session->get('currency') ?? $currency = $defaultCurrency;
-		$currency_id = $this->session->get('currency_id') ?? $currency_id = $defaultCurrencyId;
+		$currency    = $this->session->get('currency');
+		$currency_id = $this->session->get('currency_id');
 
-		if (! $currency) {
-			/*
-			//if no site currency configured set first available currency
+		if (! $currency || ! $currency_id) {
 			$currencies = availableCurrencies();
-			$currency = $this->session->get('currency')
-			$currency_id = $this->session->get('currency_id');
-			*/
+
+			if ($currencies) {
+				foreach ($currencies as $code => $c) {
+					if ($defaultCurrency && ($defaultCurrency == $c['code']) ||
+					   ($defaultCurrencyId && ($defaultCurrencyId == $c['currency_id']))) {
+						$currency    = $c['code'];
+						$currency_id = $c['currency_id'];
+
+						break;
+					}
+				}
+
+				//if no site currency configured set first available currency
+				if (! $currency) {
+					$c           = reset($currencies);
+					$currency    = $c['code'];
+					$currency_id = $c['currency_id'];
+				}
+			}
+
+			$this->session->set('currency', $currency);
+			$this->session->set('currency_id', $currency_id);
 		}
 
 		$this->global['currency']            = $currency;
@@ -417,8 +449,8 @@ class Base {
 			$site_id = $this->setSite();
 		}
 
-		$this->language('en_US', 1);
-		$this->currency('USD', 1);
+		$this->language();
+		$this->currency();
 
 		//change site status (live, under maintenance etc)
 		if ($state = ($this->request->post['state'] ?? false)) {
@@ -438,6 +470,7 @@ class Base {
 
 		$this->global['site_id']  = $site_id;
 		$this->global['host']     = $this->session->get('host');
+		$this->global['site_url'] = $this->session->get('site_url');
 		$this->global['admin_id'] = $admin['admin_id'];
 		$this->global['state']    = $state;
 		$this->global['page']     = $page;

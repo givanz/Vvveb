@@ -19,7 +19,10 @@ $language['language'] = empty($language['language']) ? $_default : $language['la
 	if (is_array($language['language'])) {
 		foreach ($language['language'] as $index => $lang) {?>
 		
-		@language .dropdown-item|addClass = <?php if ($lang['code'] == $language['active']['code']) echo 'active'?>
+		@language .dropdown-item|addClass = <?php 
+			if (isset($lang['code']) && isset($language['active']['code']) && 
+				($lang['code'] == $language['active']['code'])) echo 'active';
+		?>
 		
 		@language [data-v-language-name] = $lang['name']
 		@language [data-v-language-img]|src = $lang['img']

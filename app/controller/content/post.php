@@ -27,6 +27,7 @@ use function Vvveb\__;
 use Vvveb\Controller\Base;
 //use Vvveb\System\Component\Component;
 use function Vvveb\model;
+use function Vvveb\setLanguage;
 use Vvveb\System\Event;
 use Vvveb\System\User\Admin;
 
@@ -68,6 +69,10 @@ class Post extends Base {
 				}
 
 				if ($languageContent) {
+					if ($this->global['language'] != $languageContent['code']) {
+						setLanguage($languageContent['code']);
+					}
+					
 					$this->global['language']    = $languageContent['code'];
 					$this->global['language_id'] = $languageContent['language_id'];
 
@@ -75,17 +80,17 @@ class Post extends Base {
 					//$this->session->set('language_id', $languageContent['language_id']);
 
 					$this->request->get['post_id']         = $languageContent['post_id'];
+					$this->request->get['admin_id']        = $languageContent['admin_id'];
 					$this->request->request['post_id']     = $languageContent['post_id'];
 					$this->request->request['name']        = $languageContent['name'];
 					$this->request->request['code']        = $languageContent['code'];
 					$this->request->request['language_id'] = $languageContent['language_id'];
-
+					
 					if ($created_at) {
 						//check if admin user to allow revision preview
 						$admin = Admin::current();
 
 						if ($admin) {
-							//var_dump($content);
 							$revisions = model('post_content_revision');
 							$revision  = $revisions->get(['created_at' => $created_at, 'post_id' => $languageContent['post_id']] + $this->global);
 

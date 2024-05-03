@@ -52,12 +52,13 @@ class Posts extends ComponentBase {
 		'search'             => NULL,
 		'admin_id'           => NULL,
 		//archive
-		'month'      => NULL,
-		'year'       => NULL,
-		'image_size' => 'medium',
-		'categories' => null,
-		'tags'       => null,
-		'taxonomy'   => null,
+		'month'              => NULL,
+		'year'               => NULL,
+		'image_size'         => 'medium',
+		'categories'         => null,
+		'tags'               => null,
+		'taxonomy'           => null,
+		'username'           => null,
 	];
 
 	public $options = [];
