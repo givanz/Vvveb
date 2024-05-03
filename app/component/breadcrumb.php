@@ -47,6 +47,7 @@ class Breadcrumb extends ComponentBase {
 		$name     = $request->get['name'] ?? '';
 		$homeText = __('Home');
 		$shopText = __('Shop');
+		$blogText = __('Blog');
 
 		$breadcrumb = [
 			['text' => $homeText, 'url' => '/'],
@@ -68,10 +69,7 @@ class Breadcrumb extends ComponentBase {
 						+ self :: $global);
 
 					if ($result) {
-						$breadcrumb = array_merge($breadcrumb, [
-							['text' => $result['name'], 'url' => url('product/category/index', $result)],
-							//['text' => $slug, 'url' => false],
-						]);
+						$breadcrumb[] = ['text' => $result['name'], 'url' => url('product/category/index', $result)];
 					}
 				}
 
@@ -117,7 +115,7 @@ class Breadcrumb extends ComponentBase {
 			case 'content/index':
 				$breadcrumb = [
 					['text' => $homeText, 'url' => '/'],
-					['text' => __('blog'), 'url' => false],
+					['text' => $blogText, 'url' => false],
 				];
 
 			break;
@@ -126,6 +124,7 @@ class Breadcrumb extends ComponentBase {
 				$post_id    = $request->get['post_id'] ?? false;
 				$breadcrumb = [
 					['text' => $homeText, 'url' => '/'],
+					['text' => $blogText, 'url' => url('content')],
 				];
 
 				if ($post_id) {
@@ -135,27 +134,16 @@ class Breadcrumb extends ComponentBase {
 						+ self :: $global);
 
 					if ($result && isset($result['category'])) {
-						$breadcrumb += [
-							['text' => $result['name'], 'url' => url('content/category/index', $result)],
-						];
+						$breadcrumb[] = ['text' => $result['name'], 'url' => url('content/category/index', $result)];
 					}
 				}
 
-				$breadcrumb += [
-					['text' => $slug, 'url' => false],
-				];
+				$breadcrumb[] = ['text' => $slug, 'url' => false];
 
 			break;
 
 			case 'content/page/index':
 				$post_id = $request->get['post_id'] ?? false;
-
-				if ($post_id) {
-					$category = new CategorySQL();
-					$result   = $category->getCategory(
-						['post_id' => $post_id, 'limit' => 1, 'type' => 'categories', 'post_type' => 'post']
-						+ self :: $global);
-				}
 
 				$breadcrumb = [
 					['text' => $homeText, 'url' => '/'],
