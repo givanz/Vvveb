@@ -48,7 +48,7 @@ class Order {
 
 	public function add($data) {
 		//set defaults
-		$defaults = ['invoice_format', 'order_status_id', 'remote_ip', 'forwarded_for_ip'];
+		$defaults = ['invoice_format', 'order_id_format', 'order_status_id', 'remote_ip', 'forwarded_for_ip'];
 
 		$site                     = siteSettings();
 		$site['remote_ip']        = $_SERVER['REMOTE_ADDR'] ?? false;
@@ -63,19 +63,32 @@ class Order {
 			}
 		}
 
-		$data['invoice_no'] = \Vvveb\invoiceFormat($data['invoice_format'], $data);
-
+		$data['invoice_no']        = \Vvveb\invoiceFormat($data['invoice_format'], $data);
+		$data['customer_order_id'] = \Vvveb\invoiceFormat($data['order_id_format'], $data);
 		//todo: check if email is already registerd for new accounts
+
+		//add products one by one to set product options for each
+		$products         = $data['products'];
+		$data['products'] = [];
+
 		$result   = $this->model->add(['order' => $data]);
 		$order_id = $result['order'] ?? false;
 
 		if ($order_id) {
+			//add products
+			foreach ($products as $key => $product) {
+				$product_options               = $product['option_value'] ?? [];
+				$product_options['product_id'] = $product['product_id'];
+				$this->model->addProduct(['product' => $product, 'product_options' => $product['option_value'], 'order_id' => $order_id]);
+			}
 			//update invoice to set {order_id} variable
-			$data['order_id']   = $order_id;
-			$data['invoice_no'] = \Vvveb\invoiceFormat($data['invoice_format'], $data);
-			$result             = $this->model->edit(['order' => ['invoice_no' => $data['invoice_no']], 'order_id' => $order_id]);
+			$data['order_id']          = $order_id;
+			$data['user_id']           = $data['user_id'] ?? 0;
+			$data['customer_order_id'] = \Vvveb\invoiceFormat($data['order_id_format'], $data);
+			$data['invoice_no']        = \Vvveb\invoiceFormat($data['invoice_format'], $data);
+			$result                    = $this->model->edit(['order' => ['invoice_no' => $data['invoice_no'], 'customer_order_id' => $data['customer_order_id']], 'order_id' => $order_id]);
 		}
 
-		return $order_id;
+		return $data;
 	}
 }

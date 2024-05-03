@@ -32,11 +32,11 @@ use Vvveb\System\Session;
 class Cart {
 	protected $cart = [];
 
-	private $session;
+	protected $session;
 
-	private $currency;
+	protected $currency;
 
-	private $tax;
+	protected $tax;
 
 	protected $productModel = 'product';
 
@@ -109,6 +109,9 @@ class Cart {
 					foreach ($product['option'] as $value) {
 						if (is_numeric($value)) {
 							$productOptions[$value] = $value;
+						} else {
+							$product_option_value_id                  = $value['product_option_value_id'];
+							$productOptions[$product_option_value_id] = $product_option_value_id;
 						}
 					}
 				}
@@ -155,23 +158,32 @@ class Cart {
 				$prod['price'] = $product['price'];
 
 				//add option value data and adjust price if necessary
-				if ($prod['option']) {
-					foreach ($prod['option'] as $option_id => $product_option_value_id) {
-						$value                                          = $optionResults[$product_option_value_id];
-						$prod['option_value'][$product_option_value_id] = $value;
+				if (isset($prod['option'])) {
+					foreach ($prod['option'] as $option_id => $option) {
+						if (is_numeric($option)) {
+							$product_option_value_id = $option;
+						} else {
+							$product_option_value_id = $option['product_option_value_id'];
+						}
+
+						$value = $optionResults[$product_option_value_id];
 
 						if ($value['price']) {
 							if ($value['price_operator'] == '-') {
-								$prod['price'] -= $value['price'];
-							} else {
-								$prod['price'] += $value['price'];
+								$value['price'] = -$value['price'];
 							}
+
+							$prod['price'] += $value['price'];
+							$value['price_formatted'] = $this->currency->format($value['price']);
 						}
+
+						$prod['option_value'][$product_option_value_id] = $value;
 					}
 				}
 
-				$prod['url']             = htmlentities(url('product/product/index', $product));
-				$prod['remove-url']      = htmlentities(url('cart/cart/remove', $product));
+				$url                     = ['slug' => $product['slug']];
+				$prod['url']             = htmlentities(url('product/product/index', $url));
+				$prod['remove-url']      = htmlentities(url('cart/cart/remove', $url));
 
 				$prod['total']           = (int)$prod['price'] * $prod['quantity'];
 				$prod['total_formatted'] = $this->currency->format($prod['total']);
@@ -190,8 +202,8 @@ class Cart {
 					//$prod['subscription_plan_id'] = $products[$productId]['subscription_plan_id'];
 				}
 
-				$this->total += $prod['total'];
-				$this->total_tax += $prod['total_tax'];
+				$this->total       += $prod['total'];
+				$this->total_tax   += $prod['total_tax'];
 				$this->total_items += $prod['quantity'];
 
 				$prod = array_merge($prod, $product);
@@ -345,6 +357,7 @@ class Cart {
 	function getTotals() {
 		//include taxes
 		$this->addTaxTotal();
+		$this->addCouponTotal();
 
 		return $this->totals;
 	}

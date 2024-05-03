@@ -7,7 +7,8 @@ CREATE SEQUENCE order_seq;
 
 CREATE TABLE "order" (
   "order_id" int check ("order_id" > 0) NOT NULL DEFAULT NEXTVAL ('order_seq'),
-  "invoice_no" varchar(191) NOT NULL DEFAULT '0',
+  "invoice_no" varchar(64) NOT NULL DEFAULT '0',
+  "customer_order_id" varchar(64) NOT NULL DEFAULT '0',
   "invoice_prefix" varchar(26) NOT NULL DEFAULT 'I-',
   "site_id" smallint NOT NULL DEFAULT 0,
   "site_name" varchar(64) NOT NULL,
@@ -60,3 +61,6 @@ CREATE TABLE "order" (
   "updated_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("order_id")
 );
+
+CREATE INDEX "order_order_status_id" ON order ("site_id","order_status_id","created_at");
+CREATE INDEX "order_customer_order_id" ON order ("customer_order_id","order_status_id","created_at");

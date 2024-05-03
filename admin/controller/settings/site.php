@@ -63,12 +63,28 @@ class Site extends Base {
 	}
 
 	private function invoiceFormatPreview($format) {
-		$data = ['order_id' => 777, 'user_id' => 1000, 'site_id' => 1];
+		$data = ['order_id' => 777, 'customer_order_id' => 'OI888', 'user_id' => 1000, 'site_id' => 1];
+
+		return \Vvveb\invoiceFormat($format, $data);
+	}
+
+	private function orderIdFormatPreview($format) {
+		$data = ['order_id' => 777, 'customer_order_id' => 'OI888', 'user_id' => 1000, 'site_id' => 1];
 
 		return \Vvveb\invoiceFormat($format, $data);
 	}
 
 	function invoiceFormat() {
+		$format = $this->request->get['format'] ?? false;
+
+		if ($format) {
+			$format = $this->invoiceFormatPreview($format);
+		}
+
+		die($format);
+	}
+
+	function orderIdFormat() {
 		$format = $this->request->get['format'] ?? false;
 
 		if ($format) {
@@ -104,7 +120,7 @@ class Site extends Base {
 		$settingsValidator	  = new Validator(['site-settings']);
 
 		$view      = $this->view;
-		$site 	   = $this->request->post['site'] ?? [];
+		$site 	    = $this->request->post['site'] ?? [];
 		$settings  = $this->request->post['settings'] ?? [];
 
 		if (($errors = $siteValidator->validate($site)) === true &&
@@ -234,7 +250,8 @@ class Site extends Base {
 				$view->domain = ($domain['domain'] ?? '') . '.' . ($domain['tld'] ?? '');
 			}
 
-			$setting['invoice_format_preview'] = $this->invoiceFormatPreview($setting['invoice_format'] ?? '');
+			$setting['invoice_format_preview']  = $this->invoiceFormatPreview($setting['invoice_format'] ?? '');
+			$setting['order_id_format_preview'] = $this->invoiceFormatPreview($setting['order_id_format'] ?? '');
 
 			$view->set($data);
 			$view->site         = $site + $setting;

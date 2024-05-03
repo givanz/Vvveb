@@ -44,6 +44,8 @@ trait CouponTrait {
 	}
 
 	public function removeCoupon($code) {
+		$coupon = $this->coupons[$code];
+		$this->removeTotal('coupon.' . $coupon['coupon_id']);
 		unset($this->coupons[$code]);
 
 		return true;
@@ -57,7 +59,13 @@ trait CouponTrait {
 		$coupons = $this->getCoupons();
 
 		foreach ($coupons as $coupon) {
-			$this->addTotal('coupon.' . $coupon['coupon_rate_id'], $coupon['name'], $coupon['value']);
+			if ($coupon['type'] == 'P') {
+				$discount = (($coupon['discount'] * $this->getSubTotal()) / 100);
+			} else {
+				$discount = $coupon['discount'];
+			}
+
+			$this->addTotal('coupon.' . $coupon['coupon_id'], $coupon['name'], $discount);
 		}
 	}
 }

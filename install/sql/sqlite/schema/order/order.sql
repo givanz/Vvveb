@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS `order`;
 CREATE TABLE `order` (
 `order_id` INTEGER PRIMARY KEY AUTOINCREMENT,
 `invoice_no` TEXT NOT NULL DEFAULT '0',
+`customer_order_id` TEXT NOT NULL DEFAULT '0',
 `invoice_prefix` TEXT NOT NULL DEFAULT 'I-',
 `site_id` TINYINT NOT NULL DEFAULT '0',
 `site_name` TEXT NOT NULL,
@@ -57,3 +58,6 @@ CREATE TABLE `order` (
 `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- PRIMARY KEY (`order_id`)
 );
+
+CREATE INDEX `order_order_status_id` ON `order` (`site_id`,`order_status_id`,`created_at`);
+CREATE INDEX `order_customer_order_id` ON `order` (`customer_order_id`,`order_status_id`,`created_at`);

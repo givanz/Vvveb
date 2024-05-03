@@ -207,10 +207,11 @@ class Checkout extends Base {
 			if (($errors = $validator->validate($this->request->post)) === true) {
 				//allow only fields that are in the validator list and remove the rest
 
-				$checkoutInfo             = $validator->filter($this->request->post);
-				$checkoutInfo['products'] = $cart->getAll();
-				$checkoutInfo['totals']   = $cart->getTotals();
-				$checkoutInfo['total']    = $cart->getGrandTotal();
+				$checkoutInfo                    = $validator->filter($this->request->post);
+				$checkoutInfo['products']        = $cart->getAll();
+				$checkoutInfo['product_options'] = $cart->getProductOptions();
+				$checkoutInfo['totals']          = $cart->getTotals();
+				$checkoutInfo['total']           = $cart->getGrandTotal();
 				$checkoutInfo += $this->global;
 
 				//create user account if password is provided
@@ -255,9 +256,10 @@ class Checkout extends Base {
 
 				list($checkoutInfo) = Event::trigger(__CLASS__, 'add', $checkoutInfo);
 
-				$order_id = $order->add($checkoutInfo);
+				$checkoutInfo = $order->add($checkoutInfo);
 
-				if ($order_id) {
+				if ($checkoutInfo && $checkoutInfo['order_id']) {
+					$order_id                           = $checkoutInfo['order_id'];
 					$this->request->request['order_id'] = $order_id;
 					$checkoutInfo['order_id']           = $order_id;
 

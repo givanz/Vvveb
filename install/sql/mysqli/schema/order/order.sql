@@ -2,7 +2,8 @@ DROP TABLE IF EXISTS `order`;
 
 CREATE TABLE `order` (
   `order_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `invoice_no` varchar(191) NOT NULL DEFAULT '0',
+  `invoice_no` varchar(64) NOT NULL DEFAULT '0',
+  `customer_order_id` varchar(64) NOT NULL DEFAULT '0',
   `invoice_prefix` varchar(26) NOT NULL DEFAULT 'I-',
   `site_id` tinyint(6) NOT NULL DEFAULT '0',
   `site_name` varchar(64) NOT NULL,
@@ -54,5 +55,6 @@ CREATE TABLE `order` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp,
   `updated_at` datetime NOT NULL DEFAULT current_timestamp,
   PRIMARY KEY (`order_id`),
-  KEY `order_status_id` (`site_id`,`order_status_id`,`created_at`)
+  KEY `order_status_id` (`site_id`,`order_status_id`,`created_at`),
+  KEY `customer_order_id` (`customer_order_id`,`order_status_id`,`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
