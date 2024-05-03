@@ -24,7 +24,7 @@ namespace Vvveb\Controller;
 
 use function Vvveb\__;
 use function Vvveb\installedLanguages;
-use function Vvveb\session;
+use function Vvveb\session as sess;
 use function Vvveb\setLanguage;
 use Vvveb\Sql\LanguageSQL;
 use Vvveb\Sql\RoleSQL;
@@ -37,7 +37,7 @@ use Vvveb\System\User\Admin;
 use function Vvveb\userPreferedLanguage;
 
 define('REQUIRED_EXTENSIONS', ['mysqli', 'mysqlnd', 'xml', 'libxml', 'pcre',  'zip', 'dom', 'curl', 'gettext']);
-define('WRITABLE_FOLDERS', ['storage', 'storage/cache', 'storage/model', 'storage/compiled-templates', 'config', 'config/sites.php', 'public/media/', 'public/themes', 'public/image-cache']);
+define('WRITABLE_FOLDERS', ['storage', 'storage/cache', 'storage/model', 'storage/compiled-templates', 'config', 'config/sites.php', 'public/media/', 'public/themes', 'public/image-cache', 'plugins']);
 define('MIN_PHP_VERSION', '7.4.0');
 define('DEFAULT_LANG', 'en_US');
 
@@ -46,11 +46,11 @@ class Index extends Base {
 	private $config = ['engine' => 'mysqli', 'host' => '127.0.0.1', 'database'  => 'vvveb', 'user'  => 'root', 'password'  => '', 'port'  => null, 'prefix'  => ''];
 
 	function __construct() {
-		if (! ($lang = session('language'))) {
+		if (! ($lang = sess('language'))) {
 			$lang = userPreferedLanguage();
 
 			if ($lang) {
-				session(['language' => $lang]);
+				sess(['language' => $lang, 'language_id' => 1]);
 			}
 		}
 
@@ -202,7 +202,7 @@ class Index extends Base {
 		if ($this->request->post) {
 			if (isset($this->request->post['language'])) {
 				$lang = $this->request->post['language'];
-				session(['language' => $lang]);
+				sess(['language' => $lang, 'language_id' => 1]);
 				setLanguage($lang);
 			} else {
 				$this->import($noimport);
@@ -220,7 +220,7 @@ class Index extends Base {
 
 		if (! defined('CLI')) {
 			$this->view->languagesList    = $languages;
-			$this->view->currentLanguage  = session('language') ?? DEFAULT_LANG;
+			$this->view->currentLanguage  = sess('language') ?? DEFAULT_LANG;
 		}
 	}
 
@@ -235,6 +235,13 @@ class Index extends Base {
 		$isRootPublic             = (constant('PUBLIC_PATH') == DIRECTORY_SEPARATOR) ? 'true' : 'false';
 		$this->view->isRootPublic = $isRootPublic;
 
+		$languagesList      = include DIR_SYSTEM . 'data/languages-list.php';
+
+		if (! defined('CLI')) {
+			$this->view->languagesList    = $languagesList;
+			$this->view->currentLanguage  = sess('language') ?? DEFAULT_LANG;
+		}
+
 		if ($this->request->post) {
 			//set admin password
 			$user        = $this->request->post['admin'] ?? [];
@@ -243,6 +250,7 @@ class Index extends Base {
 			$noecommerce = $this->request->post['noecommerce'] ?? false;
 			$hostname    = $this->request->post['hostname'] ?? null;
 			$adminPath   = $this->request->post['admin-path'] ?? false;
+			$language    = $this->request->post['language'] ?? 'en_US';
 
 			$user['status'] = 1;
 			$result         = Admin::update($user, ['username' => 'admin']);
@@ -254,7 +262,6 @@ class Index extends Base {
 			$site['settings'] = json_encode($settings);
 
 			if ($theme) {
-				//@\Vvveb\setConfig('sites.* * *.theme', $theme);
 				$site['theme']  = $theme;
 			}
 
@@ -262,7 +269,6 @@ class Index extends Base {
 				Plugins::activate('hide-ecommerce', 1);
 			}
 
-			//if (isset($_SERVER['HTTP_HOST'])) {
 			//set default website url
 			$sites           = new SiteSQL();
 			$siteSettings    = $sites->get(['site_id' => 1]);
@@ -316,27 +322,24 @@ class Index extends Base {
 			unset($site['settings']);
 			@\Vvveb\setConfig('sites.* * *', $site);
 
-			$lang = \Vvveb\session('language');
+			$lang = $language ?? sess('language') ?? 'en_US';
 
-			if ($lang) {
-				$languageModel          = new LanguageSQL();
-				$installed              = $languageModel->get(['code' => $lang]);
-
-				if ($installed) {
-					$result = $languageModel->edit(['language' => ['status' => 1], 'language_id' => $installed['language_id']]);
-				} else {
-					$languagesList                     = include DIR_SYSTEM . 'data/languages-list.php';
-					$language                          = $languagesList[$lang];
-					$language['locale']                = $language['code'];
-					$language['code']                  = $lang;
-					$language['status']                = 1;
-
-					$result = $languageModel->add(['language' => $language]);
-				}
+			//set default language
+			if ($lang && $lang != 'en_US') {
+				$languageModel      = new LanguageSQL();
+				$language           = $languagesList[$lang];
+				$language['locale'] = $language['code'];
+				$language['code']   = $lang;
+				$language['status'] = 1;
+				//$installed              = $languageModel->get(['code' => $lang]);
+				$result = $languageModel->edit(['language' => $language, 'language_id' => 1]);
+				sess(['language' => $lang, 'language_id' => 1]);
+				setLanguage($lang);
 			}
 
 			$error = '';
 
+			//change admin login path
 			if ($isRootPublic && $adminPath &&
 				($adminPath != 'admin' && $adminPath != 'vadmin')) {
 				$from = DIR_PUBLIC . 'vadmin';

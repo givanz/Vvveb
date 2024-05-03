@@ -1,4 +1,5 @@
 import(common.tpl)
+import(language.tpl)
 
 [data-v-requirements]|if_exists = $this->requirements
 
