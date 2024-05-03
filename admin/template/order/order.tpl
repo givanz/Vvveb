@@ -77,15 +77,16 @@ if($order_payment && is_array($order_payment)) {
 	$count = count($order_payment);
 	foreach ($order_payment as $index => $payment) {?>
 		
-		@payment|data-payment_id = $payment['payment_id']
-		
-		@payment input[data-v-payment-*] = $payment['@@__data-v-payment-(*)__@@']
-		
-		@payment img[data-v-payment-*]|src = $payment['@@__data-v-payment-(*)__@@']
-		
-		@payment [data-v-payment-*]|innerText = $payment['@@__data-v-payment-(*)__@@']
-		
-		@payment a[data-v-payment-*]|href = $payment['@@__data-v-payment-(*)__@@']
+		@payment|data-payment_id                = $payment['payment_id']
+		@payment input[data-v-payment-*]        = $payment['@@__data-v-payment-(*)__@@']
+		@payment img[data-v-payment-*]|src      = $payment['@@__data-v-payment-(*)__@@']
+		@payment [data-v-payment-*]|innerText   = $payment['@@__data-v-payment-(*)__@@']
+		@payment a[data-v-payment-*]|href       = $payment['@@__data-v-payment-(*)__@@']
+		@payment [type="radio"]|addNewAttribute = <?php
+			if (isset($this->order['payment_method']) && ($this->order['payment_method'] == $payment['name'])) {
+				echo 'checked';
+			}
+		?>
 	
 	@payment|after = <?php 
 	} 
@@ -102,17 +103,37 @@ if($order_shipping && is_array($order_shipping)) {
 	$count = count($order_shipping);
 	foreach ($order_shipping as $index => $shipping) {?>
 		
-		@shipping|data-shipping_id = $shipping['shipping_id']
-		
-		@shipping input[data-v-shipping-*] = $shipping['@@__data-v-shipping-(*)__@@']
-		
-		@shipping img[data-v-shipping-*]|src = $shipping['@@__data-v-shipping-(*)__@@']
-		
-		@shipping [data-v-shipping-*]|innerText = $shipping['@@__data-v-shipping-(*)__@@']
-		
-		@shipping a[data-v-shipping-*]|href = $shipping['@@__data-v-shipping-(*)__@@']
+		@shipping|data-shipping_id               = $shipping['shipping_id']
+		@shipping input[data-v-shipping-*]       = $shipping['@@__data-v-shipping-(*)__@@']
+		@shipping img[data-v-shipping-*]|src     = $shipping['@@__data-v-shipping-(*)__@@']
+		@shipping [data-v-shipping-*]|innerText  = $shipping['@@__data-v-shipping-(*)__@@']
+		@shipping a[data-v-shipping-*]|href      = $shipping['@@__data-v-shipping-(*)__@@']
+		@shipping [type="radio"]|addNewAttribute = <?php 
+			if (isset($this->order['shipping_method']) && ($this->order['shipping_method'] == $shipping['name'])) {
+				echo 'checked';
+			}
+		?>
 	
 	@shipping|after = <?php 
 	} 
+}
+?>
+
+
+@cart-option = [data-v-cart] [data-v-order-product] [data-v-product-option]
+@cart-option|deleteAllButFirstChild
+
+
+@cart-option|before = <?php
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => 'product_option_value_id'] : false;
+$option_value = empty($product['option_value']) ? $_default : $product['option_value'];
+
+if($option_value) {
+	foreach ($option_value as $product_option_value_id => $value) { ?>
+
+	@cart-option [data-v-product-option-*]|innerText = $value['@@__data-v-product-option-(*)__@@']
+
+
+@cart-option|after = <?php } 
 }
 ?>

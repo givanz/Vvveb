@@ -81,6 +81,7 @@
 	
 	CREATE PROCEDURE get(
         IN order_id INT,
+		IN customer_order_id CHAR,
 		IN user_id INT,
 		IN language_id INT,
 		OUT fetch_row,
@@ -119,18 +120,30 @@
 			AND `order`.user_id = :user_id
 		END @IF
 
-		AND `order`.order_id = :order_id;
+		@IF isset(:order_id)
+		THEN 
+			AND `order`.order_id = :order_id
+		END @IF		
 		
-        	
+		@IF isset(:customer_order_id)
+		THEN 
+			AND `order`.customer_order_id = :customer_order_id
+		END @IF
+
+		LIMIT 1;        	
+
 		SELECT `key` as array_key,`value` as array_value FROM order_meta as _
 			WHERE _.order_id = :order_id;
             
 		-- products 
-		SELECT *,products.name as name, products.`product_id` as array_key 
+		SELECT *,products.name as name,
+			(SELECT json_group_array(json_object('order_product_option_id', opo.order_product_option_id, 'product_option_id' , opo.product_option_id, 'product_option_value_id' , opo.product_option_value_id, 'option', opo.option, 'name' , opo.name, 'price' , opo.price, 'type' , opo.type) )
+					FROM order_product_option AS opo
+				WHERE opo.order_product_id = products.order_product_id
+			) as option_value
 		FROM order_product as products
 			LEFT JOIN product ON product.product_id = products.product_id	
 			LEFT JOIN product_content ON product_content.product_id = products.product_id	
-			LEFT JOIN order_product_option ON products.order_product_id = order_product_option.order_product_id	
 
 			@IF isset(:language_id)
 			THEN 
@@ -269,6 +282,7 @@
 
 		:products  = @FILTER(:order.products, order_product, false, true)
 		:totals  = @FILTER(:order.totals, order_total, false, true)
+		
 		@FILTER(:order, order)
 		
 		INSERT INTO `order` 
@@ -289,7 +303,7 @@
 				( order_id, @KEYS(:each) )
 			VALUES ( @result.order, :each  );
 		
-		-- insert order products
+		-- insert order totals
 		@EACH(:totals) 
 			INSERT INTO order_total 
 				( order_id, @KEYS(:each) )
@@ -315,3 +329,108 @@
 		WHERE order_id = :order_id;
 
     END
+
+	-- products
+	
+	CREATE PROCEDURE addProduct(
+		IN product ARRAY,
+		IN product_options ARRAY,
+		IN order_id INT,
+		OUT insert_id,
+		OUT insert_id
+	)
+	BEGIN
+	
+		:product          = @FILTER(:product, order_product, false)
+		:product_options  = @FILTER(:product_options, order_product_option, false, true)
+
+		INSERT INTO order_product 
+			( order_id, @KEYS(:product) )
+		VALUES ( :order_id, :product );
+	
+		@EACH(:product_options) 
+			INSERT INTO order_product_option 
+				( order_id, order_product_id, @KEYS(:each) )
+			VALUES ( :order_id, @result.order_product, :each );
+    END
+			
+	CREATE PROCEDURE editProduct(
+		IN order_product_id INT,
+		IN product ARRAY,
+		IN product_options ARRAY,
+		IN order_id INT,
+		OUT affected_rows,
+		OUT affected_rows
+	)
+	BEGIN
+	
+		:product  		  = @FILTER(:product, order_product)
+		:product_options  = @FILTER(:product_options, order_product_option, false, true)
+
+		UPDATE `order_product` 
+			
+			SET @LIST(:product) 
+			
+		WHERE order_product_id = :order_product_id;
+
+		-- insert product option
+		@EACH(:product_options) 
+			INSERT INTO order_product_option 
+				( order_id, order_product_id, @KEYS(:each) )
+			VALUES ( :order_id, :order_product_id, :each  )
+			ON CONFLICT(`order_id`,`order_product_id`) DO UPDATE SET @LIST(:each);
+    END
+	
+	PROCEDURE deleteProduct(
+		IN  order_product_id ARRAY,
+		OUT affected_rows,
+	)
+	BEGIN
+
+		DELETE FROM order_product WHERE order_product_id IN (:order_product_id);
+		
+	END	
+
+	-- totals
+	
+	CREATE PROCEDURE addTotal(
+		IN total ARRAY,
+		IN order_id INT,
+		OUT insert_id
+	)
+	BEGIN
+	
+		:total = @FILTER(:total, order_total)
+
+		INSERT INTO order_total 
+			( order_id, @KEYS(:total) )
+		VALUES ( :order_id, :total );
+
+	END	
+	
+	CREATE PROCEDURE editTotal(
+		IN order_total_id INT,
+		IN total ARRAY,
+		OUT affected_rows
+	)
+	BEGIN
+
+		:total = @FILTER(:total, order_total)
+
+		UPDATE `order_total` 
+			
+			SET @LIST(:total) 
+			
+		WHERE order_total_id = :order_total_id;
+
+    END
+	
+	PROCEDURE deleteTotal(
+		IN  order_total_id ARRAY,
+		OUT affected_rows,
+	)
+	BEGIN
+
+		DELETE FROM order_total WHERE order_total_id IN (:order_total_id);
+		
+	END	
