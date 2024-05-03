@@ -24,17 +24,60 @@ namespace Vvveb\Controller\Theme;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use function Vvveb\rcopy;
 use function Vvveb\rrmdir;
 use function Vvveb\sanitizeFileName;
+use function Vvveb\slugify;
 use Vvveb\System\Extensions\Themes as ThemesList;
 use Vvveb\System\Import\Theme;
 use Vvveb\System\Sites;
 
 class Themes extends Base {
+	function duplicate() {
+		$theme   = sanitizeFileName(basename($this->request->get['theme'] ?? ''));
+		$dest    = sanitizeFileName(basename($this->request->get['dest'] ?? ''));
+		$newSlug = slugify($dest);
+
+		$srcDir      = DIR_THEMES . $theme;
+		$destDir     = DIR_THEMES . $newSlug;
+		$skipFolders = ['backup', 'src', 'node_modules', '.git'];
+
+		if ($dest) {
+			if (file_exists($destDir)) {
+				$this->view->errors[] = _('Destination directory already exists!');
+			} else {
+				if ($theme && is_dir($srcDir)) {
+					if (rcopy($srcDir, $destDir, $skipFolders)) {
+						$themePhp = $destDir . DS . 'theme.php';
+						$content  = file_get_contents($themePhp);
+
+						if ($content) {
+							$content = preg_replace('/[Nn]ame:.+/', "Name: $dest", $content);
+							$content = preg_replace('/[Ss]lug:.+/', "Slug: $newSlug", $content);
+							$content = preg_replace('/[Tt]ext [Dd]omain:.+/', "Text Domain: $newSlug", $content);
+
+							if (file_put_contents($themePhp, $content)) {
+								$this->view->success[] = _('Theme duplicated!');
+							} else {
+								$this->view->errors[] = _('Error setting theme name!');
+							}
+						} else {
+							$this->view->errors[] = _('Error getting theme info!');
+						}
+					} else {
+						$this->view->errors[] = _('Error duplicating theme!');
+					}
+				}
+			}
+		}
+
+		return $this->index();
+	}
+
 	function delete() {
 		$theme = sanitizeFileName(basename($this->request->get['theme'] ?? ''));
 
-		if ($theme) {
+		if ($theme && is_dir(DIR_THEMES . $theme)) {
 			if (rrmdir(DIR_THEMES . $theme)) {
 				$this->view->success[] = _('Theme removed!');
 			} else {
