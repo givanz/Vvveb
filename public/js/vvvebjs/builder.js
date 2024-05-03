@@ -325,8 +325,8 @@ Vvveb.Components = {
 			var sectionName = this.dataset.section;
 			componentsPanelSections[sectionName] = $(this);
 			$('.section[data-section!="default"]', this).remove();
-			$('label[for!="header_default"]', this).remove();
-			$('input[id!="header_default"]', this).remove();
+			$('label[data-header!="default"] + input', this).remove();
+			$('label[data-header!="default"]', this).remove();
 		});
 		
 		var section = componentsPanelSections[defaultSection].find('.section[data-section="default"]');
@@ -973,22 +973,28 @@ Vvveb.Builder = {
 	 },
 	
 	 adjustListsHeight: function () {
-		 let lists = $(".drag-elements-sidepane > div:not(.block-preview)");
-		 let properties = $(".component-properties > .tab-content");
+		 let left = $("#left-panel .drag-elements-sidepane > div:not(.block-preview), #left-panel .component-properties > .tab-content");
+		 let right = $("#right-panel .drag-elements-sidepane > div:not(.block-preview), #right-panel .component-properties > .tab-content");
 		 let wHeight = $(window).height();
-
 		 let maxOffset = 0;
 
 		 function adjust(elements) {	
 			 elements.each(function (i,e) {
 				 e.style.height = "";
-				 maxOffset = Math.max(0, e.getBoundingClientRect()["top"]);
-				 e.style.height = (wHeight -  maxOffset) + "px";
+				 let offset =  Math.floor(e.getBoundingClientRect()["top"]);
+				 if (offset >= wHeight) return;
+				 maxOffset = Math.max(maxOffset, offset);
+				 let height = wHeight - maxOffset;
+				 if (!offset) {
+				 height += parseInt(e.dataset.offset ?? 0);
+				 }
+				 e.style.height = height + "px";
 			});
 		}
 		
-		adjust(lists);
-		adjust(properties);
+		adjust(left);
+		maxOffset = 0;
+		adjust(right);
 	},
 	 
 	
@@ -1172,7 +1178,7 @@ Vvveb.Builder = {
 		{
 			$(node).parent().before(node);
 		}
-		
+
 		Vvveb.Builder.selectNode(node);
 
 		newParent = node.parentNode;
@@ -1391,7 +1397,7 @@ Vvveb.Builder = {
 						br: true,
 						wbr: true
 					};
-					
+
 					try {
 							if ((offset.top  < (event.originalEvent.pageY - halfHeight)) || (offset.left  < (x - halfWidth)))
 							{
@@ -1505,6 +1511,8 @@ Vvveb.Builder = {
 				
 				node = self.dragElement.get(0);
 				self.selectNode(node);
+				Vvveb.TreeList.loadComponents();
+				Vvveb.TreeList.selectComponent(node);
 				self.loadNodeComponent(node);
 				//if component properties is loaded in left panel tab instead of right panel show tab
 				if ($(".component-properties-tab").is(":visible"))//if properites tab is enabled/visible 
@@ -1574,6 +1582,7 @@ Vvveb.Builder = {
 						$('.component-properties-tab a').show().tab('show'); 
 					
 					self.selectNode(event.target);
+					Vvveb.TreeList.selectComponent(event.target);
 					self.loadNodeComponent(event.target);
 
 					if (Vvveb.component.resizable) {
@@ -1597,6 +1606,7 @@ Vvveb.Builder = {
 		
 		$("#drag-btn").on("mousedown", function(event) {
 			//self.dragElement = self.selectedEl.attr("style",Vvveb.dragElementStyle);
+			if (event.which == 1) {//left click
 			self.isDragging = true;
 			$("#section-actions, #highlight-name, #select-box").hide();
 			
@@ -1606,7 +1616,7 @@ Vvveb.Builder = {
 			} else {
 				self.selectedEl.css("position", "" ).css("top", "" ).css("left", "" );
 				self.selectedEl.addClass("is-dragged");
-				self.dragElement = $(Vvveb.dragHtml);
+			self.dragElement = $(Vvveb.dragHtml);
 			}
 
 			node = self.selectedEl.get(0);			
@@ -1619,9 +1629,11 @@ Vvveb.Builder = {
 			//self.selectNode(false);
 			event.preventDefault();
 			return false;
+			}
 		});
 
 		$(".resize > div").on("mousedown", function(event) {
+			if (event.which == 1) {//left click
 			$("#section-actions, #highlight-name, #highlight-box").hide();
 			
 			self.isResize = true;
@@ -1631,6 +1643,7 @@ Vvveb.Builder = {
 
 			event.preventDefault();
 			return false;
+			}
 		});
 
 		$("#down-btn").on("click", function(event) {
@@ -1666,6 +1679,7 @@ Vvveb.Builder = {
 			
 			self.selectNode(node);
 			self.loadNodeComponent(node);
+			Vvveb.TreeList.selectComponent(node);
 			
 			event.preventDefault();
 			return false;
@@ -1798,6 +1812,8 @@ Vvveb.Builder = {
 			node = node.get(0);
 			self.selectNode(node);
 			self.loadNodeComponent(node);
+			Vvveb.TreeList.loadComponents();
+			Vvveb.TreeList.selectComponent(node);
 
 			Vvveb.Undo.addMutation({type: 'childList', 
 									target: node.parentNode, 
@@ -1839,7 +1855,7 @@ Vvveb.Builder = {
 		self.isDragging = false;	
 		
 		$("body").on("mousedown touchstart", ".drag-elements-sidepane ul > li > ol > li[data-drag-type]", function(event) {
-			
+			if (event.which == 1) {//left click
 			$this = $(this);
 			
 			$("#component-clone").remove();
@@ -1883,6 +1899,7 @@ Vvveb.Builder = {
 			
 			event.preventDefault();
 			return false;
+			}
 		});
 		
 		$('body').on('mouseup dragend touchend', function(event) {
@@ -2475,6 +2492,14 @@ Vvveb.Gui = {
 
 		Vvveb.Builder.adjustListsHeight();
 	},
+
+	toggleTreeList: function () {
+		let treeList = document.getElementById("tree-list");
+		treeList.classList.toggle("d-none");
+		if (!treeList.offsetParent) {
+			document.getElementById("toggle-tree-list").classList.remove("active");
+		}		
+	},
 }
 
 Vvveb.StyleManager = {
@@ -2724,9 +2749,9 @@ Vvveb.ContentManager = {
 	},
 };
 
-function getNodeTree (node, parent, allowedComponents) {
+function getNodeTree (node, parent, allowedComponents, idToNode = {}) {
 	
-	function getNodeTreeTraverse (node, parent) {
+	function getNodeTreeTraverse (node, parent, id = '') {
 		
 		if (node.hasChildNodes()) {
 			for (var j = 0; j < node.childNodes.length; j++) {
@@ -2753,16 +2778,18 @@ function getNodeTree (node, parent, allowedComponents) {
 						image: matchChild.image,
 						type: matchChild.type,
 						node: child,
+						id: id + '-' + j,
 						children: []
 					};
 					
 					element.children = [];
 					parent.push(element);
+					idToNode[id + '-' + j] = child;
 					
-					element = getNodeTreeTraverse(child, element.children);
+					element = getNodeTreeTraverse(child, element.children, id + '-' + j);
 				} else
 				{
-					element = getNodeTreeTraverse(child, parent);	
+					element = getNodeTreeTraverse(child, parent, id + '-' + j);	
 				}
 			}
 		}
@@ -2770,7 +2797,7 @@ function getNodeTree (node, parent, allowedComponents) {
 		return false;
 	}
 	
-	getNodeTreeTraverse(node, parent);
+	getNodeTreeTraverse(node, parent, '1');
 }
 
 function drawComponentsTree(tree) {
@@ -2784,7 +2811,10 @@ function drawComponentsTree(tree) {
 		for (i in tree)
 		{
 			var node = tree[i];
-			var id = prefix + '-' + j + '-' + i; 
+			var id = node.id;
+			if (!id) {
+				id = prefix + '-' + j + '-' + i; 
+			}
 			
 			if (tree[i].children.length > 0) 
 			{
@@ -2828,13 +2858,7 @@ Vvveb.SectionList = {
 		$(this.selector).on("click", "> div .controls", function (e) {
 			var node = $(e.currentTarget.parentNode).data("node");
 			if (node) {
-				
-			delay(
-				() => Vvveb.Builder.frameHtml.animate({
-						scrollTop: $(node).offset().top - ($(node).height() / 2)
-					}, 500), 
-			300);				
-
+				node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 			//node.click();
 			Vvveb.Builder.selectNode(node);
 			Vvveb.Builder.loadNodeComponent(node);
@@ -2847,26 +2871,13 @@ Vvveb.SectionList = {
 		
 		$(this.selector).on("click", "li[data-component] label ", function (e) {
 			node = $(e.currentTarget.parentNode).data("node");
-			
-			delay(
-				() => Vvveb.Builder.frameHtml.animate({
-					scrollTop: $(node).offset().top - ($(node).height() / 2)
-				}, 1000), 
-			300);
-
+			if (node) {
+			node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 			node.click();
+			}
 		}).on("mouseenter", "li[data-component] label", function (e) {
 			node = $($(e.currentTarget.parentNode).data("node"));
 			node.css("outline","1px dashed blue");
-			/*
-			delay(
-				() => Vvveb.Builder.frameHtml.animate({
-					scrollTop: $(node).offset().top - ($(node).height() / 2)
-				}, 500), 
-			1000);
-
-			$(node).trigger("mousemove");
-			*/ 
 		}).on("mouseleave",  "li[data-component] label",  function (e){
 			node = $($(e.currentTarget.parentNode).data("node"));
 			node.css("outline","");
@@ -2946,11 +2957,16 @@ Vvveb.SectionList = {
 				}
 			}
 
+			node[0].scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
+			node.click();
+			/*
 			Vvveb.Builder.frameHtml.animate({
 				scrollTop: $(node).offset().top
 			}, 1000);
 			
 			delay(() => node.click(), 1000);
+			*/
+			
 			
 			node = node.get(0);
 			Vvveb.Undo.addMutation({type: 'childList', 
@@ -2960,6 +2976,9 @@ Vvveb.SectionList = {
 
 			
 			self.loadSections();
+			Vvveb.TreeList.loadComponents();
+			Vvveb.TreeList.selectComponent(node);
+
 			e.preventDefault();
 		});
 		
@@ -3010,7 +3029,7 @@ Vvveb.SectionList = {
 		section.data("node", data.node);
 		$(this.selector).append(section);
 
-		this.loadComponents(section, data.node, this.allowedComponents);
+		//this.loadComponents(section, data.node, this.allowedComponents);
 	},
 
 	loadSections: function() {
@@ -3075,6 +3094,133 @@ Vvveb.SectionList = {
 	},
 }
 
+Vvveb.TreeList = {
+	selector: '#tree-list',
+	
+	tree: [],
+	
+	idToNode : {},
+	
+	init: function() {
+		// header move
+		let div = document.querySelector(this.selector);
+		let header = document.querySelector(this.selector + " .header");
+		let isDown = false;
+		let offset = [0,0];
+
+		header.addEventListener('mousedown', function(e) {
+			if (e.which == 1) {//left click
+				isDown = true;
+				offset = [
+					div.offsetLeft - e.clientX,
+					div.offsetTop - e.clientY
+				];
+			}
+		}, true);
+
+		document.addEventListener('mouseup', function() {
+			isDown = false;
+		}, true);
+
+		document.addEventListener('mousemove', function(event) {
+			if (isDown) {
+				event.preventDefault();
+				div.style.left = (event.clientX + offset[0]) + 'px';
+				div.style.top  = (event.clientY + offset[1]) + 'px';
+			}
+		}, true);
+		
+		
+		//components click
+		$(this.selector).on("click", "> div .controls", function (e) {
+			var node = $(e.currentTarget.parentNode).data("node");
+			if (node) {
+				node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
+				//node.click();
+				Vvveb.Builder.selectNode(node);
+				Vvveb.Builder.loadNodeComponent(node);
+			}
+		}).on("dblclick", "> div", function (e) {
+			node = $(e.currentTarget).data("node");
+			//node.click();
+			Vvveb.Builder.selectNode(node);
+			Vvveb.Builder.loadNodeComponent(node);
+		});
+		
+		
+		$(this.selector).on("click", "li[data-component] label ", function (e) {
+			node = $(e.currentTarget.parentNode).data("node");
+			node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
+			node.click();
+		}).on("mouseenter", "li[data-component] label", function (e) {
+			node = $($(e.currentTarget.parentNode).data("node"));
+			node.css("outline","1px dashed blue");
+		}).on("mouseleave",  "li[data-component] label",  function (e){
+			node = $($(e.currentTarget.parentNode).data("node"));
+			node.css("outline","");
+			if (node.attr("style") == "") node.removeAttr("style");
+		});
+		
+	},
+	
+	selectComponent: function(node) {
+		let id;
+		for (i in this.idToNode) {
+			if (node == this.idToNode[i]) {
+				id = i;
+				break;
+			}
+		}
+
+		if (id) {
+			let element = document.getElementById("id" + id);
+
+			$(this.selector + " .active").removeClass("active");	
+			//collapse all 
+			let checkboxes = document.querySelectorAll(this.selector + " input[type=checkbox]:checked");
+			for (var i = 0, len = checkboxes.length; i < len; i++) {
+				checkboxes[i].checked = false;
+				let label = checkboxes[i].labels[0];
+				if (label) {
+					label.classList.remove("active");
+				}
+			}
+
+			//expand parents
+			if (element) {
+				let parent = element;
+				let current = element;
+				while (parent = current.closest("li")) {
+					current = parent.parentNode; 
+					let input = parent.querySelector("input");
+					if (input && input.hasAttribute("type") && input.type == "checkbox") {
+						input.checked = true;
+					}
+				}
+				
+				element.checked = true;
+				element.labels[0].classList.add("active");
+				element.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
+			}
+		}
+		
+		return false;
+	},
+	
+	loadComponents: function() {
+		let list = $(this.selector + " .tree > ol");
+		//if navigator not visible don't load
+		if (list[0].offsetParent === null) return;
+		
+		this.tree     = [];
+		this.idToNode = {};
+		getNodeTree(window.FrameDocument.body, this.tree, {}, this.idToNode);
+		
+		var html = drawComponentsTree(this.tree);
+		$(this.selector + " .tree > ol").replaceWith(html);
+	},	
+}
+
 Vvveb.FileManager = {
 	tree:false,
 	pages:{},
@@ -3120,25 +3266,13 @@ Vvveb.FileManager = {
 		
 		$(this.tree).on("click", "li[data-component] label ", function (e) {
 			node = $(e.currentTarget.parentNode).data("node");
-
-			delay(
-				() => Vvveb.Builder.frameHtml.animate({
-					scrollTop: $(node).offset().top - ($(node).height() / 2)
-				}, 500),
-			500);
-			
-
+			node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 			node.click();
 
 		}).on("mouseenter", "li[data-component] label", function (e) {
 
 			node = $(e.currentTarget.parentNode).data("node");
-
-			delay(
-				() => Vvveb.Builder.frameHtml.animate({
-					scrollTop: $(node).offset().top - ($(node).height() / 2)
-				}, 500),
-			 1000);
+			node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 
 			$(node).trigger("mousemove");
 			
@@ -3345,6 +3479,7 @@ Vvveb.FileManager = {
 				function () { 
 					if (loadComponents) { Vvveb.FileManager.loadComponents(allowedComponents); }
 					Vvveb.SectionList.loadSections(allowedComponents); 
+					Vvveb.TreeList.loadComponents(); 
 					Vvveb.StyleManager.init(); 
 					Vvveb.ChangeManager.setOriginalContent();
 				});
@@ -3367,12 +3502,7 @@ Vvveb.Breadcrumb = {
 			let node = $(this).data("node");
 			if (node) {
 				node.click();
-
-				delay(
-					() => Vvveb.Builder.frameHtml.animate({
-						scrollTop: $(node).offset().top - ($(node).height() / 2)
-					}, 500),
-				 100);
+				node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 			}
 			
 			$(window).triggerHandler("vvveb.Breadcrumb.click", node);
@@ -3388,12 +3518,6 @@ Vvveb.Breadcrumb = {
 			$(window).triggerHandler("vvveb.Breadcrumb.hover", node);
 			//node.css("outline","1px dashed blue");
 			/*
-			delay(
-				() => Vvveb.Builder.frameHtml.animate({
-					scrollTop: $(node).offset().top - ($(node).height() / 2)
-				}, 500),
-			 1000);
-
 			$(node).trigger("mousemove");
 			*/
 			

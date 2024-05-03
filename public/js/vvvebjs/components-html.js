@@ -115,7 +115,7 @@ Vvveb.Components.extend("_base", "html/link", {
 Vvveb.Components.extend("_base", "html/image", {
     nodes: ["img"],
     name: "Image",
-    html: '<img src="' +  Vvveb.baseUrl + 'icons/image.svg" class="mw-100 align-center">',
+    html: '<img src="' +  Vvveb.baseUrl + 'icons/image.svg" width="300" class="mw-100 align-center">',
     image: "icons/image.svg",
     resizable:true,//show select box resize handlers
     
@@ -832,7 +832,7 @@ Vvveb.Components.extend("_base", "html/paragraph", {
 	html: '<p>Lorem ipsum</p>',
     properties: [{
         name: "Text align",
-        key: "text-align",
+        key: "p-text-align",
         htmlAttr: "class",
         inline:false,
         validValues: ["", "text-start", "text-center", "text-end"],

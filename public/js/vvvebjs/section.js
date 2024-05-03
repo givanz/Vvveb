@@ -177,7 +177,6 @@ let SectionOverlay = [
 			
 			if (overlay.length) {
 				group.show();
-				console.log(group);
 				return 'true';
 			} else {
 				group.hide();
@@ -251,7 +250,6 @@ function sectionSeparatorProperties(name, title) {
 			
 			if (separator.length) {
 				group.show();
-				console.log(group);
 				return 'true';
 			} else {
 				group.hide();
@@ -266,7 +264,6 @@ function sectionSeparatorProperties(name, title) {
 		child:`.separator.${name} > svg`,
 		inputtype: HtmlListSelectInput,
 		onChange:function(element, value, input, component) {
-			console.log(element);
 			var newElement = $(value);
 			let attributes = element.prop("attributes");
 			

@@ -214,7 +214,7 @@ Vvveb.Components.extend("_base","elements/svg-icon", {
 			element.replaceWith(newElement);
 			return newElement;
 		},
-		data: {
+                data: {
 			url: Vvveb.baseUrl + "../../resources/svg/icons/{value}/index.html",
 			clickElement:"li",
 			insertElement:"svg",
@@ -253,8 +253,8 @@ Vvveb.Components.extend("_base","elements/svg-icon", {
                 value: "olicons",
                 text: "Olicons"
             }, {
-				value: "open-iconic",
-				text: "Open iconic"
+                value: "open-iconic",
+                text: "Open iconic"
             }, {
                 value: "boxicons",
                 text: "Box icons"
@@ -307,8 +307,8 @@ Vvveb.Components.extend("_base","elements/svg-icon", {
                 value: "material-design",
                 text: "Material Design"
             }]
-		},
-	}, {
+            },
+	   }, {
 		name: "Width",
 		key: "width",
 		htmlAttr: "width",
@@ -351,8 +351,8 @@ Vvveb.Components.extend("_base","elements/svg-icon", {
         //sort: base_sort++,
         col:4,
         inline:true,
-		section: style_section,
-		htmlAttr: "fill",
+        section: style_section,
+        htmlAttr: "fill",
         inputtype: ColorInput,
    },{
         name: "Color",
@@ -360,8 +360,8 @@ Vvveb.Components.extend("_base","elements/svg-icon", {
         //sort: base_sort++,
         col:4,
         inline:true,
-		section: style_section,
-		htmlAttr: "color",
+        section: style_section,
+        htmlAttr: "color",
         inputtype: ColorInput,
    },{
         name: "Stroke",
@@ -369,7 +369,7 @@ Vvveb.Components.extend("_base","elements/svg-icon", {
         //sort: base_sort++,
         col:4,
         inline:true,
-		section: style_section,
+        section: style_section,
         htmlAttr: "stroke",
         inputtype: ColorInput,
   	}]
@@ -1073,12 +1073,17 @@ function carouselAfterDrop(node) {
 		function initSwiper(onlyNew = false) {
 			var list = document.querySelectorAll('.swiper' + (onlyNew ? ":not(.swiper-initialized)" : "") );
 			list.forEach(el => {
-				//el.dataset
-				let params = {};
+				let params = {      
+					navigation: {
+						nextEl: ".swiper-button-next",
+						prevEl: ".swiper-button-prev",
+					},      
+					pagination: {
+						el: ".swiper-pagination",
+				  },
+				};
 				for (i in el.dataset) {
 					let param = el.dataset[i];
-					console.log(i);
-					console.log(param);
 					if (param[0] = '{') {
 						param = JSON.parse(param);
 					}
@@ -1431,7 +1436,10 @@ Vvveb.Components.add("elements/image-compare", {
     nodes: [".counter"],
     name: "Image Compare",
     image: "icons/image-compare.svg",
-    html: `<i class="font-icon la la-star"></i>`,
+    html: `<div class="c-compare" style="--value:50%;">
+	  <img class="c-compare__left" src="img/color.jpg" alt="" />
+	  <img class="c-compare__right" src="img/bw.jpg" alt="" />
+	</div>`,
     properties: [
 	]
 });   
