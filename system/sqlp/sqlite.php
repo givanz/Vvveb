@@ -82,7 +82,15 @@ class %name%SQL {
 						$results = $value;
 					}
 				} else  {
-					$results['%query_id%'] = %fetch%;
+					if (isset($results['%query_id%'])) {
+						//if multiple results like insert id from @EACH
+						if (!is_array($results['%query_id%'])){
+							$results['%query_id%'] = [$results['%query_id%']];
+						}
+						$results['%query_id%'][] = %fetch%;
+					} else {
+						$results['%query_id%'] = %fetch%;
+					}
 				}
 			}
 		}
