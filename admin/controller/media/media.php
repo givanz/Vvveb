@@ -70,7 +70,7 @@ class Media extends Base {
 		$path      = sanitizeFileName($this->request->post['mediaPath']);
 		$file      = $this->request->files['file'];
 		$fileName  = sanitizeFileName($file['name']);
-		$path      = str_replace(['/media', '/public/media'], '', $path);
+		$path      = preg_replace('@^/public/media|^/media|^/public@', '', $path);
 		$extension = strtolower(substr($fileName, strrpos($fileName, '.') + 1));
 
 		if (in_array($extension, $this->uploadDenyExtensions)) {
@@ -91,12 +91,16 @@ class Media extends Base {
 			default:
 				die(__('Unknown errors.'));
 		}
-
-		$destination = DIR_MEDIA . $path . '/' . $fileName;
+		
+		$origFilename = $fileName;
+		$i = 1;
+		while (file_exists($destination = DIR_MEDIA . $path . DS . $fileName) && ($i++ < 5)) {
+			$fileName = rand(0, 10000) . '-' . $origFilename;
+		};
 
 		if (move_uploaded_file($file['tmp_name'], $destination)) {
 			if (isset($this->request->post['onlyFilename'])) {
-				echo $file['name'];
+				echo $fileName;
 			} else {
 				echo $destination;
 			}
