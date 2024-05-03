@@ -54,7 +54,7 @@ class Edit extends Base {
 		$options = [];
 
 		if (Admin::hasCapability('edit_other_sites')) {
-			unset($options['site_id']);
+			//unset($options['site_id']);
 		} else {
 			$options['site_id'] = Admin :: siteAccess();
 		}

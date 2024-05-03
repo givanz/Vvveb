@@ -72,6 +72,9 @@ class Products extends Base {
 		$products = new ProductSQL();
 
 		$this->filter = array_filter($this->request->get['filter'] ?? []);
+		
+		if (isset($this->filter['vendor_id'])) $this->filter['vendor_id'] = [$this->filter['vendor_id']];
+		if (isset($this->filter['manufacturer_id'])) $this->filter['manufacturer_id'] = [$this->filter['manufacturer_id']];
 
 		$options = [
 			'type'        => $this->type,

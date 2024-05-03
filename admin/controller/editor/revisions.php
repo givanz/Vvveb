@@ -79,6 +79,8 @@ class Revisions extends Base {
 				$this->response->setType('text');
 				$this->response->output(file_get_contents($file));
 			}
+		} else {
+			die(__('Invalid request!'));
 		}
 	}
 
