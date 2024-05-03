@@ -1,4 +1,5 @@
 user-agent: *
+disallow: /admin/*
 disallow: /search/
 disallow: /user/*
 disallow: /cart/*
