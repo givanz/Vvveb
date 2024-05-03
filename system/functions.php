@@ -109,7 +109,7 @@ function setSetting($namespace, $key = null, $value = null, $site_id = SITE_ID) 
 }
 
 function deleteSetting($namespace, $key = null, $site_id = SITE_ID) {
-	return System\Setting::getInstance()->delete($namespace, $key, $value, $site_id);
+	return System\Setting::getInstance()->delete($namespace, $key, $site_id);
 }
 
 function setMultiSetting($namespace, $settings, $site_id = SITE_ID) {
@@ -135,7 +135,7 @@ function setPostMeta($post_id, $namespace, $key = null, $value = null) {
 }
 
 function deletePostMeta($post_id, $namespace, $key = null) {
-	return System\Meta\PostMeta::getInstance()->delete($post_id, $namespace, $key, $value);
+	return System\Meta\PostMeta::getInstance()->delete($post_id, $namespace, $key);
 }
 
 function setMultiPostMeta($post_id, $namespace, $meta) {
@@ -156,7 +156,7 @@ function setPostContentMeta($post_id, $namespace, $key = null, $value = null, $l
 }
 
 function deletePostContentMeta($post_id, $namespace, $key = null, $language_id = false) {
-	return System\Meta\PostContentMeta::getInstance()->delete($post_id, $namespace, $key, $value, $language_id);
+	return System\Meta\PostContentMeta::getInstance()->delete($post_id, $namespace, $key, $language_id);
 }
 
 function setMultiPostContentMeta($post_id, $meta) {
@@ -907,7 +907,6 @@ function getTemplateList($theme = null, $skip = []) {
 		'user-index'                => ['name' =>  __('Dashboard'), 'description'         =>  __('User dashboard'), 'global' => true],
 	];
 
-	$pagesSortOrder = ['index' => '', 'contact' => '', 'blank' => '', 'error404' => '', 'error500' => ''];
 	$skipFolders    = array_merge(['src', 'source', 'backup', 'sections', 'blocks', 'inputs', 'css', 'scss', 'screenshots', 'locale', 'node_modules'], $skip);
 
 	if (! $theme) {
@@ -923,7 +922,7 @@ function getTemplateList($theme = null, $skip = []) {
 		$file     = preg_replace('@^.*/themes/[^/]+/@', '', $file);
 		$filename = basename($file);
 
-		$folder   = \Vvveb\System\Functions\Str::match('@(\w+)/.*?$@', $file);
+		$folder   = \Vvveb\System\Functions\Str::match('@(\w+)/.*?$@', $file) ?? '/';
 		$path     = \Vvveb\System\Functions\Str::match('@(\w+)/.*?$@', $file);
 
 		if (in_array($folder, $skipFolders)) {
@@ -950,8 +949,7 @@ function getTemplateList($theme = null, $skip = []) {
 		}
 	}
 
-	//$pagesSortOrder = array_flip(array_keys($this->friendlyNames));
-	$pages = array_filter(array_merge($pagesSortOrder, $pages));
+	ksort($pages);
 
 	return $pages;
 }
@@ -1238,6 +1236,10 @@ function getLanguage() {
 	return session('language', 'en_US');
 }
 
+function getLanguageId() {
+	return session('language_id', 1);
+}
+
 function siteSettings($site_id = SITE_ID, $language_id = false) {
 	$cache     = System\Cache::getInstance();
 	$site      = $cache->cache(APP,'site.' . $site_id, function () use ($site_id) {
@@ -1377,27 +1379,35 @@ function rcopy($src, $dst, $skip = [], $overwrite = true) {
 		//rrmdir($dst);
 	}
 
+	$result = false;
+
 	if (is_dir($src)) {
 		if (! file_exists($dst)) {
 			mkdir($dst);
 		}
+
 		$files = scandir($src);
 
 		foreach ($files as $file) {
 			$full = $src . DS . $file;
-			error_log($full);
 
 			if ($file != '.' &&
 				$file != '..' &&
 				! in_array($file, $skip)) {
-				rcopy($full, $dst . DS . $file);
+				if (is_dir($full)) {
+					$result = rcopy($full, $dst . DS . $file);
+				} else {
+					$result = copy($full, $dst . DS . $file);
+				}
 			}
 		}
 	} else {
 		if (file_exists($src)) {
-			copy($src, $dst);
+			$result = copy($src, $dst);
 		}
 	}
+
+	return $result;
 }
 
 /* Recursive copy */
@@ -1450,7 +1460,7 @@ function download($url) {
 	return $result;
 }
 
-function getUrl($url, $cache = true, $expire = 0) {
+function getUrl($url, $cache = true, $expire = 604800, $timeout = 1, $exception = true) {
 	$cacheDriver  = System\Cache :: getInstance();
 	$cacheKey     = md5($url);
 	$result       = false;
@@ -1459,45 +1469,53 @@ function getUrl($url, $cache = true, $expire = 0) {
 		return $result;
 	} else {
 		$result = false;
-		//try with file get contents
-		if (ini_get('allow_url_fopen') == '1') {
-			$context_options = [
-				'http' => [
-					'timeout'       => 5,
-					'ignore_errors' => 1,
-				],
-			];
-			$context         = stream_context_create($context_options);
-			$result          = @file_get_contents($url, false, $context);
-		}
+		
+		//try with curl
+		if (function_exists('curl_init')) { 
+			$ch = curl_init($url);
 
-		if ($result) {
-			if ($cache) {
-				$cacheDriver->set('url', $cacheKey, $result);
-			}
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout); 
+			curl_setopt($ch, CURLOPT_TIMEOUT, $timeout); 
+			$result = curl_exec($ch);
+			curl_close($ch);
 
-			return $result;
-		} else {
-			//try with curl
-			if (function_exists('curl_init')) {
-				$ch = curl_init($url);
+			if ($result) {
+				if ($cache) {
+					$cacheDriver->set('url', $cacheKey, $result);
+				}
 
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-				$result = curl_exec($ch);
-				curl_close($ch);
-
-				if ($result) {
-					if ($cache) {
-						$cacheDriver->set('url', $cacheKey, $result);
-					}
-
-					return $result;
-				} else {
+				return $result;
+			} else {
+				if ($exception) {
 					throw new \Exception('Curl error: ' . curl_errno($ch) . ' - ' . curl_error($ch));
-
-					return [];
 				}
 			}
+		} else {
+			//try with file get contents
+			if (ini_get('allow_url_fopen') == '1') {
+				$context_options = [
+					'http' => [
+						'timeout'       => $timeout,
+						'ignore_errors' => 1,
+					],
+				];
+				
+				$context         = stream_context_create($context_options);
+				if ($exception) {
+					$result = file_get_contents($url, false, $context);
+				} else {
+					$result = @file_get_contents($url, false, $context);
+				}
+			}
+
+			if ($result) {
+				if ($cache) {
+					$cacheDriver->set('url', $cacheKey, $result);
+				}
+
+				return $result;
+			} 
 		}
 	}
 
@@ -1599,7 +1617,10 @@ function randomDigits($length) {
 }
 
 function invoiceFormat($format, $data) {
-	$data += ['date_added' => time(), 'year' => date('Y'), 'month' => date('M'), 'day' => date('d')];
+	if (! $format) {
+		return '';
+	}
+	$data += ['date_added' => time(), 'year' => date('Y'), 'year2' => date('y'), 'month_name' => date('M'), 'month' => date('m'), 'day' => date('d')];
 
 	return preg_replace_callback('/{(.+?)}/', function ($matches) use ($data) {
 		$key = $matches[1];
@@ -1608,10 +1629,16 @@ function invoiceFormat($format, $data) {
 			return $data[$key];
 		}
 
-		if (strpos($key, 'random-') !== false) {
-			$length = (int) str_replace('random-', '', $key);
+		if (strpos($key, 'rand-no-') !== false) {
+			$length = (int) str_replace('rand-no-', '', $key);
 
 			return randomDigits($length);
+		}
+
+		if (strpos($key, 'rand-str-') !== false) {
+			$length = (int) str_replace('rand-str-', '', $key);
+
+			return strtoupper(System\Functions\Str::random($length));
 		}
 
 		return $matches[0];

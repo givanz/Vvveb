@@ -26,6 +26,7 @@ use Vvveb\System\Cache;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Import\Rss;
+use function Vvveb\getUrl;
 
 class News extends ComponentBase {
 	protected $domain = 'https://blog.vvveb.com';
@@ -40,14 +41,8 @@ class News extends ComponentBase {
 	public $options = [];
 
 	function getNews() {
-		$ctx = stream_context_create([
-			'http' => [
-				'timeout'       => 5,
-				'ignore_errors' => 1,
-			],
-		]);
 
-		$feed = @file_get_contents($this->domain . $this->url, false, $ctx);
+		$feed = getUrl($this->domain . $this->url, true, 604800, 1, false);
 
 		if ($feed) {
 			$rss = new Rss($feed);
