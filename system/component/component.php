@@ -292,7 +292,7 @@ class Component {
 		$this->components = NULL;
 
 		if ($notFound404) {
-			FrontController::notFound(false);
+			\Vvveb\System\Core\FrontController::notFound(false);
 		}
 	}
 
@@ -457,7 +457,7 @@ class Component {
 			//save options
 			foreach ($opts as $name => $option) {
 				if (in_array($name, $validOptions) && isset($option) !== false) {
-					if ((isset($option[0]) && ($option[0] == '{')) || (strpos($option, ',') !== false)) {
+					if ((isset($option[0]) && ($option[0] == '{' || $option[0] == '[')) || (strpos($option, ',') !== false)) {
 						$options[$name] = json_decode($option, 1);
 					} else {
 						$options[$name] = $option;

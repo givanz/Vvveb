@@ -93,13 +93,6 @@ class Role {
 		}
 	}
 
-	public static function add($permission) {
-	}
-
-	public static function getTree() {
-		$list = $this->getControllerList();
-	}
-
 	public static function mkmap($dir, &$path = []) {
 		if ($dir[0] == '.') {
 			return;

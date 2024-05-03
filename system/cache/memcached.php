@@ -66,7 +66,7 @@ class Memcached {
 
 	public function getMulti($namespace, $keys, $serverKey = false) {
 		if ($serverKey) {
-			return $this->memcached->getMultiByKey($serverKey, $key);
+			return $this->memcached->getMultiByKey($serverKey, $keys);
 		} else {
 			return $this->memcached->getMulti($keys);
 		}

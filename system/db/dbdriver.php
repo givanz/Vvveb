@@ -26,6 +26,8 @@ define('SQL_VAR_REGEX',
 	'/:([a-zA-Z0-9\[][\.\'a-zA-Z0-9\[\]_-]+)/ms');
 
 class DBDriver {
+	protected $quote;
+
 	public function _filter($data, $columns, $addMissingDefaults = false) {
 		//remove fields that are not table columns, $colums is returned by sqlp->getColumnsMeta()
 		foreach ($data as $key => $name) {
@@ -295,8 +297,8 @@ class DBDriver {
 			if (is_array($value)) {
 				$value = var_export($value, 1);
 			} else {
-			if (! is_numeric($value)) {
-				$value = "'$value'";
+				if (! is_numeric($value)) {
+					$value = "'$value'";
 				}
 			}
 

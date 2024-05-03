@@ -77,7 +77,7 @@ class FrontController {
 		return self :: $status;
 	}
 
-	static private function callAction($module, $action = 'index') {
+	static private function callAction($controller, $action = 'index') {
 		//header(' ', true, $statusCode);
 		if (include_once DIR_APP . DS . 'controller' . DS . "$controller.php") {
 			$controller         = 'Vvveb\Controller\\' . $controller;

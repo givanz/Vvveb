@@ -157,6 +157,16 @@ class Pgsql extends DBDriver {
 		return "LIMIT  $limit OFFSET $start";
 	}
 
+	public function fetchArray(&$result) {
+		if (pg_num_rows($result)) {
+			$values = pg_fetch_assoc($result);
+
+			return $values;
+		}
+
+		return [];
+	}
+
 	public function fetchAll(&$result) {
 		if (pg_num_rows($result)) {
 			$values = pg_fetch_all($result);
@@ -212,7 +222,7 @@ class Pgsql extends DBDriver {
 	}
 
 	public function get_one($query, $parameters = null) {
-		$res = $this->exec($query, $parameters);
+		$res = $this->query($query, $parameters);
 
 		if (pg_num_rows($res)) {
 			return pg_fetch_result($res, 0, 0);
@@ -222,7 +232,7 @@ class Pgsql extends DBDriver {
 	}
 
 	function get_row($query, $parameters) {
-		$res = $this->exec($query . ' LIMIT 1', $parameters);
+		$res = $this->query($query . ' LIMIT 1', $parameters);
 
 		if ($res === null) {
 			$res = $this->last_res;
@@ -238,7 +248,7 @@ class Pgsql extends DBDriver {
 	}
 
 	public function get_all($query, $parameters = null) {
-		$res = $this->exec($query, $parameters);
+		$res = $this->query($query, $parameters);
 
 		if (pg_num_rows($res)) {
 			$values = pg_fetch_all($res);

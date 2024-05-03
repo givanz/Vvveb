@@ -43,7 +43,7 @@ class Lexer {
 
 		while (isset($string[$offset])) {
 			if (! preg_match($this->regex, $string, $matches, 0, $offset)) {
-				throw new Exception(sprintf('Unexpected character "%s" at offset %d', $string[$offset], $offset));
+				throw new \Exception(sprintf('Unexpected character "%s" at offset %d', $string[$offset], $offset));
 			}
 
 			// find the first non-empty element (but skipping $matches[0]) using a quick for loop

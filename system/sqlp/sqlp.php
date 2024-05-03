@@ -27,7 +27,7 @@ use Vvveb\System\Db;
 define('TAB', "\n\n\t\t");
 
 #[\AllowDynamicProperties]
-class SqlP {
+class Sqlp {
 	private $types = ['int' => 'i', 'double' => 'd', 'decimal' => 'd', 'blob' => 'b', 'array' => 'a'/*, 'CHAR' => 's'*/];
 
 	private $prefix = DB_PREFIX;
@@ -35,6 +35,16 @@ class SqlP {
 	private $config = [];
 
 	private $tree = [];
+
+	private $db;
+
+	private $namespace;
+
+	private $model;
+
+	private $modelName;
+
+	private $filename;
 
 	function __construct() {
 		$this->db     = Db::getInstance();

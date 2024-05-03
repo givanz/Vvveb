@@ -27,6 +27,8 @@ class Redis {
 
 	private $redis;
 
+	private $cachePrefix = ''; //'cache.';
+
 	private $options = ['expire' => 3000, 'prefix' => 'vvveb.'];
 
 	public function __construct($options) {
@@ -39,7 +41,7 @@ class Redis {
 		$this->redis->pconnect($this->options['host'], $this->options['port']);
 
 		if (isset($this->options['password'])) {
-			$redis->auth($this->options['password']);
+			$this->redis->auth($this->options['password']);
 		}
 	}
 

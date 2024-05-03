@@ -24,7 +24,7 @@ namespace Vvveb\System\Extensions;
 
 use \Vvveb\System\Event;
 use \Vvveb\System\Sites;
-use Vvveb\__;
+use function Vvveb\__;
 use Vvveb\System\Functions\Str;
 
 class Themes extends Extensions {
@@ -52,6 +52,7 @@ class Themes extends Extensions {
 		$list        = glob(DIR_ROOT . '/public/themes/*/index.html');
 
 		$themes = [];
+
 		foreach ($list as $file) {
 			$folder      = Str::match('@/([^/]+)/[a-z]+.\w+$@', $file);
 			$dir         = Str::match('@(.+)/[a-z]+.\w+$@', $file);

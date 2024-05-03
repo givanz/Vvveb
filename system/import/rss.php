@@ -24,9 +24,11 @@ namespace Vvveb\System\Import;
 
 #[\AllowDynamicProperties]
 class Rss {
-	private  $dom;
+	private $dom;
 
-	private  $xpath;
+	private $xpath;
+
+	private $rss;
 
 	private $importXMLOptions = LIBXML_NOBLANKS |
 								LIBXML_COMPACT |
