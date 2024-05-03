@@ -60,7 +60,7 @@ class Meta {
 			foreach ($result as &$value) {
 				$val = &$value['value'];
 
-				if ($val && is_string($val) && $val[0] == '{') {
+				if ($val && is_string($val) && ($val[0] == '{' || $val[0] == '{')) {
 					$json = json_decode($val, true);
 					$val  =  $json ?: $val;
 				}
@@ -96,7 +96,7 @@ class Meta {
 
 			$result = $this->settingSql->get([$this->item_id => $item_id, 'namespace' => $namespace, 'key' => $key, 'language_id' => $language_id]) ?? $default;
 
-			if ($result && is_string($result) && $result[0] == '{') {
+			if ($result && is_string($result) && ($result[0] == '{' || $result[0] == '[')) {
 				$json    = json_decode($result, true);
 				$result  =  $json ?: $result;
 			}
@@ -107,7 +107,7 @@ class Meta {
 
 	public function set($item_id, $namespace, $key, $value, $language_id = false) {
 		if (! $namespace || ! $key) {
-			return $default;
+			return;
 		}
 
 		$this->setting[$namespace][$key] = $value;
@@ -119,9 +119,9 @@ class Meta {
 		return $this->settingSql->set([$this->item_id => $item_id, 'namespace' => $namespace, 'key' => $key, 'value' => $value, 'language_id' => $language_id]);
 	}
 
-	public function delete($item_id, $namespace, $key, $value, $language_id = false) {
+	public function delete($item_id, $namespace, $key, $language_id = false) {
 		if (! $namespace || ! $key) {
-			return $default;
+			return;
 		}
 
 		unset($this->setting[$namespace][$key]);

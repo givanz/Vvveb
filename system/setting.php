@@ -57,7 +57,7 @@ class Setting {
 				foreach ($result as $value) {
 					$val = $value['value'];
 
-					if ($val && is_string($val) && $val[0] == '{') {
+					if ($val && is_string($val) && ($val[0] == '{' || $val[0] == '[')) {
 						$json = json_decode($val, true);
 						$val  =  $json ?: $val;
 					}
@@ -85,9 +85,9 @@ class Setting {
 
 			$result = $this->settingSql->get(['namespace' => $namespace, 'key' => $key, 'site_id' => $site_id]) ?? $default;
 
-			if ($result && is_string($result) && $result[0] == '{') {
+			if ($result && is_string($result) && ($result[0] == '{' || $result[0] == '[')) {
 				$json    = json_decode($result, true);
-				$result  =  $json ?: $result;
+				$result  =  $json ?? $result;
 			}
 
 			return $result;
@@ -96,7 +96,7 @@ class Setting {
 
 	public function set($namespace, $key, $value, $site_id = SITE_ID) {
 		if (! $namespace || ! $key) {
-			return $default;
+			return;
 		}
 
 		$this->setting[$namespace][$key] = $value;
@@ -108,9 +108,9 @@ class Setting {
 		return $this->settingSql->set(['namespace' => $namespace, 'key' => $key, 'value' => $value, 'site_id' => $site_id]);
 	}
 
-	public function delete($namespace, $key, $value, $site_id = SITE_ID) {
+	public function delete($namespace, $key, $site_id = SITE_ID) {
 		if (! $namespace || ! $key) {
-			return $default;
+			return;
 		}
 
 		unset($this->setting[$namespace][$key]);
