@@ -30,10 +30,12 @@ use function Vvveb\sanitizeFileName;
 use function Vvveb\slugify;
 use Vvveb\Sql\PostSQL;
 use Vvveb\Sql\ProductSQL;
+use Vvveb\System\Cache;
 use Vvveb\System\CacheManager;
 use Vvveb\System\Core\View;
 use Vvveb\System\Event;
 use Vvveb\System\Sites;
+use function Vvveb\url;
 
 class Editor extends Base {
 	use GlobalTrait;
@@ -85,7 +87,11 @@ class Editor extends Base {
 	private function loadTemplateList($theme = null) {
 		$list = $this->themeConfig['pages'] ?? [];
 
-		$pages       = $list + \Vvveb\getTemplateList($theme);
+		$pages = $list + Cache::getInstance()->cache(APP,'template-list.' . $theme,
+		function () use ($theme) {
+			return \Vvveb\getTemplateList($theme);
+		}, 604800);
+
 		list($pages) = Event::trigger(__CLASS__, __FUNCTION__, $pages);
 
 		return $pages;
@@ -148,6 +154,33 @@ class Editor extends Base {
 
 		$this->loadThemeAssets();
 
+		$this->posts   = new postSQL();
+		$options       = [
+			'type'  => 'page',
+			'limit' => 100,
+		] + $this->global;
+
+		$results = $this->posts->getAll($options);
+		$posts   = [];
+
+		foreach ($results['posts'] as $post) {
+			$slug = $post['slug'];
+			$url  = url('content/page/index',['slug' => $slug]);
+
+			$posts[$slug] = [
+				'name'      => $slug,
+				'file'      => $post['template'] ? $post['template'] : 'content/page.html',
+				'url'       => $url . ($theme ? '?theme=' . $theme : ''),
+				'title'     => $post['name'],
+				'folder'    => '',
+				'className' => 'page',
+			];
+		}
+
+		if ($posts) {
+			$view->pages = $posts + $view->pages;
+		}
+
 		if (isset($this->request->get['url'])) {
 			$name     = $url      = $this->request->get['url'];
 			$template = $this->request->get['template'] ?? \Vvveb\getUrlTemplate($url) ?? 'index.html';
@@ -158,17 +191,19 @@ class Editor extends Base {
 
 			if ($url == '/') {
 				$title = __('Homepage');
-				$name  = 'homepage-live';
+				$name  = 'index';
 			}
 
-			$current_page = ['name' => $name,
-				'file'                 => $file,
-				'url'                  => $url . ($theme ? '?theme=' . $theme : ''),
-				'title'                => $title,
-				'folder'               => '',
-				'className'            => 'page', ];
+			$current_page = [
+				'name'      => $name,
+				'file'      => $file,
+				'url'       => $url . ($theme ? '?theme=' . $theme : ''),
+				'title'     => $title,
+				'folder'    => '',
+				'className' => 'page',
+			];
 
-			$view->pages  = [$name => $current_page] + $view->pages;
+			$view->pages = [$name => $current_page] + $view->pages;
 		}
 
 		$admin_path                    = \Vvveb\adminPath();
