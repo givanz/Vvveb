@@ -23,13 +23,13 @@
 namespace Vvveb\System\Cart;
 
 use function Vvveb\availableCurrencies;
-use function Vvveb\session;
+use function Vvveb\session as sess;
 
 class Currency {
 	private $driver;
 
 	private $currencies;
-	
+
 	private $options;
 
 	public static function getInstance($options = []) {
@@ -49,7 +49,7 @@ class Currency {
 
 	public function format($number, $currency = false, $format = true, $value = 0) {
 		if (! $currency) {
-			$currency = $this->options['currency'] ?? session('currency');
+			$currency = $this->options['currency'] ?? sess('currency');
 		}
 
 		if (! isset($this->currencies[$currency])) {

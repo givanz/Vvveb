@@ -23,7 +23,7 @@
 namespace Vvveb\Component;
 
 use function Vvveb\model;
-use function Vvveb\session;
+use function Vvveb\session as sess;
 use Vvveb\Sql\CommentSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
@@ -124,7 +124,7 @@ class Comments extends ComponentBase {
 	function request(&$results, $index = 0) {
 		//check for user pending comments
 		$slug            = $this->options['slug'] ?? false;
-		$pendingComments = session($this->type, []);
+		$pendingComments = sess($this->type, []);
 
 		if ($slug && $pendingComments && isset($pendingComments[$slug])) {
 			$comments             = $pendingComments[$slug];

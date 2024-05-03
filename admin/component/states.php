@@ -22,10 +22,9 @@
 
 namespace Vvveb\Component;
 
-use function Vvveb\session;
+use function Vvveb\session as sess;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
-use Vvveb\System\Session;
 use Vvveb\System\Sites;
 
 class States extends ComponentBase {
@@ -43,7 +42,7 @@ class States extends ComponentBase {
 
 	function results() {
 		$states                 = Sites::getStates();
-		$active                 = session('state') ?? 'live';
+		$active                 = sess('state') ?? 'live';
 		$results['active_name'] = $states[$active]['name'];
 		$results['active_icon'] = $states[$active]['icon'];
 

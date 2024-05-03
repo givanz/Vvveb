@@ -22,7 +22,7 @@
 
 namespace Vvveb\System\Component;
 
-use function Vvveb\session;
+use function Vvveb\session as sess;
 use Vvveb\System\Core\Request;
 use Vvveb\System\User\User;
 
@@ -34,6 +34,12 @@ class ComponentBase {
 
 	public static $global;
 
+	protected $options;
+
+	protected $_hash;
+
+	public static $defaultOptions = [];
+
 	function __construct($options = []) {
 		$request = Request :: getInstance();
 
@@ -43,11 +49,11 @@ class ComponentBase {
 			self :: $global['site_id']             = defined('SITE_ID') ? SITE_ID : 0;
 			self :: $global['user_id']             = $user['user_id'] ?? null;
 			self :: $global['user_group_id']       = $user['user_group_id'] ?? 1;
-			self :: $global['language_id']         = session('language_id') ?? 1;
-			self :: $global['language']            = session('language') ?? 'en_US';
-			self :: $global['default_language']    = session('default_language') ?? 'en_US';
-			self :: $global['default_language_id'] = session('default_language_id') ?? 1;
-			self :: $global['currency_id']         = session('currency_id') ?? 1;
+			self :: $global['language_id']         = $request->request['language_id'] ?? sess('language_id') ?? 1;
+			self :: $global['language']            = $request->request['language'] ?? sess('language') ?? 'en_US';
+			self :: $global['default_language']    = sess('default_language') ?? 'en_US';
+			self :: $global['default_language_id'] = sess('default_language_id') ?? 1;
+			self :: $global['currency_id']         = sess('currency_id') ?? 1;
 		}
 
 		static :: $defaultOptions = array_merge(self :: $global, static :: $defaultOptions);
@@ -92,7 +98,7 @@ class ComponentBase {
 					$key = substr($value, $dot + 1);
 				}
 
-				$value = isset($request->request[$key]) ? $request->request[$key] : null;
+				$value = (isset($request->request[$key]) ? $request->request[$key] : (isset($request->get[$key]) ? $request->get[$key] : null));
 			}
 		}
 

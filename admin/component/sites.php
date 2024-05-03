@@ -22,10 +22,9 @@
 
 namespace Vvveb\Component;
 
-use function Vvveb\session;
+use function Vvveb\session as sess;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
-use Vvveb\System\Session;
 use Vvveb\System\Sites as SitesList;
 use Vvveb\System\User\Admin;
 
@@ -50,7 +49,7 @@ class Sites extends ComponentBase {
 
 		$results['sites']    = SitesList::getSites();
 		$results['states']   = SitesList::getStates();
-		$results['site_id']  = session('site_id');
+		$results['site_id']  = sess('site_id');
 		$results['active']   = SitesList::getSiteById($results['site_id']);
 		$results['count']    = count($results['sites']);
 

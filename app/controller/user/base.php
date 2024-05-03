@@ -22,12 +22,12 @@
 
 namespace Vvveb\Controller\User;
 
-use function Vvveb\session;
+use function Vvveb\session as sess;
 
 #[\AllowDynamicProperties]
 class Base extends \Vvveb\Controller\Base {
 	function __construct() {
-		$user = session('user');
+		$user = sess('user');
 
 		if (! $user) {
 			$this->redirect('/user/login');
