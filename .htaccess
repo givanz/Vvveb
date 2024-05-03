@@ -1,5 +1,3 @@
-Options +SymLinksIfOwnerMatch -Indexes
-
 <Files *.php>
         Order Deny,Allow
         Deny from all
@@ -65,8 +63,8 @@ RewriteRule ^ index.php [L]
         Header set Cache-Control "max-age=2592000"
     </FilesMatch>
 
-        <FilesMatch "\.(jpg|jpeg|png|gif|swf|webp)$">
-    Header set Cache-Control "max-age=2592000"
+    <FilesMatch "\.(jpg|jpeg|png|gif|swf|webp)$">
+		Header set Cache-Control "max-age=2592000"
     </FilesMatch>
 
     <FilesMatch "\.(ttf|ttc|otf|eot|woff|woff2|font.css|css|js)$">

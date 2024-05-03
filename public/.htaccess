@@ -1,4 +1,4 @@
-Options +SymLinksIfOwnerMatch -Indexes
+#Options +SymLinksIfOwnerMatch -Indexes
 
 <Files *.php>
         Order Deny,Allow
