@@ -39,13 +39,16 @@ class Currency extends ComponentBase {
 
 	function results() {
 		$results             = [];
+		$results['active']   = false;
+		$results['current']  = false;
 		$results['currency'] = availableCurrencies();
 
-		if ($results) {
-			$results['current']    = $code    = Session::getInstance()->get('currency') ?? 'USD';
-			$currency              = $results['currency'][$code] ?? [];
+		if (isset($results['currency']) && $results['currency']) {
+			$code     = Session::getInstance()->get('currency');
+			$currency = $results['currency'][$code] ?? [];
 
 			if ($currency) {
+				$results['current']    = $code;
 				$results['active']     = ['name' => $currency['name'], 'code' => $currency['code'], 'id' => $currency['currency_id']];
 			}
 		}
