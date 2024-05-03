@@ -24,6 +24,11 @@
 	BEGIN
 
 		SELECT user.*, comment.*, comment_id as array_key
+			@IF isset(:post_title) AND :post_title
+			THEN 
+				,post_content.name
+			END @IF			
+			
 			FROM comment AS comment
 			LEFT JOIN user ON (comment.user_id = comment.user_id)	
 			
