@@ -26,9 +26,15 @@ namespace Vvveb\System\Import;
 class Xml {
 	private $db;
 
-	private  $dom;
+	private $dom;
 
-	private  $xpath;
+	private $xpath;
+
+	private $sqlPath;
+
+	private $prefix;
+
+	private $idsMap;
 
 	private $importXMLOptions = LIBXML_NOBLANKS |
 								LIBXML_COMPACT |
@@ -49,17 +55,7 @@ class Xml {
 
 		$this->prefix = $prefix;
 
-		try {
-			$this->db = new $engine($host, $dbname, $user, $pass, $port, $prefix);
-		} catch (\Exception $e) {
-			//unknown database, try to create
-			if ($e->getCode() == 1049) {
-				$this->db = new $engine($host, '', $user, $pass, $port, $prefix);
-				$this->createDb($dbname);
-			} else {
-				throw($e);
-			}
-		}
+		$this->db = new $engine($host, $dbname, $user, $pass, $port, $prefix);
 
 		$this->tableOrder = include 'table-order.php';
 	}
@@ -68,18 +64,7 @@ class Xml {
 	 * Get all table names for the database
 	 */
 	function getTableNames($db = DB_NAME) {
-		$sql = "SELECT table_name 
-			FROM information_schema.tables 
-			WHERE table_schema = '$db' ORDER BY table_name";
-
-		$stmt   = $this->db->execute($sql, [], []);
-		$result = $stmt->get_result();
-
-		while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
-			$tables[] = $row['table_name'];
-		}
-
-		return $tables;
+		return $this->db->getTableNames();
 	}
 
 	function export($tables = []) {
@@ -96,11 +81,16 @@ class Xml {
 
 		foreach ($tables as $tableName) {
 			$table = $this->dom->createElement($tableName);
+			$q     = '`';
 
-			$stmt   = $this->db->execute("SELECT * FROM `$tableName`", [], []);
-			$result = $stmt->get_result();
+			if (DB_ENGINE == 'pgsql') {
+				$q = '"';
+			}
 
-			while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
+			$stmt   = $this->db->execute("SELECT * FROM $q$tableName$q", [], []);
+			//$result = $stmt->get_result();
+
+			while ($row = $this->db->fetchArray($stmt)) {
 				$item = $this->dom->createElement('item');
 
 				foreach ($row as $key => $value) {
@@ -242,6 +232,12 @@ class Xml {
 			$stmt   = $this->db->execute('SET sql_mode = "";');
 		}
 
+		$q = '`';
+
+		if (DB_ENGINE == 'pgsql') {
+			$q = '"';
+		}
+
 		foreach ($tables as $tableName) {
 			$rows       = $this->xpath->query("//root/database/$tableName/item");
 
@@ -283,14 +279,14 @@ class Xml {
 							if ($update) {
 								$update .= ',';
 							}
-							$update .= "`$columnName` = :$columnName";
+							$update .= "$q$columnName$q = :$columnName";
 						}
 					}
 
-					$cols   = implode('`,`',array_keys($data));
+					$cols   = implode("$q,$q",array_keys($data));
 					$values = implode(',:',array_keys($data));
 
-					$sql = "INSERT INTO `$tableName` (`$cols`) VALUES (:$values)" .
+					$sql = "INSERT INTO $q$tableName$q ($q$cols$q) VALUES (:$values)" .
 							"ON DUPLICATE KEY UPDATE $update\n\n";
 
 					$stmt   = $this->db->execute($sql, $data);
@@ -300,63 +296,11 @@ class Xml {
 						$this->idsMap[$idColumn][$idValue] = $lastId;
 					}
 
-					$result = $stmt->get_result();
+					//$result = $stmt->get_result();
 				}
 			}
 		}
 
 		return true;
 	}
-
-	/*
-	function importLegacy($tables = []) {
-		return;
-		$stmt   = $this->db->execute('SET sql_mode = "";');
-
-		foreach ($tables as $table) {
-			$rows       = $this->xpath->query("//root/database/$tableName/item");
-
-			foreach ($rows as $row) {
-				$columns = $row->childNodes;
-
-				$update = '';
-				$data   = [];
-
-				foreach ($columns as $column) {
-					//if ($column->nodeName == '#text') continue;
-					$columnName  = $column->nodeName;
-					$columnValue = $column->nodeValue;
-
-					$data[$columnName] = $columnValue;
-
-					if ($update) {
-						$update .= ',';
-					}
-					$update .= "`$columnName` = :$columnName";
-
-					$idColumn          = $tableName . '_id';
-
-					if ($columnName == $idColumn) {
-						$this->idsMap[$idColumn][$columnValue] = 0;
-					}
-				}
-
-				$cols   = implode('`,`',array_keys($data));
-				$values = implode(',:',array_keys($data));
-
-				$sql = "INSERT INTO `$tableName` (`$cols`) VALUES (:$values)" .
-						"ON DUPLICATE KEY UPDATE $update\n\n";
-				//echo $sql;
-
-				$stmt   = $this->db->execute($sql, $data);
-				$lastId = $this->db->insert_id;
-				$result = $stmt->get_result();
-
-				//break;
-			}
-		}
-		
-		return true;
-	}
-	*/
 }
