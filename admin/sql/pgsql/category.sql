@@ -166,7 +166,7 @@
 			
 			
 			-- ,(SELECT CONCAT('[', GROUP_CONCAT('{"post_id":"', pc.post_id, '","slug":"' , pc.slug,'","sort_order":"' , p.sort_order, '","name":"' , pc.name, '"}'), ']') 
-			,(SELECT json_agg(json_build_object('post_id',pc.post_id,'slug',pc.slug,'slug',pc.slug,'sort_order',pc.sort_order,'name',pc.name))
+			,(SELECT json_agg(json_build_object('post_id',pc.post_id,'slug',pc.slug,'slug',pc.slug,'sort_order',p.sort_order,'name',pc.name))
 				FROM post_content pc 
 					LEFT JOIN post p ON (pc.post_id = p.post_id)  
 					LEFT JOIN post_to_taxonomy_item ptt ON (ptt.taxonomy_item_id = categories.taxonomy_item_id AND ptt.post_id = p.post_id)  

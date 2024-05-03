@@ -29,7 +29,7 @@ class Categories extends ComponentBase {
 	public static $defaultOptions = [
 		'start'                    => 0,
 		'count'                    => ['url', 100],
-		'id_manufacturer'          => NULL,
+		'post_id'                  => NULL,
 		'order'                    => ['url', 'price asc'],
 		'taxonomy_item_id'         => NULL,
 		'limit'                    => 7,
@@ -42,9 +42,6 @@ class Categories extends ComponentBase {
 	function results() {
 		$product = new \Vvveb\Sql\CategorySQL();
 		$results = $product->getCategories($this->options);
-
-		$current_category_id   = 5;
-		$current_category_slug = 'cameras';
 
 		$module = \Vvveb\getModuleName();
 
