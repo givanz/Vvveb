@@ -27,11 +27,13 @@ use Vvveb\Controller\Base;
 use Vvveb\Controller\Content\AutocompleteTrait;
 use function Vvveb\orderStatusBadgeClass;
 use function Vvveb\prefixArrayKeys;
+use function Vvveb\siteSettings;
 use Vvveb\Sql\Order_LogSQL;
 use Vvveb\Sql\OrderSQL;
 use Vvveb\System\Cart\Cart;
 use Vvveb\System\Cart\Currency;
 use Vvveb\System\Cart\Order as SystemOrder;
+use Vvveb\System\Cart\OrderCart;
 use Vvveb\System\Core\View;
 use Vvveb\System\Images;
 use Vvveb\System\Payment;
@@ -73,6 +75,16 @@ class Order extends Base {
 
 							foreach ($product['images'] as &$image) {
 								$image['image'] = Images::image($image['image'], 'product');
+							}
+						}
+
+						if (isset($product['option_value'])) {
+							$product['option_value'] = json_decode($product['option_value'], true);
+
+							foreach ($product['option_value'] as &$option) {
+								if (isset($option['price'])) {
+									$option['price_formatted'] = $currency->format($option['price']);
+								}
 							}
 						}
 
@@ -133,13 +145,24 @@ class Order extends Base {
 	}
 
 	function cart() {
-		$order_id    = $this->request->get['order_id'] ?? false;
-		$product_id  = $this->request->post['product_id'] ?? false;
-		$quantity    = $this->request->post['quantity'] ?? 1;
+		$order_id   = $this->request->get['order_id'] ?? false;
+		$product_id = $this->request->post['product_id'] ?? false;
+		$quantity   = $this->request->post['quantity'] ?? 1;
+		$name       = $this->request->post['name'] ?? '';
+		$model      = $this->request->post['model'] ?? '';
+		$price      = $this->request->post['price'] ?? 1;
 
 		if ($order_id && $product_id) {
-			$order = new OrderSQL();
-			$order->addProducts(['order_id' => $order_id, 'products' => [['product_id' => $product_id, 'quantity' => $quantity]]]);
+			$product  = compact('product_id','quantity', 'name', 'price', 'model');
+
+			$site    = siteSettings($this->global['site_id']);
+			$options = $this->global + $site;
+			unset($options['admin_id']);
+			
+			$order = new OrderCart($order_id, $options);
+			$order->add($product_id, false, $quantity, []);
+			$order->updateCart();
+			$order->write();
 		}
 
 		$this->index();
@@ -202,7 +225,6 @@ class Order extends Base {
 					$view->errors = [$orders->error];
 				}
 			} else {
-				$order['user_id'] = 0;
 				$systemOrder      = SystemOrder::getInstance();
 				$order_id         = $systemOrder->add($order + $this->global);
 				//$result = $orders->add(['order' => $order + $this->global]);
