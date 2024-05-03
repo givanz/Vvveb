@@ -41,6 +41,8 @@ class Routes {
 
 	private static $modules = null;
 
+	private static $init = false;
+
 	private static function processRoute($url, $data) {
 		$module = $data['module'];
 		//self :: $modules[$module] = $url;
@@ -108,11 +110,12 @@ class Routes {
 			self :: processRoute($url, $data);
 		}
 
+		self :: $init = true;
 		return true;
 	}
 
 	public static function match($url) {
-		if (! self :: $routes) {
+		if (! self :: $init) {
 			self :: init();
 		}
 
@@ -150,7 +153,7 @@ class Routes {
 	}
 
 	public static function getRouteData($module) {
-		if (! self :: $routes) {
+		if (! self :: $init) {
 			self :: init();
 		}
 
@@ -177,7 +180,7 @@ class Routes {
 	}
 
 	public static function url($route, $parameters = false) {
-		if (! self :: $routes) {
+		if (! self :: $init) {
 			self :: init();
 		}
 
