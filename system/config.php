@@ -47,7 +47,7 @@ class Config {
 		if (file_exists($file)) {
 			try {
 				$this->config[$namespace] = include $file;
-			} catch (Exception $e) {
+			} catch (\Exception $e) {
 			}
 		} else {
 			$this->config[$namespace] = NULL;

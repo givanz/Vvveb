@@ -67,9 +67,9 @@ class Mail {
 		if (isset($this->option['attachments'])) {
 			foreach ($this->option['attachments'] as $attachment) {
 				if (is_file($attachment)) {
-					$name   = basename($attachment);
-					$id     = urlencode(basename($attachment));
-					$contnt = file_get_contents($attachment);
+					$name    = basename($attachment);
+					$id      = urlencode(basename($attachment));
+					$content = file_get_contents($attachment);
 
 					$attachments .= '--' . $this->option['boundary'] . EOL;
 					$attachments .= "Content-Type: application/octet-stream; name=\"$name\"" . EOL;
