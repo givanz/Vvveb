@@ -50,11 +50,12 @@ $count = $notificationComponent['count'] ?? 0;
 @notifications [data-v-notification-*] = <?php 
 $name = '@@__data-v-notification-(*)__@@';
 $default = '@@__innerHtml__@@';
-$path = str_replace('-', '.', $name);
-if ($path == 'count') {
+if ($name == 'count') {
 	echo $count;
 } else
-if (isset($notifications) && $path) {
-	echo \Vvveb\arrayPath($notifications, $path);
-} else echo $default;
+if (isset($notifications) && $name) {
+	echo \Vvveb\arrayPath($notifications, $name, '','-');
+} else { 
+	echo $default;
+}	
 ?>
