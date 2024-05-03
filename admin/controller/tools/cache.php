@@ -70,6 +70,18 @@ class Cache extends Base {
 	}
 
 	function index() {
-		$this->view->isPageCacheDirWritable = is_writable(DIR_PUBLIC . PAGE_CACHE_DIR);
+		$folders = [
+			'/public/page-cache'          => DIR_PUBLIC . PAGE_CACHE_DIR,
+			'/public/image-cache'         => DIR_PUBLIC . DS . 'image-cache',
+			'/storage/model/app'          => DIR_STORAGE . 'model' . DS . 'app',
+			'/storage/model/admin'        => DIR_STORAGE . 'model' . DS . 'admin',
+			'/storage/compiled_templates' => DIR_COMPILED_TEMPLATES,
+		];
+
+		foreach ($folders as $folder => $path) {
+			if (! is_writable($path)) {
+				$this->view->info[] = sprintf('Folder is not writable, clear cache might not work for this layer, make sure that <b>%s</b> is writable by php', $folder);
+			}
+		}
 	}
 }

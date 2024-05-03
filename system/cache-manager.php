@@ -68,7 +68,7 @@ class CacheManager {
 		}
 
 		if ($site_id) {
-			$name .= "{$site}_id_";
+			$name .= "{$site_id}_";
 		}
 
 		if ($theme) {
