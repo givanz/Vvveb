@@ -128,8 +128,8 @@ class Sites {
 				return $matches;
 			}
 
-			//if host is ip number return the ip
-			if (is_numeric($host_matches['domain'] ?? null)) {
+			//if host is ip number, localhost or does not have tld remove tld and subdomain
+			if (is_numeric($host_matches['domain'] ?? null) || $host == 'localhost' || (strpos($host, '.') === false)) {
 				$matches['domain']    = $host;
 				$matches['subdomain'] = $matches['tld'] = $matches['prefix'] = '';
 			}
@@ -167,12 +167,8 @@ class Sites {
 					   ($matches['path'] ?? '');
 			}
 
-			//if host is ip number return the ip
-			if (is_numeric($host_matches['domain'] ?? null)) {
-				return $host;
-			}
-
-			if ($hostWp == 'localhost') {
+			//if host is ip number, localhost or does not have tld remove tld and subdomain
+			if (is_numeric($host_matches['domain'] ?? null) || $hostWp == 'localhost' || (strpos($hostWp, '.') === false)) {
 				$matches['domain']    = $host;
 				$matches['subdomain'] = $matches['tld'] = $matches['prefix'] = '';
 			}
@@ -219,7 +215,7 @@ class Sites {
 	}
 
 	public static function setSiteDataByKey($site_key, $name, $value) {
-		$site = self :: getSiteByKey($site_id);
+		$site = self :: getSiteByKey($site_key);
 
 		$site_key = self :: siteKey($site_key);
 
