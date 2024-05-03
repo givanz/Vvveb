@@ -88,8 +88,8 @@ class View {
 
 		if (isset($_REQUEST['_component_ajax'])) {
 			$this->component        = \Vvveb\filter('/[a-z\-]*/', $_REQUEST['_component_ajax'], 15);
-			//$this->componentCount   = \Vvveb\filter('/\d+/', $_REQUEST['_component_id'],  2);
-			$this->componentCount   = 0;
+			$this->componentCount   = \Vvveb\filter('/\d+/', $_REQUEST['_component_id'],  2);
+			//$this->componentCount   = 0;
 			//if (isset($_REQUEST['_server_template'])) {
 			$this->componentContent = $_POST['_component_content'] ?? '';
 			//}
@@ -107,7 +107,7 @@ class View {
 
 		$template->addTemplatePath(DIR_TEMPLATE);
 		$template->addTemplatePath($this->htmlPath . 'template' . DS);
-		$template->htmlPath     =  $this->htmlPath;
+		$template->setHtmlPath($this->htmlPath);
 
 		if (isEditor()) {
 			$this->isEditor = true;

@@ -39,7 +39,15 @@ include 'debug.php';
 class Vtpl {
 	private $template;
 
+	private $templatePath;
+
+	private $htmlPath;
+
 	private $htmlSourceFile;
+
+	private $document;
+
+	private $xpath;
 
 	private $extension = 'tpl';
 
@@ -55,9 +63,31 @@ class Vtpl {
 
 	private $checkSyntax = true;
 
+	private $selector;
+
+	private $selectors;
+
 	private $replaceConstants;
 
+	private $componentId;
+
+	private $componentContent;
+
+	private $froms;
+
 	private $constants;
+
+	private $variables;
+
+	private $strings;
+
+	private $scripts;
+
+	private $_scripts;
+
+	private $debug;
+
+	private $phpCode;
 
 	private $_modifiers = ['outerHTML', 'text', 'before', 'after', 'append', 'prepend', 'deleteAllButFirst', 'deleteAllButFirstChild', 'delete', 'if_exists', 'hide', 'addClass', 'removeClass'];
 
@@ -78,7 +108,6 @@ class Vtpl {
 		'mod'              => ['tag', 'if (@++$_modc_@@__VTPL_rand()__@@ % (int)$$1 === (int)$$2) {', 'if (@++$_modc_@@__VTPL_rand()__@@ % (int)$$1 === (int)$$2) {'],
 		'mod_class'        => ['class', '<?php if (@++$_modc_@@__VTPL_rand()__@@ % (int)$$1 === (int)$$2) echo $$0;?>'],
 		'conditional_class'=> ['class', '<?php if (@++$_modc_@@__VTPL_rand()__@@ % (int)$$1 === (int)$$2) echo $$0;?>'],
-		'mod_class'        => ['class', '<?php if (@++$_modc_@@__VTPL_rand()__@@ % (int)$$1 === (int)$$2) echo $$0;?>'],
 		'iteration_class'  => ['class', '<?php if (@++$_iterc_@@__VTPL_rand()__@@ === (int)$$2) echo $$1;?>'],
 		'number_format'    => 'number_format($$0, $$1, $$2, $$3)',
 		'only_decimals'    => 'substr($$0, (($_strpos = strrpos($$0, \'.\')) !== false)?$_strpos + 1:-100, ($_strpos !== false)?10:false)',
@@ -138,6 +167,10 @@ class Vtpl {
 				$this->template .= "\n";
 			}
 		}
+	}
+
+	function setHtmlPath($path) {
+		$this->htmlPath = $path;
 	}
 
 	function addTemplatePath($path) {
@@ -313,16 +346,20 @@ class Vtpl {
 					if (substr_compare($import,'/plugins/', 0, 9) === 0) {
 						$importFile = DIR_PLUGINS . substr($import, 9);
 					} else {
-						$importFile = $path . $import;
+						if ($import[0] == '/') {
+							$importFile = DIR_ROOT . $import;
+						} else {
+							$importFile = $path . $import;
+						}
 					}
 
 					if (file_exists($importFile)) {
 						$parameter = trim($imports[2][$i]);
-						$this->debug->log('LOAD', $path . $imports[1][$i]);
+						$this->debug->log('LOAD', $importFile);
 
 						if (! empty($parameter)) {
 							//if php array then parameter is a template variables list
-							if ($parameter[0] == '{') {
+							if ($parameter[0] == '{'/* || $parameter[0] == '['*/) {
 								$importContent = file_get_contents($importFile);
 
 								//process template
@@ -352,6 +389,8 @@ class Vtpl {
 						//remove comments
 						$importContent = preg_replace("/(?<![\"'])\/\*.*?\*\/|\s*(?<![\"'])\/\/[^\n]*/s", '', $importContent);
 						$content .= $importContent . "\n";
+
+						break;
 					} else {
 						$this->debug->log('VTPL_IMPORT_FILE_NOT_EXIST', $importFile);
 						//error_log($imports[0][$i] . " $importFile does not exists");
@@ -827,7 +866,7 @@ class Vtpl {
 			foreach ($filters as $name => $options) {
 				if ($options) {
 					//string is json
-					if ($options[0] == '{' || $options[0] == '[') {
+					if ($options[0] == '{'/* || $options[0] == '['*/) {
 						$options = json_decode($options, false);
 					} else {
 						$options = [$options];
@@ -976,7 +1015,7 @@ class Vtpl {
 					   function ($matches) use ($node) {
 					   	$value = $this->innerText([$node]);
 
-					   	if (isset($value[0]) && $value[0] == '{') {
+					   	if (isset($value[0]) && ($value[0] == '{' /*|| $value[0] == '['*/)) {
 					   		$value = json_decode($value, 1);
 					   		$value = var_export($value, 1);
 					   	}
@@ -990,7 +1029,7 @@ class Vtpl {
 					   function ($matches) use ($node) {
 					   	$value = $this->innerHtml([$node]);
 
-					   	if (isset($value[0]) && $value[0] == '{') {
+					   	if (isset($value[0]) && ($value[0] == '{'/* || $value[0] == '['*/)) {
 					   		$value = json_decode($value, 1);
 					   		$value = var_export($value, 1);
 					   	}
@@ -1018,7 +1057,7 @@ class Vtpl {
 					   		$value = $node->getAttribute($matches[1]);
 					   	}
 
-					   	if (isset($value[0]) && $value[0] == '{') {
+					   	if (isset($value[0]) && ($value[0] == '{'/* || $value[0] == '['*/)) {
 					   		$value = json_decode($value, 1);
 					   		$value = var_export($value, 1);
 					   	}
@@ -1085,7 +1124,7 @@ class Vtpl {
 				$name = str_replace('data-v-', '', $attr->nodeName);
 				$val  = $attr->nodeValue;
 
-				if ($val && $val[0] == '{') {
+				if ($val && ($val[0] == '{'/* || $val[0] == '['*/)) {
 					$json[$name] = json_decode($val, true);
 				}
 			}
@@ -1093,7 +1132,7 @@ class Vtpl {
 
 		$value = preg_replace_callback('/@@([\.a-zA-Z_-]+)@@/m',
 					   function ($matches) use ($node, $json) {
-					   	return $attrib = var_export(\Vvveb\System\arrayPath($json, $matches[1]), true);
+					   	return $attrib = var_export(\Vvveb\arrayPath($json, $matches[1]), true);
 					   	$this->debug->log('VTPL_ATTRIBUTE', '<b>JSON NAME</b> ' . $attrib);
 					   	$this->debug->log('VTPL_ATTRIBUTE', '<b>REGEX </b> ' . $regex);
 					   	$value = $node->getAttribute($attrib);
@@ -1869,7 +1908,7 @@ class Vtpl {
 						continue;
 					} else {
 						if (strpos($value,'$') !== false) {
-							$value = preg_replace_callback('/{(\$[a-z][\w\.]+)}/i',
+							$value = preg_replace_callback('/{(\$[a-z][\w\.>\-]+)}/i',
 							  function ($matches) {
 							  	$value = $matches[1];
 
