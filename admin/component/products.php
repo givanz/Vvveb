@@ -43,7 +43,7 @@ class Products extends ComponentBase {
 	public $options = [];
 
 	function __construct($class = __CLASS__) {
-		return parent::__construct($class);
+		parent::__construct($class);
 	}
 
 	function results() {
