@@ -48,7 +48,7 @@ if (isset($this->_component['menu']) && isset($this->_component['menu'][$_menu_i
 		@category [data-v-menu-item-img]|src = $category['images'][0]
 		
 		@category|append = <?php 
-		  if ($category['children'] > 0) {
+		  if ($category['children'] > 0 && $generate_menu) {
 			    $parents++; 
 				$generate_menu($category['menu_item_id'], $_categories);
 		 }

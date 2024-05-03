@@ -22,6 +22,7 @@
 
 namespace Vvveb\Component;
 
+use function Vvveb\getCurrentUrl;
 use function Vvveb\sanitizeHTML;
 use Vvveb\Sql\menuSQL;
 use Vvveb\Sql\postSQL;
@@ -48,7 +49,6 @@ class Menu extends ComponentBase {
 
 		$menuSql               = new menuSQL();
 		$results               = $menuSql->getMenus($options);
-		$current_category_slug = false;
 
 		//count the number of child menus (subcategories) for each category
 		if (isset($results['menus'])) {
@@ -58,12 +58,6 @@ class Menu extends ComponentBase {
 			foreach ($results['menus'] as $taxonomy_item_id => &$category) {
 				$parent_id = $category['parent_id'] ?? false;
 				$type      = $category['type'] ?? 'link';
-
-				if ($current_category_slug == $category['slug']) {
-					$category['active'] = true;
-				} else {
-					$category['active'] = false;
-				}
 
 				if (! isset($category['children'])) {
 					$category['children'] = 0;
@@ -107,11 +101,11 @@ class Menu extends ComponentBase {
 					$productTaxonomy = array_flip($productIds);
 
 					foreach ($products['products'] as $product) {
-						$taxonomy_item_id = $productTaxonomy[$product['product_id']];
-						$category         = &$results['menus'][$taxonomy_item_id];
-						$route            = "product/{$category['type']}/index";
-						$category['url']  = url($route, ['slug'=> $product['slug']]);
-						$category['name'] = $product['name'];
+						$taxonomy_item_id   = $productTaxonomy[$product['product_id']];
+						$category           = &$results['menus'][$taxonomy_item_id];
+						$route              = "product/{$category['type']}/index";
+						$category['url']    = url($route, ['slug'=> $product['slug']]);
+						$category['name']   = $product['name'];
 					}
 				}
 			}
@@ -142,6 +136,19 @@ class Menu extends ComponentBase {
 		}
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+
+		return $results;
+	}
+
+	//called on each request
+	function request(&$results, $index = 0) {
+		$currentUrl            = getCurrentUrl();
+
+		if (isset($results['menus'])) {
+			foreach ($results['menus'] as $taxonomy_item_id => &$category) {
+				$category['active'] = ($category['url'] === $currentUrl);
+			}
+		}
 
 		return $results;
 	}
