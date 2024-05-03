@@ -37,7 +37,7 @@ class Update {
 
 	protected $zipFile	= false;
 
-	function checkUpdates($type = 'core',$force = false) {
+	function checkUpdates($type = 'core', $force = false) {
 		if ($force) {
 			//delete update cache
 			$cacheKey    = md5($this->url);
@@ -47,7 +47,7 @@ class Update {
 
 		//cache results for one week
 		try {
-			$result = getUrl($this->url, true, 3600 * 24 * 7);
+			$result = getUrl($this->url, true, 604800, 1, false);
 		} catch (\Exception $e) {
 			$result = '{}';
 		}
@@ -101,10 +101,20 @@ class Update {
 		return true;
 	}
 
-	function copyAdmin() {
+	private function copyFolder($src, $dest, $skipFolders = []) {
 		ignore_user_abort(true);
+
+		if (! is_writable($dest)) {
+			throw new \Exception(sprintf('Folder "%s" not writable!', $dest));
+		}
+		rcopy($src, $dest, $skipFolders);
+
+		return true;
+	}
+
+	function copyAdmin() {
 		//$skipFolders = ['plugins', 'public', 'storage'];
-		rcopy($this->workDir . DS . 'admin', DIR_ROOT . DS . 'admin');
+		$this->copyFolder($this->workDir . DS . 'admin', DIR_ROOT . DS . 'admin');
 
 		return true;
 	}
@@ -112,65 +122,49 @@ class Update {
 	function copyApp() {
 		ignore_user_abort(true);
 		//$skipFolders = ['plugins', 'public', 'storage'];
-		rcopy($this->workDir . DS . 'app', DIR_ROOT . DS . 'app');
+		$this->copyFolder($this->workDir . DS . 'app', DIR_ROOT . DS . 'app');
 
 		return true;
 	}
 
 	function copySystem() {
-		ignore_user_abort(true);
-		//$skipFolders = ['plugins', 'public', 'storage'];
-		rcopy($this->workDir . DS . 'system', DIR_ROOT . DS . 'system');
-
-		return true;
+		return $this->copyFolder($this->workDir . DS . 'system', DIR_ROOT . DS . 'system');
 	}
 
 	function copyInstall() {
-		ignore_user_abort(true);
 		//$skipFolders = ['plugins', 'public', 'storage'];
-		rcopy($this->workDir . DS . 'install', DIR_ROOT . DS . 'install');
-
-		return true;
+		return $this->copyFolder($this->workDir . DS . 'install', DIR_ROOT . DS . 'install');
 	}
 
 	function copyCore() {
-		ignore_user_abort(true);
 		$skipFolders = ['plugins', 'public', 'storage', 'system', 'app', 'admin', 'install', 'config', 'env.php'];
-		rcopy($this->workDir, DIR_ROOT, $skipFolders);
 
-		return true;
+		return $this->copyFolder($this->workDir, DIR_ROOT, $skipFolders);
 	}
 
 	function copyConfig() {
-		ignore_user_abort(true);
 		$skip = ['plugins.php', 'mail.php', 'sites.php', 'app.php', 'admin.php', 'routes.php', 'env.php'];
-		rcopy($this->workDir . DS . 'config', DIR_ROOT . DS . 'config', $skip);
 
-		return true;
+		return $this->copyFolder($this->workDir . DS . 'config', DIR_ROOT . DS . 'config', $skip);
 	}
 
 	function copyPublic() {
-		ignore_user_abort(true);
 		$skipFolders = ['plugins', 'themes', 'admin', 'media'];
-		rcopy($this->workDir . DS . 'public', DIR_PUBLIC, $skipFolders);
 
-		return true;
+		return $this->copyFolder($this->workDir . DS . 'public', DIR_PUBLIC, $skipFolders);
 	}
 
 	function copyPublicAdmin() {
 		ignore_user_abort(true);
 		$skipFolders = ['plugins'];
-		rcopy($this->workDir . DS . 'public' . DS . 'admin', DIR_PUBLIC . DS . 'admin', $skipFolders);
 
-		return true;
+		return $this->copyFolder($this->workDir . DS . 'public' . DS . 'admin', DIR_PUBLIC . DS . 'admin', $skipFolders);
 	}
 
 	function copyPublicMedia() {
-		ignore_user_abort(true);
 		$skipFolders = ['plugins', 'themes', 'admin'];
-		rcopy($this->workDir . DS . 'public' . DS . 'media', DIR_PUBLIC . DS . 'media', $skipFolders);
 
-		return true;
+		return $this->copyFolder($this->workDir . DS . 'public' . DS . 'media', DIR_PUBLIC . DS . 'media', $skipFolders);
 	}
 
 	function clearCache() {

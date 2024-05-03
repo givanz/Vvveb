@@ -30,7 +30,7 @@ use Vvveb\System\Update as UpdateSys;
 use function Vvveb\url;
 
 class Update extends Base {
-	private $steps = ['download', 'unzip', 'backup', 'copySystem', 'copyApp', 'copyInstall', 'copyAdmin', 'copyCore',  'copyConfig', 'copyPublic', 'copyPublicAdmin', 'copyPublicMedia', 'setPermissions', 'cleanUp', 'clearCache'];
+	private $steps = ['download', 'unzip', /*'backup',*/ 'copySystem', 'copyApp', 'copyInstall', 'copyAdmin', 'copyCore',  'copyConfig', 'copyPublic', 'copyPublicAdmin', 'copyPublicMedia', 'setPermissions', 'cleanUp', 'clearCache', 'complete'];
 
 	function __construct() {
 		$this->update = new UpdateSys();
@@ -149,10 +149,10 @@ class Update extends Base {
 	}
 
 	function backup() {
+		$result = false;
+
 		try {
-			//$result = $this->update->backup();
-			//$install = $this->update->unzip($updateFile);
-			$result = true;
+			$result = $this->update->backup();
 		} catch (\Exception $e) {
 			$this->view->errors[] = $e->getMessage();
 		}
@@ -166,6 +166,7 @@ class Update extends Base {
 
 	function unzip() {
 		$errorInstallMsg  = __('Error unzipping update!');
+		$result           = true;
 
 		try {
 			$updateFile = $this->session->get('updateFile');
@@ -185,6 +186,7 @@ class Update extends Base {
 
 	function copyCore() {
 		$errorInstallMsg = __('Error updating core');
+		$result          = false;
 
 		try {
 			$result = $this->update->copyCore();
@@ -203,6 +205,7 @@ class Update extends Base {
 
 	function copyConfig() {
 		$errorInstallMsg = __('Error updating config');
+		$result          = false;
 
 		try {
 			$result = $this->update->copyConfig();
@@ -221,6 +224,7 @@ class Update extends Base {
 
 	function copySystem() {
 		$errorInstallMsg = __('Error updating system');
+		$result          = false;
 
 		try {
 			$result = $this->update->copySystem();
@@ -239,6 +243,7 @@ class Update extends Base {
 
 	function copyApp() {
 		$errorInstallMsg = __('Error updating app');
+		$result          = false;
 
 		try {
 			$result = $this->update->copyApp();
@@ -257,6 +262,7 @@ class Update extends Base {
 
 	function copyAdmin() {
 		$errorInstallMsg = __('Error updating system');
+		$result          = false;
 
 		try {
 			$result = $this->update->copyAdmin();
@@ -275,6 +281,7 @@ class Update extends Base {
 
 	function copyInstall() {
 		$errorInstallMsg = __('Error updating install');
+		$result          = false;
 
 		try {
 			$result = $this->update->copyInstall();
@@ -293,6 +300,7 @@ class Update extends Base {
 
 	function copyPublic() {
 		$errorInstallMsg = __('Error updating public');
+		$result          = false;
 
 		try {
 			$result = $this->update->copyPublic();
@@ -311,6 +319,7 @@ class Update extends Base {
 
 	function copyPublicAdmin() {
 		$errorInstallMsg = __('Error updating public admin');
+		$result          = false;
 
 		try {
 			$result = $this->update->copyPublicAdmin();
@@ -329,6 +338,7 @@ class Update extends Base {
 
 	function copyPublicMedia() {
 		$errorInstallMsg = __('Error updating public media');
+		$result          = false;
 
 		try {
 			$result = $this->update->copyPublicMedia();
@@ -347,6 +357,7 @@ class Update extends Base {
 
 	function setPermissions() {
 		$errorInstallMsg = __('Error setting permissions');
+		$result          = false;
 
 		try {
 			$result = $this->update->setPermissions();
@@ -365,6 +376,7 @@ class Update extends Base {
 
 	function cleanUp() {
 		$errorInstallMsg = __('Error cleaning up');
+		$result          = false;
 
 		try {
 			$result = $this->update->cleanup();
@@ -383,6 +395,7 @@ class Update extends Base {
 
 	function clearCache() {
 		$errorInstallMsg = __('Error clearing cache');
+		$result          = false;
 
 		try {
 			$result = $this->update->clearCache();
@@ -397,6 +410,12 @@ class Update extends Base {
 		}
 
 		return $result;
+	}
+
+	function complete() {
+		$this->view->success[] = __('Update complete!');
+
+		return true;
 	}
 
 	function update() {
