@@ -215,7 +215,7 @@ class Checkout extends Base {
 				$checkoutInfo += $this->global;
 
 				//create user account if password is provided
-				if (isset($checkoutInfo['password'])) {
+				if (isset($checkoutInfo['password']) && ! $this->global['user_id']) {
 					$userInfo = [];
 
 					foreach (['first_name', 'last_name', 'email', 'phone_number', 'password'] as $field) {
@@ -231,6 +231,20 @@ class Checkout extends Base {
 					} else {
 						$this->view->errors[] = $error;
 					}
+				}
+
+				$user_id  = $checkoutInfo['user_id'] ?? $this->global['user_id'];
+
+				//if new address add to user account
+				if (empty($this->request->post['billing_address_id']) && $user_id) {
+					$addressSql = new User_AddressSQL();
+					$address    = $addressSql->add(['user_address' => $this->request->post['billing_address'] + ['user_id' => $user_id]]);
+				}
+
+				//if account does not have a phone number set add phone number to user profile for next order
+				if ($this->global['user_id'] && ! $this->global['user']['phone_number']) {
+					User::update(['phone_number' => $checkoutInfo['phone_number']], ['user_id' => $this->global['user_id']]);
+					User::session(['phone_number' => $checkoutInfo['phone_number']]);
 				}
 
 				if (! $checkoutInfo['user_id']) {
@@ -260,6 +274,7 @@ class Checkout extends Base {
 
 				if ($checkoutInfo && $checkoutInfo['order_id']) {
 					$order_id                           = $checkoutInfo['order_id'];
+					$customer_order_id                  = $checkoutInfo['customer_order_id'];
 					$this->request->request['order_id'] = $order_id;
 					$checkoutInfo['order_id']           = $order_id;
 
@@ -273,7 +288,7 @@ class Checkout extends Base {
 					try {
 						$error =  __('Error sending order confirmation mail!');
 
-						if (! email([$checkoutInfo['email'], $site['admin-email']], sprintf(__('Order confirmation #%s'), $order_id), 'order/new', $checkoutInfo)) {
+						if (! email([$checkoutInfo['email'], $site['admin-email']], sprintf(__('Order confirmation #%s'), $customer_order_id), 'order/new', $checkoutInfo)) {
 							$this->session->set('errors', $error);
 							$this->view->errors[] = $error;
 						}

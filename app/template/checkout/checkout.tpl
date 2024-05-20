@@ -40,6 +40,20 @@ textarea =
 	 else echo $value;
 ?>
 
+
+input[name="register"]|addNewAttribute = <?php 
+	if (isset($_POST['register']) && ($_POST['register'] == '@@__value__@@')) echo ' checked';
+?>
+
+input[name="terms"]|addNewAttribute = <?php 
+	if (isset($_POST['terms']) && ($_POST['terms'] == '@@__value__@@')) echo ' checked';
+?>
+
+input[name="newsletter"]|addNewAttribute = <?php 
+	if (isset($_POST['newsletter']) && ($_POST['newsletter'] == '@@__value__@@')) echo ' checked';
+?>
+
+
 input[name="different_shipping_address"]|addNewAttribute = 
 <?php
 	/* if no shipping is unchecked or user didn't submit the form then set no shipping to checked */
