@@ -375,8 +375,7 @@ class Sqlp {
 
 		$lex       = new Lexer($this->config['tokenMap'],  $this->config['macroMap']);
 		$structure = $lex->lex($statement);
-		//\Vvveb\d($structure);
-		//die();
+
 		$output    = $lex->treeMacro($structure);
 		$statement = $lex->treeToPhp($output, $this->config['macroMap']);
 
@@ -384,16 +383,13 @@ class Sqlp {
 		//replace result variables
 		$statement =
 					preg_replace_callback(
-						'/@result.(\w+)/',
+						'/@result\.([\w\.]+)/',
 						function ($matches) {
-							$key = $matches[1];
+							$key = \Vvveb\dotToArrayKey('$results.' . $matches[1]);
 
-							return "' . (isset(\$results['$key']) ? \$results['$key'] : 'NULL') . '";
-						//return "' . \$results['". $matches[1] . "'] . '";
+							return "' . (isset($key) ? $key : 'NULL') . '";
 						},
 					$statement);
-
-		//$variable
 
 		//FILTER
 		if (preg_match_all($this->config['filterRegex'], $statement, $matches, PREG_SET_ORDER)) {
