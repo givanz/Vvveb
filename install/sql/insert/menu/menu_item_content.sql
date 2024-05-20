@@ -131,9 +131,23 @@ INSERT INTO `menu_item_content` VALUES
 (50,1, 'Vvveb', 'Vvveb', ''),
 (51,1, 'Home', 'Home', ''),
 (52,1, 'Shop', 'Shop', ''),
-(53,1, 'Resources', 'Tag 3', ''),
-(54,1, 'Developer documentation', 'Developer documentation', 'Developer documentation'),
-(55,1, 'User documentation', 'Tag 3', ''),
-(56,1, 'Github', 'Tag 3', ''),
-(57,1, 'Contact', 'Tag 3', ''),
-(58,1, 'Blog', 'Blog', '');
+(74,1, 'Blog', 'Blog', ''),
+(75,1, 'Services', 'Services', ''),
+(76,1, 'About us', 'About us', ''),
+
+(53,1, 'Information', 'Information', ''),
+(54,1, 'Delivery Information', 'Delivery Information', 'Delivery Information'),
+(77,1, 'Brands', 'Brands', ''),
+(78,1, 'Vendors', 'Vendors', ''),
+
+(56,1, 'Contact', 'Contact', ''),
+(55,1, 'Terms and conditions', 'Terms and conditions', ''),
+(57,1, 'Contact us', 'Contact us', ''),
+(58,1, 'Portfolio', 'Portfolio', ''),
+(79,1, 'Compare', 'Compare', ''),
+
+(69,1, 'My account', 'My account', ''),
+(70,1, 'Order tracking', 'Order tracking', ''),
+(71,1, 'Wishlist', 'Wishlist', ''),
+(72,1, 'Order history', 'Order history', ''),
+(73,1, 'Returns', 'Returns', '');

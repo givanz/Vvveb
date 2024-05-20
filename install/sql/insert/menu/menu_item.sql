@@ -62,13 +62,30 @@ INSERT INTO `menu_item` (`menu_item_id`, `menu_id`, `type`, `url`, `parent_id`, 
 (66,1,'link','/page/portfolio',63,null,0,1),
 (67,1,'text','/page/portfolio',0,NULL,3,	0),
 (68,1,'text','/page/about',67,NULL,0,0),
+
 -- footer
 (50,5,'link','',0,null,0,1),
 (51,5,'link','/',50,null,0,1),
 (52,5,'link','/shop',50,null,0,1),
-(53,5,'link','//docs.*.*',0,null,0,1),
-(54,5,'link','//dev.*.*',53,null,0,1),
-(55,5,'link','//docs.*.*',53,null,0,1),
-(56,5,'link','//github.com/givanz/VvvebJs',57,null,0,1),
-(57,5,'link','/contact.html',0,null,0,1),
-(58,5,'link','/blog',57,null,0,1);
+(53,5,'link','/',0,null,0,1),
+(54,5,'link','/page/shipping-delivery',53,null,0,1),
+(55,5,'link','/page/terms-conditions',53,null,0,1),
+(56,5,'link','/page/contact',0,null,0,1),
+(57,5,'link','/page/contact',56,null,0,1),
+(58,5,'link','/page/portfolio',56,null,0,1),
+(73,5,'link','/user/return-form',56,null,0,1),
+
+
+
+(69,5,'link','/user',0,null,0,1),
+(70,5,'link','/user/order-tracking',69,null,0,1),
+(71,5,'link','/user/wishlist',69,null,0,1),
+(72,5,'link','/user/orders',69,null,0,1),
+(79,5,'link','/cart/compare',69,null,0,1),
+
+
+(74,5,'link','/blog',50,null,0,1),
+(75,5,'link','/page/services',50,null,0,1),
+(76,5,'link','/page/about',56,null,0,1),
+(77,5,'link','/brand',53,null,0,1),
+(78,5,'link','/vendor',53,null,0,1);
