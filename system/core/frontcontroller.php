@@ -303,13 +303,8 @@ class FrontController {
 	}
 
 	static public function dispatch() {
-		$module = $_GET['module'] ?? $_POST['module'] ?? null;
-		$action = $_GET['action'] ?? $_POST['action'] ?? null;
-
-		if (empty($action)) {
-			$action = 'index';
-		}
-
+		$module   = $_GET['module'] ?? $_POST['module'] ?? null;
+		$action   = $_GET['action'] ?? $_POST['action'] ?? null;
 		$_REQUEST = array_merge($_GET, $_REQUEST);
 
 		//subdirectory support
@@ -337,12 +332,15 @@ class FrontController {
 		if (isset($_GET['route'])) {
 			if (preg_match('@(^.+?)/(\w+$)@', $_GET['route'], $routeMatch)) {
 				$module = $routeMatch[1];
-				$action = $routeMatch[2];
+				$action = $action ?? $routeMatch[2];
 			} else {
 				$module = trim($_GET['route'], '/');
 			}
 		}
 
+		if (empty($action)) {
+			$action = 'index';
+		}
 		//santize inputs
 		if (($module && ! preg_match('@^[a-zA-Z_/0-9\-]{4,70}$@', $module)) ||
 			($action && ! preg_match('@^[a-zA-Z_/0-9\-]{3,70}$@', $action))) {
