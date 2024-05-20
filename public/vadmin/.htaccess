@@ -1,3 +1,5 @@
+#Options +SymLinksIfOwnerMatch -Indexes
+
 <IfModule mod_rewrite.c>
 RewriteEngine On
 
@@ -7,3 +9,6 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ index.php [L]
 </IfModule>
 
+<IfModule dir_module>
+    DirectoryIndex index.php index.html 
+</IfModule>

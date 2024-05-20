@@ -1,1 +1,14 @@
-Options +SymLinksIfOwnerMatch -Indexes
+#Options +SymLinksIfOwnerMatch -Indexes
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+RewriteBase /
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule dir_module>
+    DirectoryIndex index.php index.html 
+</IfModule>
