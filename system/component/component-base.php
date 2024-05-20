@@ -58,7 +58,7 @@ class ComponentBase {
 
 		static :: $defaultOptions = array_merge(self :: $global, static :: $defaultOptions);
 
-		foreach (['site_id', 'language_id', 'currency_id', 'user_group_id'] as $key) {
+		foreach (['site_id', 'language_id', 'currency_id', 'user_id', 'user_group_id'] as $key) {
 			if (! isset(static :: $defaultOptions[$key]) || empty(static :: $defaultOptions[$key])) {
 				static :: $defaultOptions[$key] = self :: $global[$key];
 			}
