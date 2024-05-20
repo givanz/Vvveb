@@ -23,6 +23,7 @@ import {Router} from './common/router.js';
 import {Themes} from './admin/controller/themes.js';
 import {Plugins} from './admin/controller/plugins.js';
 import {Table} from './admin/controller/table.js';
+import {Cache} from './admin/controller/cache.js';
 import {HeartBeat} from './admin/heartbeat.js';
 
 if (window.Vvveb === undefined) window.Vvveb = {};
@@ -30,10 +31,9 @@ if (window.Vvveb === undefined) window.Vvveb = {};
 window.themes = Themes;
 window.plugins = Plugins;
 window.table = Table;
+window.cache = Cache;
 
-jQuery(document).ready(function() {
-	Router.init();
-});
+Router.init();
 
 class AjaxStack {
     constructor() {
@@ -55,7 +55,7 @@ class AjaxStack {
             let call = this.stack.shift();
             let ajax = call();
 
-            ajax.done(function() {
+            ajax.then(function() {
                 self.execute();
             });
         }
@@ -70,16 +70,25 @@ function ucFirst(str) {
   return str[0].toUpperCase() + str.slice(1);
 }
 
-function displayToast(bg, title, message, id = "bottom-toast") {
-	$("#" + id + " .toast-body .message").html(message);
-	$("#" + id + " .toast-header").removeClass(["bg-danger", "bg-success"]).addClass(bg).
-	find("strong").text(title);
-	/*
-	$("#" + id + " .toast").addClass("showing");
-	delay(() => $("#" + id + " .toast").addClass("show").removeClass("showing"), 500);
-	delay(() => $("#" + id + " .toast").removeClass("show"), 5000);*/
-	let toast = new bootstrap.Toast(document.getElementById(id), {animation:false});
-    toast.show()
+function displayToast(bg, title, message, position = 'bottom', id = "bottom-toast") {
+	let toast = document.getElementById(id);
+	
+	let header = toast.querySelector(".toast-header");
+	toast.classList.remove("bottom-0", "top-0");
+	toast.classList.add(position + "-0");
+	toast.querySelector(".toast-body .message").innerHTML = message;
+	header.classList.remove("bg-danger", "bg-success");
+	header.classList.add(bg);	
+	header.querySelector("strong").textContent = title;
+
+	let bsToast = new bootstrap.Toast(toast, {animation:false});
+    bsToast.show()
 }
 
 window.displayToast = displayToast;
+
+function generateElements(html) {
+  const template = document.createElement('template');
+  template.innerHTML = html.trim();
+  return template.content.children;
+}

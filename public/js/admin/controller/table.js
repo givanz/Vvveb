@@ -1,22 +1,23 @@
 class TableController {
 
 	selectRow(e) {
-		let selectedCount = $('.checkbox input[type=\'checkbox\']:checked').length;
-		console.log(selectedCount);
-		if (selectedCount > 0) {
-			$('.bulk-actions').fadeIn();
+		let selectedCount = document.querySelectorAll('.checkbox input[type=\'checkbox\']:checked');
+		
+		if (selectedCount) {
+			document.querySelector('.bulk-actions').style.display = "block";
 		} else {
-			$('.bulk-actions').fadeOut();
+			document.querySelector('.bulk-actions').style.display = "none";
 		}
 	}
 	
 	bulkSelect(e) {
-		$('.checkbox input[type=\'checkbox\']').prop('checked', this.checked);
+		let bulkCheckbox = this;
+		document.querySelectorAll('.checkbox input[type=\'checkbox\']').forEach(e => e.checked = bulkCheckbox.checked);
 
-		if (this.checked) {
-			$('.bulk-actions').fadeIn();
+		if (bulkCheckbox.checked) {
+			document.querySelector('.bulk-actions').style.display = "block";
 		} else {
-			$('.bulk-actions').fadeOut();
+			document.querySelector('.bulk-actions').style.display = "none";
 		}
 	}
 }

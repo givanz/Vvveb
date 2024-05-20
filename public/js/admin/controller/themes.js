@@ -9,14 +9,14 @@ class ThemesController {
 		
 		element.classList.add("loading");
 		
-		$(".loading", element).toggleClass("d-none");
-		$(".button-text", element).toggleClass("d-none");
+		element.querySelector('.loading').toggleClass("d-none");
+		element.querySelector('.button-text').toggleClass("d-none");
 		
 		ThemesModel.install(market, slug, function () {
 			setTimeout(function () {
 				element.classList.remove("loading");
-				$(".loading", element).toggleClass("d-none");
-				$(".button-text", element).toggleClass("d-none");
+				element.querySelector('.loading').toggleClass("d-none");
+				element.querySelector('.button-text').toggleClass("d-none");
 				
 			}, 5000);
 		});
@@ -25,20 +25,19 @@ class ThemesController {
 	}
 	
 	importModal(e) {
-		$("#importModal").modal('show');
-		//console.log($("#import-form").serialize());
+		document.getElementById("importModal").modal('show');
 		e.preventDefault();
 	}
 	
 	importTheme(e) {
-		$("#import-iframe").show();
-		$("#import-form").submit();
-		$("#import-options").hide();
-		$(e.target).hide();
+		document.getElementById("import-iframe").style.display = "";
+		document.getElementById("import-form").submit();
+		document.getElementById("import-options").style.display = "none";
+		e.target.style.display = "none";
 	}
 
 	import(e) {
-		console.log($("#import-form").serialize());
+		console.log(document.getElementById("import-form").serialize());
 	}
 	
 	activate(e) {
@@ -54,7 +53,7 @@ class ThemesController {
 			}, 5000);
 		});
 		
-		$("#importModal").modal('show');
+		document.getElementById("importModal").modal('show');
 		
 		e.preventDefault();
 	}

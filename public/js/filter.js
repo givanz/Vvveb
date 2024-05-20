@@ -33,20 +33,48 @@ function filterChange() {
 		filters[name].push(element.value);
 	});
 	
+	if ('URLSearchParams' in window) {
+		let params = new URLSearchParams(window.location.search);
+		for (const [key, value] of params.entries()) {
+			if (key.startsWith("filter")) {params.delete(key)}
+		}
+		
+		let query = params.toString();
+		filter_text = (query ? "?" + query : "");
+	}
+	
 	for(filter_name in filters) {
 			for (filter in filters[filter_name]) {   
 				filter_text += (filter_text ? '&' : '?') + "filter[" + filter_name + "][]=" + filters[filter_name][filter];
 			}
 	}
-	
-	location = action + filter_text;
+
+	let url = action + filter_text;
+	let selector = "#site-content";
+	loadAjax(url, selector);
+	window.history.pushState({url, selector}, null, url);
+	//location = action + filter_text;
 }	
 
 let _filter_timeout;
 
-document.querySelectorAll('.filters input').forEach(e => e.addEventListener("click", function()  {
+
+document.addEventListener("click", (event) => {
+  if (event.target.closest('.filters input')) {
 	clearTimeout(_filter_timeout);
 	_filter_timeout = setTimeout(function () {
 		filterChange();
-	}, 1500);
-}));
+	}, 1000);
+  }
+});
+
+document.addEventListener("click", (event) => {
+  let target = event.target.closest('.page-link');
+  if (target) {
+	let url = target.href;
+	let selector = "#site-content";
+	loadAjax(url, selector);
+	window.history.pushState({url, selector}, null, url);
+	event.preventDefault();
+  }
+});

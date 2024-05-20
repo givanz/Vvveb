@@ -1,8 +1,10 @@
 var noWrapNodes = "p > img,p > video, p > figure";
 var wrapNodes = ['B','I','SPAN', 'TABLE', 'P', 'H1', 'H2', 'H3', 'H4'];
 
-function fixWrapper(body){
-	$(body).find(noWrapNodes + ",.post-content > *").each(function (i, e) {
+function fixWrapper(doc){
+	let body = doc.body;
+
+	body.querySelectorAll(noWrapNodes + ",.post-content > *").forEach(e => {
 		//if the element is the only node inside the paragraph and is not an inline element
 		if (!e.nextSibling && !e.previousSibling && (wrapNodes.indexOf(e.tagName) == -1)) {
 			if (e.parentNode.parentNode.tagName !== "HTML") {
@@ -16,8 +18,16 @@ function fixWrapper(body){
 		}
 	});
 
-	if($(body).find('.post-content').length == 0 && body.tagName == "BODY" && body.id == "tinymce"){
-        $(body).wrapInner('<div class="post-content"></div>');
+	if(!body.querySelector('.post-content') && body.tagName == "BODY" && body.id == "tinymce"){
+		  const wrappingElement = body.ownerDocument.createElement('div');
+		  wrappingElement.setAttribute("class","post-content");
+		  
+		  
+		  while(body.firstChild) {
+			wrappingElement.appendChild(body.firstChild);
+		  }
+		  
+		  body.appendChild(wrappingElement);
     }	
 }
 
@@ -25,24 +35,76 @@ const isSmallScreen = window.matchMedia('(max-width: 1023.5px)').matches;
 
 let tinyMceSkin = "oxide";
 let tinyMceTheme = 'auto'
-if (window.matchMedia("(prefers-color-scheme: dark)").matches || $("html").attr("data-bs-theme") == "dark") {
+if (window.matchMedia("(prefers-color-scheme: dark)").matches || (document.documentElement.dataset.bsTheme == "dark")) {
 	tinyMceSkin = "oxide-dark";
 	tinyMceTheme = 'dark';
 }
 
 let make_wysiwyg = function(inst){
-    fixWrapper(inst.contentDocument.body);
+    fixWrapper(inst.contentDocument);
      //set dark theme
     inst.contentDocument.documentElement.setAttribute("data-bs-theme", tinyMceTheme);
 }
 
-var tinyMceOptions = {
+
+const tinymce_image_upload_handler = (blobInfo, progress) => new Promise((resolve, reject) => {
+	
+  const xhr = new XMLHttpRequest();
+  xhr.withCredentials = false;
+  xhr.open('POST', uploadUrl);
+
+  xhr.upload.onprogress = (e) => {
+    progress(e.loaded / e.total * 100);
+  };
+
+  xhr.onload = () => {
+    if (xhr.status === 403) {
+      reject({ message: 'HTTP Error: ' + xhr.status, remove: true });
+      return;
+    }
+
+    if (xhr.status < 200 || xhr.status >= 300) {
+      reject('HTTP Error: ' + xhr.status);
+      return;
+    }
+	/*
+    const json = JSON.parse(xhr.responseText);
+
+    if (!json || typeof json.location != 'string') {
+      reject('Invalid JSON: ' + xhr.responseText);
+      return;
+    }
+
+    resolve(json.location);*/
+	resolve(mediaPath + "/" + xhr.responseText);
+  };
+
+  xhr.onerror = () => {
+    reject('Image upload failed due to a XHR Transport error. Code: ' + xhr.status);
+  };
+
+  const formData = new FormData();
+  formData.append('file', blobInfo.blob(), blobInfo.filename());
+  formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+  formData.append("mediaPath", mediaPath);
+  formData.append("onlyFilename", true);
+
+
+  xhr.send(formData);
+});
+
+
+let tinyMceOptions = {
   selector: "textarea.html",
   body_class: "container",
   init_instance_callback : make_wysiwyg,
   setup: function (editor) {
 	//set changes to false to avoid saving unchanged revisions if text is not changed
-	$(".has_changes", document.getElementById(editor.id).parentNode).val("0");
+	let has_changes = document.getElementById(editor.id)?.parentNode.querySelector(".has_changes");
+	if (has_changes) {
+		has_changes.value = "0";
+	}
 
 	 editor.ui.registry.addButton('quickmedia', {
         icon: 'image',
@@ -86,16 +148,16 @@ var tinyMceOptions = {
         });
         */
         editor.on('SetContent',function (ed, e) {
-            fixWrapper(this.contentDocument.body); // if wrapper has been deleted, add it back
+            fixWrapper(this.contentDocument); // if wrapper has been deleted, add it back
         });
 		
 		
 		editor.on('change', function(ed, e)  {
 			// text changed set has_changes flag to save revision
-			$(".has_changes", ed.target.container.parentNode).val(1);
+			ed.target.container.parentNode.querySelector(".has_changes").value = "1";
 		});
 
-		$(window).trigger("vvveb.tinymce.setup", editor);
+		window.dispatchEvent(new CustomEvent("tinymce.setup", {detail: editor}));
     },
     
   plugins: 'preview importcss searchreplace autolink autosave autoresize save directionality code visualblocks visualchars fullscreen image media link codesample table charmap pagebreak nonbreaking anchor insertdatetime advlist lists wordcount help quickbars emoticons table accordion',
@@ -129,33 +191,11 @@ var tinyMceOptions = {
   relative_urls : false,
   convert_urls : false,  
   file_picker_callback: function (callback, value, meta) {
-		if (!Vvveb.MediaModal) {
-			Vvveb.MediaModal = new MediaModal(true);
-			Vvveb.MediaModal.mediaPath = mediaPath;
-		}
-		Vvveb.MediaModal.open(null, callback);
-	return;
-	/* Provide file and text for the link dialog */
-	if (meta.filetype === 'file') {
-            callback('https://www.google.com/logos/google.jpg', {
-                text: 'My text'
-            });
+	if (!Vvveb.MediaModal) {
+		Vvveb.MediaModal = new MediaModal(true);
+		Vvveb.MediaModal.mediaPath = mediaPath;
 	}
-
-	/* Provide image and alt text for the image dialog */
-	if (meta.filetype === 'image') {
-            callback('https://www.google.com/logos/google.jpg', {
-                alt: 'My alt text'
-            });
-	}
-
-	/* Provide alternative source and posted for the media dialog */
-	if (meta.filetype === 'media') {
-            callback('movie.mp4', {
-                source2: 'alt.ogg',
-                poster: 'https://www.google.com/logos/google.jpg'
-            });
-	}
+	Vvveb.MediaModal.open(null, callback);
   },/*
 	templates: [{
 		title: 'New Table',
@@ -184,7 +224,8 @@ var tinyMceOptions = {
   content_css: vvvebThemeCss,
   //content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
   content_style: "body {padding: 10px}",
-  images_upload_url: 'postAcceptor.php',
+  images_reuse_filename: true,
+  images_upload_url: uploadUrl,
   verify_html: false,
   //force_br_newlines: true,
   //forced_root_block : false,
@@ -201,13 +242,7 @@ var tinyMceOptions = {
   apply_source_formatting : false,
   verify_html : false,
   /* we override default upload handler to simulate successful upload*/
-  images_upload_handler: function (blobInfo, success, failure) {
-    setTimeout(function () {
-      /* no matter what you upload, we will turn it into TinyMCE logo :)*/
-      success('http://moxiecode.cachefly.net/tinymce/v9/images/logo.png');
-    }, 2000);
-  },
-	
+  images_upload_handler: tinymce_image_upload_handler,
 	formats: {
 		alignleft: [{
 			selector: "p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li",

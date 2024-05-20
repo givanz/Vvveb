@@ -1,11 +1,14 @@
-$(window).on("vvveb.tinymce.options", function (e, tinyMceOptions) { 
+window.addEventListener("vvveb.tinymce.options", function (e) { 
+	let tinyMceOptions = e.detail;
+	
 	tinyMceOptions.quickbars_insert_toolbar += '| Embed';
 	tinyMceOptions.toolbar += '| Embed';
 
 	return tinyMceOptions;
 });
 
-$(window).on("vvveb.tinymce.setup", function (e, editor) { 
+window.addEventListener("vvveb.tinymce.setup", function (e) { 
+	let editor = e.detail;
 	
 	editor.ui.registry.addButton('Embed', {
 		text: "Embed",

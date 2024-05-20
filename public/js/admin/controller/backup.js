@@ -1,34 +1,42 @@
 class BackupController {
 
 	action(url, btn) {
-		var next = url;
-		$("#progress").removeClass("d-none");
+		let next = url;
+		document.getElementById("progress").classList.remove("d-none");
 		
 		function disableBtn() {
-			$('.loading', btn).removeClass('d-none');
-			$('.button-text', btn).addClass('d-none');
+			btn.querySelector('.loading').classList.remove('d-none');
+			btn.querySelector('.button-text').classList.add('d-none');
 		}
 		
 		function enableBtn() {
-			$('.loading', btn).addClass('d-none');
-			$('.button-text', btn).removeClass('d-none');
-
+			btn.querySelector('.loading').classList.add('d-none');
+			btn.querySelector('.button-text').classList.remove('d-none');
 		}
 
-		var request = function () {
-			return $.ajax({
-				url: next,
-				type: 'post',
-				//data: $('input[name^=\'backup\']:checked'),
-				dataType: 'json',
-				beforeSend: function () {
-					disableBtn();
-				},
-				success: function (json) {
+		disableBtn();				
 
+		let request = function () {
+			return fetch(next, {method: "POST",   headers: {
+				"X-Requested-With": "XMLHttpRequest",
+			  }})
+			.then((response) => {
+				next = false;
+				if (!response.ok) {
+					return Promise.reject(response);
+				}				
+				if (!response.ok) { 
+					let message = response.statusText + " " + response.body();
+					throw new Error(message); 
+				}
+				return response.json()
+			})
+			.then((json) => {
+					document.getElementById('progress-status').innerHTML = '';
+					
 					if (json['error']) {
-						$('#progress-bar').addClass('bg-danger');
-						$('#progress-status').html('<div class="text-danger">' + json['error'] + '</div>');
+						document.getElementById('progress-bar').classList.add('bg-danger');
+						document.getElementById('progress-status').innerHTML = '<div class="text-danger">' + json['error'] + '</div>';
 
 						enableBtn();
 					}
@@ -36,30 +44,30 @@ class BackupController {
 					let percent = (json['position']) * 100 / json['count'];				
 					
 					if (json['success']) {
-						$('#progress-bar').css('width', '100%').addClass('bg-success');
-						$('#progress-status').html('<div class="text-success">' + json['success'] + '</div>');
+						document.getElementById('progress-bar').style.width = "100%";//.classList.add('bg-success');
+						document.getElementById('progress-status').innerHTML = '<div class="text-success">' + json['success'] + '</div>';
 
 						enableBtn();
 					}
 
 					if (json['table']) {
-						$('#progress-status').html(json['table']);
+						document.getElementById('progress-status').innerHTML = json['table'];
 					}					
 					
 					if (json['file']) {
-						$('#progress-file').html(json['file']);
+						document.getElementById('progress-file').innerHTML = json['file'];
 					}					
 					
 					if (json['position']) {
-						$('#progress-position').html(json['position']);
+						document.getElementById('progress-position').innerHTML = json['position'];
 					}			
 					
 					if (json['count']) {
-						$('#progress-count').html(json['count']);
+						document.getElementById('progress-count').innerHTML = json['count'];
 					}			
 					
 					if (json['page']) {
-						$('#progress-page').html(json['page']);
+						document.getElementById('progress-page').innerHTML = json['page'];
 					}
 
 					
@@ -69,9 +77,9 @@ class BackupController {
 						ajaxStack.add(request);
 					} else {
 						percent = 100;
-						$('#progress-bar').addClass('bg-success');
+						document.getElementById('progress-bar').classList.add('bg-success');
 						enableBtn();
-						$('#progress-bar').css('width', '100%');
+						document.getElementById('progress-bar').style.width = '100%';
 
 						if (json['success']) {
 							window.location.href += '&success=' + json['success'];  
@@ -80,14 +88,30 @@ class BackupController {
 						}
 					}
 
-					$('#progress-bar').css('width', percent + '%');	
-				},
-				error: function (xhr, ajaxOptions, thrownError) {
-					console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-					$('#progress-bar').addClass('bg-danger');
-					enableBtn();
-				}
-			});
+					document.getElementById('progress-bar').style.width = percent + '%';					
+				})/*.then((json) => {
+					if (next) {
+						ajaxStack.add(request);
+					}
+				})*/
+				.catch(error => {
+						let message = error.clone().text();
+
+						if (typeof error.json === "function") {
+							error.json().then(jsonError => {
+								message = jsonError;
+							}).catch(genericError => {
+								message = error.statusText + " " + message;
+							});
+						}				
+					
+						console.log(error);
+						document.getElementById('progress-success').innerHTML = '';
+						document.getElementById('progress-message').innerHTML = '<div class="text-danger">' + message + '</div>';
+						//console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+						document.getElementById('progress-bar').classList.add('bg-danger');
+						enableBtn();
+				});
 		};
 
 		ajaxStack.add(request);		

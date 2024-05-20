@@ -1,7 +1,6 @@
 class ThemesModel {
 
 	install(market, slug, callback) {
-		console.log(market + " --- " + slug);
 		callback();
 	}
 }
