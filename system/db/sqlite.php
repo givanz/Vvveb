@@ -240,7 +240,7 @@ class Sqlite extends DBDriver {
 			throw new \Exception($message, $e->getCode());
 		}
 
-		if ($stmt && ! empty($paramTypes)) {
+		if ($stmt/* && ! empty($paramTypes)*/) {
 			foreach ($parameters as $key => $value) {
 				$type  = $types[$key] ?? 's';
 				$type  = ($type == 'i') ? SQLITE3_INTEGER : SQLITE3_TEXT;

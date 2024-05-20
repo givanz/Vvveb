@@ -283,11 +283,17 @@ class Xml {
 						}
 					}
 
-					$cols   = implode("$q,$q",array_keys($data));
-					$values = implode(',:',array_keys($data));
+					$cols   = implode("$q, $q",array_keys($data));
+					$values = implode(', :',array_keys($data));
 
-					$sql = "INSERT INTO $q$tableName$q ($q$cols$q) VALUES (:$values)" .
-							"ON DUPLICATE KEY UPDATE $update\n\n";
+					$duplicate = "ON DUPLICATE KEY UPDATE $update\n\n";
+
+					if (DB_ENGINE == 'sqlite' || DB_ENGINE == 'pgsql') {
+						//$duplicate = "ON CONFLICT($q$cols$q) DO UPDATE SET $update\n\n";
+						$duplicate = '';
+					}
+
+					$sql = "INSERT INTO $q$tableName$q ($q$cols$q) VALUES (:$values)" . $duplicate;
 
 					$stmt   = $this->db->execute($sql, $data);
 					$lastId = $this->db->insert_id;
