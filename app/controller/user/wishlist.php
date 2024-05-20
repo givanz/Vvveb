@@ -22,13 +22,39 @@
 
 namespace Vvveb\Controller\User;
 
-use Vvveb\System\User\User;
+use Vvveb\Sql\User_wishlistSQL;
 
 class Wishlist extends Base {
 	function index() {
 	}
 
+	private function action($action) {
+		$productId = (int) ($this->request->request['product_id'] ?? false);
+
+		if ($productId) {
+			$wishlist = new User_wishlistSQL();
+
+			switch ($action) {
+				case 'add':
+				$result   = $wishlist->add(['user_id' => $this->global['user_id'], 'product_id' => $productId]);
+
+				break;
+
+				case 'remove':
+				$result   = $wishlist->delete(['user_id' => $this->global['user_id'], 'product_id' => [$productId]]);
+
+				break;
+			}
+
+			return $this->index();
+		}
+	}
+
 	function add() {
-		$productId = $this->request->request['product_id'];
+		return $this->action('add');
+	}
+
+	function remove() {
+		return $this->action('remove');
 	}
 }

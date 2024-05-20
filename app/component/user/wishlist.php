@@ -25,12 +25,15 @@ namespace Vvveb\Component\User;
 use Vvveb\Sql\User_WishlistSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use Vvveb\System\Images;
 use function Vvveb\url;
 
 class Wishlist extends ComponentBase {
 	public static $defaultOptions = [
-		'start'         => 0,
-		'limit'         => 10,
+		'user_id'    => null,
+		'start'      => 0,
+		'limit'      => 10,
+		'image_size' => 'thumb',
 	];
 
 	//don't cache
@@ -45,10 +48,15 @@ class Wishlist extends ComponentBase {
 			$wishlist  = new User_WishlistSQL();
 			$results   = $wishlist->getAll($this->options);
 
-			if ($results && isset($results['wishlist'])) {
-				foreach ($results['wishlist'] as $id => &$wishlist) {
-					$wishlist['url']        =  url('user/wishlist/edit', $wishlist);
-					$wishlist['delete-url'] =  url('user/wishlist/delete', $wishlist);
+			if ($results && isset($results['user_wishlist'])) {
+				foreach ($results['user_wishlist'] as $id => &$product) {
+					if (isset($product['image']) && $product['image']) {
+						$product['image'] = Images::image($product['image'], 'product', $this->options['image_size']);
+					}
+
+					$url                   = ['slug' => $product['slug'], 'product_id' => $product['product_id']];
+					$product['url']        = url('product/product/index', $url);
+					$product['delete-url'] =  url('user/wishlist/delete', $product);
 				}
 			}
 		}
