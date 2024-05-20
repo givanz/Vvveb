@@ -23,11 +23,13 @@
 namespace Vvveb\Controller\User;
 
 use function Vvveb\__;
+use function Vvveb\url;
 use function Vvveb\email;
 use function Vvveb\siteSettings;
 use Vvveb\System\Event;
 use Vvveb\System\User\User;
 use Vvveb\System\Validator;
+use Vvveb\System\Sites;
 
 class Signup extends \Vvveb\Controller\Base {
 	function addUser() {
@@ -56,7 +58,13 @@ class Signup extends \Vvveb\Controller\Base {
 						$user_id                            = $result['user'];
 						$this->request->request['user_id']  = $user_id;
 
-						$site = siteSettings();
+						$site     = siteSettings();
+						$siteData = Sites :: getSiteData();
+
+						$userInfo['website'] = url('user/index', [
+							'host'   => $siteData['host'] ?? false,
+							'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http',
+						]);
 
 						try {
 							$error =  __('Error sending account creation mail!');

@@ -38,6 +38,7 @@ class Comments extends ComponentBase {
 
 	public static $defaultOptions = [
 		'post_id'     => 'url',
+		'user_id'     => null,
 		'slug'        => 'url',
 		'post_title'  => NULL, //include post title (for recent comments etc)
 		'status'      => 1, //approved comments

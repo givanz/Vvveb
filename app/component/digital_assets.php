@@ -27,37 +27,37 @@ use Vvveb\System\Event;
 use Vvveb\System\Images;
 use function Vvveb\url;
 
-class Orders extends ComponentBase {
+class Digital_assets extends ComponentBase {
 	public static $defaultOptions = [
-		'start'             => 0,
-		'order_id'          => null,
-		'customer_order_id' => null,
-		'limit'             => ['url', 4],
-		'order'             => ['url', 'price asc'],
+		'start'           => 0,
+		'user_id'         => null,
+		'order_status_id' => null,
+		'limit'           => ['url', 4],
+		'digital_asset'   => ['url', 'price asc'],
 	];
 
 	public $options = [];
 
 	function results() {
-		$orders = new \Vvveb\Sql\OrderSQL();
+		$digital_asset = new \Vvveb\Sql\Digital_assetSQL();
 
-		$results = $orders->getAll($this->options);
+		$results = $digital_asset->getAll($this->options);
 
-		if (isset($results['order'])) {
-			foreach ($results['order'] as $id => &$order) {
-				if (isset($order['images'])) {
-					$order['images'] = json_decode($order['images'], 1);
+		if (isset($results['digital_asset'])) {
+			foreach ($results['digital_asset'] as $id => &$digital_asset) {
+				if (isset($digital_asset['images'])) {
+					$digital_asset['images'] = json_decode($digital_asset['images'], 1);
 
-					foreach ($order['images'] as &$image) {
-						$image = Images::image('order', $image);
+					foreach ($digital_asset['images'] as &$image) {
+						$image = Images::image('digital_asset', $image);
 					}
 				}
 
-				if (isset($order['image'])) {
-					$order['images'][] = Images::image('order', $order['image']);
+				if (isset($digital_asset['image'])) {
+					$digital_asset['images'][] = Images::image('digital_asset', $digital_asset['image']);
 				}
 
-				$order['url'] = url('user/orders/order', ['customer_order_id' => $order['customer_order_id']]);
+				$digital_asset['url'] = url('user/digital_assets/digital_asset', ['digital_asset_id' => $digital_asset['digital_asset_id']]);
 			}
 		}
 

@@ -3,7 +3,7 @@ if (isset($order_idx)) $order_idx++; else $order_idx = 0;
 $order = $this->_component['order'][$order_idx] ?? [];
 ?>
 
-@order-product = [data-v-component-order] [data-v-order-product]
+@order-product = [data-v-component-order] [data-v-cart] [data-v-order-product]
 
 @order-product|deleteAllButFirstChild
 @order-product|before = <?php
@@ -23,6 +23,24 @@ if(is_array($products)) foreach ($products as $index => $product) {
 
 @order-product|after = <?php }?>
 
+
+@cart-option = [data-v-component-order] [data-v-order-product] [data-v-product-option]
+@cart-option|deleteAllButFirstChild
+
+
+@cart-option|before = <?php
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => 'product_option_value_id'] : false;
+$option_value = empty($product['option_value']) ? $_default : $product['option_value'];
+
+if($option_value) {
+	foreach ($option_value as $product_option_value_id => $value) { ?>
+
+	@cart-option [data-v-product-option-*]|innerText = $value['@@__data-v-product-option-(*)__@@']
+
+
+@cart-option|after = <?php } 
+}
+?>
 
 @total = [data-v-component-order] [data-v-order-totals-total]
 

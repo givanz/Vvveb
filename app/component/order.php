@@ -28,12 +28,15 @@ use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Core\Request;
 use Vvveb\System\Event;
 use Vvveb\System\Images;
+use Vvveb\System\Sites;
 
 class Order extends ComponentBase {
 	public static $defaultOptions = [
-		'user_id'  => null,
-		'order_id' => null,
-		'limit'    => ['url', 4],
+		'order_id'          => null,
+		'customer_order_id' => null,
+		'user_id'           => null,
+		'email'             => null,
+		'image_size'        => 'thumb',
 	];
 
 	public $options = [];
@@ -43,29 +46,43 @@ class Order extends ComponentBase {
 
 		$request = Request::getInstance();
 
-		if ($this->options['order_id']) {
+		if ($this->options['order_id'] || $this->options['customer_order_id']) {
 			$orders = new \Vvveb\Sql\OrderSQL();
 
 			$results = $orders->get($this->options);
+			$site    = Sites :: getSiteData();
+			$scheme  = $_SERVER['REQUEST_SCHEME'] ?? 'http';
+			$url     = ['host' => SITE_URL, 'scheme' => $scheme];
+			$host    = $scheme . '://' . SITE_URL;
 
-			if ($results) {
+			if ($results && $results['order']) {
 				$currency = Currency::getInstance();
 
 				if (isset($results['products'])) {
 					foreach ($results['products'] as $id => &$product) {
-						$product['url'] = htmlentities(\Vvveb\url('product/product/index', $product));
+						$product['url'] = htmlentities(\Vvveb\url('product/product/index', $product + $url));
 
 						if (isset($product['images'])) {
 							$product['images'] = json_decode($product['images'], true);
 
 							foreach ($product['images'] as &$image) {
-								$image['image'] = Images::image($image['image'], 'product');
+								$image['image'] = $host . Images::image($image['image'], 'product', $this->options['image_size']);
 							}
 						}
 
 						if (isset($product['image']) && $product['image']) {
-							$product['image'] =Images::image($product['image'], 'product');
+							$product['image'] = $host . Images::image($product['image'], 'product', $this->options['image_size']);
 							//$product['images'][] = ['image' => Images::image($product['image'], 'product')];
+						}
+
+						if (isset($product['option_value'])) {
+							$product['option_value'] = json_decode($product['option_value'], true);
+
+							foreach ($product['option_value'] as &$option) {
+								if (isset($option['price'])) {
+									$option['price_formatted'] = $currency->format($option['price']);
+								}
+							}
 						}
 
 						$product['tax_formatted'] = $currency->format($product['tax']);
@@ -78,14 +95,13 @@ class Order extends ComponentBase {
 
 				$order                    = &$results['order'];
 				$order['total_formatted'] = $currency->format($order['total']);
-				$order['shipping_data']   = json_decode($order['shipping_data'], true);
-				$order['payment_data']    = json_decode($order['payment_data'], true);
+				$order['shipping_data']   = isset($order['shipping_data']) ? json_decode($order['shipping_data'], true) : [];
+				$order['payment_data']    = isset($order['payment_data']) ? json_decode($order['payment_data'], true) : [];
 
 				$order += prefixArrayKeys('shipping_', $order['shipping_data']) ?? [];
 				$order += prefixArrayKeys('payment_', $order['payment_data']) ?? [];
 			}
 
-			//\Vvveb\dd($results);
 			list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 		}
 

@@ -29,13 +29,13 @@ if($addresses) {
 		@address [data-v-user_address-label-id]|id = <?php echo 'address_' . $address['user_address_id'];?>
 		@address [data-v-user_address-label-for]|for = <?php echo 'address_' . $address['user_address_id'];?>
 		
-		@address img[data-v-user_address-*]|src = $address['@@__data-v-user_address-([a-zA-Z_\d]+)__@@']
+		@address img[data-v-user_address-*]|src = $address['@@__data-v-user_address-(*)__@@']
 		
-		@address [data-v-user_address-*]|innerText = $address['@@__data-v-user_address-([a-zA-Z_\d]+)__@@']
+		@address [data-v-user_address-*]|innerText = $address['@@__data-v-user_address-(*)__@@']
 		
-		@address input[data-v-user_address-*]|value = $address['@@__data-v-user_address-([a-zA-Z_\d]+)__@@']
+		@address input[data-v-user_address-*]|value = $address['@@__data-v-user_address-(*)__@@']
 		
-		@address a[data-v-user_address-*]|href = $address['@@__data-v-user_address-([a-zA-Z_\d]+)__@@']
+		@address a[data-v-user_address-*]|href = $address['@@__data-v-user_address-(*)__@@']
 	
 	@address|after = <?php 
 	} 

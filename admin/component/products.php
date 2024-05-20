@@ -22,6 +22,8 @@
 
 namespace Vvveb\Component;
 
+use Vvveb\System\Cart\Currency;
+use Vvveb\System\Cart\Tax;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Images;
@@ -47,23 +49,33 @@ class Products extends ComponentBase {
 	}
 
 	function results() {
+		
 		$products = new \Vvveb\Sql\ProductSQL();
 
 		$results = $products->getAll($this->options);
 
 		$results['products'] = $results['products'] ?? [];
 
-		foreach ($results['products'] as $id => &$product) {
-			if (isset($product['images'])) {
-				$product['images'] = json_decode($product['images'], true);
+		if ($results['products']) {
+			$tax      = Tax::getInstance($this->options);
+			$currency = Currency::getInstance($this->options);
 
-				foreach ($product['images'] as &$image) {
-					$image['image'] = Images::image($image['image'], 'product');
+			foreach ($results['products'] as $id => &$product) {
+				if (isset($product['images'])) {
+					$product['images'] = json_decode($product['images'], true);
+
+					foreach ($product['images'] as &$image) {
+						$image['image'] = Images::image($image['image'], 'product');
+					}
 				}
-			}
 
-			if (isset($product['image']) && $product['image']) {
-				$product['image'] =Images::image($product['image'], 'product');
+				if (isset($product['image']) && $product['image']) {
+					$product['image'] =Images::image($product['image'], 'product');
+				}
+
+				$product['price_tax']           = $tax->addTaxes($product['price'], $product['tax_type_id']);
+				$product['price_tax_formatted'] = $currency->format($product['price_tax']);
+				$product['price_formatted']     = $currency->format($product['price']);
 			}
 		}
 

@@ -12,10 +12,18 @@
 
 [data-v-component-site] a[data-v-site-*]|href = <?php
 $name = '@@__data-v-site-(*)__@@';
-if ($name == 'phone-number') echo 'tel:';
+if (strpos($name, 'phone-number') !== false) echo 'tel:';
 if (strpos($name, 'email') !== false) echo 'mailto:';
 echo $site[$name] ?? '';
 ?>
+
+[data-v-component-site] a[data-v-site-description-*]|href = <?php
+$name = '@@__data-v-site-description-(*)__@@';
+if (strpos($name, 'phone-number') !== false) echo 'tel:';
+if (strpos($name, 'email') !== false) echo 'mailto:';
+echo $site['description'][$name] ?? '';
+?>
+
 
 [data-v-component-site]|append = <?php 
 	$component = $previous_component;

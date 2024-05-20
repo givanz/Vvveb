@@ -39,6 +39,13 @@ class Attributes extends ComponentBase {
 
 	function results() {
 		$category   = new AttributeSQL();
+
+		if (isset($this->options['product_id'])) {
+			if (! is_array($this->options['product_id'])) {
+				$this->options['product_id'] = [$this->options['product_id']];
+			}
+		}
+
 		$results    = $category->getAll($this->options);
 		$attributes = [];
 		$group      = false;

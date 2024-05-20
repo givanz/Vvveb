@@ -29,8 +29,9 @@ use function Vvveb\url;
 
 class Address extends ComponentBase {
 	public static $defaultOptions = [
-		'start'         => 0,
-		'limit'         => 10,
+		'user_id' => null,
+		'start'   => 0,
+		'limit'   => 10,
 	];
 
 	//don't cache

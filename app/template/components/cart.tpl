@@ -31,10 +31,9 @@ if($products) {
 	//@cart-product [data-v-product-content] = $product['content']
 
 	//catch all data attributes
+	@cart-product a[data-v-cart-product-*]|href = $product['@@__data-v-cart-product-(*)__@@']
 	@cart-product [data-v-cart-product-*]|innerText = $product['@@__data-v-cart-product-(*)__@@']
 
-	@cart-product [data-v-cart-product-url]|href = 
-		<?php echo htmlentities(Vvveb\url(['module' => 'product', 'product_id' => $product['product_id']]));?>
 	@cart-product [data-v-cart-product-remove-url]|href = 
 		<?php echo htmlentities(Vvveb\url(['module' => 'cart', 'action' => 'remove', 'product_id' => $product['product_id']]));?>
 		

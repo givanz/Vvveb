@@ -23,10 +23,27 @@
 namespace Vvveb\Controller\User;
 
 use function Vvveb\__;
+use Vvveb\Sql\CountrySQL;
+use Vvveb\Sql\RegionSQL;
 use Vvveb\Sql\User_AddressSQL;
+use function Vvveb\url;
 
 class Address extends Base {
 	function index() {
+	}
+
+	private function save() {
+	}
+
+	private function data() {
+		$countryModel      = new CountrySQL();
+		$options           = $this->global;
+		$options['status'] = 1;
+		unset($options['limit']);
+		$country	              = $countryModel->getAll($options);
+		$this->view->countries = $country['country'] ?? [];
+
+		$this->view->regionsUrl   = url(['module' => 'checkout/checkout', 'action' => 'regions']);
 	}
 
 	function edit() {
@@ -34,6 +51,15 @@ class Address extends Base {
 		$user_address    = [];
 
 		$addressModel = new User_AddressSQL();
+
+		if ($user_address_id) {
+			$options      = ['user_address_id' => $user_address_id, 'user_id' => $this->global['user_id']];
+			$user_address = $addressModel->get($options);
+
+			if (! $user_address) {
+				$this->notFound();
+			}
+		}
 
 		if (isset($this->request->post['user_address'])) {
 			$user_address            = $this->request->post['user_address'];
@@ -55,11 +81,9 @@ class Address extends Base {
 			}
 		}
 
-		if ($user_address_id) {
-			$options      = ['user_address_id' => $user_address_id] + $this->global;
-			$user_address = $addressModel->get($options);
-		}
+		$this->data();
 
+		$this->view->regionsUrl      = url(['module' => 'checkout/checkout', 'action' => 'regions']);
 		$this->view->user_address_id = $user_address_id;
 		$this->view->user_address 	  = $user_address;
 	}
