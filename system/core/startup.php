@@ -131,7 +131,6 @@ function autoload($class) {
 	//if namespace is App change to app dir
 	if ((substr_compare($relativeClass, 'App\\', 0, 4) == 0)) {
 		$root = DIR_ROOT . 'app' . DS;
-		var_dump($root);
 	}
 
 	//if namespace is Admin change to admin dir
@@ -354,7 +353,7 @@ function start() {
 
 	if ($site) {
 		define('SITE_URL', $site['host']);
-		define('SITE_ID', $site['id']);
+		define('SITE_ID', $site['id'] ?? 1);
 
 		//load plugins first for APP
 		if (APP == 'app') {

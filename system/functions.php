@@ -916,7 +916,7 @@ function getTemplateList($theme = null, $skip = []) {
 	$themeFolder = DIR_THEMES . $theme;
 	//$files       = glob("$themeFolder/{,*/*/,*/}*.html", GLOB_BRACE);
 	$glob        = ['', '*/*/', '*/'];
-	$files       = globBrace($themeFolder, $glob, '*.html');
+	$files       = globBrace($themeFolder . DS, $glob, '*.html');
 
 	foreach ($files as $file) {
 		$file     = preg_replace('@^.*/themes/[^/]+/@', '', $file);
@@ -1469,14 +1469,14 @@ function getUrl($url, $cache = true, $expire = 604800, $timeout = 1, $exception 
 		return $result;
 	} else {
 		$result = false;
-		
+
 		//try with curl
-		if (function_exists('curl_init')) { 
+		if (function_exists('curl_init')) {
 			$ch = curl_init($url);
 
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout); 
-			curl_setopt($ch, CURLOPT_TIMEOUT, $timeout); 
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+			curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
 			$result = curl_exec($ch);
 			curl_close($ch);
 
@@ -1500,8 +1500,9 @@ function getUrl($url, $cache = true, $expire = 604800, $timeout = 1, $exception 
 						'ignore_errors' => 1,
 					],
 				];
-				
+
 				$context         = stream_context_create($context_options);
+
 				if ($exception) {
 					$result = file_get_contents($url, false, $context);
 				} else {
@@ -1515,7 +1516,7 @@ function getUrl($url, $cache = true, $expire = 604800, $timeout = 1, $exception 
 				}
 
 				return $result;
-			} 
+			}
 		}
 	}
 

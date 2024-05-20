@@ -93,7 +93,7 @@ function phpmo_parse_po_file($in) {
 		$data = $pair[1] ?? null;
 
 		if ($data === null) {
-			$continue;
+			continue;
 		}
 
 		switch ($key) {
