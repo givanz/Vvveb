@@ -126,8 +126,8 @@ class User extends Auth {
 		return hash_hmac('md5', $data, $salt);
 	}
 
-	public static function generateCookie() {
-		list($value, $hash) = explode(':', $cookie_value, 2);
+	public static function generateCookie($cookieValue) {
+		list($value, $hash) = explode(':', $cookieValue, 2);
 
 		if (md5($value . '-' . SECRET_KEY) == $hash) {
 			return true;
@@ -136,7 +136,7 @@ class User extends Auth {
 		}
 	}
 
-	public static function checkCookie($cookieValue) {
+	public static function checkCookie($cookieValue, $hmac, $scheme) {
 		list($username, $hash, $expiration, $token) = explode('|', $cookieValue, 4);
 
 		$key = hash($username . '|' . $hash . '|' . $expiration . '|' . $token, $scheme);
@@ -149,7 +149,29 @@ class User extends Auth {
 		return $valid;
 	}
 
+	/**
+	 * @ Currently logged in user data or empty array if guest
+	 * @return mixed 
+	 */
 	public static function current() {
 		return \Vvveb\session('user', []);
+	}
+
+	/**
+	 * @ Update user session data
+	 * @param mixed $data 
+	 *
+	 * @return mixed 
+	 */
+	public static function session($data) {
+		$current = self :: current();
+
+		if ($current && $data && is_array($data)) {
+			$current = array_merge($current, $data);
+
+			return \Vvveb\session(['user' => $current]);
+		}
+
+		return false;
 	}
 }
