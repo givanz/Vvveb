@@ -39,7 +39,7 @@
 @templates-select-option|before = <?php
 if ($optgroup != $option['folder']) {
 	$optgroup = $option['folder'];
-	echo '<optgroup label="' . ucfirst($optgroup) . '">';
+	echo '<optgroup label="' . ucfirst($optgroup ?? '') . '">';
 }
 ?>
 

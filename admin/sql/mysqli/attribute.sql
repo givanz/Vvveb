@@ -4,7 +4,7 @@
 
 	PROCEDURE getAll(
 		IN language_id INT,
-		IN product_id INT,
+		IN product_id ARRAY,
 		IN attribute_group_id INT,
 		IN start INT,
 		IN limit INT,
@@ -13,7 +13,7 @@
 	)
 	BEGIN
 		-- attribute
-		SELECT attribute_content.name, attribute_group_content.name as `group`, attribute.*
+		SELECT attribute_content.name, attribute_group_content.name as `group`, attribute.*, pa.product_id
 				@IF isset(:product_id)
 				THEN		
 					,pa.value
@@ -34,7 +34,7 @@
 			
 		@IF isset(:product_id)
 		THEN		
-			AND pa.product_id = :product_id
+			AND pa.product_id IN (:product_id)
 		END @IF
 
 		@IF isset(:attribute_group_id)

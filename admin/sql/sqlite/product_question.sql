@@ -18,7 +18,7 @@
 	)
 	BEGIN
 
-		SELECT user.*,product_question.*,user.user_id as user_id
+            SELECT user.username, user.first_name, user.last_name, user.display_name, user.avatar, user.bio,  user.subscribe, product_question.*,user.user_id as user_id
             FROM product_question AS product_question
 	    LEFT JOIN user on user.user_id = product_question.user_id
 		
@@ -30,31 +30,31 @@
 				AND product_question.product_id  = :product_id
         	END @IF	            
             
-	   -- product slug
+            -- product slug
             @IF isset(:slug)
 		THEN 
 			AND product_question.product_id  = (SELECT product_id FROM product_content WHERE slug = :slug LIMIT 1) 
-	      END @IF
+            END @IF
 
             -- user
             @IF isset(:user_id)
-			THEN 
+            THEN 
 				AND product_question.user_id  = :user_id
-        	END @IF	              
+            END @IF	              
             
-			-- user
+            -- user
             @IF isset(:status)
-			THEN 
+            THEN 
 				AND product_question.status  = :status
-        	END @IF	            
+            END @IF	            
 
-		@SQL_LIMIT(:start, :limit);
+            @SQL_LIMIT(:start, :limit);
 		
 		SELECT count(*) FROM (
 			
-			@SQL_COUNT(product_question.product_question_id, product_question) -- this takes previous query removes limit and replaces select columns with parameter product_id
+            @SQL_COUNT(product_question.product_question_id, product_question) -- this takes previous query removes limit and replaces select columns with parameter product_id
 			
-		) as count;
+            ) as count;
 		
 		
 	END
@@ -69,7 +69,7 @@
 		-- question
 		SELECT *
 			FROM product_question as _ -- (underscore) _ means that data will be kept in main array
-		INNER JOIN user on user.user_id = _.user_id
+		LEFT JOIN user on user.user_id = _.user_id
 		WHERE product_question_id = :product_question_id LIMIT 1;
 
 	END

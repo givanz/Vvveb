@@ -20,33 +20,33 @@
 	)
 	BEGIN
 
-		SELECT "user".*, product_review.*, "user".user_id as user_id,
+		SELECT "user".username,  "user".first_name,  "user".last_name,  "user".display_name, "user".avatar, "user".bio,  "user".subscribe, product_review.*, "user".user_id as user_id,
 			(SELECT json_agg(json_build_object('id',prm.product_review_media_id,'image',prm.image))
 				FROM product_review_media as prm 
-			WHERE prm.product_review_id = product_review.product_review_id) as images
+			WHERE prm.product_review_id = product_review.product_review_id GROUP BY prm.product_review_id) as images
 
             FROM product_review
 			LEFT JOIN "user" ON "user".user_id = product_review.user_id
 		
-			WHERE 1 = 1
+	    WHERE 1 = 1
             
             -- product
             @IF isset(:product_id)
-			THEN 
+            THEN 
 				AND product_review.product_id  = :product_id
-        	END @IF	            
+            END @IF	            
             
 			-- product slug
             @IF isset(:slug)
-		THEN 
+            THEN 
 			AND product_review.product_id  = (SELECT product_id FROM product_content WHERE slug = :slug LIMIT 1) 
-	      END @IF
+            END @IF
 
             -- user
             @IF isset(:user_id)
-			THEN 
+            THEN 
 				AND product_review.user_id  = :user_id
-        	END @IF	              
+            END @IF	              
             
 			-- status
             @IF isset(:status)
@@ -75,7 +75,7 @@
 		-- review
 		SELECT *
 			FROM product_review as _ -- (underscore) _ means that data will be kept in main array
-		INNER JOIN "user" on "user".user_id = _.user_id
+		LEFT JOIN "user" on "user".user_id = _.user_id
 		WHERE product_review_id = :product_review_id LIMIT 1;
 
 	END	

@@ -318,40 +318,40 @@ return
  				//'badge' => '7',
  				//'badge-class' => 'badge bg-secondary float-end',
  			],
-			'subscriptions' => [
-				'name'   => __('Subscriptions'),
-				'url'    => $admin_path . '?module=order/subscriptions',
-				'module' => 'order/subscriptions',
-				'action' => 'index',
-				'icon'   => 'la la-retweet',
-			],
-			'returns' => [
-				'name'   => __('Returns'),
-				'url'    => $admin_path . '?module=order/returns',
-				'module' => 'order/returns',
-				'action' => 'index',
-				'icon'   => 'la la-undo',
-				//'badge' => '3',
-				//'badge-class' => 'badge bg-danger float-end',
-			],
-			'marketing-heading' => [
-				'name'    => __('Marketing'),
-				'heading' => true,
-			],
-			'coupons' => [
-				'name'   => __('Discount coupons'),
-				'icon'   => 'la la-percentage',
-				'url'    => $admin_path . '?module=order/coupons',
-				'module' => 'order/coupons',
-				'action' => 'index',
-			],
-			'vouchers' => [
-				'name'   => __('Gift vouchers'),
+ 			'subscriptions' => [
+ 				'name'   => __('Subscriptions'),
+ 				'url'    => $admin_path . '?module=order/subscriptions',
+ 				'module' => 'order/subscriptions',
+ 				'action' => 'index',
+ 				'icon'   => 'la la-retweet',
+ 			],
+ 			'returns' => [
+ 				'name'   => __('Returns'),
+ 				'url'    => $admin_path . '?module=order/returns',
+ 				'module' => 'order/returns',
+ 				'action' => 'index',
+ 				'icon'   => 'la la-undo',
+ 				//'badge' => '3',
+ 				//'badge-class' => 'badge bg-danger float-end',
+ 			],
+ 			'marketing-heading' => [
+ 				'name'    => __('Marketing'),
+ 				'heading' => true,
+ 			],
+ 			'coupons' => [
+ 				'name'   => __('Discount coupons'),
+ 				'icon'   => 'la la-percentage',
+ 				'url'    => $admin_path . '?module=order/coupons',
+ 				'module' => 'order/coupons',
+ 				'action' => 'index',
+ 			],
+ 			'vouchers' => [
+ 				'name'   => __('Gift vouchers'),
  				'icon'   => 'la la-gift',
-				'url'    => $admin_path . '?module=order/vouchers',
-				'module' => 'order/vouchers',
-				'action' => 'index',
-			],
+ 				'url'    => $admin_path . '?module=order/vouchers',
+ 				'module' => 'order/vouchers',
+ 				'action' => 'index',
+ 			],
  		],
  	],
  	/*
@@ -528,7 +528,6 @@ return
  			],
  		],
  	],
-/*
  	'field' => [
  		'name'   => __('Fields'),
  		'url'    => $admin_path . '?module=field/field-groups',
@@ -552,7 +551,6 @@ return
  			],
  		],
  	],
-*/
  	'settings' => [
  		'name'   => __('Settings'),
  		'url'    => $admin_path . '?module=settings/sites',
@@ -671,7 +669,7 @@ return
  						'action' => 'index',
  						'icon'   => 'la la-box',
  					],
-/*
+
  					'fields' => [
  						'name'   => __('Fields'),
  						'url'    => $admin_path . '?module=field/field-group',
@@ -679,7 +677,6 @@ return
  						'action' => 'index',
  						'icon'   => 'la la-stream',
  					],
-*/
  				],
  			],
  			'ecommerce' => [
@@ -691,19 +688,19 @@ return
  				'class'  => 'align-top',
  				'items'  => [
  					/*
- 					'checkout' => [
- 						'name'   => __('Checkout & payments'),
- 						'icon'   => 'la la-credit-card',
- 						'url'    => $admin_path . '?module=settings/checkout',
- 						'module' => 'settings/checkout',
- 						'action' => 'index',
- 					],
- 					'email' => [
- 						'name'   => __('Email notifications'),
- 						'icon'   => 'la la-envelope',
- 						'url'    => $admin_path . '?module=settings/notifications',
- 						'module' => 'settings/notifications',
- 						'action' => 'index',
+					'checkout' => [
+						'name'   => __('Checkout & payments'),
+						'icon'   => 'la la-credit-card',
+						'url'    => $admin_path . '?module=settings/checkout',
+						'module' => 'settings/checkout',
+						'action' => 'index',
+					],
+					'email' => [
+						'name'   => __('Email notifications'),
+						'icon'   => 'la la-envelope',
+						'url'    => $admin_path . '?module=settings/notifications',
+						'module' => 'settings/notifications',
+						'action' => 'index',
 					],*/
  					'subscriptions' => [
  						'name'   => __('Subscriptions plans'),
@@ -781,13 +778,6 @@ return
  						'module' => 'settings/order-statuses',
  						'action' => 'index',
  						'items'  => [
- 							'order-status' => [
- 								'name'   => __('Order'),
- 								'url'    => $admin_path . '?module=settings/order-statuses',
- 								'module' => 'settings/order-statuses',
- 								'action' => 'index',
- 								'icon'   => 'la la-file-invoice',
- 							],
  							'stock-status' => [
  								'name'   => __('Stock'),
  								'url'    => $admin_path . '?module=settings/stock-statuses',
@@ -801,6 +791,31 @@ return
  								'module' => 'settings/subscription-statuses',
  								'action' => 'index',
  								'icon'   => 'la la-retweet',
+ 							],
+ 							'order-heading' => [
+ 								'name'    => __('Order'),
+ 								'heading' => true,
+ 							],
+ 							'order-status' => [
+ 								'name'   => __('Order'),
+ 								'url'    => $admin_path . '?module=settings/order-statuses',
+ 								'module' => 'settings/order-statuses',
+ 								'action' => 'index',
+ 								'icon'   => 'la la-file-invoice',
+ 							],
+ 							'payment-status' => [
+ 								'name'   => __('Payment'),
+ 								'url'    => $admin_path . '?module=settings/payment-statuses',
+ 								'module' => 'settings/payment-statuses',
+ 								'action' => 'index',
+ 								'icon'   => 'la la-coins',
+ 							],
+ 							'shipping-status' => [
+ 								'name'   => __('Shipping'),
+ 								'url'    => $admin_path . '?module=settings/shipping-statuses',
+ 								'module' => 'settings/shipping-statuses',
+ 								'action' => 'index',
+ 								'icon'   => 'la la-shipping-fast',
  							],
  							'status-heading' => [
  								'name'    => __('Returns'),
@@ -948,15 +963,13 @@ return
  				'action' => 'index',
  				'icon'   => 'la la-server',
  			],
- 			/*
-			'cron' => [
-				'name'   => __('Cron job'),
-				'url'    => $admin_path . '?module=tools/cron',
-				'module' => 'tools/cron',
-				'action' => 'index',
-				'icon'   => 'la la-history la-90',
-			],
-*/
+ 			'cron' => [
+ 				'name'   => __('Cron job'),
+ 				'url'    => $admin_path . '?module=tools/cron',
+ 				'module' => 'tools/cron',
+ 				'action' => 'index',
+ 				'icon'   => 'la la-history la-90',
+ 			],
  			'import-export' => [
  				'name'   => __('Import/Export'),
  				'url'    => $admin_path . '?module=tools/import',

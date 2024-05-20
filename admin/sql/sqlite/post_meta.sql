@@ -12,7 +12,7 @@
 	BEGIN
 
 		SELECT value
-            FROM post_content_meta AS _
+			FROM post_content_meta AS _
 		WHERE _.`key` = :key 
 		
 		@IF !empty(:post_id) 

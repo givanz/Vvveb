@@ -23,10 +23,10 @@
 	)
 	BEGIN
 
-		SELECT user.*, comment.*, comment_id as array_key
+		SELECT user.username,  user.first_name,  user.last_name,  user.display_name, user.avatar, user.bio,  user.subscribe, comment.*, comment_id as array_key
 			@IF isset(:post_title) AND :post_title
 			THEN 
-				,post_content.name
+				,post_content.name, post_content.slug
 			END @IF			
 			
 			FROM comment AS comment
@@ -95,6 +95,7 @@
 
 		SELECT * 
 			FROM comment AS _
+			LEFT JOIN user ON user.user_id = _.user_id
 		WHERE 1 = 1
 
             @IF isset(:comment_id)

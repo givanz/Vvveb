@@ -78,8 +78,7 @@ class Order {
 			//add products
 			foreach ($products as $key => $product) {
 				$product_options               = $product['option_value'] ?? [];
-				$product_options['product_id'] = $product['product_id'];
-				$this->model->addProduct(['product' => $product, 'product_options' => $product['option_value'], 'order_id' => $order_id]);
+				$this->model->addProduct(['product' => $product, 'product_options' => $product_options, 'order_id' => $order_id]);
 			}
 			//update invoice to set {order_id} variable
 			$data['order_id']          = $order_id;

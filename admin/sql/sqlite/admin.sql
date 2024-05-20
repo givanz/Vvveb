@@ -76,36 +76,36 @@
 		
 		WHERE 1 = 1
 
-        @IF isset(:username)
-	THEN 
-		AND _.username = :username 
-       	END @IF	
+		@IF isset(:username)
+		THEN 
+			AND _.username = :username 
+	       	END @IF	
 
-        @IF isset(:email)
-	THEN 
-		AND _.email = :email 
-        END @IF			
+		@IF isset(:email)
+		THEN 
+			AND _.email = :email 
+		END @IF			
 
-        @IF isset(:admin_id)
+		@IF isset(:admin_id)
 		THEN 
 			AND _.admin_id = :admin_id 
-       	END @IF			
+	       	END @IF			
 
-        @IF isset(:status)
+		@IF isset(:status)
 		THEN 
 			AND _.status = :status 
-       	END @IF	            
-		
+	       	END @IF	            
+			
 		@IF isset(:token)
 		THEN 
 			AND _.token = :token 
-       	END @IF	
-			
-       	@IF isset(:role_id)
+	       	END @IF	
+				
+	       	@IF isset(:role_id)
 		THEN 
 			AND _.role_id = :role_id 
-       	END @IF	
-			
+	       	END @IF	
+				
 		LIMIT 1;
         
     END

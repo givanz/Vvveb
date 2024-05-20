@@ -4,6 +4,12 @@ DROP SEQUENCE IF EXISTS order_seq;
 CREATE SEQUENCE order_seq;
 -- SELECT setval('order_seq', 0, true); -- last inserted id by sample data
 
+CREATE TYPE shipping_status AS ENUM
+    ('not_fulfilled', 'partially_fulfilled', 'fulfilled', 'partially_shipped', 'shipped', 'partially_returned', 'returned', 'canceled', 'requires_action');
+
+CREATE TYPE shipping_status AS ENUM
+    ('not_paid', 'awaiting', 'captured', 'partially_refunded', 'refunded', 'canceled', 'requires_action');
+
 
 CREATE TABLE "order" (
   "order_id" int check ("order_id" > 0) NOT NULL DEFAULT NEXTVAL ('order_seq'),
@@ -33,6 +39,7 @@ CREATE TABLE "order" (
 --  "billing_fields" text NOT NULL,
   "payment_method" varchar(128) NOT NULL DEFAULT '',
   "payment_data" text NOT NULL DEFAULT '',
+  "payment_status_id" int check ("order_status_id" > 0) NOT NULL DEFAULT 1,
   "shipping_first_name" varchar(32) NOT NULL DEFAULT '',
   "shipping_last_name" varchar(32) NOT NULL DEFAULT '',
   "shipping_company" varchar(60) NOT NULL DEFAULT '',
@@ -47,6 +54,7 @@ CREATE TABLE "order" (
 --  "shipping_fields" text NOT NULL,
   "shipping_method" varchar(128) NOT NULL DEFAULT '',
   "shipping_data" text NOT NULL DEFAULT '',
+  "shipping_status_id" int check ("order_status_id" > 0) NOT NULL DEFAULT 1,
   "total" decimal(15,4) NOT NULL DEFAULT 0.0000,
   "order_status_id" int check ("order_status_id" > 0) NOT NULL DEFAULT 1,
   "language_id" int check ("language_id" > 0) NOT NULL,

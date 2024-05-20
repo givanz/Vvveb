@@ -37,20 +37,11 @@ trait ProductOptionTrait {
 
 	public function getProductOptions() {
 		$product_options    = [];
-		$products           = $this->products + $this->product_options;
+		$products           = $this->products;
 
-		foreach ($products as $product) {
-			if ($product['product_option_type_id']) {
-				$product_option_rates = $this->product_option->getRates($product['price'], $product['product_option_type_id']);
-
-				foreach ($product_option_rates as $product_option_rate) {
-					if (! isset($product_options[$product_option_rate['product_option_rate_id']])) {
-						$product_options[$product_option_rate['product_option_rate_id']]          = $product_option_rate;
-						$product_options[$product_option_rate['product_option_rate_id']]['value'] = 0;
-					}
-
-					$product_options[$product_option_rate['product_option_rate_id']]['value'] += ($product_option_rate['amount'] * ($product['quantity'] ?? 1));
-				}
+		foreach ($products as $key => $product) {
+			if (isset($product['option_value']) && $product['option_value']) {
+				$product_options[$key] = $product['option_value'];
 			}
 		}
 

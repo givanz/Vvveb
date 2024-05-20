@@ -17,9 +17,10 @@
 	)
 	BEGIN
 
-		SELECT *
+		SELECT  p.*, user_wishlist.*, pc.name, pc.slug
 		
 			FROM user_wishlist
+			INNER JOIN product p ON p.product_id = user_wishlist.product_id
 			INNER JOIN product_content pc ON pc.product_id = user_wishlist.product_id AND pc.language_id = :language_id
 			
 		WHERE user_wishlist.user_id = :user_id
@@ -56,19 +57,27 @@
 	-- Add new product to wishlist
 
 	CREATE PROCEDURE add(
-		IN user_wishlist ARRAY,
+		-- IN user_wishlist ARRAY,
+		IN product_id INT,
+		IN user_id INT,
 		OUT insert_id
 	)
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:user_wishlist, user_wishlist)
+		-- @FILTER(:user_wishlist, user_wishlist)
 		
-		INSERT INTO user_wishlist 
+		-- INSERT INTO user_wishlist 
 			
-			( @KEYS(:user_wishlist) )
+			-- ( @KEYS(:user_wishlist) )
 			
-	  	VALUES ( :user_wishlist )
+	  	-- VALUES ( :user_wishlist )
+		
+		INSERT IGNORE INTO user_wishlist 
+			
+			( "user_id", "product_id" )
+			
+	  	VALUES ( :user_id, :product_id )
         
 	END
 

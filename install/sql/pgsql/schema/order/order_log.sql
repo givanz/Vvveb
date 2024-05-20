@@ -10,6 +10,7 @@ CREATE TABLE order_log (
   "order_id" int check ("order_id" > 0) NOT NULL,
   "order_status_id" int check ("order_status_id" > 0) NOT NULL,
   "notify" smallint NOT NULL DEFAULT 0,
+  "public" smallint NOT NULL DEFAULT 0,
   "note" text NOT NULL,
   "created_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("order_log_id")

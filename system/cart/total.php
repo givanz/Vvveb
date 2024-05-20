@@ -23,6 +23,8 @@
 namespace Vvveb\System\Cart;
 
 class Total {
+	protected $totals = [];
+
 	function addTotal($key, $title, $cost, $text = '') {
 		$data = ['title' => $title, 'cost' => $cost, 'cost_formatted' => '$' . $cost, 'text' => $text];
 

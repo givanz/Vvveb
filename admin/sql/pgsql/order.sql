@@ -10,6 +10,13 @@
 		
 		IN order_status CHAR,
 		IN order_status_id INT,
+
+		IN payment_status CHAR,
+		IN payment_status_id INT,
+
+		IN shipping_status CHAR,
+		IN shipping_status_id INT,
+
 		IN email CHAR,
 		IN phone_number CHAR,
 		IN search CHAR,
@@ -28,42 +35,44 @@
         SELECT "order".*,os.name as order_status FROM "order" AS "order" 
 		
 			LEFT JOIN order_status AS os ON ("order".order_status_id = os.order_status_id AND os.language_id = :language_id) 
+			LEFT JOIN shipping_status AS oss ON ("order".shipping_status_id = oss.shipping_status_id AND oss.language_id = :language_id) 
+			LEFT JOIN payment_status AS ops ON ("order".order_status_id = ops.payment_status_id AND os.language_id = :language_id) 
 			
 		WHERE 1 = 1 
+	
+		AND "order".site_id = :site_id
 		
-			AND "order".site_id = :site_id
-			
-			@IF isset(:user_id)
-			THEN 
-				AND "order".user_id = :user_id
-			END @IF
-			
-			@IF isset(:order_status)
-			THEN 
-				AND os.name = :order_status
-			END @IF		
+		@IF isset(:user_id)
+		THEN 
+			AND "order".user_id = :user_id
+		END @IF
+		
+		@IF isset(:order_status)
+		THEN 
+			AND os.name = :order_status
+		END @IF		
 
-			@IF isset(:order_status_id)
-			THEN 
-				AND "order".order_status_id = :order_status_id
-			END @IF		
+		@IF isset(:order_status_id)
+		THEN 
+			AND "order".order_status_id = :order_status_id
+		END @IF		
 
-			@IF isset(:email) AND !empty(:email)
-			THEN 
-				AND "order".email = :email 
+		@IF isset(:email) AND !empty(:email)
+		THEN 
+			AND "order".email = :email 
         	END @IF	
 
 			@IF isset(:phone_number) AND !empty(:phone_number)
 			THEN 
 				AND "order".phone_number = :phone_number 
-        	END @IF	
+        	END @IF
 
-            -- search
-            @IF isset(:search) AND !empty(:search)
-			THEN 
-				AND
-				"order".first_name LIKE '%' || :search || '%' OR
-				"order".last_name LIKE '%' || :search || '%'
+        	-- search
+        	@IF isset(:search) AND !empty(:search)
+        	THEN 
+			AND
+			"order".first_name LIKE '%' || :search || '%' OR
+			"order".last_name LIKE '%' || :search || '%'
         	END @IF	  
 			
 		ORDER BY order_id DESC
@@ -80,9 +89,10 @@
 	
 	
 	CREATE PROCEDURE get(
-        IN order_id INT,
+		IN order_id INT,
 		IN customer_order_id CHAR,
 		IN user_id INT,
+		IN email CHAR,
 		IN language_id INT,
 		OUT fetch_row,
 		OUT fetch_all,
@@ -98,6 +108,8 @@
 		-- order
 		SELECT "order".*,
 			os.name as order_status,
+			ops.name as payment_status,
+			oss.name as shipping_status,
 			bc.name as billing_country,
 			sc.name as shipping_country,
 			br.name as billing_region,
@@ -106,6 +118,8 @@
 		FROM "order" 
 	
 			LEFT JOIN order_status AS os ON ("order".order_status_id = os.order_status_id AND os.language_id = :language_id) 
+			LEFT JOIN payment_status AS ops ON ("order".payment_status_id = ops.payment_status_id AND os.language_id = :language_id) 
+			LEFT JOIN shipping_status AS oss ON ("order".shipping_status_id = oss.shipping_status_id AND os.language_id = :language_id) 
 			-- country
 			LEFT JOIN country AS bc ON ("order".billing_country_id = bc.country_id) 
 			LEFT JOIN country AS sc ON ("order".shipping_country_id = sc.country_id) 
@@ -128,6 +142,11 @@
 		@IF isset(:customer_order_id)
 		THEN 
 			AND "order".customer_order_id = :customer_order_id
+		END @IF		
+		
+		@IF isset(:email)
+		THEN 
+			AND "order".email = :email
 		END @IF
 
 		LIMIT 1;        	
@@ -150,31 +169,31 @@
 				AND product_content.language_id = :language_id
 			END @IF
 
-
-			WHERE products.order_id = :order_id;
+		-- use @result.order.order_id instead of :order_id to work when :customer_order_id is used
+		WHERE products.order_id = @result.order.order_id;		
 			
 		-- log	
 		SELECT *,os.name as order_status 
 			FROM order_log as log
 		    LEFT JOIN order_status AS os ON (log.order_status_id = os.order_status_id AND os.language_id = :language_id) 
-			WHERE log.order_id = :order_id;		
-		
+		WHERE log.order_id = @result.order.order_id;
+			
 		-- meta
 		SELECT * FROM order_meta as meta
-			WHERE meta.order_id = :order_id;
-        
+			WHERE meta.order_id = @result.order.order_id;
+
         -- total
 		SELECT * FROM order_total as total
-			WHERE total.order_id = :order_id;		
+			WHERE total.order_id = @result.order.order_id;
 			
 		-- shipment	
 		SELECT * FROM order_shipment as shipment
-			WHERE shipment.order_id = :order_id;		
+			WHERE shipment.order_id = @result.order.order_id;
 			
 		-- voucher	
 		SELECT * FROM order_voucher as voucher
-			WHERE voucher.order_id = :order_id;
-        
+			WHERE voucher.order_id = @result.order.order_id;
+
     END    
     
 
@@ -198,8 +217,24 @@
 			order_status_id as array_key, -- order_id as key
 			name as array_value -- only set name as value and return  
 			
-		FROM order_status as order_status_id WHERE language_id = :language_id;
-        
+		FROM order_status as order_status_id WHERE language_id = :language_id;		
+		
+		-- payment status	
+		SELECT 
+		
+			payment_status_id as array_key, -- order_id as key
+			name as array_value -- only set name as value and return  
+			
+		FROM payment_status as payment_status_id WHERE language_id = :language_id;
+		
+		-- shipping status	
+		SELECT 
+		
+			shipping_status_id as array_key, -- order_id as key
+			name as array_value -- only set name as value and return  
+			
+		FROM shipping_status as shipping_status_id WHERE language_id = :language_id;
+		
 		-- billing_country
 		SELECT 
 			country_id as array_key, -- order_id as key

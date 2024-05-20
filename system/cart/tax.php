@@ -22,7 +22,7 @@
 
 namespace Vvveb\System\Cart;
 
-use Vvveb\Sql\Tax_TypeSQL;
+use Vvveb\Sql\Tax_typeSQL;
 use Vvveb\System\Cache;
 
 class Tax {
@@ -46,7 +46,7 @@ class Tax {
 	public function setRegionRules($country_id, $region_id, $based = 'store') {
 		$cache     = Cache::getInstance();
 		$rules     = $cache->cache(APP,"tax_rates.$country_id.$region_id.$based",function () use ($country_id, $region_id, $based) {
-			$taxType = new Tax_TypeSQL();
+			$taxType = new Tax_typeSQL();
 			$taxRules = $taxType->getRegionRules(['country_id' => $country_id, 'region_id' => $region_id, 'based' => $based]);
 
 			return $taxRules['tax_rule'] ?? [];

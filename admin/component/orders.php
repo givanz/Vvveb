@@ -22,6 +22,7 @@
 
 namespace Vvveb\Component;
 
+use Vvveb\System\Cart\Currency;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Images;
@@ -48,17 +49,23 @@ class Orders extends ComponentBase {
 
 		$results = $orders->getAll($this->options);
 
-		foreach ($results['order'] as $id => &$order) {
-			if (isset($order['images'])) {
-				$order['images'] = json_decode($order['images'], 1);
+		if ($results['order']) {
+			$currency = Currency::getInstance();
 
-				foreach ($order['images'] as &$image) {
-					$image = Images::image('order', $image);
+			foreach ($results['order'] as $id => &$order) {
+				if (isset($order['images'])) {
+					$order['images'] = json_decode($order['images'], 1);
+
+					foreach ($order['images'] as &$image) {
+						$image = Images::image('order', $image);
+					}
 				}
-			}
 
-			if (isset($order['image'])) {
-				$order['images'][] = Images::image('order', $order['image']);
+				if (isset($order['image'])) {
+					$order['images'][] = Images::image('order', $order['image']);
+				}
+
+				$order['total_formatted'] = $currency->format($order['total']);
 			}
 		}
 

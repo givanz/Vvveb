@@ -27,6 +27,7 @@ CREATE TABLE `order` (
 --  `billing_fields` text,
   `payment_method` varchar(128) NOT NULL DEFAULT '',
   `payment_data` text,
+  `payment_status_id` INT UNSIGNED NOT NULL DEFAULT '0',
 -- shipping
   `shipping_first_name` varchar(32) NOT NULL DEFAULT '',
   `shipping_last_name` varchar(32) NOT NULL DEFAULT '',
@@ -42,6 +43,7 @@ CREATE TABLE `order` (
 --  `shipping_fields` text,
   `shipping_method` varchar(128) NOT NULL DEFAULT '',
   `shipping_data` text,
+  `shipping_status_id` INT UNSIGNED NOT NULL DEFAULT '0',
   `total` decimal(15,4) NOT NULL DEFAULT '0.0000',
   `order_status_id` INT UNSIGNED NOT NULL DEFAULT '0',
   `language_id` INT UNSIGNED NOT NULL,

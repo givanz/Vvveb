@@ -22,14 +22,14 @@
 
 namespace Vvveb\System\Cart;
 
-use Vvveb\Sql\couponSQL;
+use Vvveb\Sql\CouponSQL;
 
 trait CouponTrait {
 	protected $coupons = [];
 
 	public function addCoupon($code) {
 		if ($code) {
-			$coupon  = new couponSQL();
+			$coupon  = new CouponSQL();
 			$options = $this->options + ['code' => $code, 'status' => 1];
 			$result  = $coupon->get($options);
 

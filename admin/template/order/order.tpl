@@ -48,9 +48,10 @@ if(is_array($logs)) foreach ($logs as $index => $log) {
 ?>
 
 	//catch all data attributes
-	@log [data-v-order-log-*]|innerText  = $log['@@__data-v-order-log-(*)__@@']
-	@log a[data-v-order-log-*]|href      = $log['@@__data-v-order-log-(*)__@@']
-	@log input[data-v-order-log-*]|value = $log['@@__data-v-order-log-(*)__@@']
+	@log [data-v-order-log-note]|innerText  = <?php echo nl2br(htmlentities($log['@@__data-v-order-log-(*)__@@']));?>
+	@log [data-v-order-log-*]|innerText     = $log['@@__data-v-order-log-(*)__@@']
+	@log a[data-v-order-log-*]|href         = $log['@@__data-v-order-log-(*)__@@']
+	@log input[data-v-order-log-*]|value    = $log['@@__data-v-order-log-(*)__@@']
 	@log .badge[data-v-order-log-order_status]|addClass = <?php echo Vvveb\orderStatusBadgeClass($log['order_status_id']);?>
 
 @log|after = <?php }?>

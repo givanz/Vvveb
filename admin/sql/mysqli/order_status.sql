@@ -1,6 +1,6 @@
--- Currencies
+-- Order status
 
-	-- get all order status
+	-- get all order statuses
 
 	PROCEDURE getAll(
 		IN language_id INT,
@@ -10,7 +10,6 @@
 		OUT fetch_one,
 	)
 	BEGIN
-		-- order_status
 		SELECT *
 			FROM order_status AS order_status WHERE 1 = 1
 			

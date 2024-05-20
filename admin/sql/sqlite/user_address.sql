@@ -1,4 +1,4 @@
--- Addresss
+-- Address
 
 	-- get all user addresses 
 
@@ -43,6 +43,7 @@
 
 	CREATE PROCEDURE get(
 		IN user_address_id INT,
+		IN user_id INT,
 		OUT fetch_row,
 	)
 	BEGIN
@@ -51,11 +52,17 @@
 			FROM user_address AS _
 		WHERE 1 = 1
 
-            @IF isset(:user_address_id)
-			THEN
-                AND _.user_address_id = :user_address_id
+		@IF isset(:user_address_id)
+		THEN
+			AND _.user_address_id = :user_address_id
         	END @IF			
 
+        	-- user
+        	@IF isset(:user_id)
+        	THEN 
+			AND _.user_id  = :user_id
+        	END @IF	   
+			
         LIMIT 1; 
 		
 		

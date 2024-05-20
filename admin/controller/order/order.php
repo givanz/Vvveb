@@ -23,6 +23,7 @@
 namespace Vvveb\Controller\Order;
 
 use function Vvveb\__;
+use function Vvveb\email;
 use Vvveb\Controller\Base;
 use Vvveb\Controller\Content\AutocompleteTrait;
 use function Vvveb\orderStatusBadgeClass;
@@ -112,7 +113,7 @@ class Order extends Base {
 				$order += prefixArrayKeys('shipping_', $order['shipping_data']) ?? [];
 				$order += prefixArrayKeys('payment_', $order['payment_data']) ?? [];
 
-				$data     		      = $orders->getData($order);
+				$data = $orders->getData($order);
 
 				$view->set($data);
 				$view->set($results);
@@ -158,7 +159,7 @@ class Order extends Base {
 			$site    = siteSettings($this->global['site_id']);
 			$options = $this->global + $site;
 			unset($options['admin_id']);
-			
+
 			$order = new OrderCart($order_id, $options);
 			$order->add($product_id, false, $quantity, []);
 			$order->updateCart();
@@ -168,10 +169,31 @@ class Order extends Base {
 		$this->index();
 	}
 
+	private function sendNotification($order_id, $email, $message) {
+		try {
+			$error =  __('Error sending order confirmation mail!');
+
+			if (! email([$email], sprintf(__('Order update #%s'), $order_id), 'order/update', ['message' => $message])) {
+				$this->session->set('errors', $error);
+				$this->view->errors[] = $error;
+			}
+		} catch (\Exception $e) {
+			if (DEBUG) {
+				$error .= "\n" . $e->getMessage();
+			}
+			$this->session->set('errors', $error);
+			$this->view->errors[] = $error;
+		}
+	}
+	
 	function saveLog() {
 		$order_id  = $this->request->get['order_id'] ?? false;
 		$log       = $this->request->post['log'] ?? [];
+		$notify    = $log['notify'] ?? false;
+		$public    = $log['public'] ?? false;
 		$view      = $this->view;
+		
+		$this->index();
 
 		if ($order_id && $log) {
 			// update order status with the last log status
@@ -184,15 +206,26 @@ class Order extends Base {
 
 				if (isset($result['order_log']) && $result['order_log']) {
 					$view->success = [__('Order status saved!')];
+					
+					$this->view->log[] = $log;
+					
+					if ($notify) {
+						$message = '';
+						if ($public) { 
+							$message = $log['note'];
+						}
+						
+						$email = $this->view->order['email'];
+						$this->sendNotification($order_id, $email, $message);
+					}
+					
 				} else {
-					$view->errors = [$orderLog->error];
+					$view->errors[] = $orderLog->error;
 				}
 			} else {
-				$view->errors = [$order->error];
+				$view->errors[] = $order->error;
 			}
 		}
-
-		return $this->index();
 	}
 
 	function save() {

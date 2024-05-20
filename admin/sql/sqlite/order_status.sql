@@ -1,4 +1,4 @@
--- Currencies
+-- Order status
 
 	-- get all order status
 
@@ -10,7 +10,6 @@
 		OUT fetch_one,
 	)
 	BEGIN
-		-- order_status
 		SELECT *
 			FROM order_status AS order_status WHERE 1 = 1
 			
