@@ -490,12 +490,20 @@ class Base {
 		}
 
 		if ($errors = $this->session->get('errors')) {
-			$view->errors['session'] = $errors;
+			if (is_array($errors)) {
+				$view->errors = ($view->errors ?? []) + $errors;
+			} else {
+				$view->errors['session'] = $errors;
+			}
 			$this->session->delete('errors');
 		}
 
 		if ($success = $this->session->get('success')) {
-			$view->success['session'] = $success;
+			if (is_array($success)) {
+				$view->success = ($view->success ?? []) + $success;
+			} else {
+				$view->success['session'] = $success;
+			}
 			$this->session->delete('success');
 		}
 
@@ -561,9 +569,10 @@ class Base {
 	protected function requireLogin() {
 		//return \Vvveb\System\Core\FrontController::redirect('user/login');
 		//$view = view :: getInstance();
-		$admin_path         = \Vvveb\adminPath();
-		$this->view->redir  = $_SERVER['REQUEST_URI'] ?? '';
-		$this->view->action = "{$admin_path}index.php?module=user/login";
+		$admin_path            = \Vvveb\adminPath();
+		$this->view->redir     = $_SERVER['REQUEST_URI'] ?? '';
+		$this->view->adminPath = $admin_path;
+		$this->view->action    = "{$admin_path}index.php?module=user/login";
 		$this->view->template('user/login.html');
 
 		die($this->view->render());

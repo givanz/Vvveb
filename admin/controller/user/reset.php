@@ -46,7 +46,7 @@ class Reset {
 					$success                      = __('Password was reset!');
 					$this->view->success['login'] = $success;
 					$this->session->set('success', ['login' => $success]);
-					header('Location: ' . url(['module' => 'user/login', 'success' => $success]));
+					header('Location: ' . url(['module' => 'user/login'/*, 'success' => $success*/]));
 				} else {
 					$errors                      =  __('Update failed!');
 					$this->view->errors['login'] = $errors;
@@ -97,7 +97,7 @@ class Reset {
 					$success               = __('A reset email was sent, please use it to reset your password!');
 					$this->view->success[] = $success;
 					$this->session->set('success', $success);
-					header('Location: ' . url(['module' => 'user/login', 'success' => $success]));
+					header('Location: ' . url(['module' => 'user/login'/* 'success' => $success*/]));
 				} else {
 					$this->view->errors['login'] = __('Error sending reset email!');
 				}

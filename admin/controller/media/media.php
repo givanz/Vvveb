@@ -91,12 +91,13 @@ class Media extends Base {
 			default:
 				die(__('Unknown errors.'));
 		}
-		
+
 		$origFilename = $fileName;
-		$i = 1;
+		$i            = 1;
+
 		while (file_exists($destination = DIR_MEDIA . $path . DS . $fileName) && ($i++ < 5)) {
 			$fileName = rand(0, 10000) . '-' . $origFilename;
-		};
+		}
 
 		if (move_uploaded_file($file['tmp_name'], $destination)) {
 			if (isset($this->request->post['onlyFilename'])) {

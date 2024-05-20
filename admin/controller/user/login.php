@@ -49,7 +49,7 @@ class Login {
 		}
 
 		//$this->checkAlreadyLoggedIn();
-		$view 	 	   = $this->view;
+		$view       = $this->view;
 		$admin      = Admin::current();
 		$admin_path = \Vvveb\adminPath();
 
@@ -57,28 +57,37 @@ class Login {
 			return $this->redirect($admin_path);
 		}
 
-		$this->view->action = $admin_path . 'index.php?module=user/login';
-		$this->view->modal  = $this->request->get['modal'] ?? false;
+		$this->view->adminPath = $admin_path;
+		$this->view->action    = $admin_path . 'index.php?module=user/login';
+		$this->view->modal     = $this->request->get['modal'] ?? false;
 
 		//$this->session = Session::getInstance();
 		$language = $this->session->get('language') ?? 'en_US';
 		setLanguage($language);
+
+		if (isset($this->request->get['success'])) {
+			$view->success['get'] = htmlentities($this->request->get['success']);
+		}
 
 		if (isset($this->request->get['errors'])) {
 			$view->errors['get'] = htmlentities($this->request->get['errors']);
 		}
 
 		if ($errors = $this->session->get('errors')) {
-			$view->errors['session'] = $errors;
+			if (is_array($errors)) {
+				$view->errors = ($view->errors ?? []) + $errors;
+			} else {
+				$view->errors['session'] = $errors;
+			}
 			$this->session->delete('errors');
 		}
 
-		if (isset($this->request->get['success'])) {
-			$view->success['get'] = htmlentities($this->request->get['success']);
-		}
-
 		if ($success = $this->session->get('success')) {
-			$view->success['session'] = $success;
+			if (is_array($success)) {
+				$view->success = ($view->success ?? []) + $success;
+			} else {
+				$view->success['session'] = $success;
+			}
 			$this->session->delete('success');
 		}
 

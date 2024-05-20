@@ -70,11 +70,13 @@ class Code extends Base {
 	}
 
 	function sanitizeFileName($file, $type) {
+		$file = preg_replace("@^[\/]public@", '', $file);
+
 		if ($type == 'plugins') {
 			$file = DIR_PLUGINS . preg_replace("@^[\/]plugins[\/]@", '', $file);
 		} else {
 			if ($type == 'themes') {
-				$file = DIR_THEMES . $file;
+				$file = DIR_THEMES . preg_replace("@^[\/]themes[\/]@", '', $file);
 			} else {
 				$file = DIR_PUBLIC . $file;
 			}

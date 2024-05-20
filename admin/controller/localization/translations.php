@@ -63,7 +63,6 @@ class Translations extends Base {
 			//use common check po file and parse
 			$this->domain();
 
-			//var_dump($this->view->translations);
 			$folder = DIR_ROOT . 'locale' . DS . $view->lang . DS . 'LC_MESSAGES' . DS;
 
 			foreach ($translations as $text => $translation) {
