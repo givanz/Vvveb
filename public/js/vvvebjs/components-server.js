@@ -25,14 +25,12 @@ Vvveb.Components.add("components/product", {
     image: "icons/map.svg",
     html: '<iframe frameborder="0" src="https://maps.google.com/maps?&z=1&t=q&output=embed"></iframe>',
     
-	properties: [
-	{
+	properties: [{
         name: "Id",
         key: "id",
         htmlAttr: "id",
         inputtype: TextInput
-    },
-	{
+    },{
         name: "Select",
         key: "id",
         htmlAttr: "id",
@@ -41,16 +39,15 @@ Vvveb.Components.add("components/product", {
 			options: [{
                 value: "",
                 text: "None"
-            }, {
+            },{
                 value: "pull-left",
                 text: "Left"
-            }, {
+            },{
                 value: "pull-right",
                 text: "Right"
             }]
        },
-    },
-	{
+    },{
         name: "Select 2",
         key: "id",
         htmlAttr: "id",
@@ -59,13 +56,13 @@ Vvveb.Components.add("components/product", {
 			options: [{
                 value: "",
                 text: "nimic"
-            }, {
+            },{
                 value: "pull-left",
                 text: "gigi"
-            }, {
+            },{
                 value: "pull-right",
                 text: "vasile"
-            }, {
+            },{
                 value: "pull-right",
                 text: "sad34"
             }]
@@ -81,14 +78,11 @@ Vvveb.Components.add("components/products", {
     image: "icons/products.svg",
     html: '<div class="mb-3"><label>Your response:</label><textarea class="form-control"></textarea></div>',
 
-    init: function (node)
-	{
+    init: function (node) {
 		$('.mb-3[data-group]').hide();
-		if (node.dataset.type != undefined)
-		{
+		if (node.dataset.type != undefined) {
 			$('.mb-3[data-group="'+ node.dataset.type + '"]').show();
-		} else
-		{		
+		} else {		
 			$('.mb-3[data-group]:first').show();
 		}
 	},
@@ -106,7 +100,7 @@ Vvveb.Components.add("components/products", {
                 title: "Autocomplete",
                 icon:"la la-search",
                 checked:true,
-            }, {
+            },{
                 value: "automatic",
                 icon:"la la-cog",
                 text: "Configuration",
@@ -172,19 +166,19 @@ Vvveb.Components.add("components/products", {
             options: [{
 				value: "price_asc",
                 text: "Price Ascending"
-            }, {
+            },{
                 value: "price_desc",
                 text: "Price Descending"
-            }, {
+            },{
                 value: "date_asc",
                 text: "Date Ascending"
-            }, {
+            },{
                 value: "date_desc",
                 text: "Date Descending"
-            }, {
+            },{
                 value: "sales_asc",
                 text: "Sales Ascending"
-            }, {
+            },{
                 value: "sales_desc",
                 text: "Sales Descending"
             }]
@@ -263,12 +257,12 @@ Vvveb.Components.add("components/search", {
         key: "src",
         htmlAttr: "src",
         inputtype: FileUploadInput
-    }, {
+    },{
         name: "34234234",
         key: "width",
         htmlAttr: "width",
         inputtype: TextInput
-    }, {
+    },{
         name: "d32d23",
         key: "height",
         htmlAttr: "height",
@@ -285,12 +279,12 @@ Vvveb.Components.add("components/user", {
         key: "src",
         htmlAttr: "src",
         inputtype: FileUploadInput
-    }, {
+    },{
         name: "34234234",
         key: "width",
         htmlAttr: "width",
         inputtype: TextInput
-    }, {
+    },{
         name: "d32d23",
         key: "height",
         htmlAttr: "height",
@@ -307,12 +301,12 @@ Vvveb.Components.add("components/product_gallery", {
         key: "src",
         htmlAttr: "src",
         inputtype: FileUploadInput
-    }, {
+    },{
         name: "34234234",
         key: "width",
         htmlAttr: "width",
         inputtype: TextInput
-    }, {
+    },{
         name: "d32d23",
         key: "height",
         htmlAttr: "height",
@@ -329,12 +323,12 @@ Vvveb.Components.add("components/cart", {
         key: "src",
         htmlAttr: "src",
         inputtype: FileUploadInput
-    }, {
+    },{
         name: "34234234",
         key: "width",
         htmlAttr: "width",
         inputtype: TextInput
-    }, {
+    },{
         name: "d32d23",
         key: "height",
         htmlAttr: "height",
@@ -351,12 +345,12 @@ Vvveb.Components.add("components/checkout", {
         key: "src",
         htmlAttr: "src",
         inputtype: FileUploadInput
-    }, {
+    },{
         name: "34234234",
         key: "width",
         htmlAttr: "width",
         inputtype: TextInput
-    }, {
+    },{
         name: "d32d23",
         key: "height",
         htmlAttr: "height",
@@ -373,12 +367,12 @@ Vvveb.Components.add("components/filters", {
         key: "src",
         htmlAttr: "src",
         inputtype: FileUploadInput
-    }, {
+    },{
         name: "34234234",
         key: "width",
         htmlAttr: "width",
         inputtype: TextInput
-    }, {
+    },{
         name: "d32d23",
         key: "height",
         htmlAttr: "height",
@@ -395,12 +389,12 @@ Vvveb.Components.add("components/product", {
         key: "src",
         htmlAttr: "src",
         inputtype: FileUploadInput
-    }, {
+    },{
         name: "34234234",
         key: "width",
         htmlAttr: "width",
         inputtype: TextInput
-    }, {
+    },{
         name: "d32d23",
         key: "height",
         htmlAttr: "height",
@@ -419,18 +413,17 @@ Vvveb.Components.add("components/slider", {
     image: "icons/slider.svg",
     html: '<div class="mb-3"><label>Your response:</label><textarea class="form-control"></textarea></div>',
 	
-	beforeInit: function (node)
-	{
+	beforeInit: function (node) {
 		properties = [];
-		var i = 0;
-		var j = 0;
+		let i = 0;
+		let j = 0;
 		
 		$(node).find('[data-slide]').each(function() {
-			_class = $(this).attr("class");
+			_class = $(this).getAttribute("class");
 			
-			var reg = /col-([^-\$ ]*)?-?(\d+)/g; 
-			var match;
-			var data = {};
+			let reg = /col-([^-\$ ]*)?-?(\d+)/g; 
+			let match;
+			let data = {};
 
 			while ((match = reg.exec(_class)) != null) {
 				data["col" + ((match[1] != undefined)?"_" + match[1]:"")] = match[2];
@@ -449,26 +442,23 @@ Vvveb.Components.add("components/slider", {
 				onChange: function(node, value, input) {
 
 					//column = $('[class*="col-"]:eq(' + this.index + ')', node);
-					var column = $(this.columnNode);
+					let column = $(this.columnNode);
 					
 					//if remove button is clicked remove column and render row properties
-					if (input.nodeName == 'BUTTON')
-					{
+					if (input.nodeName == 'BUTTON') {
 						column.remove();
 						Vvveb.Components.render("html/gridrow");
 						return node;
 					}
 
 					//if select input then change column class
-					_class = column.attr("class");
+					_class = column.getAttribute("class");
 					
 					//remove previous breakpoint column size
 					_class = _class.replace(new RegExp(input.name + '-\\d+?'), '');
 					//add new column size
 					if (value) _class +=  ' ' + input.name + '-' + value;
-					column.attr("class", _class);
-					
-					//console.log(this, node, value, input, input.name);
+					column.setAttribute"class", _class);
 					
 					return node;
 				},	
@@ -501,7 +491,7 @@ Vvveb.Components.add("components/slider", {
                 title: "Autocomplete",
                 icon:"la la-search",
                 checked:true,
-            }, {
+            },{
                 value: "automatic",
                 icon:"la la-cog",
                 text: "Configuration",
@@ -569,19 +559,19 @@ Vvveb.Components.add("components/slider", {
             options: [{
 				value: "price_asc",
                 text: "Price Ascending"
-            }, {
+            },{
                 value: "price_desc",
                 text: "Price Descending"
-            }, {
+            },{
                 value: "date_asc",
                 text: "Date Ascending"
-            }, {
+            },{
                 value: "date_desc",
                 text: "Date Descending"
-            }, {
+            },{
                 value: "sales_asc",
                 text: "Sales Ascending"
-            }, {
+            },{
                 value: "sales_desc",
                 text: "Sales Descending"
             }]

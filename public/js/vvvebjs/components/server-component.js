@@ -31,95 +31,78 @@ class ServerComponent {
 			this.url = "/?template=test.html";
 		}
 
-		self.element.animate({opacity: 0.85}, 50);
+		self.element.style.opacity = "0.85";
 
-		$.ajax({
-			url: this.url + '&_component_ajax=' + this.component + '&_component_id=' + this.index + '&_server_template=' + this.userServerTemplate + '&r=true',
-			type: 'post',
-			data: {_component_content:this.content},
-			//dataType: 'json',
-			beforeSend: function() {
-			},
-			complete: function(data) {
-				//$('#cart > button').button('reset');
-			},
-			success: function(data) {
-				//$("header [data-v-component-cart]")[0].outerHTML = data;
-				if (callback) callback(data);
-			},
-			error: function(xhr, ajaxOptions, thrownError) {
-				alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-			}
+		let data = new FormData();
+		data.append("_component_content", this.content);
+		
+		fetch(this.url + '&_component_ajax=' + this.component + '&_component_id=' + this.index + '&_server_template=' + this.userServerTemplate + '&r=true',{
+			method: 'POST', 
+			body: data
 		})
-		.always(function(data) {
+		.then((response) => {
+			if (!response.ok) { throw new Error(response) }
+			return response.text()
 		})
-		.done(function(data) {
-//				self.element[0].outerHTML = data;
-//				self.element[0].click();
-
-				//let newElement = self.element.before(data);
-				if (data) {
+		.then((data) => {
+			if (data) {
+			
+				let newElement = generateElements(data)[0];
+				//set fixed height for parent to avoid page flicker
+				let parent = self.element.parentNode;
 				
-					let newElement = $(data);
-					//set fixed height for parent to avoid page flicker
-					let parent = self.element.parent();
-					//
-					
-					parent.height(parent.height());
-					//full update
-					if (this.fullUpdate)  {
-						self.element.replaceWith(newElement);
-					} else {
-						self.element.html(newElement.html());
-						self.element.height(self.element.height());
-					}
-					
-					setTimeout(function () {
-						//if (this.fullUpdate) 
-						if (parent) parent.height("");
-						self.element.height("");
-						//self.element.click();
-						Vvveb.Builder.selectNode(self.element);
-					}, 250);
+				parent.style.minHeight = parent.clientHeight + "px";
+				//full update
+				if (this.fullUpdate)  {
+					self.element.replaceWith(newElement);
+				} else {
+					self.element.innerHTML = newElement.innerHTML;
+					self.element.style.minHeight = self.element.clientHeight + "px";
 				}
-
-				self.element.removeAttr("style");//animate({opacity: 1}, 30);
 				
-				if (callback) callback(data);
+				setTimeout(function () {
+					//if (this.fullUpdate) 
+					if (parent) parent.style.minHeight = "";
+					self.element.style.minHeight = "";
+					//self.element.click();
+					Vvveb.Builder.selectNode(self.element);
+					Vvveb.TreeList.loadComponents();
+				}, 500);
+			}
+
+			self.element.removeAttribute("style");
+			
+			if (callback) callback(data);
 		})
-		.fail(function(xhr, ajaxOptions, thrownError) {
-				alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-		});
+		.catch(error => {
+			console.log(error.statusText);
+		});	
 	}		
 	
 	onChange(element, property, value, input)  {
-
-				//search through all components of the same type on page and get index
-				//if (this.index) {
-					let selector = this.attributes
-									.map(el => {return "[" + el + "]";})
-									.join(",");
-					
-					
-					this.component = this.attributes[0].replace("data-v-component-", "");
-					this.index = $(selector,Vvveb.Builder.frameBody).index(element);
-				//}
-				
-				
-				if (this.content != element[0].outerHTML) {
-					let itemClone = element.clone();
-					$(".vvveb-hidden", itemClone).removeClass("vvveb-hidden");
-					
-					this.content = itemClone[0].outerHTML;
-					this.element = element;
-					
-					let self = this;
-					this.throttle = setTimeout(function () {
-						clearTimeout(this.throttle);
-						self.ajax();
-					}, 500);
-				}
-				return element;
+		//search through all components of the same type on page and get index
+		let selector = this.attributes
+						.map(el => {return "[" + el + "]";})
+						.join(",");
+		
+		
+		this.component = this.attributes[0].replace("data-v-component-", "");
+		this.index =  Array.prototype.indexOf.call(Vvveb.Builder.frameBody.querySelectorAll(selector), element);
+		
+		if (this.content != element.outerHTML) {
+			let itemClone = element.cloneNode(true);
+			itemClone.querySelectorAll(".vvveb-hidden").forEach(e => e.classList.remove("vvveb-hidden"));
+			
+			this.content = itemClone.outerHTML;
+			this.element = element;
+			
+			let self = this;
+			this.throttle = setTimeout(function () {
+				clearTimeout(this.throttle);
+				self.ajax();
+			}, 500);
+		}
+		return element;
 	}
 };
 

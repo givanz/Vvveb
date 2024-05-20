@@ -82,7 +82,7 @@ class FiltersComponent {
 					icon:"la la-search",
 					extraclass:"btn-sm",
 					checked:true,
-				}, {
+				},{
 					value: "automatic",
 					icon:"la la-cog",
 					text: "Configuration",
@@ -92,9 +92,10 @@ class FiltersComponent {
 			},
 			
 			setGroup: group => {
-				console.log(group);
-				$('.mb-3[data-v-group]').attr('style','display:none !important');
-				$('.mb-3[data-v-group="'+ group + '"]').attr('style','');
+				document.querySelectorAll('.mb-3[data-group]').forEach(e => e.classList.add("d-none"));
+				document.querySelectorAll('.mb-3[data-group="'+ group + '"].d-none').forEach((el, i) => {
+					el.classList.remove("d-none");
+				});	
 
 				return element;
 			}, 		
@@ -161,19 +162,19 @@ class FiltersComponent {
 				options: [{
 					value: "price_asc",
 					text: "Price Ascending"
-				}, {
+				},{
 					value: "price_desc",
 					text: "Price Descending"
-				}, {
+				},{
 					value: "date_asc",
 					text: "Date Ascending"
-				}, {
+				},{
 					value: "date_desc",
 					text: "Date Descending"
-				}, {
+				},{
 					value: "sales_asc",
 					text: "Sales Ascending"
-				}, {
+				},{
 					value: "sales_desc",
 					text: "Sales Descending"
 				}]
@@ -217,13 +218,12 @@ class FiltersComponent {
 
     init(node)
 	{
-		$('.mb-3[data-v-group]').attr('style','display:none !important');
-		if (node.dataset.type != undefined)
-		{
-			$('.mb-3[data-v-group="'+ node.dataset.type + '"]').attr('style','');
-		} else
-		{		
-			$('.mb-3[data-v-group]:first').attr('style','');
+		if (node.dataset.type != undefined) {
+			document.querySelectorAll('.mb-3[data-group="'+ + node.dataset.type + '"]').forEach((el, i) => {
+				el.classList.remove("d-none");
+			});			
+		} else {		
+			document.querySelector('.mb-3[data-group]:first').classList.remove("d-none");
 		}
 	}
 }

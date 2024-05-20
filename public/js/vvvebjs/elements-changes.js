@@ -53,8 +53,6 @@ function getElements() {
 					
 					attr = attr.replace(type, "").toLowerCase();
 
-					//console.log(attr, value);
-					
 					let nodeType = "text";
 
 					if (attr == "image" || fieldNode.nodeName == "IMG") {

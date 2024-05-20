@@ -18,59 +18,59 @@ https://github.com/givanz/Vvvebjs
 
 bgcolorClasses = ["bg-primary", "bg-secondary", "bg-success", "bg-danger", "bg-warning", "bg-info", "bg-body-secondary", "bg-dark", "bg-white"]
 
-bgcolorSelectOptions = 
-[{
+bgcolorSelectOptions = [{
 	value: "Default",
 	text: ""
-}, 
-{
+},{
 	value: "bg-primary",
 	text: "Primary"
-}, {
+},{
 	value: "bg-secondary",
 	text: "Secondary"
-}, {
+},{
 	value: "bg-success",
 	text: "Success"
-}, {
+},{
 	value: "bg-danger",
 	text: "Danger"
-}, {
+},{
 	value: "bg-warning",
 	text: "Warning"
-}, {
+},{
 	value: "bg-info",
 	text: "Info"
-}, {
+},{
 	value: "bg-body-secondary",
 	text: "Light"
-}, {
+},{
 	value: "bg-dark",
 	text: "Dark"
-}, {
+},{
 	value: "bg-white",
 	text: "White"
 }];
 
-function changeNodeName(node, newNodeName)
-{
-	var newNode;
+function changeNodeName(node, newNodeName) {
+	let newNode;
 	newNode = document.createElement(newNodeName);
-	attributes = node.get(0).attributes;
+	attributes = node.attributes;
 	
 	for (i = 0, len = attributes.length; i < len; i++) {
 		newNode.setAttribute(attributes[i].nodeName, attributes[i].nodeValue);
 	}
 
-	$(newNode).append($(node).contents());
-	$(node).replaceWith(newNode);
+	for (e of node.childNodes) {
+		newNode.append(e);
+	}
+	
+	node.replaceWith(newNode);
 	
 	return newNode;
 }
 
-var base_sort = 100;//start sorting for base component from 100 to allow extended properties to be first
-var style_section = 'style';
-var advanced_section = 'advanced';
+let base_sort = 100;//start sorting for base component from 100 to allow extended properties to be first
+let style_section = 'style';
+let advanced_section = 'advanced';
 
 Vvveb.Components.add("_base", {
     name: "Element",
@@ -80,7 +80,7 @@ Vvveb.Components.add("_base", {
         name:false,
         sort:base_sort++,
         data: {header:"General"},
-    }, {
+    },{
         name: "Id",
         key: "id",
         htmlAttr: "id",
@@ -88,7 +88,7 @@ Vvveb.Components.add("_base", {
         inline:false,
         col:6,
         inputtype: TextInput
-    }, {
+    },{
         name: "Class",
         key: "class",
         htmlAttr: "class",
@@ -108,13 +108,13 @@ Vvveb.Components.add("_base", {
             options: [{
                 value: "",
                 text: ""
-            }, {
+            },{
                 value: "hover",
                 text: "Hover"
-            }, {
+            },{
                 value: "active",
                 text: "Active"
-            }, {
+            },{
                 value: "focus",
                 text: "Focus"
             }]
@@ -125,15 +125,14 @@ Vvveb.Components.add("_base", {
 
 //display
 Vvveb.Components.extend("_base", "_base", {
-	 properties: [
-     {
+	 properties: [{
         key: "display_header",
         inputtype: SectionInput,
         name:false,
         sort: base_sort++,
 		section: style_section,
         data: {header:"Display"},
-     }, {
+     },{
 		//linked styles notice message
 		name:"",
 		key: "linked_styles_check",
@@ -148,35 +147,44 @@ Vvveb.Components.extend("_base", "_base", {
 			text:'This element shares styles with other <a class="linked-elements-hover" href="#"><b class="elements-count">4</b> elements</a>, to apply styles <b>only for this element</b> enter a <b>unique id</b> eg: <i>marketing-heading</i> in in <br/><a class="id-input" href="#content-tab" role="tab" aria-controls="components" aria-selected="false" href="#content-tab">Content > General > Id</a>.<br/><span class="text-muted small"></span>',
 		},
 		afterInit:function(node, inputElement) {
-			var selector = Vvveb.StyleManager.getSelectorForElement(node);
-			var elements = $(selector, window.FrameDocument);
+			let selector = Vvveb.StyleManager.getSelectorForElement(node);
+			let elements = window.FrameDocument.querySelectorAll(selector);
 
 			if (elements.length <= 1) {
-				inputElement.hide();
+				if (inputElement.style) {
+					inputElement.style.display = "none";
+				}
 			} else {
-				$(".elements-count", inputElement).html(elements.length);
-				$(".text-muted", inputElement).html(selector);
+				inputElement.style.display = "";
+				inputElement.querySelector(".elements-count").innerHTML = elements.length;
+				inputElement.querySelector(".text-muted").innerHTML = selector;
 				
-				$(".id-input", inputElement).click(function (){
-					$(".content-tab a").each(function() {
-						this.click();
-					});
+				inputElement.querySelector(".id-input", inputElement).addEventListener("click", (event) => {
+					document.querySelectorAll(".content-tab a").forEach(e => e.click());
 					
-					setTimeout(function () { $("[name=id]").trigger("focus") }, 700);
+					setTimeout(function () { 
+						let idInput = document.querySelectorAll("[name=id]");
+						idInput.forEach(el => {if (el.offsetParent) el.focus()});/*
+						idInput.forEach(el => el .dispatchEvent(new FocusEvent("focusin", {
+							bubbles: true,
+							cancelable: false
+						})));*/
+					}, 700);
 					
+					event.preventDefault();
 					return false;
 				});
 				
-				$(".linked-elements-hover", inputElement).
-				on("mouseenter", function (){
-					elements.css("outline","2px dotted blue");
-				}).
-				on("mouseleave", function (){
-					elements.css("outline","");
+				inputElement.querySelector(".linked-elements-hover").addEventListener("mouseenter", function (){
+					elements.forEach( e => e.style.outline = "2px dotted blue");
+				});
+				
+				inputElement.querySelector(".linked-elements-hover").addEventListener("mouseleave", function (){
+					elements.forEach( e => e.style.outline = "");
 				});
 			}
 		},	 
-    }, {
+    },{
         name: "Display",
         key: "display",
         htmlAttr: "style",
@@ -190,48 +198,48 @@ Vvveb.Components.extend("_base", "_base", {
             options: [{
                 value: "block",
                 text: "Block"
-            }, {
+            },{
                 value: "inline",
                 text: "Inline"
-            }, {
+            },{
                 value: "inline-block",
                 text: "Inline Block"
-            }, {
+            },{
                 value: "inline-block",
                 text: "Inline Block"
-            }, {
+            },{
                 value: "flex",
                 text: "Flex"
-            }, {
+            },{
                 value: "inline-flex",
                 text: "Inline Flex"
-            }, {
+            },{
                 value: "grid",
                 text: "Grid"
-            }, {
+            },{
                 value: "inline-grid",
                 text: "Inline grid"
-            }, {
+            },{
                 value: "table",
                 text: "Table"
-            }, {
+            },{
                 value: "table-row",
                 text: "Table Row"
-            }, {
+            },{
                 value: "list-item",
                 text: "List Item"
-            }, {
+            },{
                 value: "inherit",
                 text: "Inherit"
-            }, {
+            },{
                 value: "initial",
                 text: "Initial"
-            }, {
+            },{
                 value: "none",
                 text: "none"
             }]
         }
-    }, {
+    },{
         name: "Position",
         key: "position",
         htmlAttr: "style",
@@ -245,18 +253,18 @@ Vvveb.Components.extend("_base", "_base", {
             options: [{
                 value: "static",
                 text: "Static"
-            }, {
+            },{
                 value: "fixed",
                 text: "Fixed"
-            }, {
+            },{
                 value: "relative",
                 text: "Relative"
-            }, {
+            },{
                 value: "absolute",
                 text: "Absolute"
             }]
         }
-    }, {
+    },{
         name: "Top",
         key: "top",
 		htmlAttr: "style",
@@ -266,7 +274,7 @@ Vvveb.Components.extend("_base", "_base", {
 		inline:false,
         parent:"",
         inputtype: CssUnitInput
-	}, {
+	},{
         name: "Left",
         key: "left",
 		htmlAttr: "style",
@@ -276,7 +284,7 @@ Vvveb.Components.extend("_base", "_base", {
 		inline:false,
         parent:"",
         inputtype: CssUnitInput
-    }, {
+    },{
         name: "Bottom",
         key: "bottom",
 		htmlAttr: "style",
@@ -286,7 +294,7 @@ Vvveb.Components.extend("_base", "_base", {
 		inline:false,
         parent:"",
         inputtype: CssUnitInput
-	}, {
+	},{
         name: "Right",
         key: "right",
 		htmlAttr: "style",
@@ -313,13 +321,13 @@ Vvveb.Components.extend("_base", "_base", {
                 //text: "None",
                 title: "None",
                 checked:true,
-            }, {
+            },{
                 value: "left",
                 //text: "Left",
                 title: "Left",
                 icon:"la la-align-left",
                 checked:false,
-            }, {
+            },{
                 value: "right",
                 //text: "Right",
                 title: "Right",
@@ -327,7 +335,7 @@ Vvveb.Components.extend("_base", "_base", {
                 checked:false,
             }],
          }
-	}, {
+	},{
         name: "Opacity",
         key: "opacity",
 		htmlAttr: "style",
@@ -342,7 +350,7 @@ Vvveb.Components.extend("_base", "_base", {
 			min:0,
 			step:0.1
        },
-	}, {
+	},{
         name: "Background Color",
         key: "background-color",
         sort: base_sort++,
@@ -351,7 +359,7 @@ Vvveb.Components.extend("_base", "_base", {
 		inline:true,
 		htmlAttr: "style",
         inputtype: ColorInput,
-	}, {
+	},{
         name: "Text Color",
         key: "color",
         sort: base_sort++,
@@ -364,9 +372,8 @@ Vvveb.Components.extend("_base", "_base", {
 });    
 
 //Typography
-var ComponentBaseTypography = {
-	 properties: [
-     {
+let ComponentBaseTypography = {
+	 properties: [{
 		key: "typography_header",
 		inputtype: SectionInput,
 		name:false,
@@ -374,7 +381,7 @@ var ComponentBaseTypography = {
 		section: style_section,
 		data: {header:"Typography"},
  
-	}, {
+	},{
         name: "Font size",
         key: "font-size",
 		htmlAttr: "style",
@@ -383,7 +390,7 @@ var ComponentBaseTypography = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-	}, {
+	},{
         name: "Font weight",
         key: "font-weight",
 		htmlAttr: "style",
@@ -396,36 +403,36 @@ var ComponentBaseTypography = {
 			options: [{
 				value: "",
 				text: "Default"
-			}, {	
+			},{	
 				value: "100",
 				text: "Thin"
-			}, {
+			},{
 				value: "200",
 				text: "Extra-Light"
-			}, {
+			},{
 				value: "300",
 				text: "Light"
-			}, {
+			},{
 				value: "400",
 				text: "Normal"
-			}, {
+			},{
 				value: "500",
 				text: "Medium"
-			}, {
+			},{
 				value: "600",
 				text: "Semi-Bold"
-			}, {
+			},{
 				value: "700",
 				text: "Bold"
-			}, {
+			},{
 				value: "800",
 				text: "Extra-Bold"
-			}, {
+			},{
 				value: "900",
 				text: "Ultra-Bold"
 			}],
 		}
-    }, {
+    },{
         name: "Font family",
         key: "font-family",
 	htmlAttr: "style",
@@ -437,7 +444,7 @@ var ComponentBaseTypography = {
         data: {
 			options: fontList
 		}
-	}, {
+	},{
         name: "Text align",
         key: "text-align",
         htmlAttr: "style",
@@ -454,25 +461,25 @@ var ComponentBaseTypography = {
                 //text: "None",
                 title: "None",
                 checked:true,
-            }, {
+            },{
                 value: "left",
                 //text: "Left",
                 title: "Left",
                 icon:"la la-align-left",
                 checked:false,
-            }, {
+            },{
                 value: "center",
                 //text: "Center",
                 title: "Center",
                 icon:"la la-align-center",
                 checked:false,
-            }, {
+            },{
                 value: "right",
                 //text: "Right",
                 title: "Right",
                 icon:"la la-align-right",
                 checked:false,
-            }, {
+            },{
                 value: "justify",
                 //text: "justify",
                 title: "Justify",
@@ -480,7 +487,7 @@ var ComponentBaseTypography = {
                 checked:false,
             }],
         },
-	}, {
+	},{
         name: "Line height",
         key: "line-height",
 		htmlAttr: "style",
@@ -489,7 +496,7 @@ var ComponentBaseTypography = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-	}, {
+	},{
         name: "Letter spacing",
         key: "letter-spacing",
 		htmlAttr: "style",
@@ -498,7 +505,7 @@ var ComponentBaseTypography = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-	}, {
+	},{
         name: "Text decoration",
         key: "text-decoration-line",
         htmlAttr: "style",
@@ -515,25 +522,25 @@ var ComponentBaseTypography = {
                 //text: "None",
                 title: "None",
                 checked:true,
-            }, {
+            },{
                 value: "underline",
                 //text: "Left",
                 title: "underline",
                 icon:"la la-long-arrow-alt-down",
                 checked:false,
-            }, {
+            },{
                 value: "overline",
                 //text: "Right",
                 title: "overline",
                 icon:"la la-long-arrow-alt-up",
                 checked:false,
-            }, {
+            },{
                 value: "line-through",
                 //text: "Right",
                 title: "Line Through",
                 icon:"la la-strikethrough",
                 checked:false,
-            }, {
+            },{
                 value: "underline overline",
                 //text: "justify",
                 title: "Underline Overline",
@@ -541,7 +548,7 @@ var ComponentBaseTypography = {
                 checked:false,
             }],
         },
-	}, {
+	},{
         name: "Decoration Color",
         key: "text-decoration-color",
         sort: base_sort++,
@@ -550,7 +557,7 @@ var ComponentBaseTypography = {
 		inline:true,
 		htmlAttr: "style",
         inputtype: ColorInput,
-	}, {
+	},{
         name: "Decoration style",
         key: "text-decoration-style",
 		htmlAttr: "style",
@@ -563,19 +570,19 @@ var ComponentBaseTypography = {
 			options: [{
 				value: "",
 				text: "Default"
-			}, {	
+			},{	
 				value: "solid",
 				text: "Solid"
-			}, {
+			},{
 				value: "wavy",
 				text: "Wavy"
-			}, {
+			},{
 				value: "dotted",
 				text: "Dotted"
-			}, {
+			},{
 				value: "dashed",
 				text: "Dashed"
-			}, {
+			},{
 				value: "double",
 				text: "Double"
 			}],
@@ -586,7 +593,7 @@ var ComponentBaseTypography = {
 Vvveb.Components.extend("_base", "_base", ComponentBaseTypography);
     
 //Size
-var ComponentBaseSize = {
+let ComponentBaseSize = {
 	 properties: [{
 		key: "size_header",
 		inputtype: SectionInput,
@@ -594,7 +601,7 @@ var ComponentBaseSize = {
 		sort: base_sort++,
 		section: style_section,
 		data: {header:"Size", expanded:false},
-	}, {
+	},{
         name: "Width",
         key: "width",
 		htmlAttr: "style",
@@ -603,7 +610,7 @@ var ComponentBaseSize = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-	}, {
+	},{
         name: "Height",
         key: "height",
 		htmlAttr: "style",
@@ -612,7 +619,7 @@ var ComponentBaseSize = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-	}, {
+	},{
         name: "Min Width",
         key: "min-width",
 		htmlAttr: "style",
@@ -621,7 +628,7 @@ var ComponentBaseSize = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-	}, {
+	},{
         name: "Min Height",
         key: "min-height",
 		htmlAttr: "style",
@@ -630,7 +637,7 @@ var ComponentBaseSize = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-	}, {
+	},{
         name: "Max Width",
         key: "max-width",
 		htmlAttr: "style",
@@ -639,7 +646,7 @@ var ComponentBaseSize = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-	}, {
+	},{
         name: "Max Height",
         key: "max-height",
 		htmlAttr: "style",
@@ -654,7 +661,7 @@ var ComponentBaseSize = {
 Vvveb.Components.extend("_base", "_base", ComponentBaseSize);
 
 //Margin
-var ComponentBaseMargin = {
+let ComponentBaseMargin = {
 	 properties: [{
 		key: "margins_header",
 		inputtype: SectionInput,
@@ -662,7 +669,7 @@ var ComponentBaseMargin = {
 		sort: base_sort++,
 		section: style_section,
 		data: {header:"Margin", expanded:false},
-	}, {
+	},{
         name: "Top",
         key: "margin-top",
 		htmlAttr: "style",
@@ -671,7 +678,7 @@ var ComponentBaseMargin = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-	}, {
+	},{
         name: "Right",
         key: "margin-right",
 		htmlAttr: "style",
@@ -680,7 +687,7 @@ var ComponentBaseMargin = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-    }, {
+    },{
         name: "Bottom",
         key: "margin-bottom",
 		htmlAttr: "style",
@@ -689,7 +696,7 @@ var ComponentBaseMargin = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-    }, {
+    },{
         name: "Left",
         key: "margin-left",
 		htmlAttr: "style",
@@ -704,7 +711,7 @@ var ComponentBaseMargin = {
 Vvveb.Components.extend("_base", "_base", ComponentBaseMargin);
 
 //Padding
-var ComponentBasePadding = {
+let ComponentBasePadding = {
 
 	 properties: [{
 		key: "paddings_header",
@@ -713,7 +720,7 @@ var ComponentBasePadding = {
 		sort: base_sort++,
 		section: style_section,
 		data: {header:"Padding", expanded:false},
-	}, {
+	},{
         name: "Top",
         key: "padding-top",
 		htmlAttr: "style",
@@ -722,7 +729,7 @@ var ComponentBasePadding = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-	}, {
+	},{
         name: "Right",
         key: "padding-right",
 		htmlAttr: "style",
@@ -731,7 +738,7 @@ var ComponentBasePadding = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-    }, {
+    },{
         name: "Bottom",
         key: "padding-bottom",
 		htmlAttr: "style",
@@ -740,7 +747,7 @@ var ComponentBasePadding = {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-    }, {
+    },{
         name: "Left",
         key: "padding-left",
 		htmlAttr: "style",
@@ -764,7 +771,7 @@ Vvveb.Components.extend("_base", "_base", {
 		sort: base_sort++,
 		section: style_section,
 		data: {header:"Border", expanded:false},
-	 }, {        
+	 },{        
         name: "Style",
         key: "border-style",
 		htmlAttr: "style",
@@ -777,18 +784,18 @@ Vvveb.Components.extend("_base", "_base", {
 			options: [{
 				value: "",
 				text: "Default"
-			}, {	
+			},{	
 				value: "solid",
 				text: "Solid"
-			}, {
+			},{
 				value: "dotted",
 				text: "Dotted"
-			}, {
+			},{
 				value: "dashed",
 				text: "Dashed"
 			}],
 		}
-	}, {
+	},{
         name: "Width",
         key: "border-width",
 		htmlAttr: "style",
@@ -797,7 +804,7 @@ Vvveb.Components.extend("_base", "_base", {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-   	}, {
+   	},{
         name: "Color",
         key: "border-color",
         sort: base_sort++,
@@ -820,7 +827,7 @@ Vvveb.Components.extend("_base", "_base", {
 		sort: base_sort++,
 		section: style_section,
 		data: {header:"Border radius", expanded:false},
-	}, {
+	},{
         name: "Top Left",
         key: "border-top-left-radius",
 		htmlAttr: "style",
@@ -829,7 +836,7 @@ Vvveb.Components.extend("_base", "_base", {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-	}, {
+	},{
         name: "Top Right",
         key: "border-top-right-radius",
 		htmlAttr: "style",
@@ -838,7 +845,7 @@ Vvveb.Components.extend("_base", "_base", {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-    }, {
+    },{
         name: "Bottom Left",
         key: "border-bottom-left-radius",
 		htmlAttr: "style",
@@ -847,7 +854,7 @@ Vvveb.Components.extend("_base", "_base", {
         col:6,
 		inline:false,
         inputtype: CssUnitInput
-    }, {
+    },{
         name: "Bottom Right",
         key: "border-bottom-right-radius",
 		htmlAttr: "style",
@@ -877,19 +884,18 @@ Vvveb.Components.extend("_base", "_base", {
         inputtype: ImageInput,
         
         init: function(node) {
-			var image = $(node).css("background-image").replace(/url\(['"]?([^"\)$]+?)['"]?\).*/, '$1');
+			let image = node.style.backgroundImage.replace(/url\(['"]?([^"\)$]+?)['"]?\).*/, '$1');
 			return image;
         },
 
 		onChange: function(node, value) {
 			
-			Vvveb.StyleManager.setStyle($(node), "background-image", 'url(' + value + ')');
-			//$(node).css('background-image', 'url(' + value + ')');
+			Vvveb.StyleManager.setStyle(node, "background-image", 'url(' + value + ')');
 			
 			return node;
 		}        
 
-   	}, {
+   	},{
         name: "Repeat",
         key: "background-repeat",
         sort: base_sort++,
@@ -900,18 +906,18 @@ Vvveb.Components.extend("_base", "_base", {
 			options: [{
 				value: "",
 				text: "Default"
-			}, {	
+			},{	
 				value: "repeat-x",
 				text: "repeat-x"
-			}, {
+			},{
 				value: "repeat-y",
 				text: "repeat-y"
-			}, {
+			},{
 				value: "no-repeat",
 				text: "no-repeat"
 			}],
 		}
-   	}, {
+   	},{
         name: "Size",
         key: "background-size",
         sort: base_sort++,
@@ -922,15 +928,15 @@ Vvveb.Components.extend("_base", "_base", {
 			options: [{
 				value: "",
 				text: "Default"
-			}, {	
+			},{	
 				value: "contain",
 				text: "contain"
-			}, {
+			},{
 				value: "cover",
 				text: "cover"
 			}],
 		}
-   	}, {
+   	},{
         name: "Position x",
         key: "background-position-x",
         sort: base_sort++,
@@ -943,18 +949,18 @@ Vvveb.Components.extend("_base", "_base", {
 			options: [{
 				value: "",
 				text: "Default"
-			}, {	
+			},{	
 				value: "center",
 				text: "center"
-			}, {	
+			},{	
 				value: "right",
 				text: "right"
-			}, {
+			},{
 				value: "left",
 				text: "left"
 			}],
 		}
-   	}, {
+   	},{
         name: "Position y",
         key: "background-position-y",
         sort: base_sort++,
@@ -967,13 +973,13 @@ Vvveb.Components.extend("_base", "_base", {
 			options: [{
 				value: "",
 				text: "Default"
-			}, {	
+			},{	
 				value: "center",
 				text: "center"
-			}, {	
+			},{	
 				value: "top",
 				text: "top"
-			}, {
+			},{
 				value: "bottom",
 				text: "bottom"
 			}],
@@ -983,7 +989,7 @@ Vvveb.Components.extend("_base", "_base", {
 
 
 //Device visibility
-var ComponentDeviceVisibility = {
+let ComponentDeviceVisibility = {
 	 properties: [{
 		key: "visibility_header",
 		inputtype: SectionInput,
@@ -991,7 +997,7 @@ var ComponentDeviceVisibility = {
 		sort: base_sort++,
 		section: advanced_section,
 		data: {header:"Hide based on device screen width"},
-	}, {
+	},{
         name: "Extra small devices",
         key: "hidexs",
         col:6,
@@ -1005,7 +1011,7 @@ var ComponentDeviceVisibility = {
             on: "d-xs-none",
             off: ""
         }
-	}, {
+	},{
         name: "Small devices",
         key: "hidesm",
         col:6,
@@ -1019,7 +1025,7 @@ var ComponentDeviceVisibility = {
             on: "d-sm-none",
             off: ""
         }
-	}, {
+	},{
         name: "Medium devices",
         key: "hidemd",
         col:6,
@@ -1033,7 +1039,7 @@ var ComponentDeviceVisibility = {
             on: "d-md-none",
             off: ""
         }
-	}, {
+	},{
         name: "Large devices",
         key: "hidelg",
         col:6,
@@ -1047,7 +1053,7 @@ var ComponentDeviceVisibility = {
             on: "d-lg-none",
             off: ""
         }
-	}, {
+	},{
         name: "Xl devices",
         key: "hidexl",
         col:6,
@@ -1061,7 +1067,7 @@ var ComponentDeviceVisibility = {
             on: "d-xl-none",
             off: ""
         }
-	}, {
+	},{
         name: "Xxl devices",
         key: "hidexxl",
         col:6,
@@ -1085,8 +1091,8 @@ Vvveb.Components.add("config/bootstrap", {
     name: "Bootstrap Variables",
 	beforeInit: function (node) {
 		properties = [];
-		var i = 0;
-		var j = 0;
+		let i = 0;
+		let j = 0;
 
 		let cssVars = Vvveb.ColorPaletteManager.getAllCSSVariableNames(window.FrameDocument.styleSheets/*, ":root"*/);
 		

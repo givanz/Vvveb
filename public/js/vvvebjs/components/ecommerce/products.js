@@ -105,7 +105,7 @@ class ProductsComponent extends ServerComponent{
 					title: "Configuration",
 					extraclass:"btn-sm",
 					checked:true,
-				}, {
+				},{
 					value: "autocomplete",
 					text: "Autocomplete",
 					title: "Autocomplete",
@@ -115,8 +115,10 @@ class ProductsComponent extends ServerComponent{
 			},
 			
 			setGroup: group => {
-				$('.mb-3[data-group]').attr('style','display:none !important');
-				$('.mb-3[data-group="'+ group + '"]').attr('style','');
+				document.querySelectorAll('.mb-3[data-group]').forEach(e => e.classList.add("d-none"));
+				document.querySelectorAll('.mb-3[data-group="'+ group + '"].d-none').forEach((el, i) => {
+					el.classList.remove("d-none");
+				});	
 				//return element;
 			}, 		
 			onChange : function(element, value, input)  {
@@ -179,13 +181,13 @@ class ProductsComponent extends ServerComponent{
 				options: [{
 					value: "NULL",
 					text: "Default"
-				}, {
+				},{
 					value: "price",
 					text: "Price"
-				}, {
+				},{
 					value: "created_at",
 					text: "Date added"
-				}, {
+				},{
 					value: "updated_at",
 					text: "Date modified"
 				}/*, {
@@ -205,7 +207,7 @@ class ProductsComponent extends ServerComponent{
 				options: [{
 					value: "asc",
 					text: "Ascending"
-				}, {
+				},{
 					value: "desc",
 					text: "Descending"
 				}]
@@ -237,14 +239,16 @@ class ProductsComponent extends ServerComponent{
 	}
 
     init(node)	{
-		
-		$('.mb-3[data-group]').attr('style','display:none !important');
+		document.querySelectorAll('.mb-3[data-group]').forEach((el, i) => {
+			el.classList.add("d-none");
+		});			
 		
 		let source = node.dataset.vSource;
 		if (!source) {
 			source = "automatic";
 		} 
-		$('.mb-3[data-group="'+ source + '"]').attr('style','');
+
+		document.querySelectorAll('.mb-3[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
 	}
 }
 

@@ -7,19 +7,18 @@ Vvveb.Components.extend("_base", "html/heading", {
     nodes: ["h1", "h2","h3", "h4","h5","h6"],
     html: "<h1>Heading</h1>",
     
-	properties: [
-	{
+	properties: [{
         name: "Size",
         key: "size",
         inputtype: SelectInput,
         
         onChange: function(node, value) {
-			
+
 			return changeNodeName(node, "h" + value);
 		},	
 			
         init: function(node) {
-            var regex;
+            let regex;
             regex = /H(\d)/.exec(node.nodeName);
             if (regex && regex[1]) {
                 return regex[1]
@@ -66,7 +65,7 @@ let linkComponentProperties = [
 		sort:2,
 		htmlAttr: "href",
 		inputtype: LinkInput
-	}, {
+	},{
 		name: "Rel",
 		key: "rel",
 		sort:3,
@@ -115,7 +114,7 @@ Vvveb.Components.extend("_base", "html/link", {
 Vvveb.Components.extend("_base", "html/image", {
     nodes: ["img"],
     name: "Image",
-    html: '<img src="' +  Vvveb.baseUrl + 'icons/image.svg" width="300" class="mw-100 align-center">',
+    html: '<img src="' +  Vvveb.baseUrl + 'icons/image.svg" class="mw-100 align-center">',
     image: "icons/image.svg",
     resizable:true,//show select box resize handlers
     
@@ -177,7 +176,7 @@ Vvveb.Components.extend("_base", "html/image", {
 	},{
 		key: "link_options",
         inputtype: SectionInput,
-        name:false,
+        //name:false,
         data: {header:"Link"},
     },{
         name: "Enable link",
@@ -187,19 +186,27 @@ Vvveb.Components.extend("_base", "html/image", {
             className: "form-switch"
         },
 		setGroup: value => {
-			let group = $('.mb-3[data-group="link"]');
-			if (value) {	
-				group.attr('style','');
-			} else {
-				group.attr('style','display:none !important');
+			let group = document.querySelectorAll('.mb-3[data-group="link"]');
+			if (group.length) {
+				group.forEach(el => {
+					if (value) {	
+						el.style.display = "";
+					} else {
+						el.style.display = "none";
+					}
+				});
 			}
 		}, 		
 		onChange : function(node, value, input)  {
 			this.setGroup(value);
 			if (value) {
-				$(node).wrap('<a href="#"></a>');
+				const wrappingElement = document.createElement('a');
+				node.replaceWith(wrappingElement);
+				wrappingElement.appendChild(node);
 			} else {
-				$(node).unwrap('a');
+				if (node.parentNode.tagName.toLowerCase() == "a"){
+					node.parentNode.replaceWith(node);
+				}
 			}
 			return node;
 		}, 
@@ -214,13 +221,16 @@ Vvveb.Components.extend("_base", "html/image", {
 		(el) => {let a = Object.assign({}, el);a["parent"] = "a";a["group"] = "link";return a}
 	)),
 	
-    init(node)	{
-
-		let group = $('.mb-3[data-group="link"]');
-		if (node.parentNode.tagName.toLowerCase() == "a") {	
-			group.attr('style','');
-		} else {
-			group.attr('style','display:none !important');
+    init(node) {
+		let group = document.querySelectorAll('.mb-3[data-group="link"]');
+		if (group.length) {
+			group.forEach(el => {
+				if (value) {	
+					el.style.display = "";
+				} else {
+					el.style.display = "none";
+				}
+			});
 		}
 
 		return node;
@@ -459,41 +469,39 @@ Vvveb.Components.extend("_base", "html/selectinput", {
     image: "icons/select_input.svg",
     html: '<select class="form-control"><option value="value1">Text 1</option><option value="value2">Text 2</option><option value="value3">Text 3</option></select>',
 
-	beforeInit: function (node)
-	{
+	beforeInit: function (node) {
 		properties = [];
-		var i = 0;
+		let i = 0;
 		
-		$(node).find('option').each(function(e) {
-			data = {"value": this.value, "text": this.text};
+		node.querySelectorAll('option').forEach(el => {
+			data = {"value": el.value, "text": el.text};
 			i++;
 			properties.push({
 				name: "Option " + i,
 				key: "option" + i,
 				//index: i - 1,
-				optionNode: this,
+				optionNode: el,
 				inline:true,
 				inputtype: TextValueInput,
 				data: data,
 				onChange: function(node, value, input) {
 					
-					option = $(this.optionNode);
+					option = this.optionNode;
 					
 					//if remove button is clicked remove option and render row properties
-					if (input.nodeName == 'BUTTON')
-					{
+					if (input.nodeName == 'BUTTON') {
 						option.remove();
 						Vvveb.Components.render("html/selectinput");
 						return node;
 					}
 
-					if (input.name == "value") option.attr("value", value); 
-					else if (input.name == "text") option.text(value);
-					
+					if (input.name == "value") option.setAttribute("value", value); 
+					else if (input.name == "text") option.textContent = value;
 					return node;
 				},	
 			});
 		});
+
 		//remove all option properties
 		this.properties = this.properties.filter(function(item) {
 			return item.key.indexOf("option") === -1;
@@ -539,7 +547,7 @@ Vvveb.Components.extend("_base", "html/selectinput", {
         data: {text:"Add option", icon:"la-plus"},
         onChange: function(node)
         {
-			 $(node).append('<option value="value">Text</option>');
+			 node.append(generateElements('<option value="value">Text</option>')[0]);
 			 
 			 //render component properties again to include the new column inputs
 			 Vvveb.Components.render("html/selectinput");
@@ -1003,6 +1011,7 @@ Vvveb.Components.extend("_base", "html/form", {
 
 Vvveb.Components.extend("_base", "html/tablerow", {
     nodes: ["tr"],
+    image: "icons/table.svg",
     name: "Table Row",
     html: "<tr><td>Cell 1</td><td>Cell 2</td><td>Cell 3</td></tr>",
     properties: [{
@@ -1033,18 +1042,35 @@ Vvveb.Components.extend("_base", "html/tablerow", {
 });
 Vvveb.Components.extend("_base", "html/tablecell", {
     nodes: ["td"],
+    image: "icons/table.svg",
     name: "Table Cell",
     html: "<td>Cell</td>"
 });
 
 Vvveb.Components.extend("_base", "html/tableheadercell", {
     nodes: ["th"],
+    image: "icons/table.svg",
     name: "Table Header Cell",
     html: "<th>Head</th>"
 });
 
+Vvveb.Components.extend("_base", "html/tablebody", {
+    nodes: ["tbody"],
+    image: "icons/table.svg",
+    name: "Table Body",
+    html: "<tbody>Table body</tbody>"
+});
+
+Vvveb.Components.extend("_base", "html/tablefooter", {
+    nodes: ["tfooter"],
+    image: "icons/table.svg",
+    name: "Table Footer",
+    html: "<tfooter>Table footer</tfooter>"
+});
+
 Vvveb.Components.extend("_base", "html/tablehead", {
     nodes: ["thead"],
+    image: "icons/table.svg",
     name: "Table Head",
     html: "<thead><tr><th>Head 1</th><th>Head 2</th><th>Head 3</th></tr></thead>",
     properties: [{
@@ -1108,8 +1134,7 @@ Vvveb.Components.extend("_base", "html/table", {
 				</tr>
 			  </tbody>
 			</table>`,
-    properties: [
-	{
+    properties: [{
         name: "Type",
         key: "type",
 		htmlAttr: "class",
@@ -1122,34 +1147,33 @@ Vvveb.Components.extend("_base", "html/table", {
 			}, {
 				value: "table-primary",
 				text: "Primary"
-			}, {
+			},{
 				value: "table-secondary",
 				text: "Secondary"
-			}, {
+			},{
 				value: "table-success",
 				text: "Success"
-			}, {
+			},{
 				value: "table-danger",
 				text: "Danger"
-			}, {
+			},{
 				value: "table-warning",
 				text: "Warning"
-			}, {
+			},{
 				value: "table-info",
 				text: "Info"
-			}, {
+			},{
 				value: "table-light",
 				text: "Light"
-			}, {
+			},{
 				value: "table-dark",
 				text: "Dark"
-			}, {
+			},{
 				value: "table-white",
 				text: "White"
 			}]
         }
-    },
-	{
+    }, {
         name: "Responsive",
         key: "responsive",
         htmlAttr: "class",
@@ -1159,8 +1183,7 @@ Vvveb.Components.extend("_base", "html/table", {
             on: "table-responsive",
             off: ""
         }
-    },   
-	{
+    }, {
         name: "Small",
         key: "small",
         htmlAttr: "class",
@@ -1170,8 +1193,7 @@ Vvveb.Components.extend("_base", "html/table", {
             on: "table-sm",
             off: ""
         }
-    },   
-	{
+    }, {
         name: "Hover",
         key: "hover",
         htmlAttr: "class",
@@ -1181,8 +1203,7 @@ Vvveb.Components.extend("_base", "html/table", {
             on: "table-hover",
             off: ""
         }
-    },   
-	{
+    }, {
         name: "Bordered",
         key: "bordered",
         htmlAttr: "class",
@@ -1192,8 +1213,7 @@ Vvveb.Components.extend("_base", "html/table", {
             on: "table-bordered",
             off: ""
         }
-    },   
-	{
+    }, {
         name: "Striped",
         key: "striped",
         htmlAttr: "class",
@@ -1203,8 +1223,7 @@ Vvveb.Components.extend("_base", "html/table", {
             on: "table-striped",
             off: ""
         }
-    },   
-	{
+    }, {
         name: "Inverse",
         key: "inverse",
         htmlAttr: "class",

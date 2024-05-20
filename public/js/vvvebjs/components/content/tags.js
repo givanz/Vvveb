@@ -71,7 +71,7 @@ class TagsComponent extends ServerComponent{
 					icon:"la la-search",
 					extraclass:"btn-sm",
 					checked:true,
-				}, {
+				},{
 					value: "automatic",
 					icon:"la la-cog",
 					text: "Configuration",
@@ -79,10 +79,11 @@ class TagsComponent extends ServerComponent{
 					extraclass:"btn-sm",
 				}],
 			},
-			
 			setGroup: group => {
-				$('.mb-3[data-group]').attr('style','display:none !important');
-				$('.mb-3[data-group="'+ group + '"]').attr('style','');
+				document.querySelectorAll('.mb-3[data-group]').forEach(e => e.classList.add("d-none"));
+				document.querySelectorAll('.mb-3[data-group="'+ group + '"].d-none').forEach((el, i) => {
+					el.classList.remove("d-none");
+				});				
 				//return element;
 			}, 		
 			onChange : function(element, value, input)  {
@@ -108,18 +109,18 @@ class TagsComponent extends ServerComponent{
 		}];
 	}
 
-    init(node)
-	{
-		console.log(node);
-		$('.mb-3[data-group]').attr('style','display:none !important');
+
+    init(node) {
+		document.querySelectorAll('.mb-3[data-group]').forEach((el, i) => {
+			el.classList.add("d-none");
+		});			
 		
-		if (node.dataset.vSource != undefined)
-		{
-			$('.mb-3[data-group="'+ node.dataset.vSource + '"]').attr('style','');
-		} else
-		{		
-			$('.mb-3[data-group]:first').attr('style','');
-		}
+		let source = node.dataset.vSource;
+		if (!source) {
+			source = "automatic";
+		} 
+
+		document.querySelectorAll('.mb-3[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
 	}
 }
 

@@ -165,13 +165,12 @@ let template =
 
     init(node)
 	{
-		$('.mb-3[data-v-group]').attr('style','display:none !important');
-		if (node.dataset.type != undefined)
-		{
-			$('.mb-3[data-v-group="'+ node.dataset.type + '"]').attr('style','');
-		} else
-		{		
-			$('.mb-3[data-v-group]:first').attr('style','');
+		if (node.dataset.type != undefined) {
+			document.querySelectorAll('.mb-3[data-group="'+ + node.dataset.type + '"]').forEach((el, i) => {
+				el.classList.remove("d-none");
+			});			
+		} else {		
+			document.querySelector('.mb-3[data-group]:first').classList.remove("d-none");
 		}
 	}
 }

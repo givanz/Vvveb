@@ -78,16 +78,16 @@ class LanguageComponent extends ServerComponent{
 				options: [{
 					value: "1",
 					text: "Default"
-				}, {
+				},{
 					value: "2",
 					text: "Date added 1"
-				}, {
+				},{
 					value: "3",
 					text: "Date added"
-				}, {
+				},{
 					value: "4",
 					text: "Date modified"
-				}, {
+				},{
 					value: "5",
 					text: "Sales"
 				}]
@@ -95,16 +95,18 @@ class LanguageComponent extends ServerComponent{
 		}];
 	}
 
-    init(node)
-	{
-		$('.mb-3[data-group]').attr('style','display:none !important');
+
+    init(node) {
+		document.querySelectorAll('.mb-3[data-group]').forEach((el, i) => {
+			el.classList.add("d-none");
+		});			
 		
 		let source = node.dataset.vSource;
 		if (!source) {
 			source = "automatic";
 		} 
-		
-		$('.mb-3[data-group="'+ source + '"]').attr('style','');
+
+		document.querySelectorAll('.mb-3[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
 	}
 }
 
