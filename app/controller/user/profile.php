@@ -27,10 +27,7 @@ use Vvveb\Sql\UserSQL;
 use Vvveb\System\User\User;
 
 class Profile extends Base {
-	function index() {
-		$userModel = new UserSQL();
-		$user      = [];
-
+	function save() {
 		if (isset($this->request->post['user'])) {
 			$user            = $this->request->post['user'];
 			$user['user_id'] = $this->global['user_id'];
@@ -39,6 +36,7 @@ class Profile extends Base {
 			$result = User::update($user, ['user_id' => $this->global['user_id']]);
 
 			if (! $result) {
+				$userModel          = new UserSQL();
 				$this->view->errors = [$userModel->error];
 			} else {
 				$message               =  __('Profile saved!');
@@ -46,9 +44,13 @@ class Profile extends Base {
 			}
 		}
 
+		$this->index();
+	}
+
+	function index() {
 		$user = User::get(['user_id' => $this->global['user_id']]);
 		unset($user['password']);
 
-		$this->view->user 	  = $user;
+		$this->view->user = $user;
 	}
 }
