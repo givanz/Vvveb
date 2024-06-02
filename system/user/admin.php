@@ -22,10 +22,14 @@
 
 namespace Vvveb\System\User;
 
-use \Vvveb\Sql\AdminSQL;
+use Vvveb\Sql\AdminSQL;
 use Vvveb\System\PageCache;
+use function Vvveb\session as sess;
+
 
 class Admin extends Auth {
+	private static $namespace = 'admin';
+
 	private static function setUserData(&$data) {
 		if (isset($data['password'])) {
 			$data['password'] = self :: password($data['password']);
@@ -43,7 +47,7 @@ class Admin extends Auth {
 	}
 
 	public static function add($data) {
-		$admin = new \Vvveb\Sql\AdminSQL();
+		$admin = new AdminSQL();
 
 		//check if email is already registerd
 		if ($adminInfo = $admin->get(['email'=> $data['email']])) {
@@ -54,31 +58,31 @@ class Admin extends Auth {
 
 		self::setUserData($data);
 
-		return $admin->add(['admin' => $data]);
+		return $admin->add([self :: $namespace => $data]);
 	}
 
 	public static function hasCapability($capability) {
-		$admin        = \Vvveb\session('admin', false);
+		$admin        = sess(self :: $namespace, false);
 		$capabilities = $admin['permissions']['capabilities'] ?? [];
 
 		return in_array($capability, $capabilities);
 	}
 
 	public static function siteAccess() {
-		$admin       = \Vvveb\session('admin', false);
+		$admin       = sess(self :: $namespace, false);
 
 		return $site_access = $admin['site_access'] ?? [];
 	}
 
 	public static function hasSiteAccess($site_id) {
-		$admin       = \Vvveb\session('admin', false);
+		$admin       = sess(self :: $namespace, false);
 		$site_access = $admin['site_access'] ?? [];
 
 		return in_array($site_id, $site_access);
 	}
 
 	public static function hasPermission($permission) {
-		$admin       = \Vvveb\session('admin', false);
+		$admin       = sess(self :: $namespace, false);
 		$permissions = $admin['permissions'] ?: [];
 		$allow       = $permissions['allow'] ?? [];
 		$deny        = $permissions['deny'] ?? [];
@@ -87,11 +91,11 @@ class Admin extends Auth {
 	}
 
 	public static function update($data, $condition) {
-		$admin = new \Vvveb\Sql\AdminSQL();
+		$admin = new AdminSQL();
 
 		self::setUserData($data);
 
-		return $admin->edit(array_merge(['admin' => $data], $condition));
+		return $admin->edit(array_merge([self :: $namespace => $data], $condition));
 	}
 
 	public static function get($data) {
@@ -157,7 +161,7 @@ class Admin extends Auth {
 		}
 
 		unset($adminInfo['password']);
-		\Vvveb\session(['admin' => $adminInfo + $additionalInfo]);
+		sess([self :: $namespace => $adminInfo + $additionalInfo]);
 
 		PageCache::disable('user');
 
@@ -167,10 +171,28 @@ class Admin extends Auth {
 	public static function logout() {
 		PageCache::enable('user');
 
-		return \Vvveb\session(['admin' => false]);
+		return sess([self :: $namespace => false]);
 	}
 
 	public static function current() {
-		return \Vvveb\session('admin', []);
+		return sess(self :: $namespace, []);
+	}
+
+	/**
+	 * @ Update admin session data
+	 * @param mixed $data 
+	 *
+	 * @return mixed 
+	 */
+	public static function session($data) {
+		$current = self :: current();
+
+		if ($current && $data && is_array($data)) {
+			$current = array_merge($current, $data);
+
+			return sess([self :: $namespace => $current]);
+		}
+
+		return false;
 	}
 }

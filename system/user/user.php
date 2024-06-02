@@ -23,10 +23,14 @@
 namespace Vvveb\System\User;
 
 use Vvveb\System\PageCache;
+use Vvveb\Sql\UserSQL;
+use function Vvveb\session as sess;
 
 class User extends Auth {
+	private static $namespace = 'user';
+
 	public static function add($data) {
-		$user = new \Vvveb\Sql\UserSQL();
+		$user = new \UserSQL();
 
 		//check if email is already registerd
 		if ($userInfo = $user->get(['email'=> $data['email']])) {
@@ -41,11 +45,11 @@ class User extends Auth {
 
 		$data['status']   = 1; //0
 
-		return $user->add(['user' => $data]);
+		return $user->add([self :: $namespace => $data]);
 	}
 
 	public static function update($data, $condition) {
-		$user = new \Vvveb\Sql\UserSQL();
+		$user = new \UserSQL();
 
 		if (empty($data['password'])) {
 			unset($data['password']);
@@ -54,11 +58,11 @@ class User extends Auth {
 		}
 		//$data['status']   = 0;
 
-		return $user->edit(array_merge(['user' => $data], $condition));
+		return $user->edit(array_merge([self :: $namespace => $data], $condition));
 	}
 
 	public static function get($data) {
-		$user = new \Vvveb\Sql\UserSQL();
+		$user = new \UserSQL();
 		//check user email and that status is active
 		$loginInfo = []; //['status' => 1];
 		$userInfo  = false;
@@ -67,8 +71,8 @@ class User extends Auth {
 			$loginInfo['email'] = $data['email'];
 		}
 
-		if (isset($data['user'])) {
-			$loginInfo['username'] = $data['user'];
+		if (isset($data[self :: $namespace])) {
+			$loginInfo['username'] = $data[self :: $namespace];
 		}
 
 		if (isset($data['username'])) {
@@ -109,17 +113,17 @@ class User extends Auth {
 		}
 
 		unset($userInfo['password']);
-		\Vvveb\session(['user' => $userInfo]);
+		sess([self :: $namespace => $userInfo]);
 
-		PageCache::disable('user');
+		PageCache::disable(self :: $namespace);
 
 		return $userInfo;
 	}
 
 	public static function logout() {
-		PageCache::enable('user');
+		PageCache::enable(self :: $namespace);
 
-		return \Vvveb\session(['user' => false]);
+		return sess([self :: $namespace => false]);
 	}
 
 	public static function hash($data, $salt) {
@@ -154,7 +158,7 @@ class User extends Auth {
 	 * @return mixed 
 	 */
 	public static function current() {
-		return \Vvveb\session('user', []);
+		return sess(self :: $namespace, []);
 	}
 
 	/**
@@ -169,7 +173,7 @@ class User extends Auth {
 		if ($current && $data && is_array($data)) {
 			$current = array_merge($current, $data);
 
-			return \Vvveb\session(['user' => $current]);
+			return sess([self :: $namespace => $current]);
 		}
 
 		return false;
