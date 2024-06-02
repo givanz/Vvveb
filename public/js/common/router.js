@@ -3,31 +3,30 @@ let Router = {
 	init: function() {
 		let events = [];
 		
-		document.querySelectorAll("[data-v-vvveb-action]").forEach(function (el, i) {
+		const handleEvent = e => {
+			let element = e.target.closest("[data-v-vvveb-action]");
 
-			let on = "click";
-			if (el.dataset.vVvvebOn) on = el.dataset.vVvvebOn;
-			var event = '[data-v-vvveb-action="' + el.dataset.vVvvebAction + '"]';
+			if (element) {
+				let namespace = element.dataset.vVvvebAction.split(".");
 
-			if (events.indexOf(event) > -1) return;
-			events.push(event);
-			
-			let namespace = el.dataset.vVvvebAction.split(".");
+				if (!window[namespace[0]]) {
+					console.error('Controller %s is not available', namespace[0], element);
+					return;
+				}
 
-			if (!window[namespace[0]]) {
-				console.error('Controller %s is not available', namespace[0], el);
-				return;
+				if (!window[namespace[0]][namespace[1]]) {
+					console.error('Method %s is not available for %s', namespace[1], namespace[0], element);
+					return;
+				}
+
+				let fn = window[namespace[0]][namespace[1]];
+				fn.call(e.target, e, element, this);
+				//element.addEventListener(on, fn);
 			}
-
-			if (!window[namespace[0]][namespace[1]]) {
-				console.error('Method %s is not available for %s', namespace[1], namespace[0], el);
-				return;
-			}
-
-			let fn = window[namespace[0]][namespace[1]];
-			
-			el.addEventListener(on, fn);
-		});
+		};
+		
+		document.addEventListener("click", handleEvent);
+		document.querySelectorAll("[data-v-vvveb-action][data-v-vvveb-on]").forEach(e => document.addEventListener(e.dataset.vVvvebOn, handleEvent));
 	},
 	
 }	
