@@ -211,7 +211,7 @@ Vvveb.Components.extend("_base", "html/image", {
 			return node;
 		}, 
 		init: function (node) {
-			let value = node.parentNode.tagName.toLowerCase() == "a"
+			let value = node.parentNode.tagName.toLowerCase() == "a";
 			this.setGroup(value);
 			return value;
 		}

@@ -188,6 +188,7 @@ Vvveb.imgBaseUrl =  Vvveb.baseUrl;
 Vvveb.ComponentsGroup = {};
 Vvveb.SectionsGroup = {};
 Vvveb.BlocksGroup = {};
+Vvveb.StylesGroup = {};
 
 Vvveb.Components = {
 	
@@ -617,6 +618,19 @@ Vvveb.Sections = {
 	},
 };	
 
+Vvveb.Styles = {
+	
+	_styles: {},
+
+	get: function(type) {
+		return this._styles[type];
+	},
+
+	add: function(type, data) {
+		data.type = type;
+		this._styles[type] = data;
+	},
+};	
 
 
 Vvveb.WysiwygEditor = {
@@ -834,6 +848,7 @@ Vvveb.Builder = {
 		self.loadControlGroups();
 		self.loadBlockGroups();
 		self.loadSectionGroups();
+		self.loadStylesGroups();
 		
 		self.selectedEl = null;
 		self.highlightEl = null;
@@ -949,13 +964,6 @@ Vvveb.Builder = {
 						if (section.image) {
 
 							let image = ((section.image.indexOf('/') == -1) ? Vvveb.imgBaseUrl:'') + section.image;
-							
-							/*
-							Object.assign(item.style,{
-								//backgroundImage: "url(" + image + ")",
-								//backgroundRepeat: "no-repeat"
-							});*/
-							
 							item.querySelector("img").setAttribute("src", image);
 						}
 						
@@ -1001,18 +1009,55 @@ Vvveb.Builder = {
 						if (block.image) {
 
 							let image = ((block.image.indexOf('/') == -1) ? Vvveb.imgBaseUrl:'') + block.image;
-							/*
-							Object.assign(item.style,{
-								//backgroundImage: "url(" + image + ")",
-								//backgroundRepeat: "no-repeat"
-							});*/
-							
 							item.querySelector("img").setAttribute("src", image);
-							
-							
 						}
 						
 						blocksSubList.append(item);
+					}
+				}
+			}
+		});
+	 },	
+	 
+	 loadStylesGroups : function() {	
+
+		let stylesList = document.querySelectorAll(".styles-list");
+		let item = {};
+
+		stylesList.forEach(function (list, i) {
+			let type = list.dataset.type;
+			list.replaceChildren();
+
+			for (group in Vvveb.BlocksGroup) {
+				list.append(generateElements(
+				`<li class="header" data-section="${group}"  data-search="">
+					<label class="header" for="${type}_stylehead_${group}">
+						${group}<div class="header-arrow"></div>
+					</label>
+					<input class="header_check" type="checkbox" checked="true" id="${type}_stylehead_${group}">
+					<ol></ol>
+				</li>`)[0]);
+
+				let stylesSubList = list.querySelector('li[data-section="' + group + '"]  ol');
+				styles = Vvveb.BlocksGroup[ group ];
+
+				for (i in styles) {
+					styleType = styles[i];
+					style = Vvveb.Blocks.get(styleType);
+					
+					if (style) {
+						item = generateElements(`<li data-section="${group}" data-drag-type="style" data-type="${styleType}" data-search="${style.name.toLowerCase()}">
+									<span class="name">${style.name}</span>
+									<img class="preview" src="" loading="lazy">
+								</li>`)[0];
+
+						if (style.image) {
+
+							let image = ((style.image.indexOf('/') == -1) ? Vvveb.imgBaseUrl:'') + style.image;
+							item.querySelector("img").setAttribute("src", image);
+						}
+						
+						stylesSubList.append(item);
 					}
 				}
 			}
@@ -1291,6 +1336,9 @@ Vvveb.Builder = {
 	selectNode:  function(node) {
 		let self = this;
 		let SelectBox = document.getElementById("select-box");
+		let SelectActions = document.getElementById("select-actions");
+		let AddSectionBtn = document.getElementById("add-section-btn");
+		let elementType = this._getElementType(node);
 		
 		if (!node) {
 			SelectBox.style.display = "none";
@@ -1300,9 +1348,17 @@ Vvveb.Builder = {
 		if (self.texteditEl && (self.selectedEl != node)) {
 			Vvveb.WysiwygEditor.destroy(self.texteditEl);
 			self.selectPadding = 0;
-			document.getElementById("select-box").classList.remove("text-edit");
-			document.getElementById("select-actions").style.display = "";
+			SelectBox.classList.remove("text-edit");
+			SelectActions.style.display = "";
 			self.texteditEl = null;
+		}
+
+		if (elementType[1] == "BODY") {
+			SelectActions.style.display = "none";
+			AddSectionBtn.style.display = "none";
+		} else {
+			SelectActions.style.display = "";
+			AddSectionBtn.style.display = "";
 		}
 
 		let target = node;
@@ -1324,7 +1380,6 @@ Vvveb.Builder = {
 			return false;
 		}
 			 
-		let elementType = this._getElementType(node);
 		document.querySelector("#highlight-name .type").innerHTML = elementType[0];
 		document.querySelector("#highlight-name .name").innerHTML = elementType[1];
 		
@@ -2242,11 +2297,13 @@ Vvveb.CodeEditor = {
 	isActive: false,
 	oldValue: '',
 	doc:false,
+	textarea:false,
 	
 	init: function(doc) {
-		document.querySelector("#vvveb-code-editor textarea").val(Vvveb.Builder.getHtml());
+		this.textarea = document.querySelector("#vvveb-code-editor textarea");
+		this.textarea.value = Vvveb.Builder.getHtml();
 
-		document.querySelector("#vvveb-code-editor textarea").keyup(function ()  {
+		this.textarea.addEventListener("keyup", e => {
 			delay(() => Vvveb.Builder.setHtml(this.value), 1000);
 		});
 
@@ -2262,7 +2319,7 @@ Vvveb.CodeEditor = {
 
 	setValue: function(value) {
 		if (this.isActive) {
-			document.querySelector("#vvveb-code-editor textarea").val(Vvveb.Builder.getHtml());
+			this.textarea.value = Vvveb.Builder.getHtml();
 		}
 	},
 
@@ -2280,6 +2337,40 @@ Vvveb.CodeEditor = {
 	}
 }
 
+
+Vvveb.CssEditor = {
+	
+	isActive: false,
+	oldValue: '',
+	doc:false,
+	textarea:false,
+	
+	init: function(doc) {
+		this.textarea = document.getElementById("css-editor")
+		this.textarea.value = Vvveb.StyleManager.getCss();
+		let self = this;
+		
+		document.querySelectorAll('[href="#css-tab"],[href="#configuration"]').forEach( t => t.addEventListener("click", e => {
+			self.textarea.value = Vvveb.StyleManager.getCss();
+		}));
+		
+		this.textarea.addEventListener("keyup", e => {
+			delay(() => Vvveb.StyleManager.setCss(self.textarea.value), 1000);
+		});
+	},
+
+	getValue: function() {
+		return this.textarea.value;
+	},
+	
+	setValue: function(value) {
+		this.textarea.value = value;
+		Vvveb.StyleManager.setCss(value);
+	},
+
+	destroy: function() {
+	}
+}
 
 function displayToast(bg, title, message, id = "top-toast") {
 	document.querySelector("#" + id + " .toast-body .message").innerHTML = message;
@@ -2410,7 +2501,7 @@ Vvveb.Gui = {
 	viewport : function () {
 		document.getElementById("canvas").setAttribute("class", this.dataset.view);
 		document.getElementById("iframe1").removeAttribute("style");
-		document.querySelector(".responsive-btns .active").classList.remove("active");
+		document.querySelectorAll(".responsive-btns .active").forEach(e => e.classList.remove("active"));
 		if (this.dataset.view) this.classList.add("active");
 	},
 	
@@ -2505,11 +2596,13 @@ Vvveb.Gui = {
 					Vvveb.FileManager.loadPage(data.name);
 					Vvveb.FileManager.scrollToPage(page);
 					bsModal.hide();
-			}, this.action);
+			});
 		};
 		
-		form.removeEventListener("submit", submitForm);
-		form.addEventListener("submit", submitForm);
+		if (!form.dataset.init) {
+			form.addEventListener("submit", submitForm);
+			form.dataset.init = true;
+		}
 	},
 	
 	setDesignerMode : function () {
@@ -2593,47 +2686,56 @@ Vvveb.StyleManager = {
 			for (let i = 0; i < doc.styleSheets.length; i++) {
 					_style = doc.styleSheets[i];
 					if (_style.ownerNode.id && _style.ownerNode.id == "vvvebjs-styles") {
-						style = _style;
+						style = _style.ownerNode;
 						break;
 					}
 			}
 			
+			document.getElementById("vvvebjs-styles-css")?.remove();
+			
 			//if style element does not exist create it			
 			if (!style) {
-				this.cssContainer = generateElements('<style id="vvvebjs-styles"></style>')[0];
-				doc.head.append(this.cssContainer);
-				return this.cssContainer;
+				style = generateElements('<style id="vvvebjs-styles"></style>')[0];
+				doc.head.append(style);
+				return this.cssContainer = style;
 			}
 			
-			//if style exist then load all css styles for editor
-			for (let j = 0; j < style.cssRules.length; j++) {
-				media = (typeof style.cssRules[j].media === "undefined") ? 
-					"desktop" : (style.cssRules[j].media[0] === "screen and (max-width: 1220px)") 
-					? "tablet" : (style.cssRules[j].media[0] === "screen and (max-width: 320px)") 
-					? "mobile" : "desktop";
-				
-				selector = (media === "desktop") ? style.cssRules[j].selectorText : style.cssRules[j].cssRules[0].selectorText;
-				styles = (media === "desktop") ? style.cssRules[j].style : style.cssRules[j].cssRules[0].style;
+			//if it exists
+			this.cssContainer = style;
+			this.loadCss();
 
-				if (media) {
-					this.styles[media] = this.styles[media] ?? {};
-					if (selector) {
-						this.styles[media][selector] = {};
+			return this.cssContainer; 
+		}
+	},	
+	
+	loadCss: function() {
+		let style = this.cssContainer.sheet;
+		//if style exist then load all css styles for editor
+		for (let j = 0; j < style.cssRules.length; j++) {
+			media = (typeof style.cssRules[j].media === "undefined") ? 
+				"desktop" : (style.cssRules[j].media[0] === "screen and (max-width: 1220px)") 
+				? "tablet" : (style.cssRules[j].media[0] === "screen and (max-width: 320px)") 
+				? "mobile" : "desktop";
+			
+			selector = (media === "desktop") ? style.cssRules[j].selectorText : style.cssRules[j].cssRules[0].selectorText;
+			styles = (media === "desktop") ? style.cssRules[j].style : style.cssRules[j].cssRules[0].style;
+
+			if (media) {
+				this.styles[media] = this.styles[media] ?? {};
+				if (selector) {
+					this.styles[media][selector] = {};
+				
+					for (let k = 0; k < styles.length; k++) {
+								
+						property = styles[k];
+						value = styles[property];
 					
-						for (let k = 0; k < styles.length; k++) {
-									
-							property = styles[k];
-							value = styles[property];
-						
-							this.styles[media][selector][property] = value;
-						}
+						this.styles[media][selector][property] = value;
 					}
 				}
 			}
-
-			return this.cssContainer = doc.getElementById("vvvebjs-styles"); 
-		}
-	},	
+		}		
+	},
 	
 	getSelectorForElement: function(element) {
 		if (!element) return '';
@@ -2648,6 +2750,13 @@ Vvveb.StyleManager = {
 						return "." + className;
 					}
 				}).join("");
+
+			//element (tag) selector
+			let tag = currentElement.tagName.toLowerCase();
+			//exclude top most element body unless the parent element is body
+			if (tag == "body" && selector.length > 1) {
+				break;
+			}
 			
 			//stop at a unique element (with id)
 			if (currentElement.id) {
@@ -2657,14 +2766,9 @@ Vvveb.StyleManager = {
 			} else if (classSelector) {
 				//class selector
 				elementSelector = classSelector;
-				
 			} else {
-				//element (tag) selector
-				let tag = currentElement.tagName.toLowerCase();
-				//exclude top most element body unless the parent element is body
-				if (tag != "body" || (tag == "body" && selector.length <= 1)) {
-					elementSelector = tag
-				}
+				//element selector
+				elementSelector = tag
 			}
 			
 			if (elementSelector) {
@@ -2714,6 +2818,15 @@ Vvveb.StyleManager = {
 		//return element.css(styleProp, value);
 	},
 	
+	setCss: function (css) {
+		this.cssContainer.innerHTML = css;
+		this.loadCss();
+	},
+
+	getCss: function (css) {
+		return this.cssContainer.innerHTML;
+	},
+	
 	generateCss: function (media) {
 		//let css = "";
 		//for (selector in this.styles[media]) {
@@ -2732,22 +2845,22 @@ Vvveb.StyleManager = {
 		let css = "";
 		for (media in this.styles) {
 			if (media === "tablet" || media === "mobile") {
-				css += `@media screen and (max-width: ${(media === 'tablet') ? this.tabletWidth : this.mobileWidth}){`
+				css += `@media screen and (max-width: ${(media === 'tablet') ? this.tabletWidth : this.mobileWidth}){\n\n`
 			}
 			for (selector in this.styles[media]) {
-				css += `${selector} {`;	
+				css += `${selector} {\n`;	
 				for (property in this.styles[media][selector]) {
 					value = this.styles[media][selector][property];
-					css += `${property}: ${value};`;
+					css += `\t${property}: ${value};\n`;
 				}
-				css += '}';
+				css += '}\n\n';
 			}
 			if (media === "tablet" || media === "mobile") {
-				css += `}`
+				css += `}\n\n`
 			}
 		}
 
-		this.cssContainer.innerHTML = css;
+		return this.cssContainer.innerHTML = css;
 	},
 	
 	
@@ -2914,7 +3027,7 @@ Vvveb.SectionList = {
 		document.querySelector(this.selector).addEventListener("click", function (e) {
 			let element = e.target.closest(":scope > div .controls");
 			if (element) {
-				let node = e.currentTarget.parentNode._node;
+				let node = element.parentNode._node;
 				if (node) {
 					node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 					//node.click();
@@ -2927,7 +3040,7 @@ Vvveb.SectionList = {
 		document.querySelector(this.selector).addEventListener("dblclick", function (e) {
 			let element = e.target.closest(":scope > div");
 			if (element) {
-				node = e.currentTarget._node;
+				node = element._node;
 				node.click();
 			}
 		});
@@ -2936,7 +3049,7 @@ Vvveb.SectionList = {
 		document.querySelector(this.selector).addEventListener("click", function (e) {
 			let element = e.target.closest("li[data-component] label");
 			if (element) {
-				let node = e.currentTarget.parentNode._node;
+				let node = element.parentNode._node;
 				if (node) {
 					node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 					node.click();
@@ -2947,7 +3060,7 @@ Vvveb.SectionList = {
 		document.querySelector(this.selector).addEventListener("mouseenter", function (e) {
 			let element = e.target.closest("li[data-component] label");
 			if (element) {
-				node = document.querySelector(e.currentTarget.parentNode._node);
+				node = document.querySelector(element.parentNode._node);
 				node.css("outline","1px dashed blue");
 			}
 		});
@@ -2955,7 +3068,7 @@ Vvveb.SectionList = {
 		document.querySelector(this.selector).addEventListener("mouseleave", function (e){
 			let element = e.target.closest("li[data-component] label");
 			if (element) {
-				node = document.querySelector(e.currentTarget.parentNode._node);
+				node = document.querySelector(element.parentNode._node);
 				node.css("outline","");
 				if (node.getAttribute("style") == "") node.removeAttribute("style");
 			}
@@ -2968,7 +3081,7 @@ Vvveb.SectionList = {
 		document.querySelector(this.selector).addEventListener("click", function (e) {
 			let element = e.target.closest(".delete-btn");
 			if (element) {
-				let section = e.currentTarget.closest(".section-item");
+				let section = element.closest(".section-item");
 				let node = section._node;
 				node.remove();
 				section.remove();
@@ -2977,24 +3090,29 @@ Vvveb.SectionList = {
 				e.preventDefault();
 			}
 		});
-		
-		document.querySelector(".sections-list").addEventListener("mouseenter", function (e) {
-			let element = e.target.closest("li[data-section]");
+
+		let sectionIn;
+		let img = document.querySelector(".block-preview img");
+		document.querySelector(".sections-list").addEventListener("mouseover", function (e) {
+			let element = e.target.closest("li[data-type]");
 			if (element) {
-				let src = document.querySelector("img", this).getAttribute("src");
-				document.querySelector(".block-preview img").setAttribute("src", src ).style.display = "";
+				if (sectionIn != element) {
+					let src = element.querySelector("img").getAttribute("src");
+					sectionIn = element;
+					img.setAttribute("src", src);
+					img.style.display = "";
+				}
+			} else {
+				sectionIn = element;
+				img.setAttribute("src", "");
+				img.style.display = "none";
 			}
 		})
 		
-		document.querySelector(".sections-list").addEventListener("mouseleave", function (e) {
-			let element = e.target.closest("li[data-section]");
-			if (element) {
-				document.querySelector(".block-preview img").setAttribute("src", "").style.display = "none";
-			}
-		});
+
 		/*
 		document.querySelector(this.selector).addEventListener("click", ".up-btn", function (e) {
-			let section = e.currentTarget.closest(".section-item");
+			let section = e.target.closest(".section-item");
 			let node = section._node;
 			Vvveb.Builder.moveNodeUp(node);
 			Vvveb.Builder.moveNodeUp(section);
@@ -3004,7 +3122,7 @@ Vvveb.SectionList = {
 
 
 		document.querySelector(this.selector).addEventListener("click", ".down-btn", function (e) {
-			let section = e.currentTarget.closest(".section-item");
+			let section = e.target.closest(".section-item");
 			let node = section._node;
 			Vvveb.Builder.moveNodeDown(node);
 			Vvveb.Builder.moveNodeDown(section);
@@ -3236,6 +3354,7 @@ Vvveb.TreeList = {
 				event.preventDefault();
 				let left = Math.max(event.clientX + offset[0], 0);
 				let top = Math.max(event.clientY + offset[1], 0);
+
 				if (left >= 0 && (left < (window.innerWidth - self.container.clientWidth))) self.container.style.left = left + "px";
 				if (top >= 0 && (top < (window.innerHeight - self.container.clientHeight))) self.container.style.top  = top + "px";
 			}
@@ -3255,23 +3374,17 @@ Vvveb.TreeList = {
 			}
 		})
 		
-		document.querySelector(this.selector).addEventListener("mouseenter", function (e) {
+		document.querySelector(this.selector).addEventListener("mousemove", function (e) {
 			let element = e.target.closest("li[data-component]");
 			if (element) {
 				node = element._treeNode;
-				node.css("outline","1px dashed blue");
+				
+				node.dispatchEvent(new MouseEvent("mousemove", {
+					bubbles: true,
+					cancelable: true,
+				}));
 			}
 		})
-		
-		document.querySelector(this.selector).addEventListener("mouseleave", function (e){
-			let element = e.target.closest("li[data-component]");
-			if (element) {
-				node = element._treeNode;
-				node.css("outline","");
-				if (node.getAttribute("style") == "") node.removeAttribute("style");
-			}
-		});
-		
 	},
 	
 	selectComponent: function(node) {
