@@ -29,7 +29,9 @@ abstract class PaymentMethod {
 		$this->cart = $cart;
 	}
 
-	abstract public function getMethod();
-
 	abstract public function init();
+
+	abstract public function getMethod($checkoutInfo = []);
+
+	abstract public function setMethod();
 }

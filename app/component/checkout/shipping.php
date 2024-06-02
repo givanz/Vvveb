@@ -22,18 +22,31 @@
 
 namespace Vvveb\Component\Checkout;
 
+use function Vvveb\session as sess;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Shipping as ShippingApi;
 
 class Shipping extends ComponentBase {
 	public static $defaultOptions = [
+		'checkout' => null,
 	];
 
+	function cacheKey() {
+		//disable caching
+		return false;
+	}
+
 	function results() {
+		$checkoutInfo = [];
+
+		if ($this->options['checkout']) {
+			$checkoutInfo = sess('checkout', []) ?? [];
+		}
+
 		$results             = [];
 		$shipping            = ShippingApi::getInstance();
-		$results['shipping'] = $shipping->getMethods();
+		$results['shipping'] = $shipping->getMethods($checkoutInfo);
 		$results['count']    = $results['shipping'] ? count($results['shipping']) : 0;
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);

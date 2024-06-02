@@ -25,6 +25,8 @@ if($shippings && is_array($shippings['shipping'])) {
 		
 		@shipping input[data-v-shipping-*] = $shipping['@@__data-v-shipping-(*)__@@']
 		
+		@payment input[data-v-shipping-name]|addNewAttribute = <?php if ($shipping_method == $shipping['name']) echo 'checked';?>
+		
 		@shipping img[data-v-shipping-*]|src = $shipping['@@__data-v-shipping-(*)__@@']
 		
 		@shipping [data-v-shipping-*]|innerText = $shipping['@@__data-v-shipping-(*)__@@']

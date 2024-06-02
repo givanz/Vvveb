@@ -25,6 +25,8 @@ if($payments && is_array($payments['payment'])) {
 		
 		@payment input[data-v-payment-*] = $payment['@@__data-v-payment-(*)__@@']
 		
+		@payment input[data-v-payment-name][type=radio]|addNewAttribute = <?php if ($payment_method == $payment['name']) echo 'checked';?>
+		
 		@payment img[data-v-payment-*]|src = $payment['@@__data-v-payment-(*)__@@']
 		
 		@payment [data-v-payment-render]|innerText = <?php echo $payment['@@__data-v-payment-(*)__@@'] ?? '';?>

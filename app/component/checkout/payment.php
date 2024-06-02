@@ -22,23 +22,31 @@
 
 namespace Vvveb\Component\Checkout;
 
+use function Vvveb\session as sess;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Payment as PaymentApi;
 
 class Payment extends ComponentBase {
 	public static $defaultOptions = [
+		'checkout' => null,
 	];
 
-	//disable cache
-	function cache() {
+	function cacheKey() {
+		//disable caching
 		return false;
 	}
 
 	function results() {
+		$checkoutInfo = [];
+
+		if ($this->options['checkout']) {
+			$checkoutInfo = sess('checkout', []) ?? [];
+		}
+
 		$results            = [];
 		$payment            = PaymentApi::getInstance();
-		$results['payment'] = $payment->getMethods();
+		$results['payment'] = $payment->getMethods($checkoutInfo);
 		$results['count']   = $results['payment'] ? count($results['payment']) : 0;
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);

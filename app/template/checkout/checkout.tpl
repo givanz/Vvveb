@@ -4,7 +4,7 @@
 /* input elements */
 input[type="text"]|value = 
 <?php
-	$post = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? '';
+	$post = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? $this->checkout@@macro postNameToArrayKey("@@__name__@@")@@ ?? '';
 	$value = '@@__value__@@';
 	 if ($post) 
 		echo $post; 
@@ -13,7 +13,7 @@ input[type="text"]|value =
 
 input[type="email"]|value = 
 <?php
-	$post = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? '';
+	$post = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? $this->checkout@@macro postNameToArrayKey("@@__name__@@")@@ ?? '';
 	$value = '@@__value__@@';
 	 if ($post) 
 		echo $post; 
@@ -22,7 +22,7 @@ input[type="email"]|value =
 
 input[type="password"]|value = 
 <?php
-	$post = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? '';
+	$post = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? $this->checkout@@macro postNameToArrayKey("@@__name__@@")@@ ?? '';
 	$value = '@@__value__@@';
 	 if ($post) 
 		echo $post; 
@@ -33,7 +33,7 @@ input[type="password"]|value =
 /* textarea elements */
 textarea = 
 <?php
-	$post = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? '';
+	$post = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? $this->checkout@@macro postNameToArrayKey("@@__name__@@")@@ ?? '';
 	$value = '@@__value__@@';
 	 if ($post) 
 		echo $post; 
@@ -74,19 +74,26 @@ input[name="different_shipping_address"]|addNewAttribute =
 
 
 [data-v-payment] input[name="payment_method"]|addNewAttribute = <?php 
-	if (isset($_POST['payment_method']) && ($_POST['payment_method'] == $payment['name'])) echo ' checked';
+	$payment_method = $_POST['payment_method'] ?? $this->checkout['payment_method'] ?? '';
+	if ($payment_method == $payment['name']) echo ' checked';
 ?>
 
 [data-v-shipping] input[name="shipping_method"]|addNewAttribute = <?php 
-	if (isset($_POST['shipping_method']) && ($_POST['shipping_method'] == $shipping['name'])) echo ' checked';
+	$shipping_method = $_POST['shipping_method'] ?? $this->checkout['shipping_method'] ?? '';
+	if ($shipping_method == $shipping['name']) echo ' checked';
 ?>
 
 @country = [data-v-countries] option
 @country|deleteAllButFirstChild
 
+[data-v-countries]|before = <?php
+	$country_id = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? $this->checkout["@@__id__@@"] ?? false;
+?> 
+
 @country|before = <?php
 $count = 0;
 $country_index = 0;
+
 if(isset($this->countries) && is_array($this->countries)) {
 	foreach ($this->countries as $country_index => $country) {?>
 	
@@ -95,9 +102,36 @@ if(isset($this->countries) && is_array($this->countries)) {
 
 	@country|innerText = $country['name']	
 	@country|value = $country['country_id']	
-	@country|addNewAttribute = <?php if (isset($region['country_id']) && ($country['country_id'] == $region['country_id'])) echo 'selected';?>
+	@country|addNewAttribute = <?php if ($country_id && ($country['country_id'] == $country_id)) echo 'selected';?>
 	
 	@country|after = <?php 
+		$count++;
+	} 
+}?>
+
+
+@region = [data-v-regions] option
+@region|deleteAllButFirstChild
+
+[data-v-regions]|before = <?php
+	$region_id = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? $this->checkout["@@__id__@@"] ?? false;
+?> 
+
+@region|before = <?php
+$count = 0;
+$region_index = 0;
+
+if(isset($this->regions) && is_array($this->regions)) {
+	foreach ($this->regions as $region_index => $region) {?>
+	
+	[data-v-region-*]|innerText  = $region['@@__data-v-region-(*)__@@']
+	option[data-v-region-*]|value = $region['@@__data-v-region-(*)__@@']	
+
+	@region|innerText = $region['name']	
+	@region|value = $region['region_id']	
+	@region|addNewAttribute = <?php if ($region_id && ($region['region_id'] == $region_id)) echo 'selected';?>
+	
+	@region|after = <?php 
 		$count++;
 	} 
 }?>
