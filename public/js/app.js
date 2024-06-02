@@ -30,15 +30,15 @@ VvvebTheme.Ajax = {
 			url += '&_component_ajax=' + parameters["component"] + '&_component_id=' + parameters["component_id"];
 		}
 	
-		let loading = element.querySelector('.loading');
-		let btn = element.querySelector('.button-text');
+		let loading = element?.querySelector('.loading');
+		let btn = element?.querySelector('.button-text');
 		
 		if (loading && loading.classList.contains("d-none")) {
 			loading.classList.remove('d-none');
 			btn.classList.add('d-none');
 		}
 		
-		if (element.hasAttribute("button"))  {
+		if (element?.hasAttribute("button"))  {
 			element.setAttribute("disabled", "true");
 		}
 	
@@ -58,7 +58,7 @@ VvvebTheme.Ajax = {
 				controller.abort();
 				window.location.href = response.url; 
 			}
-			console.log(response);
+			
 			return response.text()
 		 })
 		.then(data => {
@@ -83,9 +83,9 @@ VvvebTheme.Ajax = {
 			}
 
 			if (callback) callback(data);
-
-			let loading = element.querySelector('.loading');
-			let btn = element.querySelector('.button-text');
+			
+			let loading = element?.querySelector('.loading');
+			let btn = element?.querySelector('.button-text');
 			
 			if (loading && btn.classList.contains("d-none")) {
 				loading.classList.add('d-none');
@@ -470,7 +470,7 @@ VvvebTheme.Gui = {
 	addToWishlist: function(e) {
 		let product = elementProduct(this);
 		let id = this.dataset.product_id ?? product.dataset.product_id;
-		let img = product.querySelector("[data-v-product-image],[data-v-product-image], [data-v-cart-product-image]").getAttribute("src");
+		let img = product.querySelector("img[data-v-product-image],img[data-v-product-image],img[data-v-cart-product-image]")?.getAttribute("src") ?? "";
 
 		if (!id) {
 			id = product.dataset.product_id;
@@ -489,8 +489,8 @@ VvvebTheme.Gui = {
 	
 	addToCompare: function(e) {
 		let product = elementProduct(this);
-		let id = this.dataset.product_id;
-		let img = product.querySelector("[data-v-product-image],[data-v-product-image], [data-v-cart-product-image]").getAttribute("src");
+		let id = this.dataset.product_id ?? product.dataset.product_id;
+		let img = product.querySelector("img[data-v-product-image],img[data-v-product-image],img[data-v-cart-product-image]")?.getAttribute("src") ?? "";
 
 		if (!id) {
 			id = product.dataset.product_id;
