@@ -30,7 +30,7 @@ use Vvveb\System\Update as UpdateSys;
 use function Vvveb\url;
 
 class Update extends Base {
-	private $steps = ['download', 'unzip', /*'backup',*/ 'copySystem', 'copyApp', 'copyInstall', 'copyAdmin', 'copyCore',  'copyConfig', 'copyPublic', 'copyPublicAdmin', 'copyPublicMedia', 'setPermissions', 'cleanUp', 'clearCache', 'complete'];
+	private $steps = ['download', 'unzip', /*'backup',*/ 'copySystem', 'copyAdmin', 'copyApp', 'copyInstall', 'copyCore',  'copyConfig', 'copyPublic', 'copyPublicAdmin', 'copyPublicMedia', 'setPermissions', 'cleanUp', 'clearCache', 'complete'];
 
 	function __construct() {
 		$this->update = new UpdateSys();
@@ -129,6 +129,8 @@ class Update extends Base {
 		$updateFile       = false;
 		$errorDownloadMsg = __('Error downloading update!');
 		$updateInfo       = $this->update->checkUpdates();
+		//don't load plugins during update to avoid possible conflicts
+		Admin::session('safemode', true);
 
 		try {
 			$updateFile = $this->update->download($updateInfo['download']);
