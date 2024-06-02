@@ -31,6 +31,7 @@ use function Vvveb\filter;
 use function Vvveb\setLanguage;
 use function Vvveb\siteSettings;
 use Vvveb\System\Core\View;
+use Vvveb\System\Event;
 use Vvveb\System\PageCache;
 use Vvveb\System\Sites;
 use Vvveb\System\User\Admin;
@@ -45,7 +46,7 @@ class Base {
 		$default_language_id = $this->session->get('default_language_id');
 		$language            = $this->session->get('language');
 		$language_id         = $this->session->get('language_id');
-		$site_language 		 = false;
+		$site_language       = false;
 
 		if (($lang = ($this->request->post['language'] ?? false)) && ! is_array($lang)) {
 			$language  = filter('/[A-Za-z_-]+/', $lang, 50);
@@ -129,26 +130,27 @@ class Base {
 		$currency_id = $this->session->get('currency_id');
 
 		if (! $currency || ! $currency_id) {
-			
 			$currencies = availableCurrencies();
+
 			if ($currencies) {
 				foreach ($currencies as $code => $c) {
-					if ($defaultCurrency && ($defaultCurrency == $c['code']) || 
+					if ($defaultCurrency && ($defaultCurrency == $c['code']) ||
 					   ($defaultCurrencyId && ($defaultCurrencyId == $c['currency_id']))) {
-						$currency = $c['code'];
+						$currency    = $c['code'];
 						$currency_id = $c['currency_id'];
+
 						break;
 					}
 				}
-				
+
 				//if no site currency configured set first available currency
-				if (!$currency) {
-					$c = reset($currencies);
-					$currency = $c['code'];
+				if (! $currency) {
+					$c           = reset($currencies);
+					$currency    = $c['code'];
 					$currency_id = $c['currency_id'];
 				}
 			}
-			
+
 			$this->session->set('currency', $currency);
 			$this->session->set('currency_id', $currency_id);
 		}
@@ -194,6 +196,9 @@ class Base {
 		}
 
 		$site = siteSettings();
+
+		list($site) = Event::trigger(__CLASS__, __FUNCTION__, $site);
+
 		$user = User::current();
 		$site['url'] = '//' . ($_SERVER['HTTP_HOST'] ?? '');
 
