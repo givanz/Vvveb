@@ -66,9 +66,56 @@
 			@SQL_COUNT(region.region_id, region) -- this takes previous query removes limit and replaces select columns with parameter product_id
 			
 		) as count;		
+	END		
+	
+	-- check region for region group 
+
+	PROCEDURE isRegion(
+		IN region_group_id INT,
+		IN country_id INT,
+		IN region_id INT,
+		IN start INT,
+		IN limit INT,
+		OUT fetch_all, 
+		OUT fetch_one,
+	)
+	BEGIN
+		-- region
+		SELECT *
+			FROM region_to_region_group AS regions 
+		
+		WHERE 1 = 1
+		
+		
+		@IF !empty(:region_group_id) 
+		THEN			
+			AND regions.region_group_id = :region_group_id
+		END @IF			
+
+		@IF !empty(:country_id) 
+		THEN			
+			AND regions.country_id = :country_id
+		END @IF			
+		
+		@IF !empty(:region_id) 
+		THEN			
+			AND (regions.region_id = :region_id OR regions.region_id = 0)
+		END @IF		
+		
+		@IF !empty(:limit) 
+		THEN			
+			@SQL_LIMIT(:start, :limit)
+		END @IF
+		;
+		
+		SELECT count(*) FROM (
+			
+			@SQL_COUNT(regions.region_id, regions) -- this takes previous query removes limit and replaces select columns with parameter product_id
+			
+		) as count;		
 	END	
 
-	-- add tax_rule
+	-- add region_group
 
 	PROCEDURE addRegions(
 		IN region_to_region_group ARRAY,
