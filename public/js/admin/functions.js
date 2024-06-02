@@ -65,14 +65,15 @@ function addTab(element, event) {
 	contentTemplate.setAttribute("id", "tab-" + newId);
 
 	contentTemplate = contentTemplate.outerHTML;
-	contentTemplate = contentTemplate.replaceAll('[0]', '[' + newId + ']');
+	contentTemplate = contentTemplate.replaceAll('[0]', '[' + newId + ']').replaceAll('-0-', '-' + newId + '-').replaceAll('disabled', '');
 
 	nav.append(navTemplate);
 	content.append(generateElements(contentTemplate)[0]);
 	
 	document.querySelectorAll("#tab-" + newId +" .product_option_id").forEach(e => {
 		e.dispatchEvent(new Event("change"));
-	});
+	});	
+	
 	navTemplate.querySelector("a").click();
 }
 
@@ -82,7 +83,7 @@ function removeTab(element, elementName) {
 
 	if (elementName) {
 		let form = element.closest("form");
-		form.append('<input type="hidden" name="delete[' + elementName + '][]" value="' + link.id + '">');
+		form.append(generateElements('<input type="hidden" name="delete[' + elementName + '][]" value="' + link.id + '">')[0]);
 	}
 
 	const bsTab = bootstrap.Tab.getOrCreateInstance(nav.querySelector(".nav-item:not(.d-none) a"));
