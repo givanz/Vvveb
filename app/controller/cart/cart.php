@@ -32,12 +32,15 @@ class Cart extends Base {
 	use CouponTrait;
 
 	function index() {
-		$cart     = ShoppingCart::getInstance($this->global);
+		$options = array_intersect_key($this->global['site'],
+		array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
+
+		$cart     = ShoppingCart::getInstance($options);
 		$payment  = Payment::getInstance();
 		$shipping = Shipping::getInstance();
 
-		$this->view->payment  = $payment->getMethods();
-		$this->view->shipping = $shipping->getMethods();
+		$this->view->payment  = $payment->getMethods([]);
+		$this->view->shipping = $shipping->getMethods([]);
 
 		if (isset($this->request->post['product_id']) &&
 			(isset($this->request->get['route']) && $this->request->get['route'] == 'cart/cart/add')) {
@@ -47,11 +50,14 @@ class Cart extends Base {
 		$cart = [
 			'products'        => $cart->getAll(),
 			'totals'          => $cart->getTotals(),
-			'total_items' 	   => $cart->getNoProducts(),
-			'total_price' 	   => $cart->getNoProducts(),
-			'total'       	   => $cart->getGrandTotal(),
+			'total_items'     => $cart->getNoProducts(),
+			'total_weight'    => $cart->getWeight(),
+			'total_price'     => $cart->getNoProducts(),
+			'total'           => $cart->getGrandTotal(),
 			'coupons'         => $cart->getCoupons(),
 			'total_formatted' => $cart->getGrandTotalFormatted(),
+			'weight_unit' 	  => $this->global['site']['weight_type'],
+			'length_unit' 	  => $this->global['site']['length_type']
 		];
 
 		$this->view->cart = $cart;

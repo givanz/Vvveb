@@ -160,6 +160,14 @@ class Breadcrumb extends ComponentBase {
 
 			break;
 			//compare
+			case 'cart/cart/index':
+				$breadcrumb = [
+					['text' => $homeText, 'url' => '/'],
+					['text' => __('Cart'), 'url' => false],
+				];
+
+			break;
+			//compare
 			case 'cart/compare/index':
 				$breadcrumb = [
 					['text' => $homeText, 'url' => '/'],

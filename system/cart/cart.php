@@ -38,6 +38,8 @@ class Cart {
 
 	protected $tax;
 
+	protected $weight;
+
 	protected $productModel = 'product';
 
 	protected $sessionKey = 'cart';
@@ -72,8 +74,9 @@ class Cart {
 		$this->session  = Session :: getInstance();
 		$this->currency = Currency :: getInstance($options);
 		$this->tax      = Tax :: getInstance();
+		$this->weight   = Weight :: getInstance();
 
-		$this->options = $options;
+		$this->options  = $options;
 		$this->read();
 
 		if (! isset($this->total_items)) {
@@ -177,6 +180,24 @@ class Cart {
 							$value['price_formatted'] = $this->currency->format($value['price']);
 						}
 
+						if ($value['weight']) {
+							if ($value['weight_operator'] == '-') {
+								$value['weight'] = -$value['weight'];
+							}
+
+							$prod['weight'] += $value['weight'];
+							$value['weight_formatted'] = $this->currency->format($value['weight']);
+						}
+
+						if ($value['points']) {
+							if ($value['points_operator'] == '-') {
+								$value['points'] = -$value['points'];
+							}
+
+							$prod['points'] += $value['points'];
+							$value['points_formatted'] = $this->currency->format($value['points']);
+						}
+
 						$prod['option_value'][$product_option_value_id] = $value;
 					}
 				}
@@ -202,8 +223,8 @@ class Cart {
 					//$prod['subscription_plan_id'] = $products[$productId]['subscription_plan_id'];
 				}
 
-				$this->total       += $prod['total'];
-				$this->total_tax   += $prod['total_tax'];
+				$this->total += $prod['total'];
+				$this->total_tax += $prod['total_tax'];
 				$this->total_items += $prod['quantity'];
 
 				$prod = array_merge($prod, $product);
@@ -282,7 +303,14 @@ class Cart {
 	}
 
 	function getNoProducts() {
-		return count($this->products ?? []);
+		//return count($this->products ?? []);
+		$total = 0;
+
+		foreach ($this->products as $product) {
+			$total += $product['quantity'];
+		}
+
+		return $total;
 	}
 
 	function remove($key) {
@@ -307,8 +335,8 @@ class Cart {
 		$weight = 0;
 
 		foreach ($this->products as $product) {
-			if ($product['shipping']) {
-				$weight += $this->weight->convert($product['weight'], $product['weight_type_id'], $this->config->get('config_weight_type_id'));
+			if ($product['requires_shipping']) {
+				$weight += $this->weight->convert($product['weight'], $product['weight_type_id'], $this->options['weight_type_id']);
 			}
 		}
 
@@ -362,17 +390,6 @@ class Cart {
 		return $this->totals;
 	}
 
-	/*
-		public function getTotal() {
-			$total = 0;
-
-			foreach ($this->products as $product) {
-				$total += $this->tax->calculate($product['price'], $product['tax_type_id'], $this->config->get('config_tax')) * $product['quantity'];
-			}
-
-			return $total;
-		}
-	*/
 	public function countProducts() {
 		$product_total = 0;
 

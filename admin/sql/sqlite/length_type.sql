@@ -11,7 +11,7 @@
 	)
 	BEGIN
 		-- length_type
-		SELECT *
+		SELECT *, length_type.length_type_id as array_key
 			FROM length_type AS length_type
 		INNER JOIN length_type_content	ON length_type_content.length_type_id = length_type.length_type_id
 		WHERE 1 = 1
@@ -58,7 +58,7 @@
 	PROCEDURE add(
 		IN length_type ARRAY,
 		IN language_id INT,
-		OUT insert_id
+		OUT insert_id,
 		OUT affected_rows
 		OUT insert_id
 	)

@@ -442,6 +442,9 @@ function cleanUrl($text, $divider = '-') {
 }
 
 function slugify($text, $divider = '-') {
+	if (! $text) {
+		return $text;
+	}
 	// replace non letter or digits by divider
 	$text = preg_replace('/[^\pL\d]+/u', $divider, $text);
 
@@ -1248,6 +1251,7 @@ function siteSettings($site_id = SITE_ID, $language_id = false) {
 
 		if ($site && isset($site['settings'])) {
 			$settings = json_decode($site['settings'], true);
+			$siteData = $siteSql->getSiteData(['site' => $settings]);
 
 			foreach (['favicon', 'logo', 'logo-sticky', 'logo-dark', 'logo-dark-sticky'] as $img) {
 				if (isset($settings[$img])) {
@@ -1256,7 +1260,7 @@ function siteSettings($site_id = SITE_ID, $language_id = false) {
 				}
 			}
 
-			return $settings;
+			return $settings + $siteData;
 		}
 
 		return [];
