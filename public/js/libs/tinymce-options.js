@@ -160,11 +160,11 @@ let tinyMceOptions = {
 		window.dispatchEvent(new CustomEvent("tinymce.setup", {detail: editor}));
     },
     
-  plugins: 'preview importcss searchreplace autolink autosave autoresize save directionality code visualblocks visualchars fullscreen image media link codesample table charmap pagebreak nonbreaking anchor insertdatetime advlist lists wordcount help quickbars emoticons table accordion',
+  plugins: 'preview searchreplace autolink autosave autoresize directionality code visualblocks visualchars fullscreen image media link table charmap lists wordcount help quickbars emoticons table accordion',
   //valid_children : '-p[img],h1[img],h2[img],h3[img],h4[img],+body[img],div[img],div[h1],div[h2],div[h3]',
   //editimage_cors_hosts: ['picsum.photos'],
   menubar: false,//'file edit view insert format tools table help',
-  toolbar: 'undo redo | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | insertfile image media link anchor codesample  | fullscreen  preview save print| ltr rtl | code |  charmap emoticons table accordion',
+  toolbar: 'undo redo | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | insertfile image media link anchor | ltr rtl table accordion | fullscreen preview code print |  charmap emoticons advlist visualblocks searchreplace',
   toolbar_sticky: true,
   //toolbar_sticky_offset: isSmallScreen ? 102 : 108,
   autosave_ask_before_unload: true,
