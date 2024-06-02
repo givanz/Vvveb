@@ -107,11 +107,13 @@ class Comments extends ComponentBase {
 				}
 
 				//rfc
-				$comment['pubDate'] = date('r', strtotime($comment['created_at']));
+				if (isset($comment['slug']) && $comment['slug']) {
+					$comment['pubDate'] = date('r', strtotime($comment['created_at']));
 
-				$anchor                = '#comment-' . $comment[$this->type . '_id'];
-				$comment['url']   	    =  url($this->route, $comment) . $anchor;
-				$comment['full-url']   =  url($this->route, $comment + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http']) . $anchor;
+					$anchor                = '#comment-' . $comment[$this->type . '_id'];
+					$comment['url']   	    =  url($this->route, $comment) . $anchor;
+					$comment['full-url']   =  url($this->route, $comment + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http']) . $anchor;
+				}
 				$comment['level']      =  $level;
 			}
 		}

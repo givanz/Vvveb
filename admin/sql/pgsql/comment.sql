@@ -7,10 +7,10 @@
 		IN language_id INT,
 		IN site_id INT,
 		IN post_id INT,
-        IN user_id INT,
-        IN language_id INT,
-        IN status INT,
-        IN post_title INT,
+		IN user_id INT,
+		IN language_id INT,
+		IN status INT,
+		IN post_title INT,
 
 		-- pagination
 		IN start INT,
@@ -23,7 +23,7 @@
 	)
 	BEGIN
 
-		SELECT user.username,  user.first_name,  user.last_name,  user.display_name, user.avatar, user.bio,  user.subscribe, comment.*, comment_id as array_key
+		SELECT user.username, user.email, user.first_name,  user.last_name,  user.display_name, user.avatar, user.bio,  user.subscribe, comment.*, comment_id as array_key
 			@IF isset(:post_title) AND :post_title
 			THEN 
 				,post_content.name, post_content.slug

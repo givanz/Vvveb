@@ -20,7 +20,7 @@
 	)
 	BEGIN
 
-		SELECT user.username,  user.first_name,  user.last_name,  user.display_name, user.avatar, user.bio, user.subscribe, product_review.*,user.user_id as user_id,
+		SELECT user.username, user.email, user.first_name,  user.last_name,  user.display_name, user.avatar, user.bio, user.subscribe, product_review.*,user.user_id as user_id,
 			(SELECT json_group_array(json_object('id',prm.product_review_media_id,'image',prm.image)) 
 				FROM product_review_media as prm 
 			WHERE prm.product_review_id = product_review.product_review_id GROUP BY prm.product_review_id) as images

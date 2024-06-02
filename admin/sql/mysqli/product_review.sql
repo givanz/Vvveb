@@ -20,7 +20,7 @@
 	)
 	BEGIN
 
-		SELECT user.username,  user.first_name,  user.last_name,  user.display_name, user.avatar, user.bio,  user.subscribe, product_review.*,user.user_id as user_id,
+		SELECT user.username, user.email, user.first_name,  user.last_name,  user.display_name, user.avatar, user.bio,  user.subscribe, product_review.*,user.user_id as user_id,
 		-- (SELECT CONCAT('[', GROUP_CONCAT('{"id":"', prm.product_review_media_id, '","image":"' , prm.image, '"}'), ']') 
 			(SELECT JSON_ARRAYAGG( JSON_OBJECT('id', prm.product_review_media_id, 'image', prm.image) ) 
 				FROM product_review_media as prm 
