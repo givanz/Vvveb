@@ -369,7 +369,7 @@ class Editor extends Base {
 		$type             = $this->request->post['type'] ?? false;
 		$addMenu          = $this->request->post['add-menu'] ?? false;
 		$menu_id          = $this->request->post['menu_id'] ?? false;
-		$theme            = sanitizeFileName($this->request->get['theme'] ?? false);
+		$theme            = $this->getTheme();
 		$url              = '';
 
 		$file             = sanitizeFileName(str_replace('.html', '', $file)) . '.html';
@@ -448,7 +448,7 @@ class Editor extends Base {
 		$success      = false;
 		$text      		 = '';
 
-		$baseUrl     = '/themes/' . $this->getTheme() . '/' . ($folder ? $folder . '/' : '');
+		$baseUrl     = '/themes/' . $theme . '/' . ($folder ? $folder . '/' : '');
 		$themeFolder = $this->getThemeFolder();
 
 		if ($startTemplateUrl) {
@@ -507,11 +507,23 @@ class Editor extends Base {
 			$fileName = $themeFolder . DS . ($folder ? $folder . DS : '') . $file;
 		}
 
-		$this->saveGlobalElements($content);
+		$globalOptions = [];
+		//keep css inline for email templates
+		if (strpos($fileName, '/email/') !== false) {
+			$globalOptions['inline-css'] = true;
+		}
+
+		$content = $this->saveGlobalElements($content, $globalOptions);
 
 		if (file_put_contents($fileName, $content)) {
 			$success = true;
 			$text .= __('File saved!');
+		}
+
+		$cssFile = DS . 'css' . DS . 'custom.css';
+
+		if (! is_writable($themeFolder . $cssFile)) {
+			$text .= '<br/>' . sprintf(__('%s is not writable!'), $theme . $cssFile);
 		}
 
 		if (CacheManager::clearCompiledFiles('app') && CacheManager::delete()) {

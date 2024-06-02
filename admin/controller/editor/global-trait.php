@@ -22,26 +22,47 @@
 
 namespace Vvveb\Controller\Editor;
 
-use Vvveb\System\Core\View;
-
 trait GlobalTrait {
-	private function saveGlobalElements($content) {
+	private function saveGlobalElements($content, $options = []) {
 		$document                      = new \DomDocument();
-		$document->preserveWhiteSpace  = false;
+		$document->preserveWhiteSpace  = true;
 		$document->recover             = true;
 		$document->strictErrorChecking = false;
+		$document->substituteEntities  = false;
 		$document->formatOutput        = false;
 		$document->resolveExternals    = false;
 		$document->validateOnParse     = false;
 		$document->xmlStandalone       = true;
 
-		$view = View::getInstance();
 		libxml_use_internal_errors(true);
 
 		@$document->loadHTML($content);
 
 		$xpath = new \DOMXpath($document);
 
+		$themeFolder = $this->getThemeFolder();
+
+		if (! isset($options['inline-css']) || $options['inline-css'] == false) {
+			//save vvvebjs css to custom.css
+			$style   = $xpath->query('//style[ @id="vvvebjs-styles" ]');
+			$cssFile = $themeFolder . DS . 'css' . DS . 'custom.css';
+
+			if ($style && $style->length && is_writable($cssFile)) {
+				$element = $style[0];
+				$content = trim($element->nodeValue);
+
+				if ($content && file_put_contents($cssFile, $element->nodeValue)) {
+					$link = $document->createElement('link');
+					$link->setAttribute('href', 'css/custom.css');
+					$link->setAttribute('rel', 'stylesheet');
+					$link->setAttribute('media', 'screen');
+					$link->setAttribute('id', 'vvvebjs-css');
+					$element->parentNode->replaceChild($link, $element);
+				}
+			}
+		}
+
+		//save common global elements like footer/header
 		$elements = $xpath->query('//*[ @data-v-save-global ]');
 
 		if ($elements && $elements->length) {
@@ -53,8 +74,6 @@ trait GlobalTrait {
 			$toDocument->resolveExternals    = false;
 			$toDocument->validateOnParse     = false;
 			$toDocument->xmlStandalone       = true;
-
-			$themeFolder = $this->getThemeFolder();
 
 			foreach ($elements as $element) {
 				$attribute = $element->getAttribute('data-v-save-global');
@@ -98,5 +117,9 @@ trait GlobalTrait {
 				}
 			}
 		}
+
+		$content= $document->saveHTML();
+
+		return $content;
 	}
 }
