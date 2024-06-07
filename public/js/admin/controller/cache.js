@@ -1,9 +1,7 @@
 class CacheController {
 
-	clear(e) {
-		let link = e.currentTarget;
-		//let url = window.location.pathname + '?module=tools/cache&action=delete';
-		let url = link.href;
+	clear(e, element) {
+		let url = element.href;
 
 		fetch(url)
 		.then((response) => {
@@ -11,12 +9,12 @@ class CacheController {
 			return response.text()
 		})
 		.then((data) => {
-			let message = data.querySelector(".notifications .alert [data-v-notification-text]").innerHTML;
+			let response = new DOMParser().parseFromString(data, "text/html");
+			let message = response.querySelector(".notifications .alert [data-v-notification-text]")?.innerHTML;
 			displayToast("bg-success", "Cache", message, "top");
 		})
 		.catch(error => {
-			let message = data.querySelector(".notifications .alert [data-v-notification-text]").innerHTML;
-			displayToast("bg-danger", "Cache", message, "top");
+			displayToast("bg-danger", "Cache", "Error", "top");
 			//displayToast("bg-danger", "Error", "Error saving!");
 		});			
 
