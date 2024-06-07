@@ -50,6 +50,8 @@
 		OUT fetch_all, 		
 		OUT fetch_all, 		
 		OUT fetch_all, 		
+		OUT fetch_all, 		
+		OUT fetch_all 		
 	)
 	BEGIN
 		-- country
@@ -108,6 +110,50 @@
 				ON length_type_id.length_type_id = length_desc.length_type_id; -- (underscore) _ means that data will be kept in main array				
 	END	
 	
+	-- site data
+
+	PROCEDURE getSiteData(
+		IN site ARRAY,
+		OUT fetch_one, 		
+		OUT fetch_one, 		
+		OUT fetch_one, 		
+		OUT fetch_one, 		
+		OUT fetch_one, 		
+		OUT fetch_one
+	)
+	BEGIN
+		-- country
+		SELECT 
+			name
+		FROM country as country_id WHERE country_id = :site.country_id;
+		
+		-- Region
+		SELECT 
+			name			
+		FROM region as region_id WHERE region_id = :site.region_id;		
+		
+		-- language
+		SELECT 
+			name			
+		FROM language as language_id WHERE language_id = :site.language_id;			
+		
+		-- currency
+		SELECT 
+			name		
+		FROM currency as currency_id WHERE currency_id = :site.currency_id;	
+				
+		-- weight_type
+		SELECT 
+			unit			
+		FROM weight_type_content as weight_type WHERE weight_type_id = :site.weight_type_id;		
+		
+		-- length_type
+		SELECT 
+			unit			
+		FROM length_type_content AS length_type WHERE length_type_id = :site.length_type_id;
+				
+	END	
+
 	-- get site
 
 	PROCEDURE get(
