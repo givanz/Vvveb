@@ -3461,6 +3461,8 @@ Vvveb.FileManager = {
 		this.tree.addEventListener("click", function (e) {
 			let element = event.target.closest("a");
 			if (element) {
+				e.stopImmediatePropagation();
+				if (element.classList.contains('view')) return;
 				e.preventDefault();
 				return false;
 			}
@@ -3470,6 +3472,7 @@ Vvveb.FileManager = {
 			let element = event.target.closest(".delete");
 			if (element) {
 				Vvveb.FileManager.deletePage(element.closest("li"), e);
+				e.stopImmediatePropagation();
 				e.preventDefault();
 				return false;
 			}
@@ -3479,6 +3482,7 @@ Vvveb.FileManager = {
 			let element = event.target.closest(".rename");
 			if (element) {
 				Vvveb.FileManager.renamePage(element.closest("li"), e, false);
+				e.stopImmediatePropagation();
 				e.preventDefault();
 				return false;
 			}
@@ -3488,6 +3492,7 @@ Vvveb.FileManager = {
 			let element = event.target.closest(".duplicate");
 			if (element) {
 				Vvveb.FileManager.renamePage(element.closest("li"), e, true);
+				e.stopImmediatePropagation();
 				e.preventDefault();
 				return false;
 			}
@@ -3527,8 +3532,18 @@ Vvveb.FileManager = {
 	},
 	
 	deletePage: function(element, e) {
-		let page = element.dataset;
-		if (confirm(`Are you sure you want to delete "${page.file}"template?`)) {
+		let page    = element.dataset;
+		let post_id = element.dataset.post_id;
+		let name;
+		let _self = this;
+
+		if (post_id) {
+			name = element.querySelector('label span')?.textContent;
+		} else {
+			name = page.file;
+		}
+
+		if (confirm(`Are you sure you want to delete "${name}"?`)) {
 
 			//allow event to change page or cancel by setting page to false
 			window.dispatchEvent(new CustomEvent("vvveb.FileManager.deletePage", {
@@ -3537,10 +3552,10 @@ Vvveb.FileManager = {
 			
 			if (page) {
 				
-				fetch(deleteUrl, {method: "POST",  body: JSON.stringify({file:page.file})})
+				fetch(deleteFileUrl, {method: "POST",  body: new URLSearchParams({file:page.file,post_id})})
 				.then((response) => {
 					if (!response.ok) { throw new Error(response) }
-					return response.text()
+					return response.json()
 				})
 				.then((data) => {
 						let bg = "bg-success";
@@ -3563,11 +3578,23 @@ Vvveb.FileManager = {
 	},	
 	
 	renamePage: function(element, e, duplicate = false) {
-		let page = element.dataset;
-		let newfile = prompt(`Enter new file name for "${page.file}"`, page.file);
+		let page    = element.dataset;
+		let post_id = element.dataset.post_id ?? 0;
+		let newfile;
+		let name;
 		let _self = this;
-		if (newfile) {
 
+		if (post_id) {
+			name = element.querySelector('label span')?.textContent;
+			name = prompt(`Enter new name for "${name}"`, name);
+			if (name) {
+				newfile = page.file;
+			}
+		} else {
+			newfile = prompt(`Enter new file name for "${page.file}"`, page.file);
+		}
+
+		if (newfile || name) {
 			//allow event to change page or newfile or cancel by setting page to false
 			window.dispatchEvent(new CustomEvent("vvveb.FileManager.renamePage", {
 				detail: {page, newfile}
@@ -3575,10 +3602,10 @@ Vvveb.FileManager = {
 			
 			if (page) {
 
-				fetch(deleteUrl, {method: "POST",  body: JSON.stringify({file:page.file, newfile:newfile, duplicate})})
+				fetch(renameFileUrl, {method: "POST",  body: new URLSearchParams({file:page.file, newfile:newfile, name, duplicate, post_id})})
 				.then((response) => {
 					if (!response.ok) { throw new Error(response) }
-					return response.text()
+					return response.json()
 				})
 				.then((data) => {
 						let bg = "bg-success";
@@ -3587,10 +3614,11 @@ Vvveb.FileManager = {
 						} else {
 							bg = "bg-danger";
 						}
-
+						
+						newfile = data.newfile ?? newfile;	
 						displayToast(bg, "Rename", data.message ?? data);
 						let baseName = newfile.replace('.html', '');
-						let newName = friendlyName(newfile.replace(/.*[\/\\]+/, '')).replace('.html', '');
+						let newName = name || friendlyName(newfile.replace(/.*[\/\\]+/, '')).replace('.html', '');
 						
 						if (duplicate) {
 							let data = _self.pages[page.page];
@@ -3600,16 +3628,17 @@ Vvveb.FileManager = {
 						} else {
 							_self.pages[page.page]["file"] = newfile;
 							_self.pages[page.page]["title"] = newName;
-							document.querySelector(":scope > label span", element).innerHTML = newName;
-							page.url = page.url.replace(page.file, newfile);
+							page.url = data.url ?? page.url.replace(page.file, newfile);
 							page.file = newfile;
+							element.querySelector(":scope > label span").innerHTML = newName;
+							element.querySelector(":scope > label a.view").setAttribute("href", page.url);
 							_self.pages[page.page]["url"] = page.url;
 							_self.pages[page.page]["file"] = page.file;
 						}
 				})
 				.catch(error => {
-					console.log(error.statusText);
-					displayToast("bg-danger", "Error", "Error deleting page!");
+					console.log(error);
+					displayToast("bg-danger", "Error", "Error renaming page!");
 				});				
 			}
 		}

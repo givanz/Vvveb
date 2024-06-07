@@ -154,7 +154,7 @@ class Editor extends Base {
 
 		$this->loadThemeAssets();
 
-		$this->posts   = new postSQL();
+		$this->posts   = new PostSQL();
 		$options       = [
 			'type'  => 'page',
 			'limit' => 100,
@@ -172,6 +172,7 @@ class Editor extends Base {
 				'file'      => $post['template'] ? $post['template'] : 'content/page.html',
 				'url'       => $url . ($theme ? '?theme=' . $theme : ''),
 				'title'     => $post['name'],
+				'post_id'   => $post['post_id'],
 				'folder'    => '',
 				'className' => 'page',
 			];
@@ -212,11 +213,16 @@ class Editor extends Base {
 		$revisionsPath                 = $admin_path . 'index.php?module=editor/revisions' . $themeParam;
 		$reusablePath                  = $admin_path . 'index.php?module=editor/reusable' . $themeParam;
 
+		//media endpoints
 		$this->view->scanUrl           = "$mediaControllerPath&action=scan";
 		$this->view->uploadUrl         = "$mediaControllerPath&action=upload";
+		$this->view->deleteUrl         = "$mediaControllerPath&action=delete";
+		$this->view->renameUrl         = "$mediaControllerPath&action=rename";
+
+		//editor endpoints
 		$this->view->saveUrl           = "$controllerPath&action=save";
-		$this->view->deleteUrl         = "$controllerPath&action=delete";
-		$this->view->renameUrl         = "$controllerPath&action=rename";
+		$this->view->deleteFileUrl     = "$controllerPath&action=delete";
+		$this->view->renameFileUrl     = "$controllerPath&action=rename";
 		$this->view->saveReusableUrl   = "$reusablePath&action=save";
 		$this->view->oEmbedProxyUrl    = "$controllerPath&action=oEmbedProxy";
 
@@ -319,14 +325,38 @@ class Editor extends Base {
 	}
 
 	function delete() {
+		$post_id     = $this->request->post['post_id'] ?? false;
 		$file        = sanitizeFileName($this->request->post['file']);
 		$themeFolder = $this->getThemeFolder();
 		//echo $themeFolder . DS . $file;
 
-		if (unlink($themeFolder . DS . $file)) {
-			$message = ['success' => true, 'message' => __('File deleted!')];
+		if ($post_id) {
+			$type = 'page';
+
+			if ($post_id) {
+				if (is_numeric($post_id)) {
+					$post_id = [$post_id];
+				}
+
+				$this->posts   = new PostSQL();
+				$options       = [
+					'post_id' => $post_id, 'type' => $type,
+				] + $this->global;
+
+				$result  = $this->posts->delete($options);
+
+				if ($result && isset($result['post'])) {
+					$message = ['success' => true, 'message' => ucfirst($type) . __(' deleted!')];
+				} else {
+					$message = ['success' => false, 'message' => sprintf(__('Error deleting %s!'),  $type)];
+				}
+			}
 		} else {
-			$message = ['success' => false, 'message' => __('Error deleting file!')];
+			if (unlink($themeFolder . DS . $file)) {
+				$message = ['success' => true, 'message' => __('File deleted!')];
+			} else {
+				$message = ['success' => false, 'message' => __('Error deleting file!')];
+			}
 		}
 
 		$this->response->setType('json');
@@ -334,25 +364,60 @@ class Editor extends Base {
 	}
 
 	function rename() {
+		$post_id     = $this->request->post['post_id'] ?? false;
 		$file        = sanitizeFileName($this->request->post['file']);
 		$newfile     = sanitizeFileName($this->request->post['newfile']);
-		$duplicate   =  $this->request->post['duplicate'] ?? false;
+		$duplicate   = $this->request->post['duplicate'] ?? 'false';
 		$themeFolder = $this->getThemeFolder();
+
+		if (strpos($newfile, '.html') === false) {
+			$newfile .= '.html';
+		}
 
 		$currentFile = $themeFolder . DS . $file;
 		$targetFile  =  $themeFolder . DS . $newfile;
 
-		if ($duplicate) {
-			if (copy($currentFile, $targetFile)) {
-				$message = ['success' => true, 'message' => __('File copied!')];
-			} else {
-				$message = ['success' => false, 'message' => __('Error copying file!')];
+		$message = ['success' => false, 'message' => __('Error!')];
+
+		if ($post_id) {
+			if ($newfile) {
+				$type          = 'page';
+				$name          = sanitizeFileName($this->request->post['name']);
+				$slug          = slugify($name);
+
+				$this->posts   = new PostSQL();
+				$options       = [
+					'post_id'      => $post_id,
+					'post_content' => [
+						'name'     => $name,
+						'slug'     => $slug,
+					],
+				] + $this->global;
+
+				if ($duplicate === 'true') {
+				} else {
+					$result  = $this->posts->editContent($options);
+				}
+
+				if ($result && isset($result['post_content'])) {
+					$message = ['success' => true, 'url' => url('content/page/index', ['slug' => $slug]), 'message' => ucfirst($type) . __(' renamed!')];
+				} else {
+					$message = ['success' => false, 'message' => sprintf(__('Error deleting %s!'),  $type)];
+				}
 			}
 		} else {
-			if (rename($currentFile, $targetFile)) {
-				$message = ['success' => true, 'message' => __('File renamed!')];
+			if ($duplicate === 'true') {
+				if (copy($currentFile, $targetFile)) {
+					$message = ['success' => true, 'newfile' => $newfile,  'message' => __('File copied!')];
+				} else {
+					$message = ['success' => false, 'message' => __('Error copying file!')];
+				}
 			} else {
-				$message = ['success' => false, 'message' => __('Error renaming file!')];
+				if (rename($currentFile, $targetFile)) {
+					$message = ['success' => true, 'newfile' => $newfile, 'message' => __('File renamed!')];
+				} else {
+					$message = ['success' => false, 'message' => __('Error renaming file!')];
+				}
 			}
 		}
 
