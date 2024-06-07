@@ -90,6 +90,7 @@ class Edit extends Base {
 		$controllerPath  = $admin_path . 'index.php?module=media/media';
 		$view->scanUrl   = "$controllerPath&action=scan";
 		$view->uploadUrl = "$controllerPath&action=upload";
+		$view->linkUrl   = $admin_path . 'index.php?module=content/post&action=urlAutocomplete';
 		$theme           = Sites::getTheme() ?? 'default';
 		$view->themeCss  = PUBLIC_PATH . "themes/$theme/css/admin-post-editor.css";
 		//$view->themeCss        = PUBLIC_PATH . "themes/$theme/css/style.css";

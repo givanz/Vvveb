@@ -24,6 +24,7 @@ namespace Vvveb\Controller\Content;
 
 use \Vvveb\Sql\categorySQL;
 use Vvveb\System\Images;
+use function Vvveb\url;
 
 trait AutocompleteTrait {
 	function categoriesAutocomplete() {
@@ -101,6 +102,55 @@ trait AutocompleteTrait {
 			}
 		}
 
+		//echo json_encode($search);
+		$this->response->setType('json');
+		$this->response->output($search);
+
+		return false;
+	}
+
+	function urlAutocomplete() {
+		$products = new \Vvveb\Sql\ProductSQL();
+
+		$options = [
+			'start' => 0,
+			'limit' => 5,
+			'like'  => trim($this->request->get['text']),
+		] + $this->global;
+
+		unset($options['admin_id']);
+		$results = $products->getAll($options);
+
+		$search = [];
+
+		if (isset($results['products'])) {
+			foreach ($results['products'] as $product) {
+				$product['image'] = Images::image($product['image'], 'product', 'thumb');
+				$search[]         = [
+					'type' => 'cardimage',
+					'src'  => $product['image'],
+					'text' => $product['name'],
+					'value'=> '<a href="' . url('product/product/index', ['slug'=> $product['slug']]) . '">' . $product['name'] . '</a>',
+				];
+			}
+		}
+
+		if (count($search) < 5) {
+			$posts   = new \Vvveb\Sql\PostSQL();
+			$results = $posts->getAll($options);
+
+			if (isset($results['posts'])) {
+				foreach ($results['posts'] as $post) {
+					$post['image'] = Images::image($post['image'], 'post', 'thumb');
+					$search[]      = [
+						'type' => 'cardimage',
+						'src'  => $post['image'],
+						'text' => $post['name'],
+						'value'=> '<a href="' . url('content/post/index', ['slug'=> $post['slug']]) . '">' . $post['name'] . '</a>',
+					];
+				}
+			}
+		}
 		//echo json_encode($search);
 		$this->response->setType('json');
 		$this->response->output($search);

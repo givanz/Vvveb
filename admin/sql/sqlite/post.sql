@@ -6,6 +6,7 @@
 		IN start INT,
 		IN limit INT,
 		IN search CHAR,
+		IN like CHAR,
 		IN username CHAR,
 		IN status CHAR,
 		IN taxonomy_item_slug CHAR,
@@ -109,6 +110,12 @@
 				AND (post_content_search = :search) 
         	END @IF	     
             
+			-- like
+			@IF isset(:like) && !empty(:like)
+			THEN 
+				AND pd.name LIKE '%' || :like || '%'
+			END @IF  
+
             -- post_id
 			@IF isset(:post_id) && count(:post_id) > 0
 			THEN 

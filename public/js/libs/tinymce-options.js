@@ -158,6 +158,196 @@ let tinyMceOptions = {
 		});
 
 		window.dispatchEvent(new CustomEvent("tinymce.setup", {detail: editor}));
+		
+		
+    //product and posts/pages autocomplete
+    const onAction = (autocompleteApi, rng, value) => {
+      editor.selection.setRng(rng);
+      editor.insertContent(value);
+      autocompleteApi.hide();
+    };
+
+	let insertActions = [
+        {
+            text: 'Heading 1',
+            icon: 'h1',
+            action: function () {
+                editor.execCommand('mceInsertContent', false, '<h1>Heading 1</h1>')
+                editor.selection.select(editor.selection.getNode());
+            }
+        },
+        {
+            text: 'Heading 2',  
+            icon: 'h2',
+            action: function () {
+                editor.execCommand('mceInsertContent', false, '<h2>Heading 2</h2>');
+                editor.selection.select(editor.selection.getNode());
+            }
+        },
+        {
+            text: 'Heading 3',
+            icon: 'h3',
+            action: function () {
+                editor.execCommand('mceInsertContent', false, '<h3>Heading 3</h3>');
+                editor.selection.select(editor.selection.getNode());
+            }
+        },
+		{
+			type: 'separator'
+		},
+        {
+            text: 'Table',
+            icon: 'table',
+            action: function () {
+                editor.execCommand('mceInsertTable', false, { rows: 2, columns: 2 });
+            }
+        }, {
+            text: 'Image',
+            icon: 'image',
+            action: function () {
+				//editor.execCommand('mceImage');
+                //editor.execCommand('InsertImage', false, '../img/logo.png');
+				if (!Vvveb.MediaModal) {
+					Vvveb.MediaModal = new MediaModal(true);
+					Vvveb.MediaModal.mediaPath = mediaPath;
+				}
+				Vvveb.MediaModal.open(null, function (file) {
+						editor.insertContent("<div>" + editor.dom.createHTML('img', {
+							src: file,
+							"class": "align-center"
+						}) + "</div>");
+				});				
+            }
+        },
+		{
+			type: 'separator'
+		},
+        {
+            text: 'Bulleted list',
+            icon: 'unordered-list',
+            action: function () {
+                editor.execCommand('InsertUnorderedList', false);
+            }
+        },
+        {
+            text: 'Numbered list',
+            icon: 'ordered-list',
+            action: function () {
+                editor.execCommand('InsertOrderedList', false);
+            }
+        }, {
+            text: 'Separator',
+            icon: 'line',
+            action: function () {
+                editor.execCommand('InsertHorizontalRule');
+            }
+        },/*
+		{
+			type: 'separator'
+        }, {
+            text: 'Embed',
+            icon: 'embed',
+            action: function () {
+				//editor.execCommand('mceLink', false, { dialog: true });
+				editor.dispatch('contexttoolbar-show', { toolbarKey: 'quicklink' });
+                //editor.execCommand('mceMedia');
+            }
+        }, {
+            text: 'Youtube',
+            icon: 'embed',
+            action: function () {
+                editor.execCommand('mceMedia');
+            }
+        }, {
+            text: 'Twitter',
+            icon: 'embed-page',
+            action: function () {
+                editor.execCommand('mceMedia');
+            }
+        }*/
+    ];
+
+    // Register the slash commands autocompleter
+    editor.ui.registry.addAutocompleter('slashcommands', {
+        ch: '/',
+        minChars: 0,
+        columns: 1,
+        fetch: function (pattern) {
+            const matchedActions = insertActions.filter(function (action) {
+                return action.type === 'separator' ||
+                    action.text.toLowerCase().indexOf(pattern.toLowerCase()) !== -1;
+            });
+
+            return new Promise((resolve) => {
+                var results = matchedActions.map(function (action) {
+                    return {
+                        meta: action,
+                        text: action.text,
+                        icon: action.icon,
+                        value: action.text,
+                        type: action.type
+                    }
+                });
+                resolve(results);
+            });
+        },
+        onAction: function (autocompleteApi, rng, action, meta) {
+            editor.selection.setRng(rng);
+            // Some actions don't delete the "slash", so we delete all the slash
+            // command content before performing the action
+            editor.execCommand('Delete');
+            meta.action();
+            autocompleteApi.hide(); 
+        }
+    });
+
+    editor.ui.registry.addAutocompleter('links', {
+      ch: '/',
+      minChars: 1,
+      columns: 1,
+      highlightOn: ['char_name'],
+      onAction: onAction,
+      fetch: (pattern) => {
+        return new Promise((resolve) => {
+	 fetch(linkUrl + "&"+  new URLSearchParams({text:pattern}))
+		.then((response) => {
+			if (!response.ok) { throw new Error(response) }
+			return response.json()
+		})
+		.then((data) => {
+			 const results = data.map(char => ({
+				type: 'cardmenuitem',
+				value: char.value,
+				label: char.text,
+				items: [
+				  {
+					type: 'cardcontainer',
+					direction: 'horizontal',
+					items: [
+					  {
+						 type: 'cardimage',
+						 src: char.src,
+						 alt: char.text,
+						 classes: ['w-25', 'me-2']
+					  },
+					  {
+						type: 'cardtext',
+						text: char.text,
+						name: 'char_name'
+					  }
+					]
+				  }
+				]
+			  }));
+			resolve(results);					 
+		})
+		.catch(error => {
+			console.log(error);
+			displayToast("bg-danger", "Error", "Error renaming page!");
+		});	
+        });
+      }
+    });
     },
     
   plugins: 'preview searchreplace autolink autosave autoresize directionality code visualblocks visualchars fullscreen image media link table charmap lists wordcount help quickbars emoticons table accordion',
@@ -287,6 +477,8 @@ let tinyMceOptions = {
 	table_default_attributes: {
 		"class": 'table table-bordered',
    },
+     link_quicklink: true,
+	link_list: linkUrl,   
   table_class_list: [
 	{title: 'None', value: 'table'},
 	{title: 'striped', value: 'table-striped'},
