@@ -101,7 +101,9 @@ class Checkout extends Base {
 	}
 
 	function index() {
-		$cart = Cart :: getInstance($this->global);
+		$options = array_intersect_key($this->global['site'],
+		array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
+		$cart = Cart :: getInstance($options);
 
 		//buy now product
 		if (isset($this->request->request['product_id'])) {

@@ -49,14 +49,17 @@ class Order extends Base {
 	protected $type = 'order';
 
 	function index() {
-		$view = View :: getInstance();
+		$site = siteSettings($this->global['site_id']);
+		$options = array_intersect_key($site,
+		array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
 
-		$cart     = Cart::getInstance($this->global);
+		$cart     = Cart::getInstance($options);
 		$payment  = Payment::getInstance();
 		$shipping = Shipping::getInstance();
+		$view     = $this->view;
 
-		$this->view->order_payment  = $payment->getMethods();
-		$this->view->order_shipping = $shipping->getMethods();
+		$this->view->order_payment  = $payment->getMethods([]);
+		$this->view->order_shipping = $shipping->getMethods([]);
 
 		if (isset($this->request->get['order_id'])) {
 			$options = ['order_id' => (int)$this->request->get['order_id'], 'type' => $this->type] + $this->global;
