@@ -16,6 +16,7 @@
 		SELECT attribute_content.name, attribute_group_content.name as `group`, attribute.*
 				@IF isset(:product_id)
 				THEN		
+					, pa.product_id
 					,pa.value
 				END @IF		
 		
@@ -83,6 +84,7 @@
 
 	PROCEDURE add(
 		IN attribute ARRAY,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
