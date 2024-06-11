@@ -13,3 +13,9 @@
 [submodule "public/js/libs/tinymce-dist"]
 	path = public/js/libs/tinymce-dist
 	url = https://github.com/tinymce/tinymce-dist
+[submodule "plugins/payment"]
+	path = plugins/payment
+	url = https://github.com/Vvveb/payment
+[submodule "plugins/shipping"]
+	path = plugins/shipping
+	url = https://github.com/Vvveb/shipping
