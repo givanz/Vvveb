@@ -58,7 +58,7 @@ class Cart {
 
 	protected $total_items = 0;
 
-	use TaxTrait, ProductOptionTrait, CouponTrait;
+	use TaxTrait, ProductOptionTrait, CouponTrait, TotalTrait;
 
 	public static function getInstance($options = []) {
 		static $inst = null;
@@ -336,58 +336,11 @@ class Cart {
 
 		foreach ($this->products as $product) {
 			if ($product['requires_shipping']) {
-				$weight += $this->weight->convert($product['weight'], $product['weight_type_id'], $this->options['weight_type_id']);
+				$weight += $this->weight->convert($product['weight'], $product['weight_type_id'], $this->options['weight_type_id']) * $product['quantity'];
 			}
 		}
 
 		return $weight;
-	}
-
-	public function getSubTotal() {
-		$total = 0;
-
-		foreach ($this->products as $product) {
-			$total += $product['total'];
-		}
-
-		return $total;
-	}
-
-	public function getGrandTotal() {
-		$sum = 0;
-
-		if ($this->totals) {
-			foreach ($this->totals as $total) {
-				$sum += $total['value'] ?? 0;
-			}
-		}
-
-		return $sum;
-	}
-
-	public function getGrandTotalFormatted() {
-		$sum = $this->getGrandTotal();
-
-		return $this->currency->format($sum);
-	}
-
-	function addTotal($key, $title, $value, $text = '') {
-		$data = ['key' => $key, 'title' => $title, 'value' => $value, 'value_formatted' => $this->currency->format($value), 'text' => $text];
-
-		$this->totals[$key] = $data;
-		$this->write();
-	}
-
-	function removeTotal($key) {
-		unset($this->totals[$key]);
-	}
-
-	function getTotals() {
-		//include taxes
-		$this->addTaxTotal();
-		$this->addCouponTotal();
-
-		return $this->totals;
 	}
 
 	public function countProducts() {

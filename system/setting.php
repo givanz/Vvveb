@@ -109,7 +109,7 @@ class Setting {
 	}
 
 	public function delete($namespace, $key, $site_id = SITE_ID) {
-		if (! $namespace || ! $key) {
+		if (! $namespace) {
 			return;
 		}
 
