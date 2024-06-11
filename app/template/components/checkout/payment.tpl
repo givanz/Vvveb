@@ -25,7 +25,7 @@ if($payments && is_array($payments['payment'])) {
 		
 		@payment input[data-v-payment-*] = $payment['@@__data-v-payment-(*)__@@']
 		
-		@payment input[data-v-payment-name][type=radio]|addNewAttribute = <?php if ($payment_method == $key) echo 'checked';?>
+		@payment input[data-v-payment-key][type=radio]|addNewAttribute = <?php if ($payment_method == $key) echo 'checked';?>
 
 		@payment .collapse|addClass = <?php if ($payment_method == $key) echo 'show';?>
 		

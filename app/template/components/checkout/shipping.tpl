@@ -25,7 +25,7 @@ if($shippings && is_array($shippings['shipping'])) {
 
 		@shipping input[data-v-shipping-*] = $shipping['@@__data-v-shipping-(*)__@@']
 		
-		@shipping input[data-v-shipping-name]|addNewAttribute = <?php if ($shipping_method == $key) echo 'checked';?>
+		@shipping input[data-v-shipping-key]|addNewAttribute = <?php if ($shipping_method == $key) echo 'checked';?>
 		
 		@shipping .collapse|addClass = <?php if ($shipping_method == $key) echo 'show';?>
 		
