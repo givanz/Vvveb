@@ -1,9 +1,17 @@
 //Tables
-function addTemplate(id, name, parent) {
-	// id = attribute-template
+function addTemplate(id, name, parent, element = false) {
+	// id = attribute-template 
 	// name = product_attribute
 	// parent = attribute
-	let template = document.getElementById(id).cloneNode(true);
+	let template;
+	let tbody;
+	if (element) {
+		element = element.closest("table");
+	} else {
+		element = document;
+	}
+	template = element.querySelector(id).cloneNode(true);
+	
 	template.querySelectorAll('[type="date"]', template).forEach(e => e.setAttribute("value", date()));
 	template.querySelectorAll('[type="datetime-local"]').forEach(e => e.setAttribute("value", datetime()));
 	template.querySelectorAll("input,select").forEach(e => e.removeAttribute("disabled"));
@@ -13,19 +21,20 @@ function addTemplate(id, name, parent) {
 	template = template.replaceAll(name + '[0]', name + '[' + newId + ']').
 						replaceAll(name + '[#]', name + '[' + newId + ']').
 						replaceAll(name + '#', name + newId ).
+						replaceAll("[" + name +"][#]", "[" + name +"][" + newId + "]").
 						replace('d-none', '').
 						replace('id="' + id + '"', '');
 	
-	let element = generateElements(template)[0];
-	document.querySelector("#" + parent + " tbody").append(element);
-	return element;
+	let row = generateElements(template)[0];
+	element.querySelector(parent + " tbody").append(row);
+	return row;
 }
 
 function removeRow(element, elementName = false) {
 	let row = element.closest("tr");
-	if (elementName) {
+	if (row && elementName) {
 		let form = element.closest("form");
-		form.append(generateElements('<input type="hidden" name="delete[' + elementName + '][]" value="' + row.data("id") + '">')[0]);
+		form.append(generateElements('<input type="hidden" name="delete[' + elementName + '][]" value="' + row.dataset.id + '">')[0]);
 	}
 	return row.remove();
 }
