@@ -107,7 +107,8 @@
 	CREATE PROCEDURE delete(
 		IN site_id,
 		IN namespace CHAR,
-		IN key ARRAY
+		IN key ARRAY,
+		OUT affected_rows
 	)
 	BEGIN
 

@@ -122,7 +122,8 @@
 		IN site_id,
 		IN namespace CHAR,
 		IN key ARRAY,
-		IN language_id INT
+		IN language_id INT,
+		OUT affected_rows
 	)
 	BEGIN
 
