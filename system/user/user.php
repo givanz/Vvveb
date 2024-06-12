@@ -22,15 +22,15 @@
 
 namespace Vvveb\System\User;
 
-use Vvveb\System\PageCache;
-use Vvveb\Sql\UserSQL;
 use function Vvveb\session as sess;
+use Vvveb\Sql\UserSQL;
+use Vvveb\System\PageCache;
 
 class User extends Auth {
 	private static $namespace = 'user';
 
 	public static function add($data) {
-		$user = new \UserSQL();
+		$user = new UserSQL();
 
 		//check if email is already registerd
 		if ($userInfo = $user->get(['email'=> $data['email']])) {
@@ -49,7 +49,7 @@ class User extends Auth {
 	}
 
 	public static function update($data, $condition) {
-		$user = new \UserSQL();
+		$user = new UserSQL();
 
 		if (empty($data['password'])) {
 			unset($data['password']);
@@ -62,7 +62,7 @@ class User extends Auth {
 	}
 
 	public static function get($data) {
-		$user = new \UserSQL();
+		$user = new UserSQL();
 		//check user email and that status is active
 		$loginInfo = []; //['status' => 1];
 		$userInfo  = false;
