@@ -82,9 +82,10 @@ if($order_payment && is_array($order_payment)) {
 		@payment input[data-v-payment-*]        = $payment['@@__data-v-payment-(*)__@@']
 		@payment img[data-v-payment-*]|src      = $payment['@@__data-v-payment-(*)__@@']
 		@payment [data-v-payment-*]|innerText   = $payment['@@__data-v-payment-(*)__@@']
+		@payment [data-v-payment-key]|innerText = $index
 		@payment a[data-v-payment-*]|href       = $payment['@@__data-v-payment-(*)__@@']
 		@payment [type="radio"]|addNewAttribute = <?php
-			if (isset($this->order['payment_method']) && ($this->order['payment_method'] == $payment['name'])) {
+			if (isset($this->order['payment_method']) && ($this->order['payment_method'] == $index)) {
 				echo 'checked';
 			}
 		?>
@@ -104,13 +105,14 @@ if($order_shipping && is_array($order_shipping)) {
 	$count = count($order_shipping);
 	foreach ($order_shipping as $index => $shipping) {?>
 		
-		@shipping|data-shipping_id               = $shipping['shipping_id']
-		@shipping input[data-v-shipping-*]       = $shipping['@@__data-v-shipping-(*)__@@']
-		@shipping img[data-v-shipping-*]|src     = $shipping['@@__data-v-shipping-(*)__@@']
-		@shipping [data-v-shipping-*]|innerText  = $shipping['@@__data-v-shipping-(*)__@@']
-		@shipping a[data-v-shipping-*]|href      = $shipping['@@__data-v-shipping-(*)__@@']
-		@shipping [type="radio"]|addNewAttribute = <?php 
-			if (isset($this->order['shipping_method']) && ($this->order['shipping_method'] == $shipping['name'])) {
+		@shipping|data-shipping_id                = $shipping['shipping_id']
+		@shipping input[data-v-shipping-*]        = $shipping['@@__data-v-shipping-(*)__@@']
+		@shipping img[data-v-shipping-*]|src      = $shipping['@@__data-v-shipping-(*)__@@']
+		@shipping [data-v-shipping-*]|innerText   = $shipping['@@__data-v-shipping-(*)__@@']
+		@shipping [data-v-shipping-key]|innerText = $index
+		@shipping a[data-v-shipping-*]|href       = $shipping['@@__data-v-shipping-(*)__@@']
+		@shipping [type="radio"]|addNewAttribute  = <?php 
+			if (isset($this->order['shipping_method']) && ($this->order['shipping_method'] == $index)) {
 				echo 'checked';
 			}
 		?>
