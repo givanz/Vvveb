@@ -258,7 +258,7 @@ class Base {
 			$url = $redirect;
 		}
 
-		if ($this->session) {
+		if (isset($this->session)) {
 			$this->session->close();
 		}
 
