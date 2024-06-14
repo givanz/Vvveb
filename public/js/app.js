@@ -97,7 +97,7 @@ VvvebTheme.Ajax = {
 			}
 		})
 		.catch(error => {
-			console.log(error.statusText);
+			console.log(error);
 			//displayToast("bg-danger", "Revision", "Error!");
 		});				
 	}
@@ -386,7 +386,7 @@ VvvebTheme.Gui = {
 	addToCart: function(e) {
 		let product = elementProduct(this);
 		
-		let img = product.querySelector("img[data-v-product-image], img[data-v-product-image-src], img[data-v-product-image]");
+		let img = product.querySelector("img[data-v-product-image], img[data-v-product-image-src], img[data-v-product-image], img[data-v-product-main-image]");
 		let name = product.querySelector("[data-v-product-name]").textContent ?? "";
 		let quantity = product.querySelector('[name="quantity"]')?.value ?? 1;
 		let id = this.dataset.product_id ?? product.dataset.product_id;
@@ -470,7 +470,7 @@ VvvebTheme.Gui = {
 	addToWishlist: function(e) {
 		let product = elementProduct(this);
 		let id = this.dataset.product_id ?? product.dataset.product_id;
-		let img = product.querySelector("img[data-v-product-image],img[data-v-product-image],img[data-v-cart-product-image]")?.getAttribute("src") ?? "";
+		let img = product.querySelector("img[data-v-product-image], img[data-v-product-image], img[data-v-cart-product-image], img[data-v-product-main-image]")?.getAttribute("src") ?? "";
 
 		if (!id) {
 			id = product.dataset.product_id;
@@ -490,7 +490,7 @@ VvvebTheme.Gui = {
 	addToCompare: function(e) {
 		let product = elementProduct(this);
 		let id = this.dataset.product_id ?? product.dataset.product_id;
-		let img = product.querySelector("img[data-v-product-image],img[data-v-product-image],img[data-v-cart-product-image]")?.getAttribute("src") ?? "";
+		let img = product.querySelector("img[data-v-product-image], img[data-v-product-image], img[data-v-cart-product-image], img[data-v-product-main-image]")?.getAttribute("src") ?? "";
 
 		if (!id) {
 			id = product.dataset.product_id;
@@ -692,7 +692,7 @@ function loadAjax(url, selector, callback = null, params = {}, method = "get") {
 
 		window.dispatchEvent(new CustomEvent("vvveb.loadUrl", {detail: {url, selector}}));
 	}).catch(error => {
-		console.log(error.statusText);
+		console.log(error);
 	});
 }
 
