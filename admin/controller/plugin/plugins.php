@@ -66,7 +66,7 @@ class Plugins extends Base {
 		$cache            = (bool)($this->request->get['cache'] ?? true);
 		$view->plugins    = PluginsList :: getList($this->global['site_id'], $view->category, $cache);
 		$view->categories = PluginsList :: getCategories($this->global['site_id']);
-		$view->safemode   = ($admin = Admin::current()) && isset($admin['safemode']);
+		$view->safemode   = ($admin = Admin::current()) && isset($admin['safemode']) && $admin['safemode'];
 	}
 
 	function delete() {

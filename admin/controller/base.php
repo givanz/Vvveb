@@ -485,7 +485,7 @@ class Base {
 		}
 
 		//load plugins for active site if safe mode is not selected
-		if (! isset($admin['safemode'])) {
+		if (! isset($admin['safemode']) || ! $admin['safemode']) {
 			Plugins :: loadPlugins($site_id);
 		}
 
