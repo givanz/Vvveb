@@ -215,7 +215,7 @@ function exceptionToArray($exception, $file = false) {
 	$line  = $lineNo;
 	$code  = '';
 
-	if ($file && ($codeLines = file($file))) {
+	if ($file && ($codeLines = file($file)) && isset($codeLines[$lineNo])) {
 		$codeLines[$lineNo] = preg_replace("/\n$/","\t // <==\n", $codeLines[$lineNo]);
 		$lines              = array_slice($codeLines, $lineNo - 7, 14);
 		$line               = implode("\n", array_slice($codeLines, $lineNo, 1));
@@ -359,8 +359,6 @@ function start() {
 		if (APP == 'app') {
 			Plugins :: loadPlugins(SITE_ID);
 		}
-
-		//define('DIR_THEME', DIR_ROOT . 'public/themes/'. THEME .'/');
 
 		FrontController::dispatch();
 	} else {
