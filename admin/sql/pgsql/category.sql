@@ -82,7 +82,7 @@
 			
 			tc.language_id = :language_id AND t2s.site_id = :site_id
 
-			@IF isset(:search)
+			@IF isset(:search) && :search
 			THEN 
 			
 				AND tc.name LIKE :search
@@ -481,6 +481,8 @@
 		IN site_id INT,
 		IN taxonomy_id INT,
 		IN search CHAR,
+		IN type CHAR,
+		IN post_type CHAR,
 		
 		-- pagination
 		IN start INT,
@@ -519,7 +521,7 @@
 			
 			t2s.site_id = :site_id
 
-			@IF isset(:search)
+			@IF isset(:search) && :search
 			THEN 
 			
 				AND tc.name LIKE :search
@@ -529,21 +531,21 @@
 			@IF isset(:taxonomy_id)
 			THEN 
 			
-				AND categories.taxonomy_id LIKE :taxonomy_id
+				AND categories.taxonomy_id = :taxonomy_id
 				
 			END @IF	
 			
-			@IF isset(:type)
+			@IF isset(:type) && :type
 			THEN 
 			
-				AND taxonomy.type LIKE :type
+				AND taxonomy.type = :type
 				
 			END @IF				
 			
-			@IF isset(:post_type)
+			@IF isset(:post_type) && :post_type
 			THEN 
 			
-				AND taxonomy.post_type LIKE :post_type
+				AND taxonomy.post_type = :post_type
 				
 			END @IF			
 

@@ -29,14 +29,13 @@ use function Vvveb\url;
 trait AutocompleteTrait {
 	function categoriesAutocomplete() {
 		$categories = new CategorySQL();
+		$text       = trim($this->request->get['text'] ?? '');
+		$post_type  = $this->request->get['post_type'] ?? '';
 
 		$results = $categories->getCategories([
-			'start'       => 0,
-			'limit'       => 10,
-			'language_id' => 1,
-			'site_id'     => 1,
-			'search'      => '%' . trim($this->request->get['text']) . '%',
-		]);
+			'post_type' => $post_type,
+			'search'    => '%' . $text . '%',
+		] + $this->global);
 
 		$search = [];
 
@@ -57,11 +56,10 @@ trait AutocompleteTrait {
 
 	function manufacturersAutocomplete() {
 		$manufacturers = new \Vvveb\Sql\ManufacturerSQL();
+		$text          = trim($this->request->get['text'] ?? '');
 
 		$options = [
-			'start'       => 0,
-			'limit'       => 10,
-			'search'      => '%' . trim($this->request->get['text']) . '%',
+			'search' => '%' . $text . '%',
 		] + $this->global;
 
 		$results = $manufacturers->getAll($options);
@@ -83,12 +81,11 @@ trait AutocompleteTrait {
 	}
 
 	function vendorsAutocomplete() {
-		$vendors = new \Vvveb\Sql\VendorSQL();
+		$vendors    = new \Vvveb\Sql\VendorSQL();
+		$text       = trim($this->request->get['text'] ?? '');
 
 		$options = [
-			'start'  => 0,
-			'limit'  => 10,
-			'search' => '%' . trim($this->request->get['text']) . '%',
+			'search' => '%' . $text . '%',
 		] + $this->global;
 
 		$results = $vendors->getAll($options);
@@ -110,12 +107,12 @@ trait AutocompleteTrait {
 	}
 
 	function urlAutocomplete() {
-		$products = new \Vvveb\Sql\ProductSQL();
+		$products   = new \Vvveb\Sql\ProductSQL();
+		$text       = trim($this->request->get['text'] ?? '');
 
 		$options = [
-			'start' => 0,
 			'limit' => 5,
-			'like'  => trim($this->request->get['text']),
+			'like'  => $text,
 		] + $this->global;
 
 		unset($options['admin_id']);
@@ -159,12 +156,11 @@ trait AutocompleteTrait {
 	}
 
 	function productsAutocomplete() {
-		$products = new \Vvveb\Sql\ProductSQL();
+		$products   = new \Vvveb\Sql\ProductSQL();
+		$text       = trim($this->request->get['text'] ?? '');
 
 		$options = [
-			'start' => 0,
-			'limit' => 10,
-			'like'  => trim($this->request->get['text']),
+			'like' => $text,
 		] + $this->global;
 
 		unset($options['admin_id']);
@@ -187,13 +183,12 @@ trait AutocompleteTrait {
 	}
 
 	function adminsAutocomplete() {
-		$admins = new \Vvveb\Sql\AdminSQL();
+		$admins     = new \Vvveb\Sql\AdminSQL();
+		$text       = trim($this->request->get['text'] ?? '');
 
 		$options = [
-			'start'       => 0,
-			'limit'       => 10,
-			'status'      => 1,
-			'search'      => trim($this->request->get['text']),
+			'status' => 1,
+			'search' => $text,
 		] + $this->global;
 
 		$results = $admins->getAll($options);
@@ -222,11 +217,10 @@ trait AutocompleteTrait {
 
 	function attributesAutocomplete() {
 		$attributes = new \Vvveb\Sql\AttributeSQL();
+		$text       = trim($this->request->get['text'] ?? '');
 
 		$options = [
-			'start'       => 0,
-			'limit'       => 10,
-			'search'      => trim($this->request->get['text']),
+			'search' => $text,
 		] + $this->global;
 
 		$results = $attributes->getAll($options);
@@ -278,11 +272,10 @@ trait AutocompleteTrait {
 
 	function digitalAssetsAutocomplete() {
 		$digital_assets = new \Vvveb\Sql\Digital_assetSQL();
+		$text           = trim($this->request->get['text'] ?? '');
 
 		$options = [
-			'start'       => 0,
-			'limit'       => 10,
-			'search'      => trim($this->request->get['text']),
+			'search' => $text,
 		] + $this->global;
 
 		$results = $digital_assets->getAll($options);

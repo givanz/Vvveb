@@ -86,7 +86,7 @@ class Categories extends Base {
 		$categories  = new categorySQL();
 
 		$page        = $this->request->get['page'] ?? 1;
-		$type        = $this->request->get['type'] ?? 1;
+		$type        = $this->request->get['type'] ?? '';
 		$taxonomy_id = $this->request->get['taxonomy_id'];
 		$limit       = 1000;
 

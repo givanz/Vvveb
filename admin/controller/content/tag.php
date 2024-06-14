@@ -32,18 +32,37 @@ class Tag extends Base {
 
 	function save() {
 		$taxonomy_item_id = $this->request->get['taxonomy_item_id'] ?? false;
+		$taxonomy_id      = $this->request->get['taxonomy_id'];
+		$post_type        = $this->request->get['type'] ?? '';
 		$tag              = $this->request->post['tag'] ?? false;
 
-		if ($taxonomy_item_id && $tag) {
+		if ($tag) {
 			$tags   = new categorySQL();
-			$result = $tags->editCategory(
-				['taxonomy_item_content' => [$tag + $this->global],
-					'taxonomy_item_id'      => $taxonomy_item_id,
-					'taxonomy_item'         => ['taxonomy_item_id' => $taxonomy_item_id] + $tag,
+
+			if ($taxonomy_item_id) {
+				$result = $tags->editCategory(
+					['taxonomy_item_content' => [$tag + $this->global],
+						'taxonomy_item_id'      => $taxonomy_item_id,
+						'taxonomy_item'         => ['taxonomy_item_id' => $taxonomy_item_id, 'taxonomy_id' => $taxonomy_id] + $tag,
+					]);
+			} else {
+				var_dump(['taxonomy_item_content' => [$tag + $this->global],
+					'taxonomy_item'                  => ['taxonomy_id' => $taxonomy_id] + $tag,
 				]);
+				$result = $tags->addCategory(
+					['taxonomy_item_content' => $tag + $this->global,
+						'taxonomy_item'         => ['taxonomy_id' => $taxonomy_id] + $tag,
+						'site_id'               => $this->global['site_id'],
+					]);
+			}
 
 			if ($result && isset($result['taxonomy_item_content'])) {
-				$this->view->success[] = __('Tag saved!');
+				$message               = __('Tag saved!');
+				$this->view->success[] = $message;
+
+				if (! $taxonomy_item_id) {
+					$this->redirect(['module'=> 'content/tag', 'taxonomy_item_id' => $result['taxonomy_item'], 'taxonomy_id' => $taxonomy_id, 'type' => $post_type, 'success' => $message], [], false);
+				}
 			} else {
 				$this->view->errors[] = __('Error saving!');
 			}
@@ -55,21 +74,31 @@ class Tag extends Base {
 	function index() {
 		$tags             = new categorySQL();
 		$taxonomy_item_id = $this->request->get['taxonomy_item_id'] ?? false;
+		$taxonomy_id      = $this->request->get['taxonomy_id'] ?? false;
+		$post_type        = $this->request->get['type'] ?? '';
 
-		$view                  = $this->view;
-		$admin_path            = \Vvveb\adminPath();
-		$controllerPath        = $admin_path . 'index.php?module=media/media';
-		$view->scanUrl         = "$controllerPath&action=scan";
-		$view->uploadUrl       = "$controllerPath&action=upload";
+		$view            = $this->view;
+		$admin_path      = \Vvveb\adminPath();
+		$controllerPath  = $admin_path . 'index.php?module=media/media';
+		$view->scanUrl   = "$controllerPath&action=scan";
+		$view->uploadUrl = "$controllerPath&action=upload";
 
 		$options = [
-			'type'                     => $this->type,
-			'taxonomy_item_id'         => $taxonomy_item_id,
+			'type'             => $this->type,
+			'taxonomy_item_id' => $taxonomy_item_id,
+			'taxonomy_id'      => $taxonomy_id,
 		] + $this->global;
 		unset($options['user_id']);
 
-		$view->status           = [0 => __('Disabled'), 1 => __('Enabled')];
-		$view->tag              = $tags->getCategoryBySlug($options);
-		$view->tag['image_url'] = Images::image($view->tag['image'], 'tag', 'thumb');
+		$tag = $tags->getCategoryBySlug($options);
+
+		if ($tag) {
+			$tag['image_url'] = Images::image($tag['image'], 'tag', 'thumb');
+		}
+
+		$view->taxonomy_id = $taxonomy_id;
+		$view->type        = $post_type;
+		$view->status      = [1 => __('Enabled'), 0 => __('Disabled')];
+		$view->tag         = $tag ?? [];
 	}
 }
