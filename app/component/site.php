@@ -29,7 +29,8 @@ use Vvveb\System\Event;
 
 class Site extends ComponentBase {
 	public static $defaultOptions = [
-		'site_id'  => null,
+		'site_id'     => null,
+		'language_id' => null,
 	];
 
 	protected $options = [];

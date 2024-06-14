@@ -23,16 +23,13 @@
 namespace Vvveb\Controller\Cart;
 
 use function Vvveb\__;
-use Vvveb\System\Cart\Cart as ShoppingCart;
 
 trait CouponTrait {
 	function coupon() {
 		$coupon = $this->request->request['coupon'] ?? '';
 
 		if ($coupon) {
-			$cart = ShoppingCart::getInstance($this->global);
-
-			if ($cart->addCoupon($coupon)) {
+			if ($this->cart->addCoupon($coupon)) {
 				$this->view->success['coupon'] = __('Coupon successfully applied!');
 			} else {
 				$this->view->errors['coupon'] = __('Invalid or expired coupon!');
@@ -46,9 +43,7 @@ trait CouponTrait {
 		$coupon = $this->request->request['coupon'] ?? '';
 
 		if ($coupon) {
-			$cart = ShoppingCart::getInstance($this->global);
-
-			if ($cart->removeCoupon($coupon)) {
+			if ($this->cart->removeCoupon($coupon)) {
 				$this->view->success['coupon'] = __('Coupon removed!');
 			} else {
 				$this->view->errors['coupon'] = __('Could not remove coupon!');

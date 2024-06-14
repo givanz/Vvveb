@@ -22,6 +22,7 @@
 
 namespace Vvveb\Component;
 
+use function Vvveb\siteSettings;
 use Vvveb\System\Cart\Cart as ShoppingCart;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
@@ -42,6 +43,10 @@ class Cart extends ComponentBase {
 	protected $options = [];
 
 	function results() {
+		$site = siteSettings($this->options['site_id'], $this->options['language_id']);
+		$this->options += array_intersect_key($site,
+		array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
+
 		$cart                       = ShoppingCart::getInstance($this->options);
 		$results['products']        = $cart->getAll();
 		$results['coupons']         = $cart->getCoupons();
