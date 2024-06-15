@@ -65,6 +65,48 @@ class Update {
 		return [];
 	}
 
+	private function checkFolderPermissions($dir) {
+		$skip       = ['install', 'locale', 'vendor', 'plugins', 'config'];
+		$unwritable = [];
+
+		$handle = @opendir($dir);
+
+		while (false !== ($file = readdir($handle))) {
+			$full = $dir . DS . $file;
+
+			if (($file != '.') &&
+				($file != '..') && ! in_array($file, $skip)) {
+				if (is_dir($full)) {
+					if (! is_writable($full)) {
+						if (! @chmod($full, CHMOD_DIR)) {
+							return $full;
+						}
+					}
+
+					$result = $this->checkFolderPermissions($full);
+
+					if ($result !== true) {
+						return $result;
+					}
+				}
+				//if (str_ends_with($full, '.php') && ! is_writable($full)) {
+				if ((substr_compare($full,'.php', -4) === 0) && ! is_writable($full)) {
+					if (! @chmod($full, CHMOD_FILE)) {
+						return $full;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
+	function checkPermissions() {
+		$check = $this->checkFolderPermissions(DIR_ROOT);
+
+		return $check;
+	}
+
 	static function backup() {
 		$skipFolders  = ['plugins', 'public', 'storage', 'install'];
 		$backupFolder = DIR_BACKUP . 'update-' . V_VERSION . '-' . date('Y-m-d_H:i:s');
@@ -107,24 +149,19 @@ class Update {
 		if (! is_writable($dest)) {
 			throw new \Exception(sprintf('Folder "%s" not writable!', $dest));
 		}
-		rcopy($src, $dest, $skipFolders);
 
-		return true;
+		return rcopy($src, $dest, $skipFolders);
 	}
 
 	function copyAdmin() {
 		//$skipFolders = ['plugins', 'public', 'storage'];
-		$this->copyFolder($this->workDir . DS . 'admin', DIR_ROOT . DS . 'admin');
-
-		return true;
+		return $this->copyFolder($this->workDir . DS . 'admin', DIR_ROOT . DS . 'admin');
 	}
 
 	function copyApp() {
 		ignore_user_abort(true);
 		//$skipFolders = ['plugins', 'public', 'storage'];
-		$this->copyFolder($this->workDir . DS . 'app', DIR_ROOT . DS . 'app');
-
-		return true;
+		return $this->copyFolder($this->workDir . DS . 'app', DIR_ROOT . DS . 'app');
 	}
 
 	function copySystem() {

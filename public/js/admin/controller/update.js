@@ -87,7 +87,7 @@ class UpdateController {
 				}
 			})*/
 			.catch(error => {
-					let message = error.clone().text();
+					let message = error.statusText ?? error.clone().text();
 
 					if (typeof error.json === "function") {
 						error.json().then(jsonError => {

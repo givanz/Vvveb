@@ -31,7 +31,7 @@ use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
 class Update extends Base {
-	private $steps = ['download', 'unzip', /*'backup',*/ 'copySystem',/* 'copyAdmin',*/ 'copyApp', 'copyInstall', 'copyCore',  'copyConfig', 'copyPublic', 'copyPublicAdmin', 'copyPublicMedia', 'setPermissions', 'cleanUp', 'clearCache', 'complete'];
+	private $steps = ['checkPermissions', 'download', 'unzip', /*'backup',*/ 'copySystem', /* 'copyAdmin',*/ 'copyApp', 'copyInstall', 'copyCore',  'copyConfig', 'copyPublic', 'copyPublicAdmin', 'copyPublicMedia', 'setPermissions', 'cleanUp', 'clearCache', 'complete'];
 
 	function __construct() {
 		$this->update = new UpdateSys();
@@ -151,6 +151,25 @@ class Update extends Base {
 		return true;
 	}
 
+	function checkPermissions() {
+		$result = false;
+
+		try {
+			$result = $this->update->checkPermissions();
+		} catch (\Exception $e) {
+			$this->view->errors[] = $e->getMessage();
+		}
+
+		if ($result === true) {
+			$this->view->info[] = __('Permissions ok!');
+		} else {
+			$this->view->errors[] = sprintf(__('%s not writable!'), $result);
+			return false;
+		}
+
+		return $result;
+	}	
+	
 	function backup() {
 		$result = false;
 
@@ -188,11 +207,12 @@ class Update extends Base {
 	}
 
 	private function copy($method) {
-		$name = humanReadable(camelToUnderscore($method));
+		$name            = humanReadable(camelToUnderscore($method));
 		$errorInstallMsg = sprintf(__('Error updating %s'), $name);
 		$result          = false;
-		
+
 		$method = "copy$method";
+
 		try {
 			$result = $this->update->$method();
 		} catch (\Exception $e) {
@@ -207,7 +227,7 @@ class Update extends Base {
 
 		return $result;
 	}
-	
+
 	function copyCore() {
 		return $this->copy('Core');
 	}
@@ -219,12 +239,14 @@ class Update extends Base {
 	function copySystem() {
 		//merge system and admin in one step so that the updater does not break if depends on older system code.
 		$return = $this->copy('System');
+
 		if ($return) {
 			$return = $this->copy('Admin');
 		}
-		
+
 		return $return;
 	}
+
 	/*
 	function copyAdmin() {
 		return $this->copy('Admin');
@@ -330,28 +352,7 @@ class Update extends Base {
 		return $this->index();
 	}
 
-	function checkWriteAccess() {
-		$skip = ['install', 'locale', 'vendor', 'plugins', 'config'];
-		$unwritable = [];
-		
-		$dir = @opendir(DIR_ROOT);
-		while (false !== ($file = readdir($dir))) {
-			$full = DIR_ROOT . DS . $file;
-
-			if (($file != '.') &&
-				($file != '..') && !in_array($file, $skip)) {
-				if (is_dir($full) && ! is_writable($full)) {
-					$unwritable[] = $file;
-				}
-			}
-		}		
-		if ($unwritable) {
-			$this->view->info[] = sprintf('Folders <b>%s</b> are not writable, update will not work properly', implode(', ', $unwritable));
-		}
-	}
-	
-	function index() {		
-		$updateInfo = $this->checkWriteAccess();
+	function index() {
 		$updateInfo = $this->checkUpdates();
 
 		$info = [
