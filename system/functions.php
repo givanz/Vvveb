@@ -1354,6 +1354,8 @@ function rrmdir($src, $skip = []) {
 
 	$dir = @opendir($src);
 
+	$result = false;
+
 	if ($dir) {
 		while (false !== ($file = readdir($dir))) {
 			$full = $src . DS . $file;
@@ -1362,9 +1364,13 @@ function rrmdir($src, $skip = []) {
 				($file != '..')/* &&
 				(! in_array($full, $skip))*/) {
 				if (is_dir($full)) {
-					rrmdir($full);
+					$result = rrmdir($full);
 				} else {
-					unlink($full);
+					$result = @unlink($full);
+				}
+
+				if (! $result) {
+					break;
 				}
 			}
 		}
@@ -1374,7 +1380,7 @@ function rrmdir($src, $skip = []) {
 		return rmdir($src);
 	}
 
-	return false;
+	return result;
 }
 
 /* Recursive copy */
@@ -1383,12 +1389,18 @@ function rcopy($src, $dst, $skip = [], $overwrite = true) {
 		//rrmdir($dst);
 	}
 
-	$result = false;
+	$result = true;
 
 	if (is_dir($src)) {
 		if (! file_exists($dst)) {
-			mkdir($dst);
+			$result = @mkdir($dst);
+
+			if (! $result) {
+				return false;
+			}
 		}
+
+		@chmod($dst, 0755);
 
 		$files = scandir($src);
 
@@ -1401,13 +1413,33 @@ function rcopy($src, $dst, $skip = [], $overwrite = true) {
 				if (is_dir($full)) {
 					$result = rcopy($full, $dst . DS . $file);
 				} else {
-					$result = copy($full, $dst . DS . $file);
+					$result = @copy($full, $dst . DS . $file);
+
+					if (! $result) {
+						if (@chmod($dst . DS . $file, 0644)) {
+							$result = @copy($full, $dst . DS . $file);
+						}
+					}
+				}
+
+				if (! $result) {
+					return false;
 				}
 			}
 		}
 	} else {
 		if (file_exists($src)) {
-			$result = copy($src, $dst);
+			$result = @copy($src, $dst);
+
+			if (! $result) {
+				if (@chmod($dst, 0644)) {
+					$result = copy($src, $dst);
+				}
+			}
+
+			if (! $result) {
+				return false;
+			}
 		}
 	}
 
