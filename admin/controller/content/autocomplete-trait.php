@@ -45,9 +45,6 @@ trait AutocompleteTrait {
 			}
 		}
 
-		$view         = $this->view;
-		$view->noJson = true;
-
 		$this->response->setType('json');
 		$this->response->output($search);
 
@@ -73,7 +70,6 @@ trait AutocompleteTrait {
 			}
 		}
 
-		//echo json_encode($search);
 		$this->response->setType('json');
 		$this->response->output($search);
 
@@ -99,7 +95,6 @@ trait AutocompleteTrait {
 			}
 		}
 
-		//echo json_encode($search);
 		$this->response->setType('json');
 		$this->response->output($search);
 
@@ -148,11 +143,9 @@ trait AutocompleteTrait {
 				}
 			}
 		}
-		//echo json_encode($search);
+		
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		return false;
 	}
 
 	function productsAutocomplete() {
@@ -175,11 +168,8 @@ trait AutocompleteTrait {
 			}
 		}
 
-		//echo json_encode($search);
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		return false;
 	}
 
 	function adminsAutocomplete() {
@@ -208,11 +198,9 @@ trait AutocompleteTrait {
 				$search[$admin['admin_id']] =  $text;
 			}
 		}
-		//echo json_encode($search);
+
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		return false;
 	}
 
 	function attributesAutocomplete() {
@@ -236,11 +224,9 @@ trait AutocompleteTrait {
 				$search[$attribute['attribute_id']] =  $text;
 			}
 		}
-		//echo json_encode($search);
+
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		return false;
 	}
 
 	function optionValuesAutocomplete() {
@@ -263,11 +249,9 @@ trait AutocompleteTrait {
 				$search[$value['option_value_id']] =  $text;
 			}
 		}
-		//echo json_encode($search);
+
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		return false;
 	}
 
 	function digitalAssetsAutocomplete() {
@@ -291,10 +275,8 @@ trait AutocompleteTrait {
 				$search[$digital_asset['digital_asset_id']] =  $text;
 			}
 		}
-		//echo json_encode($search);
+
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		return false;
 	}
 }
