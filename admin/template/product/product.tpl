@@ -19,12 +19,6 @@ import(product/product/points.tpl)
 import(product/product/digital_asset.tpl)
 
 
-// featured media
-[data-v-product] [data-v-image]|data-v-image = $this->product['image_url']
-[data-v-product] input[data-v-image]|value = $this->product['image']
-[data-v-product] [data-v-image]|src = <?php echo $this->product['image_url'] ? $this->product['image_url'] : 'img/placeholder.svg';?>
-
-
 [data-v-product] [data-v-url]|href = $this->product['url']
 [data-v-product] [data-v-url] = $this->product['url']
 
