@@ -118,23 +118,35 @@ class Menus extends Categories {
 			}
 		}
 
+		$response = [];
+		$success = true;
+		$menu_item_id = false;
+		
 		if (isset($data['menu_item_id']) && $data['menu_item_id']) {
 			$results = $menus->editMenuItem(['menu_item' => $data, 'menu_item_id' => $data['menu_item_id']]);
-
+			$menu_item_id = $data['menu_item_id'];
 			if ($results) {
-				echo __('Item saved!');
+				$message = __('Item saved!');
+			} else {
+				$message =  __('Error!');
+				$success = false;
 			}
 		} else {
 			$results = $menus->addMenuItem(['menu_item' => $data]);
 
 			if ($results) {
-				echo __('Item added!');
+				$menu_item_id = $results['menu_item'];
+				$message =  __('Item added!');
+			} else {
+				$message =  __('Error!');
+				$success = false;
 			}
 		}
+		
+		$response += ['success' => $success, 'message' => $message, 'menu_item_id' => $menu_item_id];
 
-		die();
-
-		return;
+		$this->response->setType('json');
+		$this->response->output($response);
 	}
 
 	function menu() {
