@@ -47,8 +47,9 @@ class Language extends Crud {
 	}
 
 	function install() {
-		$code         = filter('/[-\w]+/', $this->request->post['code']);
-		$url          = str_replace('{code}', $code, $this->installUrl);
+		$code = filter('/[-\w]+/', $this->request->post['code']);
+		$url = str_replace('{code}', $code, $this->installUrl);
+		$available = false;
 
 		require DIR_SYSTEM . 'functions' . DS . 'php-mo.php';
 
@@ -56,6 +57,7 @@ class Language extends Crud {
 			$translations = download($url . $file);
 
 			if ($translations) {
+				$available = true;
 				$folder = DIR_ROOT . 'locale' . DS . $code . DS . 'LC_MESSAGES';
 				$poFile = $folder . DS . $file;
 				@mkdir($folder, 0755 & ~umask(), true);
@@ -74,11 +76,13 @@ class Language extends Crud {
 					break;
 				}
 			} else {
-				$this->view->errors[] = __('Language pack not available!');
-				$this->view->info[]   = sprintf(__('Check available translations at %s'), '<a href="' . $this->listUrl . '" target="_blank">' . $this->listUrl . '</a>');
-
 				break;
 			}
+		}
+		
+		if (!$available) {
+			$this->view->errors[] = __('Language pack not available!');
+			$this->view->info[]   = sprintf(__('Check available translations at %s'), '<a href="' . $this->listUrl . '" target="_blank">' . $this->listUrl . '</a>');
 		}
 
 		return $this->index();
