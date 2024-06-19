@@ -28,7 +28,7 @@ use Vvveb\System\CacheManager;
 
 class Cache extends Base {
 	private function clear($fn) {
-		if (CacheManager :: $fn()) {
+		if ($fn()) {
 			$this->view->success[] = __('Cache deleted!');
 		} else {
 			$this->view->errors[] = __('Error purging cache!');
@@ -38,31 +38,31 @@ class Cache extends Base {
 	}
 
 	function delete() {
-		return $this->clear('delete');
+		return $this->clear(fn () => CacheManager :: delete());
 	}
 
 	function template() {
-		return $this->clear('clearCompiledFiles');
+		return $this->clear(fn () => CacheManager :: clearCompiledFiles());
 	}
 
 	function page() {
-		return $this->clear('clearPageCache');
+		return $this->clear(fn () => CacheManager :: clearPageCache($this->global['site_url']));
 	}
 
 	function database() {
-		return $this->clear('clearObjectCache');
+		return $this->clear(fn () => CacheManager :: clearObjectCache());
 	}
 
 	function asset() {
-		return $this->clear('clearFrontend');
+		return $this->clear(fn () => CacheManager :: clearFrontend());
 	}
 
 	function model() {
-		return $this->clear('clearModelCache');
+		return $this->clear(fn () => CacheManager :: clearModelCache());
 	}
 
 	function image() {
-		return $this->clear('clearImageCache');
+		return $this->clear(fn () => CacheManager :: clearImageCache());
 	}
 
 	function stale() {
@@ -78,10 +78,16 @@ class Cache extends Base {
 			'/storage/compiled_templates' => DIR_COMPILED_TEMPLATES,
 		];
 
+		$unwritable = [];
+
 		foreach ($folders as $folder => $path) {
 			if (! is_writable($path)) {
-				$this->view->info[] = sprintf('Folder is not writable, clear cache might not work for this layer, make sure that <b>%s</b> is writable by php', $folder);
+				$unwritable[] = $folder;
 			}
+		}
+
+		if ($unwritable) {
+			$this->view->info[] = sprintf('Folders <b>%s</b> are not writable, clear cache might not work for these layers', implode(', ', $unwritable));
 		}
 	}
 }

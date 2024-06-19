@@ -54,14 +54,17 @@ class PageCache {
 		return self :: $instance;
 	}
 
-	function __construct() {
-		$this->cacheFolder = $this->cacheFolder();
+	function __construct($host = null) {
+		$this->cacheFolder = $this->cacheFolder($host);
 		$this->fileName    = $this->fileName();
 		//$this->canSaveCache    = $this->canSaveCache();
 	}
 
-	function cacheFolder() {
-		return DIR_PUBLIC . self :: CACHE_DIR . ($_SERVER['HTTP_HOST'] ?? 'default');
+	function cacheFolder($host) {
+		$host    = $host ?? $_SERVER['HTTP_HOST'] ?? '';
+		$hostWp  = substr($host, 0, strpos($host, ':') ?: null);
+
+		return DIR_PUBLIC . self :: CACHE_DIR . ($hostWp ?? 'default');
 	}
 
 	function fileName() {
@@ -263,7 +266,7 @@ class PageCache {
 					if (! @rmdir($file)) {
 						clearstatcache(false, $file);
 					}
-					*/ 
+					*/
 				}
 			}
 		}

@@ -104,8 +104,8 @@ class CacheManager {
 		return $cacheDriver->delete($namespace, $key);
 	}
 
-	public static function clearPageCache($namespace = '') {
-		$pageCache = PageCache::getInstance();
+	public static function clearPageCache($host = null, $namespace = '') {
+		$pageCache = new PageCache($host);
 
 		return $pageCache->purge($namespace);
 	}
