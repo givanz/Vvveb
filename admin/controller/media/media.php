@@ -28,7 +28,7 @@ use function Vvveb\sanitizeFileName;
 use Vvveb\System\Core\View;
 
 class Media extends Base {
-	protected $uploadDenyExtensions = ['php'];
+	protected $uploadDenyExtensions = ['php', 'svg', 'js'];
 
 	//protected $uploadAllowExtensions = ['ico','jpg','jpeg','png','gif','webp', 'mp4', 'mkv', 'mov'];
 
@@ -68,48 +68,88 @@ class Media extends Base {
 
 	function upload() {
 		$path      = sanitizeFileName($this->request->post['mediaPath']);
-		$file      = $this->request->files['file'];
+		$file      = $this->request->files['file'] ?? [];
 		$fileName  = sanitizeFileName($file['name']);
 		$path      = preg_replace('@^/public/media|^/media|^/public@', '', $path);
 		$extension = strtolower(substr($fileName, strrpos($fileName, '.') + 1));
+		$success = false;
+		$return = '';
+		$message = '';
+		
+		if ($file) {
+			switch ($file['error']) {
+				case UPLOAD_ERR_OK:
+					$success = true;
+					break;
 
-		if (in_array($extension, $this->uploadDenyExtensions)) {
-			die(__('File type not allowed!'));
-		}
+				case UPLOAD_ERR_NO_FILE:
+					$message = __('No file sent');
+					break;
+					
+				case UPLOAD_ERR_PARTIAL:
+					$message = __('The uploaded file was only partially uploaded');
+					break;
+					
+				case UPLOAD_ERR_NO_TMP_DIR:
+					$message = __('Missing a temporary folder');
+					break;
+					
+				case UPLOAD_ERR_CANT_WRITE:
+					$message = __('Failed to write file to disk');
+					break;
+					
+				case UPLOAD_ERR_EXTENSION:
+					$message = __('A PHP extension stopped the file upload');
+					break;
+					
+				case UPLOAD_ERR_INI_SIZE:
+				case UPLOAD_ERR_FORM_SIZE:
+					$message = __('Exceeded filesize limit');
+					break;
+					
+				default:
+					$message = __('Unknown errors');
+			}
+			
+			if (in_array($extension, $this->uploadDenyExtensions)) {
+				$message = __('File type not allowed!');
+				$success = false;
+			}
 
-		switch ($file['error']) {
-			case UPLOAD_ERR_OK:
-				break;
+			$origFilename = $fileName;
+			$i            = 1;
+		
+			if ($success) {
+				while (file_exists($destination = DIR_MEDIA . $path . DS . $fileName) && ($i++ < 5)) {
+					$fileName = rand(0, 10000) . '-' . $origFilename;
+				}
 
-			case UPLOAD_ERR_NO_FILE:
-				die(__('No file sent.'));
-
-			case UPLOAD_ERR_INI_SIZE:
-			case UPLOAD_ERR_FORM_SIZE:
-				die(__('Exceeded filesize limit.'));
-
-			default:
-				die(__('Unknown errors.'));
-		}
-
-		$origFilename = $fileName;
-		$i            = 1;
-
-		while (file_exists($destination = DIR_MEDIA . $path . DS . $fileName) && ($i++ < 5)) {
-			$fileName = rand(0, 10000) . '-' . $origFilename;
-		}
-
-		if (move_uploaded_file($file['tmp_name'], $destination)) {
-			if (isset($this->request->post['onlyFilename'])) {
-				echo $fileName;
-			} else {
-				echo $destination;
+				if (move_uploaded_file($file['tmp_name'], $destination)) {
+					if (isset($this->request->post['onlyFilename'])) {
+						$return = $fileName;
+					} else {
+						$return = $destination;
+					}
+					$message = __('File uploaded successfully!');
+				} else {
+					$destination = DIR_MEDIA . $path . DS;
+					$success = false;
+					
+					if (!is_writable($destination)) {
+						$message = sprintf(__('%s not writable!'), $destination);
+					} else {
+						$message = __('Error moving uploaded file!');
+					}
+				}
 			}
 		} else {
-			echo __('Error uploading file!');
+			$message = __('Invalid upload!');
 		}
-
-		die();
+			
+		$message = ['success' => true, 'message' => $message, 'file' => $return];
+		
+		$this->response->setType('json');
+		$this->response->output($message);
 	}
 
 	function delete() {
@@ -124,9 +164,8 @@ class Media extends Base {
 			$message = ['success' => false, 'message' => __('Error deleting file!')];
 		}
 
-		echo json_encode($message);
-
-		die();
+		$this->response->setType('json');
+		$this->response->output($message);
 	}
 
 	function rename() {
@@ -153,9 +192,9 @@ class Media extends Base {
 			}
 		}
 
-		echo json_encode($message);
 
-		die();
+		$this->response->setType('json');
+		$this->response->output($message);
 	}
 
 	function scan() {
@@ -217,15 +256,5 @@ class Media extends Base {
 			'path'  => '',
 			'items' => $response,
 		]);
-		/*
-		$view         = View::getInstance();
-		$view->set([
-			'name'  => '',
-			'type'  => 'folder',
-			'path'  => '',
-			'items' => $response,
-		]);
-		*/
-		return;
 	}
 }
