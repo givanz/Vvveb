@@ -583,6 +583,10 @@ class Editor extends Base {
 		if (file_put_contents($fileName, $content)) {
 			$success = true;
 			$text .= __('File saved!');
+		} else {
+			if (!is_writable($fileName)) {
+				$text .= sprintf(__('%s is not writable!'), $fileName);
+			}
 		}
 
 		$cssFile = DS . 'css' . DS . 'custom.css';
