@@ -19,6 +19,16 @@ if (isset($this->success) && is_array($this->success)) foreach($this->success as
 	}
 ?>
 
+@warning = [data-v-notifications] [data-v-notification-warning]
+@warning|before = <?php 
+if (isset($this->warning) && is_array($this->warning)) foreach($this->warning as $message) {?>
+	
+	@warning [data-v-notification-text] = <?php echo $message;?>
+	
+@warning|after = <?php 
+	}
+?>
+
 @info = [data-v-notifications] [data-v-notification-info]
 @info|before = <?php 
 if (isset($this->info) && is_array($this->info)) foreach($this->info as $message) {?>
