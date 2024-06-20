@@ -1496,7 +1496,7 @@ function download($url) {
 	return $result;
 }
 
-function getUrl($url, $cache = true, $expire = 604800, $timeout = 1, $exception = true) {
+function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception = true) {
 	$cacheDriver  = System\Cache :: getInstance();
 	$cacheKey     = md5($url);
 	$result       = false;

@@ -226,6 +226,8 @@ class Edit extends Base {
 		$template        = isset($post['template']) && $post['template'] ? $post['template'] : $defaultTemplate;
 		$themeFolder     = $this->getThemeFolder();
 
+		$design_url = '';
+
 		if (isset($post['url'])) {
 			$design_url         = \Vvveb\url(['module' => 'editor/editor', 'url' => $post['url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
 			$post['design_url'] = $design_url;

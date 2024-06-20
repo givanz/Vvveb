@@ -164,12 +164,13 @@ class Update extends Base {
 			$this->view->info[] = __('Permissions ok!');
 		} else {
 			$this->view->errors[] = sprintf(__('%s not writable!'), $result);
+
 			return false;
 		}
 
 		return $result;
-	}	
-	
+	}
+
 	function backup() {
 		$result = false;
 
@@ -355,35 +356,15 @@ class Update extends Base {
 	function index() {
 		$updateInfo = $this->checkUpdates();
 
+		if (isset($updateInfo['error']) && $updateInfo['error']) {
+			$this->view->errors[] = $updateInfo['error'];
+		}
+
 		$info = [
 			'core' => [
 				'current'   => V_VERSION,
 				'latest'    => $updateInfo['version'] ?? '',
-				'hasUpdate' => $updateInfo['hasUpdate'],
-			],
-			'themes' => [
-				[
-					'mytheme' => [
-						'current'               => V_VERSION,
-						'latest'                => V_VERSION,
-					],
-					'mytheme2' => [
-						'current'               => V_VERSION,
-						'latest'                => V_VERSION,
-					],
-				],
-			],
-			'plugins' => [
-				[
-					'myplugin' => [
-						'current'               => V_VERSION,
-						'latest'                => V_VERSION,
-					],
-					'myplugin2' => [
-						'current'               => V_VERSION,
-						'latest'                => V_VERSION,
-					],
-				],
+				'hasUpdate' => $updateInfo['hasUpdate'] ?? false,
 			],
 		];
 

@@ -45,12 +45,18 @@ class Update {
 			$cacheDriver->delete('url', $cacheKey);
 		}
 
+		$error  = '';
+		$result = false;
 		//cache results for one week
 		try {
-			$result = getUrl($this->url, true, 604800, 1, false);
+			$result = getUrl($this->url, true);
 		} catch (\Exception $e) {
-			$result = '{}';
+			if (DEBUG) {
+				$error =  $e->getMessage();
+			}
 		}
+
+		$info = ['hasUpdate' => false];
 
 		if ($result) {
 			$info = json_decode($result, true);
@@ -62,7 +68,11 @@ class Update {
 			return $info;
 		}
 
-		return [];
+		if ($error) {
+			$info['error'] = $error;
+		}
+
+		return $info;
 	}
 
 	private function checkFolderPermissions($dir) {

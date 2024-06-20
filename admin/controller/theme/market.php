@@ -100,8 +100,12 @@ class Market extends Base {
 			foreach ($themes['themes'] as &$theme) {
 				$theme['installed']  = isset($installed[$theme['slug']]);
 			}
-		} catch (\ErrorException $e) {
-			$view->errors[] =  $e->getMessage();
+		} catch (\Exception $e) {
+			$view->warning[] =  __('Failed to connect to marketplace');
+
+			if (DEBUG) {
+				$view->errors[] =  $e->getMessage();
+			}
 		}
 
 		$view->set($themes);

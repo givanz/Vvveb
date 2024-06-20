@@ -107,8 +107,12 @@ class Market extends Base {
 			foreach ($plugins['plugins'] as &$plugin) {
 				$plugin['installed']  = isset($installed[$plugin['slug']]);
 			}
-		} catch (\ErrorException $e) {
-			$view->errors[] =  $e->getMessage();
+		} catch (\Exception $e) {
+			$view->warning[] =  __('Failed to connect to marketplace');
+
+			if (DEBUG) {
+				$view->errors[] =  $e->getMessage();
+			}
 		}
 
 		$admin_path       = \Vvveb\adminPath();

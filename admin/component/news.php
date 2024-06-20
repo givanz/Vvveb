@@ -22,11 +22,11 @@
 
 namespace Vvveb\Component;
 
+use function Vvveb\getUrl;
 use Vvveb\System\Cache;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Import\Rss;
-use function Vvveb\getUrl;
 
 class News extends ComponentBase {
 	protected $domain = 'https://blog.vvveb.com';
@@ -34,20 +34,19 @@ class News extends ComponentBase {
 	protected $url = '/feed/news';
 
 	public static $defaultOptions = [
-		'start' => 0,
+		'page'  => 0,
 		'limit' => 10,
 	];
 
 	public $options = [];
 
 	function getNews() {
-
-		$feed = getUrl($this->domain . $this->url, true, 604800, 1, false);
+		$feed = getUrl($this->domain . $this->url, true, 604800, 3, false);
 
 		if ($feed) {
 			$rss = new Rss($feed);
 
-			$result = $rss->get(1, $this->options['limit']);
+			$result = $rss->get($this->options['page'], $this->options['limit']);
 
 			return $result;
 		}
@@ -68,7 +67,7 @@ class News extends ComponentBase {
 			'domain' => $this->domain,
 			'url'    => $this->url,
 			'news'   => $news,
-			'count'  => $this->options['limit'],
+			'count'  => count($news),
 		];
 
 		list($results) = Event::trigger(__CLASS__, __FUNCTION__, $results);
