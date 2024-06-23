@@ -504,7 +504,7 @@ class Editor extends Base {
 			}
 		}
 
-		$content     = $this->request->post['html'] ?? false;
+		$html        = $this->request->post['html'] ?? false;
 		$elements    = $this->request->post['elements'] ?? false;
 		$setTemplate = $this->request->post['setTemplate'] ?? false;
 
@@ -517,8 +517,8 @@ class Editor extends Base {
 		$themeFolder = $this->getThemeFolder();
 
 		if ($startTemplateUrl) {
-			$content = file_get_contents($themeFolder . DS . $startTemplateUrl);
-			$content = preg_replace('@<base href[^>]+>@', '<base href="' . $baseUrl . '">', $content);
+			$html = file_get_contents($themeFolder . DS . $startTemplateUrl);
+			$html = preg_replace('@<base href[^>]+>@', '<base href="' . $baseUrl . '">', $html);
 		}
 
 		if (! $url) {
@@ -572,21 +572,25 @@ class Editor extends Base {
 			$fileName = $themeFolder . DS . ($folder ? $folder . DS : '') . $file;
 		}
 
-		$globalOptions = [];
-		//keep css inline for email templates
-		if (strpos($fileName, '/email/') !== false) {
-			$globalOptions['inline-css'] = true;
-		}
+		if ($html) {
+			if (file_put_contents($fileName, $html)) {
+				$globalOptions = [];
+				//keep css inline for email templates
+				if (strpos($fileName, '/email/') !== false) {
+					$globalOptions['inline-css'] = true;
+				}
 
-		$content = $this->saveGlobalElements($content, $globalOptions);
+				$html = $this->saveGlobalElements($html, $globalOptions);
 
-		if (file_put_contents($fileName, $content)) {
-			$success = true;
-			$text .= __('File saved!');
-		} else {
-			if (!is_writable($fileName)) {
-				$text .= sprintf(__('%s is not writable!'), $fileName);
+				$success = true;
+				$text .= __('File saved!');
+			} else {
+				if (! is_writable($fileName)) {
+					$text .= sprintf(__('%s is not writable!'), $fileName);
+				}
 			}
+		} else {
+			$text .= sprintf(__('Page html empty!'), $fileName);
 		}
 
 		$cssFile = DS . 'css' . DS . 'custom.css';
