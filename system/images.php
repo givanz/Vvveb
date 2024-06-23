@@ -46,7 +46,7 @@ class Images {
 		return $img->save($dest);
 	}
 
-	static public function image($image, $type = '', $size = '', $method = 's') {
+	static public function image($image, $type = '', $size = '', $method = 'cs') {
 		$publicPath = \Vvveb\publicUrlPath();
 
 		list($publicPath, $type, $image, $size) =
@@ -74,10 +74,10 @@ class Images {
 					$site        = siteSettings();
 					$width       = $site["{$type}_{$size}_width"] ?? 0;
 					$height      = $site["{$type}_{$size}_height"] ?? 0;
-					$method      = $site["{$type}_{$size}_method"] ?? 's';
+					$method      = $site["{$type}_{$size}_method"] ?? 'cs';
 				}
 
-				$image = self::size($image,"{$width}x{$height}");
+				$image = self::size($image,"{$width}x{$height}_$method");
 
 				if ($width || $height) {
 					if (file_exists(DIR_PUBLIC . $cacheFolder . $image)) {

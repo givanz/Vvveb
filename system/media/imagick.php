@@ -38,7 +38,6 @@ class Image {
 			$this->file  = $file;
 			$this->image = new \Imagick();
 			$this->image->readImage($file);
-
 			$this->width  = $this->image->getImageWidth();
 			$this->height = $this->image->getImageHeight();
 			$this->mime   = $this->image->getFormat();
@@ -82,15 +81,35 @@ class Image {
 		return $this->image->writeImage($file);
 	}
 
-	public function resize($width = 0, $height = 0, $method = 's') {
+	public function resize($width, $height = 0, $method = 's') {
 		if (! $this->width || ! $this->height) {
 			return;
 		}
 
+		switch ($method) {
+			case 's':
+			return $this->stretch($width, $height);
+
+			case 'c':
+			return $this->crop($width, $height);
+
+			case 'cs':
+			return $this->cropsize($width, $height);
+		}
+	}
+
+	public function stretch($width, $height = 0) {
 		//$this->width  = $this->image->getImageWidth();
 		//$this->height = $this->image->getImageHeight();
 
 		if ($width && $height) {
+			$scaleW = $width / $this->width;
+			$scaleH = $height / $this->height;
+
+			$scale = min($scaleW, $scaleH);
+
+			$width  = (int)($this->width * $scale);
+			$height = (int)($this->height * $scale);
 		} else {
 			if ($width) {
 				$height = ceil($this->height / ($this->width / $width));
@@ -114,5 +133,29 @@ class Image {
 
 		$this->width  = $this->image->getImageWidth();
 		$this->height = $this->image->getImageHeight();
+	}
+
+	public function cropsize($width, $height = 0) {
+		$width  = $width ?: $height;
+		$height = $height ?: $width;
+
+		$newRatio = $width / $height;
+		$ratio    =  $this->width / $this->height;
+
+		if ($newRatio > $ratio) {
+			$new_width  = $width;
+			$new_height = floor($width / $this->width * $this->height);
+			$crop_x     = 0;
+			$crop_y     = intval(($new_height - $height) / 2);
+		} else {
+			$new_width  = floor($height / $this->height * $this->width);
+			$new_height = $height;
+			$crop_x     = intval(($new_width - $width) / 2);
+			$crop_y     = 0;
+		}
+
+		$this->image->resizeImage($new_width, $new_height, \Imagick::FILTER_LANCZOS, 1, true);
+
+		$this->image->cropImage($width, $height, $crop_x, $crop_y);
 	}
 }
