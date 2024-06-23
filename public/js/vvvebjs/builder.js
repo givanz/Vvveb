@@ -2093,6 +2093,7 @@ Vvveb.Builder = {
 		doc.querySelectorAll("[contenteditable]").forEach(e => e.removeAttribute("contenteditable"));
 		doc.querySelectorAll("[spellcheckker]").forEach(e => e.removeAttribute("spellcheckker"));
 		doc.querySelectorAll('script[src^="chrome-extension://"]').forEach(e => e.remove());
+		doc.querySelectorAll('script[src^="moz-extension://"]').forEach(e => e.remove());
 		
 		// scroll page to top to avoid saving the page in a different state
 		// like saving with sticky classes set for navbar etc
@@ -2223,8 +2224,8 @@ Vvveb.Builder = {
 			body:  nestedFormData(data)
 		})
 		.then((response) => {
-			if (!response.ok) { throw new Error(response) }
-			return response.json()
+			if (!response.ok) {  return Promise.reject(response);  }
+			return response.json();
 		})
 		.then((data) => {
 			if (callback) callback(data);
@@ -2233,7 +2234,13 @@ Vvveb.Builder = {
 		})
 		.catch((err) => {
 			if (error) error(err);
-			displayToast("bg-danger", "Error", "Error saving!");
+			let message = error.statusText ?? "Error saving!";
+			displayToast("bg-danger", "Error", message);
+
+			err.text().then( errorMessage => {
+			  	let message = errorMessage.substr(0, 200);
+				displayToast("bg-danger", "Error", message);
+			})
 		});
 	},
 	
@@ -2475,8 +2482,8 @@ Vvveb.Gui = {
 		}, (error) => {
 			document.querySelector(".loading", btn).classList.toggle("d-none");
 			document.querySelector(".button-text", btn).classList.toggle("d-none");
-			
-			displayToast("bg-danger", "Error", "Error saving!");
+			let message = error.statusText ?? "Error saving!";
+			displayToast("bg-danger", "Error", message);
 		});		
 	},
 	
@@ -2677,9 +2684,11 @@ Vvveb.StyleManager = {
 	cssContainer:false,
 	mobileWidth: '320px',
 	tabletWidth: '768px',
+	doc:false,
 	
 	init: function(doc) {
 		if (doc) {
+			this.doc = doc;
 			
 			let style = false;
 			let _style = false;
@@ -2844,6 +2853,9 @@ Vvveb.StyleManager = {
 		//this.cssContainer.innerHTML = css;
 
 		//return element;
+		//refresh container element to avoid issues with changes from code editor
+		this.cssContainer = this.doc.getElementById("vvvebjs-styles");
+
 		let css = "";
 		for (media in this.styles) {
 			if (media === "tablet" || media === "mobile") {
@@ -3556,7 +3568,7 @@ Vvveb.FileManager = {
 				
 				fetch(deleteFileUrl, {method: "POST",  body: new URLSearchParams({file:page.file,post_id})})
 				.then((response) => {
-					if (!response.ok) { throw new Error(response) }
+					if (!response.ok) {  return Promise.reject(response);  }
 					return response.json()
 				})
 				.then((data) => {
@@ -3570,8 +3582,14 @@ Vvveb.FileManager = {
 						displayToast(bg, "Delete", data.message ?? data);
 				})
 				.catch(error => {
-					console.log(error.statusText);
-					displayToast("bg-danger", "Error", "Error deleting page!");
+					console.log(error);
+					let message = error.statusText ?? "Error deleting page!";
+					displayToast("bg-danger", "Error", message);
+
+					err.text().then( errorMessage => {
+						let message = errorMessage.substr(0, 200);
+						displayToast("bg-danger", "Error", message);
+					})					
 				});
 
 				element.remove();
@@ -3606,7 +3624,7 @@ Vvveb.FileManager = {
 
 				fetch(renameFileUrl, {method: "POST",  body: new URLSearchParams({file:page.file, newfile:newfile, name, duplicate, post_id})})
 				.then((response) => {
-					if (!response.ok) { throw new Error(response) }
+					if (!response.ok) {  return Promise.reject(response);  }
 					return response.json()
 				})
 				.then((data) => {
@@ -3640,7 +3658,13 @@ Vvveb.FileManager = {
 				})
 				.catch(error => {
 					console.log(error);
-					displayToast("bg-danger", "Error", "Error renaming page!");
+					let message = error.statusText ?? "Error renaming page!";
+					displayToast("bg-danger", "Error", message);
+
+					err.text().then( errorMessage => {
+						let message = errorMessage.substr(0, 200);
+						displayToast("bg-danger", "Error", message);
+					})
 				});				
 			}
 		}
