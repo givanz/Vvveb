@@ -1956,11 +1956,17 @@ class Vtpl {
 					$trimmed = addcslashes($trimmed, "'");
 
 					if (strlen($trimmed) < 1024) {
+						/*
 						$php     = '<_script language="php"><![CDATA[ echo ' . $this->translationFunction . '(\'' . $trimmed . '\');]]></_script>';
 						//keep space around text for html spacing
 						$php = str_replace($trimmed, $php, $text);
 						$f   = $this->document->createDocumentFragment();
 						$f->appendXML($php);
+						*/
+						$c = $this->document->createCDATASection('echo ' . $this->translationFunction . '(\'' . $trimmed . '\');');
+						$f = $this->document->createElement('_script');
+						$f->setAttribute('language', 'php');
+						$f->append($c);
 						$node = $node->parentNode->replaceChild($f, $node);
 					}
 					//$node->parentNode->replaceChild($f, $node);
