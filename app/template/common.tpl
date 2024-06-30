@@ -34,28 +34,28 @@ $vvveb_is_page_edit = Vvveb\isEditor();
 [data-v-global-*]|innerText = <?php 
 $name = '@@__data-v-global-(*)__@@';
 if (isset($this->global) && $name) {
-	echo \Vvveb\arrayPath($this->global, $name, '', '-');
+	echo \Vvveb\arrayPath($this->global, $name);
 }
 ?>
 
 img[data-v-global-*]|src = <?php 
 $name = '@@__data-v-global-(*)__@@';
 if (isset($this->global) && $name) {
-	echo \Vvveb\arrayPath($this->global, $name, '', '-');
+	echo \Vvveb\arrayPath($this->global, $name);
 }
 ?>
 
 a[data-v-global-*]|href = <?php 
 $name = '@@__data-v-global-(*)__@@';
 if (isset($this->global) && $name) {
-	echo \Vvveb\arrayPath($this->global, $name, '', '-');
+	echo \Vvveb\arrayPath($this->global, $name);
 }
 ?>
 
 link[data-v-global-*]|href = <?php 
 $name = '@@__data-v-global-(*)__@@';
 if (isset($this->global) && $name) {
-	echo \Vvveb\arrayPath($this->global, $name, '', '-');
+	echo \Vvveb\arrayPath($this->global, $name);
 }
 ?>
 

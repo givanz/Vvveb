@@ -148,6 +148,10 @@ class View {
 		return $this->theme;
 	}
 
+	function getDocumentType() {
+		return $this->templateEngine->getDocumentType();
+	}
+
 	function getTemplatePath() {
 		return $this->templatePath;
 	}
