@@ -2,7 +2,6 @@
 	if (isset($_site_idx)) $_site_idx++; else $_site_idx = 0;
 	$previous_component = isset($component)?$component:null;
 	$site = $component = $this->_component['site'][$_site_idx] ?? [];
-	//$site = \Vvveb\session('site');
 ?>
 
 [data-v-component-site] [data-v-site-description-*]|innerText = $site['description']['@@__data-v-site-description-(*)__@@']

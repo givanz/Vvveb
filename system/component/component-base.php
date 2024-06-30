@@ -46,7 +46,7 @@ class ComponentBase {
 		if (! self :: $global) {
 			$user                                  = User::current();
 			self :: $global['start']               = 0;
-			self :: $global['site_id']             = defined('SITE_ID') ? SITE_ID : 0;
+			self :: $global['site_id']             = sess('site_id') ?? (defined('SITE_ID') ? SITE_ID : 0);
 			self :: $global['user_id']             = $user['user_id'] ?? null;
 			self :: $global['user_group_id']       = $user['user_group_id'] ?? 1;
 			self :: $global['language_id']         = $request->request['language_id'] ?? sess('language_id') ?? 1;
