@@ -59,7 +59,7 @@ class Vtpl {
 
 	private $removeVattrs = false;
 
-	private $isHTML = true;
+	private $documentType = 'html';
 
 	private $checkSyntax = true;
 
@@ -155,6 +155,10 @@ class Vtpl {
 
 	function removeVattrs($flag = true) {
 		$this->removeVattrs = $flag;
+	}
+
+	function getDocumentType() {
+		return $this->documentType;
 	}
 
 	function addCommand($selector, $command = false) {
@@ -1099,7 +1103,7 @@ class Vtpl {
 				   	$value = $node->getAttribute($matches[1]);
 				   	$this->debug->log('VTPL_ATTRIBUTE', '<b>ATTRIB NAME</b> ' . $matches[1]);
 				   	//expand shorthand expression (*) to regex ([a-zA-Z_0-9-]+)
-				   	$regex = str_replace('(*)', '([a-zA-Z_0-9-]+)', $matches[1]);
+				   	$regex = str_replace('(*)', '([a-zA-Z_0-9-\.]+)', $matches[1]);
 
 				   	foreach ($node->attributes as $name => $attrNode) {
 				   		if (preg_match("@$regex@", $name, $_match)) {
@@ -1187,7 +1191,7 @@ class Vtpl {
 						$doc->appendChild($doc->importNode($child, true));
 					}
 
-					if ($this->isHTML) {
+					if ($this->documentType == 'html') {
 						return $doc->saveHTML();
 					} else {
 						return $doc->saveXML();
@@ -1257,7 +1261,7 @@ class Vtpl {
 					$node->parentNode->replaceChild($doc->importNode($child, true), $node);
 				}
 
-				if ($this->isHTML) {
+				if ($this->documentType == 'html') {
 					return $doc->saveHTML();
 				} else {
 					return $doc->saveXML();
@@ -1758,7 +1762,7 @@ class Vtpl {
 
 		$document = new DomDocument();
 
-		if ($this->isHTML) {
+		if ($this->documentType == 'html') {
 			@$document->loadHTML($html);
 		} else {
 			@$document->loadXML($html);
@@ -1772,7 +1776,8 @@ class Vtpl {
 	}
 
 	function loadHtmlTemplate($filename) {
-		$this->isHTML = (substr($filename, -3) != 'xml');
+		$extension          = strtolower(trim(substr($filename, -4), '.'));
+		$this->documentType = $extension;
 
 		if (strpos($filename, DS) === false) {
 			$filename = $this->htmlPath . $filename;
@@ -1819,9 +1824,16 @@ class Vtpl {
 			$html = str_replace(array_keys($this->replaceConstants),array_values($this->replaceConstants),$html);
 		}
 
-		if ($this->isHTML) {
+		if ($this->documentType == 'html') {
 			@$this->document->loadHTML($html, LIBXML_NOERROR);
 		} else {
+			//convert json
+			if ($extension == 'json') {
+				$json = json_decode($html, true);
+				$json = Vvveb\prepareJson($json);
+				$xml  = Vvveb\array2xml($json);
+				$html = $xml;
+			}
 			@$this->document->loadXML($html, LIBXML_NOERROR);
 		}
 
@@ -1844,7 +1856,7 @@ class Vtpl {
 
 					$tmpDom = new DomDocument();
 
-					if ($this->isHTML) {
+					if ($this->documentType == 'html') {
 						@$tmpDom->loadHTML($this->componentContent);
 					} else {
 						@$tmpDom->loadXML($this->componentContent);
@@ -1946,7 +1958,11 @@ class Vtpl {
 				$text    = \Vvveb\stripExtraSpaces($text);
 				$trimmed = trim($text);
 
-				if (strlen($trimmed) < 2) {
+				if (strlen($trimmed) < 2 ||
+					(substr_compare($trimmed, '{$', 0, 2) == 0) ||
+					(substr_compare($trimmed, 'http', 0, 4) == 0) ||
+					(is_numeric($trimmed[0]))
+					) {
 					continue;
 				}
 
@@ -1966,7 +1982,7 @@ class Vtpl {
 						$c = $this->document->createCDATASection('echo ' . $this->translationFunction . '(\'' . $trimmed . '\');');
 						$f = $this->document->createElement('_script');
 						$f->setAttribute('language', 'php');
-						$f->append($c);
+						$f->appendChild($c);
 						$node = $node->parentNode->replaceChild($f, $node);
 					}
 					//$node->parentNode->replaceChild($f, $node);
@@ -2122,7 +2138,7 @@ class Vtpl {
 				$tmpDom = new DOMDocument();
 				$tmpDom->appendChild($tmpDom->importNode($componentNode, true));
 
-				if ($this->isHTML) {
+				if ($this->documentType == 'html') {
 					$html = $tmpDom->saveHTML();
 				} else {
 					$html = $tmpDom->saveXML();
@@ -2130,14 +2146,14 @@ class Vtpl {
 
 				$html = trim($html);
 			} else {
-				if ($this->isHTML) {
+				if ($this->documentType == 'html') {
 					$html = $this->document->saveHTML();
 				} else {
 					$html = $this->document->saveXML();
 				}
 			}
 		} else {
-			if ($this->isHTML) {
+			if ($this->documentType == 'html') {
 				$html = $this->document->saveHTML();
 			} else {
 				$html = $this->document->saveXML();

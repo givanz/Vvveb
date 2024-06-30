@@ -53,6 +53,8 @@ class Component {
 
 	private $view = false;
 
+	private $documentType = 'html';
+
 	private $cache = true;
 
 	static function getInstance($view = false, $regenerate = false, $content = false) {
@@ -75,7 +77,7 @@ class Component {
 			$view = View::getInstance();
 		}
 
-		$this->view = $view;
+		$this->view         = $view;
 
 		$this->componentsFile = $view->serviceTemplate() . '.component';
 		$this->content        = $content;
@@ -317,12 +319,19 @@ class Component {
 
 		$view = view::getInstance();
 		libxml_use_internal_errors(true);
+		$this->documentType = $view->getDocumentType();
 
 		if ($this->content) {
-			@$document->loadHTML($this->content);
+			if ($this->documentType == 'html') {
+				@$document->loadHTML($this->content);
+			} else {
+				@$document->loadXML($this->content);
+			}
 		} else {
-			$view     = $this->view;
-			$template = $view->template();
+			$view               = $this->view;
+			$template           = $view->template();
+			$extension          = strtolower(trim(substr($template, -4), '.'));
+			$this->documentType = $extension;
 
 			if (strpos($template, 'plugins/') === 0) {
 				$template   = str_replace('plugins/', '', $template);
@@ -339,16 +348,29 @@ class Component {
 				$template = $view->getTemplatePath() . $template;
 			}
 
-			@$document->loadHTMLFile($template,
-						LIBXML_NOWARNING | LIBXML_NOERROR);
+			if ($this->documentType == 'html') {
+				@$document->loadHTMLFile($template,
+							LIBXML_NOWARNING | LIBXML_NOERROR);
+			} else {
+				$content = file_get_contents($template);
+				
+				if ($this->documentType == 'json') {
+					$json    = json_decode($content, true);
+					$json    = \Vvveb\prepareJson($json);
+					$xml     = \Vvveb\array2xml($json);
+					@$document->loadXML($xml);
+				} else {
+					@$document->loadXML($content,
+							LIBXML_NOWARNING | LIBXML_NOERROR);
+				}
+			}
 		}
 
 		$xpath = new \DOMXpath($document);
+		$i     = 0;
 
 		//include froms in case any component_ is included
-		$elements = $xpath->query('//*[ @data-v-copy-from or @data-v-save-global ]');
-
-		if ($elements && $elements->length) {
+		while (($elements = $xpath->query('//*[ @data-v-copy-from or @data-v-save-global ]')) && $elements->length && $i++ < 2) {
 			$fromDocument                      = new \DomDocument();
 			$fromDocument->preserveWhiteSpace  = false;
 			$fromDocument->recover             = true;
@@ -360,12 +382,18 @@ class Component {
 
 			foreach ($elements as $element) {
 				$attribute = $element->getAttribute('data-v-copy-from') ?: $element->getAttribute('data-v-save-global');
+				$element->removeAttribute('data-v-copy-from');
+				$element->removeAttribute('data-v-save-global');
 
 				if (preg_match('/([^\,]+)\,([^$,]+)/', $attribute , $from)) {
 					$file     = html_entity_decode(trim($from[1]));
 					$selector = html_entity_decode(trim($from[2]));
 
-					$fromDocument->loadHTMLFile($view->getTemplatePath() . $file);
+					if ($this->documentType == 'html') {
+						$fromDocument->loadHTMLFile($view->getTemplatePath() . $file);
+					} else {
+						$fromDocument->loadXML($view->getTemplatePath() . $file);
+					}
 
 					$fromXpath = new \DOMXpath($fromDocument);
 
@@ -392,8 +420,7 @@ class Component {
 			}
 		}
 
-		//search for elements that have a class starting with component_
-		//$elements = $xpath->query('//*[ contains(@class, "component_") ]');
+		//search for elements that have an attribute starting with data-v-component-
 		$elements = $xpath->query('//*[@*[starts-with(name(), "data-v-component-")]]');
 
 		foreach ($elements as $element) {
