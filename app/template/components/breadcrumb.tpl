@@ -12,7 +12,7 @@ $breadcrumb = $current_component = $this->_component['breadcrumb'][$_breadcrumb_
 
 $_pagination_count = $breadcrumb['count'] ?? 0;
 $_pagination_limit = isset($breadcrumb['limit']) ? $breadcrumb['limit'] : 5;	
-
+$index = 0;
 ?>
 
 
@@ -21,7 +21,7 @@ $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : f
 $breadcrumb['breadcrumb'] = empty($breadcrumb['breadcrumb']) ? $_default : $breadcrumb['breadcrumb'];
 
 if($breadcrumb && is_array($breadcrumb['breadcrumb'])) {
-	foreach ($breadcrumb['breadcrumb'] as $index => $breadcrumb) {?>
+	foreach ($breadcrumb['breadcrumb'] as $index => $breadcrumb) {$index++;?>
 		
 		@item [data-v-breadcrumb-item-*]|innerText = $breadcrumb['@@__data-v-breadcrumb-item-(*)__@@']
 		

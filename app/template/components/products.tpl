@@ -116,7 +116,7 @@ if ($_products) {
     //catch all data attributes
     @product [data-v-product-*]|innerText = $_product['@@__data-v-product-(*)__@@']
 	//echo description directly to avoid htmlentities escape
-	@product [data-v-product-content] = <?php echo $_product['content'];?>	
+	@product [data-v-product-content] = <?php echo($_product['content']);?>	
 	
 	@product|after = <?php 
 	}

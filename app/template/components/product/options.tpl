@@ -48,7 +48,7 @@ if($options && is_array($options)) {
 		
 		@option|id = <?php echo 'option-' . ($option['product_option_id'] ?? 0);?>
 		
-		@option [data-v-option-content] = <?php echo $option['content'] ?? '';?>
+		@option [data-v-option-content] = <?php echo($option['content'] ?? '');?>
 		
 		@option img[data-v-option-*]|src = $option['@@__data-v-option-(*)__@@']
 		

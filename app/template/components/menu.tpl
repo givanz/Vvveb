@@ -42,13 +42,13 @@ if (isset($this->_component['menu']) && isset($this->_component['menu'][$_menu_i
 
 		//catch all data attributes
 		@category [data-v-menu-item-*]|innerText = $category['@@__data-v-menu-item-(*)__@@']
-		@category [data-v-menu-item-content] = <?php echo $category['content'] ?? '';?>
+		@category [data-v-menu-item-content] = <?php echo($category['content'] ?? '');?>
 		
 		@category [data-v-menu-item-url]|href = <?php if (isset($category['url'])) echo Vvveb\System\Sites::url($category['url']);?>
 		@category [data-v-menu-item-img]|src = $category['images'][0]
 		
 		@category|append = <?php 
-		  if ($category['children'] > 0 && $generate_menu) {
+		  if ($category['children'] > 0 && isset($generate_menu)) {
 			    $parents++; 
 				$generate_menu($category['menu_item_id'], $_categories);
 		 }

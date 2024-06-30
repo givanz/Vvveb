@@ -28,7 +28,7 @@ if($_comments && is_array($_comments)) {
 		
 		@comment|id = <?php echo 'comment-' . $comment['comment_id'];?>
 		
-		@comment [data-v-comment-content] = <?php echo $comment['content'];?>
+		@comment [data-v-comment-content] = <?php echo($comment['content']);?>
 		
 		@comment img[data-v-comment-*]|src = $comment['@@__data-v-comment-(*)__@@']
 		@comment img[data-v-comment-*]|width = <?php echo $comment['size'] ?? '60';?>

@@ -34,7 +34,7 @@ $_pagination_limit = isset($product['limit']) ? $product['limit'] : 5;
 @product a[data-v-product-*]|href = $product['@@__data-v-product-(*)__@@']
 
 
-@product img[data-v-product-main-image]|src = <?php echo $product['image'];?>
+@product img[data-v-product-main-image]|src = <?php echo($product['image']);?>
 @product [data-v-product-main-image-background-image]|style = <?php echo 'background-image: url(\'' . $product['image'] . '\');';?>
 @product a[data-v-product-main-image]|href = <?php echo reset($product['images'])['image'];?>
 
@@ -51,6 +51,8 @@ if($_images) {
 
 		@images [data-bs-slide-to]|data-bs-slide-to = <?php echo $i;?>
 		@images img[data-v-product-image-src]|src = $_image['image']
+		@images [data-v-product-image-src] = $_image['image']
+		[data-v-product-image-src]@images = $_image['image']
 		@images [data-v-product-image-background-image]|style = <?php echo 'background-image: url(\'' . $_image['image'] . '\');';?>
 		@images a[data-v-product-image-src]|href = $_image['image']
 		@images img[data-v-product-image-src]|data-v-id = $_image['product_image_id']

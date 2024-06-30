@@ -25,7 +25,7 @@ if($manufacturers && is_array($manufacturers['manufacturer'])) {
 		
 		@manufacturer|id = <?php echo 'manufacturer-' . $manufacturer['manufacturer_id'];?>
 		
-		@manufacturer [data-v-manufacturer-content] = <?php echo $manufacturer['content'];?>
+		@manufacturer [data-v-manufacturer-content] = <?php echo($manufacturer['content']);?>
 		
 		@manufacturer img[data-v-manufacturer-*]|src = $manufacturer['@@__data-v-manufacturer-(*)__@@']
 		

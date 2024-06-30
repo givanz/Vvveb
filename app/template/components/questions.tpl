@@ -28,7 +28,7 @@ if($questions && is_array($questions)) {
 		
 		@question|id = <?php echo 'question-' . $question['product_question_id'];?>
 		
-		@question [data-v-question-content] = <?php echo $question['content'];?>
+		@question [data-v-question-content] = <?php echo($question['content']);?>
 		
 		@question img[data-v-question-*]|src = $question['@@__data-v-question-(*)__@@']
 		@question img[data-v-question-avatar]|width = <?php echo $question['size'] ?? '60';?>

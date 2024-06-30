@@ -27,7 +27,7 @@
 ?>
 
 @wishlist [data-v-wishlist-category] = <?php $_category = current($wishlist);echo $_category['category'];?>
-@wishlist [data-v-wishlist-count] = <?php echo $wishlist['count'] ?? ''?>
+@wishlist [data-v-wishlist-count] = <?php echo($wishlist['count'] ?? '')?>
 @wishlist [data-v-wishlist-manufacturer] = <?php $_manufacturer = current($wishlist);echo $_manufacturer['manufacturer'];?>
 
 
@@ -118,7 +118,7 @@ if ($_wishlist) {
     //catch all data attributes
     @product [data-v-product-*]|innerText = $_product['@@__data-v-product-(*)__@@']
 	//echo description directly to avoid htmlentities escape
-	@product [data-v-product-content] = <?php echo $_product['content'];?>	
+	@product [data-v-product-content] = <?php echo($_product['content']);?>	
 	
 	@product|after = <?php 
 	}

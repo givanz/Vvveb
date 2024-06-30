@@ -25,7 +25,7 @@ if($vendors && is_array($vendors['vendor'])) {
 		
 		@vendor|id = <?php echo 'vendor-' . $vendor['vendor_id'];?>
 		
-		@vendor [data-v-vendor-content] = <?php echo $vendor['content'];?>
+		@vendor [data-v-vendor-content] = <?php echo($vendor['content']);?>
 		
 		@vendor img[data-v-vendor-*]|src = $vendor['@@__data-v-vendor-(*)__@@']
 		

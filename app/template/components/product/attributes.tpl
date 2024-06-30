@@ -34,7 +34,7 @@ if($attributes && is_array($attributes['attribute'])) {
 		
 		@attribute|id = <?php echo 'attribute-' . $attribute['attribute_id'];?>
 		
-		@attribute [data-v-attribute-content] = <?php echo $attribute['content'];?>
+		@attribute [data-v-attribute-content] = <?php echo($attribute['content']);?>
 		
 		@attribute img[data-v-attribute-*]|src = $attribute['@@__data-v-attribute-(*)__@@']
 		
