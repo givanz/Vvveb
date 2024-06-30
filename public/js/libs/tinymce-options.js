@@ -1,4 +1,4 @@
-var noWrapNodes = "p > img,p > video, p > figure";
+var noWrapNodes = "p > img, p > video, p > figure, p > iframe";
 var wrapNodes = ['B','I','SPAN', 'TABLE', 'P', 'H1', 'H2', 'H3', 'H4'];
 
 function fixWrapper(doc){
@@ -99,6 +99,30 @@ let tinyMceOptions = {
   selector: "textarea.html",
   body_class: "container",
   init_instance_callback : make_wysiwyg,
+  paste_preprocess: (editor, args) => {
+    if (args.content.startsWith('http')) {
+		    let url = args.content;
+			args.content = '';
+			getOembed(url, 800, 600, true).then(response => {
+				 if (response && response.html) {
+					editor.insertContent( '<div class="iframe" data-url="' + url + '" data-component-iframe>' + response.html.replace('<iframe ','<iframe class="align-center" ') + '</div>' );
+ 				    let arr = editor.contentDocument.getElementsByTagName('script');
+					
+					for (let n = 0; n < arr.length; n++) {
+						let script = arr[n];
+						if (!script.hasAttribute("type")) continue;//process only new scripts that have the tinymce attribute
+						let newScript = editor.contentDocument.createElement("script");
+						newScript.src = script.src;
+						script.replaceWith(newScript);
+					}	
+				 } else {
+					 editor.insertContent(url);
+				 }
+			}).catch(error => {
+				//editor.insertContent(url);
+			});
+	}	
+  },  
   setup: function (editor) {
 	//set changes to false to avoid saving unchanged revisions if text is not changed
 	let has_changes = document.getElementById(editor.id)?.parentNode.querySelector(".has_changes");
