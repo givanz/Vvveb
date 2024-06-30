@@ -40,7 +40,7 @@ function removeRow(element, elementName = false) {
 }
 
 
-function clearFeaturedMedia(id = "featured-image") {
+function clearMedia(id = "featured-image") {
 	document.getElementById(id + "-input").value = "";
 	document.getElementById(id + "-thumb").setAttribute("src","img/placeholder.svg");
 }
