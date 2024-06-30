@@ -1138,24 +1138,19 @@ Vvveb.Builder = {
 				
 				selectBoxPosition = function(event) {
 						let pos;
-						let target;
+						let target = self.selectedEl;// ?? self.highlightEl;
 						
 						highlightBox.style.display = "none"; 
-						
-						if (self.selectedEl) {
-							pos    = offset(self.selectedEl);
-							target = self.selectedEl;
-						} else
-						if (self.highlightEl) {
-							pos    = offset(self.highlightEl);
-							target = self.highlightEl;
-						}
-						
-						SelectBox.style.top  = (pos.top - (self.frameDoc.scrollTop ?? 0)  - self.selectPadding) + "px"; 
-						SelectBox.style.left = (pos.left - (self.frameDoc.scrollLeft ?? 0) - self.selectPadding) + "px";
 
-						SelectBox.style.width = ((target.offsetWidth ?? target.clientWidth) + self.selectPadding * 2) + "px"; 			
-						SelectBox.style.height = ((target.offsetHeight ?? target.clientHeight) + self.selectPadding * 2) + "px";
+						if (target) {
+							pos = offset(target);
+						
+							SelectBox.style.top  = (pos.top - (self.frameDoc.scrollTop ?? 0)  - self.selectPadding) + "px"; 
+							SelectBox.style.left = (pos.left - (self.frameDoc.scrollLeft ?? 0) - self.selectPadding) + "px";
+
+							SelectBox.style.width = ((target.offsetWidth ?? target.clientWidth) + self.selectPadding * 2) + "px"; 			
+							SelectBox.style.height = ((target.offsetHeight ?? target.clientHeight) + self.selectPadding * 2) + "px";
+						}
 				}
 				
 				window.FrameWindow.addEventListener("scroll", selectBoxPosition);
@@ -2234,13 +2229,13 @@ Vvveb.Builder = {
 		})
 		.catch((err) => {
 			if (error) error(err);
-			let message = error.statusText ?? "Error saving!";
+			let message = error?.statusText ?? "Error saving!";
 			displayToast("bg-danger", "Error", message);
 
-			err.text().then( errorMessage => {
+			if (err.hasOwnProperty('text')) err.text().then( errorMessage => {
 			  	let message = errorMessage.substr(0, 200);
 				displayToast("bg-danger", "Error", message);
-			})
+			});
 		});
 	},
 	
@@ -2382,7 +2377,7 @@ Vvveb.CssEditor = {
 }
 
 function displayToast(bg, title, message, id = "top-toast") {
-	document.querySelector("#" + id + " .toast-body .message").innerHTML = message;
+	document.querySelector("#" + id + " .toast-body .message").innerHTML = message.replace(/(?:\r\n|\r|\n)/g, '<br>');
 	let header = document.querySelector("#" + id + " .toast-header");
 	header.classList.remove("bg-danger", "bg-success")
 	header.classList.add(bg);
@@ -2482,7 +2477,7 @@ Vvveb.Gui = {
 		}, (error) => {
 			document.querySelector(".loading", btn).classList.toggle("d-none");
 			document.querySelector(".button-text", btn).classList.toggle("d-none");
-			let message = error.statusText ?? "Error saving!";
+			let message = error?.statusText ?? "Error saving!";
 			displayToast("bg-danger", "Error", message);
 		});		
 	},
@@ -2592,6 +2587,7 @@ Vvveb.Gui = {
 			e.preventDefault();
 
 			return Vvveb.Builder.saveAjax(data, this.action, function (savedData) {
+				if (savedData?.success) {
 					data.title = data.name;
 
 					if (typeof savedData === 'object' && savedData !== null) {
@@ -2605,6 +2601,10 @@ Vvveb.Gui = {
 					Vvveb.FileManager.loadPage(data.name);
 					Vvveb.FileManager.scrollToPage(page);
 					bsModal.hide();
+				} else {
+					let message = savedData?.message ?? "Error saving!";
+					displayToast("bg-danger", "Error", message);
+				}
 			});
 		};
 		
