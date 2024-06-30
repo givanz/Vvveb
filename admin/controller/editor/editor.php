@@ -248,7 +248,7 @@ class Editor extends Base {
 				$base    = str_replace('/admin', '', PUBLIC_THEME_PATH) . 'themes/' . $this->getTheme() . '/';
 				$content = preg_replace('/<base(.*)href=["\'](.*?)["\'](.*?)>/', '<base$1href="' . $base . '"$3>', $content);
 
-				return file_put_contents($backupFolder . $backupName, $content);
+				return @file_put_contents($backupFolder . $backupName, $content);
 			}
 		}
 
@@ -517,7 +517,16 @@ class Editor extends Base {
 		$themeFolder = $this->getThemeFolder();
 
 		if ($startTemplateUrl) {
-			$html = file_get_contents($themeFolder . DS . $startTemplateUrl);
+			$startTemplate = $themeFolder . DS . $startTemplateUrl;
+
+			if (file_exists($startTemplate)) {
+				if (! ($html = @file_get_contents($startTemplate)) ) {
+					$text .= sprintf(__('%s is not readable!'), $startTemplate);
+				}
+			} else {
+				$text .= sprintf(__('%s does not exist!'), $startTemplate);
+			}
+			
 			$html = preg_replace('@<base href[^>]+>@', '<base href="' . $baseUrl . '">', $html);
 		}
 
@@ -538,10 +547,17 @@ class Editor extends Base {
 		}
 
 		if (! $startTemplateUrl) {
-			if ($this->backup($file)) {
+			$backupFolder = $themeFolder . DS . 'backup' . DS;
+
+			if (is_writable($backupFolder)) {
+				if ($this->backup($file)) {
+				} else {
+					$success = false;
+					$text .= __('Error saving revision!') . "\n";
+				}
 			} else {
 				$success = false;
-				$text .= __('Error saving backup!') . "\n";
+				$text .= sprintf(__('%s folder not writable!'), $theme . DS . 'backup') . "\n";
 			}
 		}
 
@@ -573,7 +589,7 @@ class Editor extends Base {
 		}
 
 		if ($html) {
-			if (file_put_contents($fileName, $html)) {
+			if (@file_put_contents($fileName, $html)) {
 				$globalOptions = [];
 				//keep css inline for email templates
 				if (strpos($fileName, '/email/') !== false) {
@@ -586,11 +602,13 @@ class Editor extends Base {
 				$text .= __('File saved!');
 			} else {
 				if (! is_writable($fileName)) {
-					$text .= sprintf(__('%s is not writable!'), $fileName);
+					$text .= sprintf(__('%s is not writable!'), $file);
+				} else {
+					$text .= sprintf(__('Error saving %s!'), $file);
 				}
 			}
 		} else {
-			$text .= sprintf(__('Page html empty!'), $fileName);
+			$text .= __('Page html empty!');
 		}
 
 		$cssFile = DS . 'css' . DS . 'custom.css';
