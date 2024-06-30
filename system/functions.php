@@ -426,7 +426,11 @@ function arrayPath(array $a, $path, $default = null, $token = '.') {
 }
 
 function humanReadable($text) {
-	return ucfirst(str_replace(['_', '-', '/', '[', ']', '.'], [' ', ' ', ' - ', ' ', ' ', ' '], trim($text, ' /\-_')));
+	if (is_string($text)) {
+		return ucfirst(str_replace(['_', '-', '/', '[', ']', '.'], [' ', ' ', ' - ', ' ', ' ', ' '], trim($text, ' /\-_')));
+	}
+
+	return $text;
 }
 
 function cleanUrl($text, $divider = '-') {
@@ -1084,7 +1088,8 @@ function sanitizeHTML($string) {
 	do {
 		// Remove really unwanted tags
 		$old_data = $string;
-		$string   = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $string);
+		//$string   = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $string);
+		$string   = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $string);
 	} while ($string !== $string);
 
 	return $string;
@@ -1241,6 +1246,10 @@ function getLanguage() {
 
 function getLanguageId() {
 	return session('language_id', 1);
+}
+
+function getCurrency() {
+	return session('currency', 'USD');
 }
 
 function siteSettings($site_id = SITE_ID, $language_id = false) {
@@ -1474,10 +1483,13 @@ function rrename($src, $dst, $skip = []) {
 function download($url) {
 	$result = false;
 
+	$url = html_entity_decode($url);
+
 	if (function_exists('curl_init')) {
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_FAILONERROR, true);
+		curl_setopt($curl, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT'] ?? 'Vvveb ' . V_VERSION);
 		$result = curl_exec($ch);
 		curl_close($ch);
 	} else {
@@ -1505,7 +1517,7 @@ function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception 
 		return $result;
 	} else {
 		$result = false;
-
+		$url    = html_entity_decode($url);
 		//try with curl
 		if (function_exists('curl_init')) {
 			$ch = curl_init($url);
@@ -1513,6 +1525,13 @@ function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception 
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
 			curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+			curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT'] ?? 'Vvveb ' . V_VERSION);
+
+			if (DEBUG) {
+				curl_setopt($ch, CURLOPT_VERBOSE, true);
+				$streamVerboseHandle = fopen('php://temp', 'w+');
+				curl_setopt($ch, CURLOPT_STDERR, $streamVerboseHandle);
+			}
 			$result = curl_exec($ch);
 			curl_close($ch);
 
@@ -1524,7 +1543,15 @@ function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception 
 				return $result;
 			} else {
 				if ($exception) {
-					throw new \Exception('Curl error: ' . curl_errno($ch) . ' - ' . curl_error($ch));
+					$message = 'Curl error: ' . curl_errno($ch) . ' - ' . curl_error($ch);
+
+					if (DEBUG) {
+						$message .= "\n" . print_r(curl_getinfo($ch), 1);
+						rewind($streamVerboseHandle);
+						$message .= "\n" . stream_get_contents($streamVerboseHandle);
+					}
+
+					throw new \Exception($message);
 				}
 			}
 		} else {
@@ -1680,4 +1707,124 @@ function invoiceFormat($format, $data) {
 
 		return $matches[0];
 	}, $format);
+}
+
+function array2xml($array, $xml = false) {
+	if ($xml === false) {
+		$xml = new \SimpleXMLElement('<root/>');
+	}
+
+	foreach ($array as $key => $value) {
+		$attributes  = [];
+		$processAttr = function (&$key) use (&$attributes) {
+			$i     = 0;
+			$start = 0;
+
+			while (($start = strpos($key, '@@', $start))) {
+				$i++;
+				$start += 2;
+				$end  = (int)strpos($key,' ', $start);
+				$name = substr($key, $start, $end ? $end - $start : null);
+
+				if ($end == 0) {
+					$start += strlen($name);
+				} else {
+					$start = (int)$end;
+				}
+
+				if ($name) {
+					$attributes[$name] = '';
+				}
+			}
+
+			$key = strstr($key, ' @@', true) ?: $key;
+		};
+
+		$processAttr($key);
+
+		if (is_array($value)) {
+			$node = $xml->addChild($key);
+
+			if ($attributes) {
+				foreach ($attributes as $key => $val) {
+					$node->addAttribute($key, $val);
+				}
+			}
+			array2xml($value, $node);
+		} else {
+			if (substr_compare($key, '--xmlattr', -9, 9) === 0) {
+				$key = substr($key, 0, -9);
+				$xml->addAttribute($key, $value);
+			} else {
+				$processAttr($value);
+				$node = $xml->addChild($key, $value);
+
+				if ($attributes) {
+					foreach ($attributes as $key => $val) {
+						$node->addAttribute($key, $val);
+					}
+				}
+			}
+		}
+	}
+
+	return $xml->asXML();
+}
+
+function prepareJson($array) {
+	if (! is_array($array)) {
+		return;
+	}
+	$helper = [];
+
+	foreach ($array as $key => $value) {
+		if (is_numeric($key)) {
+			$key = 'n--' . $key;
+		}
+
+		if ($key[0] == '@') {
+			if ($key[1] == '@') {
+				$key = substr($key, 2) . '--xmlattr';
+			} else {
+				$key = substr($key, 1) . '--attr';
+			}
+		}
+
+		if (strpos($key, '@')) {
+		}
+
+		$helper[$key] = is_array($value) ? prepareJson($value) : $value;
+	}
+
+	return $helper;
+}
+
+function reconstructJson($array) {
+	if (! is_iterable($array)) {
+		return;
+	}
+	$helper = [];
+	$array  = (array)$array;
+
+	foreach ($array as $key => $value) {
+		if (substr_compare($key, 'n--', 0, 3) === 0) {
+			$newkey = substr($key, 3);
+
+			if (is_numeric($newkey)) {
+				$key = intval($newkey);
+			}
+		}
+
+		if (substr_compare($key, '--xmlattr', -9, 9) === 0) {
+			$key = '@@' . substr($key, 0, -9);
+		}
+
+		if (substr_compare($key, '--attr', -6, 6) === 0) {
+			$key = '@' . substr($key, 0, -6);
+		}
+
+		$helper[$key] = (is_iterable($value)) ? reconstructJson($value) : $value;
+	}
+
+	return $helper;
 }
