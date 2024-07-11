@@ -867,13 +867,7 @@ Vvveb.Builder = {
 		
 		self.highlightEnabled = true;
 		
-		self.leftPanelWidth = document.getElementById("left-panel").width;
-		
-		self.adjustListsHeight();
-		
-		window.addEventListener("scroll resize", function(event) {
-			self.adjustListsHeight();
-		});
+		self.leftPanelWidth = document.getElementById("left-panel").clientWidth;
 	},
 	
 /* controls */    	
@@ -1063,32 +1057,6 @@ Vvveb.Builder = {
 			}
 		});
 	 },
-	
-	 adjustListsHeight: function () {
-		 let left = document.querySelectorAll("#left-panel .drag-elements-sidepane > div:not(.block-preview), #left-panel .component-properties > .tab-content");
-		 let right = document.querySelectorAll("#right-panel .drag-elements-sidepane > div:not(.block-preview), #right-panel .component-properties > .tab-content");
-		 let wHeight = window.outerHeight;
-		 let maxOffset = 0;
-
-		 function adjust(elements) {
-			 elements.forEach(function (e,i) {
-				 e.style.height = "";
-				 let offset =  Math.floor(e.getBoundingClientRect()["top"]);
-				 if (offset >= wHeight) return;
-				 maxOffset = Math.max(maxOffset, offset);
-				 let height = wHeight - maxOffset;
-				 if (!offset) {
-					height += parseInt(e.dataset.offset ?? 0);
-				 }
-				 e.style.height = height + "px";
-			});
-		}
-		
-		adjust(left);
-		maxOffset = 0;
-		adjust(right);
-	},
-	 
 	
 	loadUrl : function(url, callback) {	
 		let self = this;
@@ -1492,7 +1460,7 @@ Vvveb.Builder = {
 					try {
 							if ((pos.top  < (y - halfHeight)) || (pos.left  < (x - halfWidth))) {
 								if (noChildren[parentTagName]) { 
-									self.dragElement.after(parent);
+									parent.after(self.dragElement);
 								} else {
 									if (parent == self.dragElement.parenNode) {
 										parent.appendChild(self.dragElement);
@@ -2229,7 +2197,7 @@ Vvveb.Builder = {
 		})
 		.catch((err) => {
 			if (error) error(err);
-			let message = error?.statusText ?? "Error saving!";
+			let message = err?.statusText ?? "Error saving!";
 			displayToast("bg-danger", "Error", message);
 
 			if (err.hasOwnProperty('text')) err.text().then( errorMessage => {
@@ -2415,7 +2383,7 @@ Vvveb.Gui = {
 	
 	//show modal with html content
 	save : function () {
-		document.getElementById('textarea-modal textarea').val(Vvveb.Builder.getHtml());
+		document.getElementById('textarea-modal textarea').value = Vvveb.Builder.getHtml();
 		document.getElementById('textarea-modal').modal();
 	},
     
@@ -2432,10 +2400,22 @@ Vvveb.Gui = {
 		page 	 = page ? page : "new-template";
 		page    += ".html";
 
-		document.querySelector("#save-offcanvas [data-v-filename]").text(filename);
-		document.querySelector("#save-offcanvas input[data-v-filename]").val(filename);
-		document.querySelector("#save-offcanvas [data-v-basename]").val(page);
-		document.querySelector("#save-offcanvas [data-v-theme-folders]").val(folder);
+		let safeOffcanvas = document.querySelector("#save-offcanvas");
+		let element;
+		
+		if (element = safeOffcanvas.querySelector("[data-v-filename]")) {
+			element.textContent = filename;
+		}
+		if (element = safeOffcanvas.querySelector("input[data-v-filename]")) {
+			element.value = filename;
+		}
+		if (element = safeOffcanvas.querySelector("[data-v-basename]")) {
+			element.value = page;
+		}
+		if (element = safeOffcanvas.querySelector("[data-v-theme-folders]")) {
+			element.value = folder;
+		}
+		
 		Vvveb.ChangeManager.render();
 	},
 	
@@ -2451,8 +2431,8 @@ Vvveb.Gui = {
 			}
 		}
 
-		btn.querySelector(".loading").classList.toggle("d-none");
-		btn.querySelector(".button-text").classList.toggle("d-none");
+		btn.querySelector(".loading").classList.remove("d-none");
+		btn.querySelector(".button-text").classList.add("d-none");
 	
 		return Vvveb.Builder.saveAjax({file}, saveUrl, (data) => {
 			//use toast to show save status
@@ -2469,14 +2449,14 @@ Vvveb.Gui = {
 			const offcanvas = document.getElementById('save-offcanvas');
 			if (offcanvas) {
 				let instance = bootstrap.Offcanvas.getInstance(offcanvas);
-				if (instance) instance.style.display = "none";			
+				if (instance) instance.hide();			
 			}
 			
-			document.querySelector(".loading", btn).classList.toggle("d-none");
-			document.querySelector(".button-text", btn).classList.toggle("d-none");
+			btn.querySelector(".loading").classList.add("d-none");
+			btn.querySelector(".button-text").classList.remove("d-none");
 		}, (error) => {
-			document.querySelector(".loading", btn).classList.toggle("d-none");
-			document.querySelector(".button-text", btn).classList.toggle("d-none");
+			btn.querySelector(".loading").classList.add("d-none");
+			btn.querySelector(".button-text").classList.remove("d-none");
 			let message = error?.statusText ?? "Error saving!";
 			displayToast("bg-danger", "Error", message);
 		});		
@@ -2639,7 +2619,6 @@ Vvveb.Gui = {
 			visible = true;
 		}
 		
-		Vvveb.Builder.adjustListsHeight();
 		return visible;
 	},
 
@@ -2666,7 +2645,6 @@ Vvveb.Gui = {
 			bsTab.show(); 
 		}
 
-		Vvveb.Builder.adjustListsHeight();
 	},
 
 	toggleTreeList: function () {
@@ -2676,6 +2654,18 @@ Vvveb.Gui = {
 			document.getElementById("toggle-tree-list").classList.remove("active");
 		}
 	},
+
+	zoomChange: function () {
+		let wrapper = document.getElementById("iframe-wrapper");
+		let scale = "";
+		let height = "";
+		if (this.value != "100") {
+			scale = "scale(" + this.value + "%)";
+			height = ((100 / this.value) * 100) + "%";
+		}
+		wrapper.style.transform = scale;
+		wrapper.style.height = height;
+	}	
 }
 
 Vvveb.StyleManager = {
@@ -2926,11 +2916,11 @@ Vvveb.ContentManager = {
 	},
 
 	setText: function(element, text) {
-		return element.text(text);
+		return element.textContent = text;
 	},
 	
 	getText: function(element) {
-		return element.text();
+		return element.textContent;
 	},
 };
 
