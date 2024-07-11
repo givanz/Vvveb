@@ -111,6 +111,7 @@ class Routes {
 		}
 
 		self :: $init = true;
+
 		return true;
 	}
 
@@ -137,6 +138,10 @@ class Routes {
 
 	public static function get($route) {
 		return self :: $routes[$route] ?? [];
+	}
+
+	public static function getRoutes() {
+		return self :: $routes ?? [];
 	}
 
 	public static function varReplace($url, $parameters) {
@@ -228,9 +233,9 @@ class Routes {
 				}, $pattern);
 
 			if ($missing) {
-				return (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . '/?route=' . $route . '&' . (is_array($parameters) ? http_build_query($parameters) : '');
+				return '/?route=' . $route . '&' . (is_array($parameters) ? http_build_query($parameters) : '');
 			} else {
-				return (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . $url;
+				return $url;
 			}
 		}
 	}

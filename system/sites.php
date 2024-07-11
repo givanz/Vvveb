@@ -164,7 +164,8 @@ class Sites {
 				return $matches['prefix'] .
 					   $subdomain . ($subdomain ? '.' : '') .
 					   $domain . ($tld ? '.' : '') . $tld .
-					   ($matches['path'] ?? '');
+					   ($matches['path'] ?? '') .
+					   (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
 			}
 
 			//if host is ip number, localhost or does not have tld remove tld and subdomain
@@ -177,7 +178,8 @@ class Sites {
 				   (! empty($matches['subdomain']) ? $matches['subdomain'] . '.' : '') .
 				   ($matches['domain'] ?? '') .
 				   (! empty($matches['tld']) ? '.' . $matches['tld'] : '') .
-				   ($matches['path'] ?? '');
+				   ($matches['path'] ?? '') .
+				   (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
 		}
 
 		return $url;
@@ -238,8 +240,6 @@ class Sites {
 		} else {
 			return self :: setSiteDataByKey($site, $name, $value);
 		}
-
-		return false;
 	}
 
 	public static function getHost() {
@@ -254,7 +254,7 @@ class Sites {
 		}
 
 		if (! $site_url) {
-			$host =$_SERVER['HTTP_HOST'] ?? 'localhost';
+			$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 		}
 
 		$host = self :: siteKey($host);
