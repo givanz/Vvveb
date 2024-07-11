@@ -27,6 +27,7 @@ use function Vvveb\installedLanguages;
 use function Vvveb\session as sess;
 use function Vvveb\setLanguage;
 use Vvveb\Sql\LanguageSQL;
+use Vvveb\Sql\menuSQL;
 use Vvveb\Sql\RoleSQL;
 use Vvveb\Sql\SiteSQL;
 use Vvveb\System\Core\View;
@@ -362,6 +363,20 @@ class Index extends Base {
 				@\Vvveb\setConfig('app.cache.driver', 'APCu');
 			}
 
+			if (V_SUBDIR_INSTALL) {
+				//add subdir path to menu links
+				$menus  = new menuSQL();
+
+				foreach ([1, 5] as $menu_id) { //main menu and footer menu id's
+					$menuItems = $menus->getMenus(['menu_id' => $menu_id, 'language_id' => 1])['menus'] ?? [];
+
+					foreach ($menuItems as $menuItem) {
+						$data = ['url' => V_SUBDIR_INSTALL . $menuItem['url'], 'menu_item_content' => []];
+						$menus->editMenuItem(['menu_item' => $data,  'menu_item_id' => $menuItem['menu_item_id']]);
+					}
+				}
+			}
+
 			if ($error) {
 				$this->view->error[] = $error;
 			}
@@ -369,6 +384,7 @@ class Index extends Base {
 			$success               = __('Installation succesful!');
 			$this->view->success[] = $success;
 			$admin_path            = \Vvveb\adminPath();
+			$admin_path            = str_replace(V_SUBDIR_INSTALL, '', $admin_path);
 			$location              = preg_replace('@/install.*$@', $admin_path . "/index.php?success=$success&errors=$error", ($_SERVER['REQUEST_URI'] ?? ''));
 
 			header("Location: $location");
