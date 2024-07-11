@@ -25,6 +25,8 @@ namespace Vvveb\System\Component;
 use function Vvveb\session as sess;
 use Vvveb\System\Core\Request;
 use Vvveb\System\User\User;
+use Vvveb\System\Core\View;
+use Vvveb\System\Session;
 
 #[\AllowDynamicProperties]
 class ComponentBase {
@@ -106,7 +108,6 @@ class ComponentBase {
 	}
 
 	static function di(&$component) {
-		return;
 		$component->request = Request::getInstance();
 		$component->view    = View::getInstance();
 		$component->session = Session::getInstance();
