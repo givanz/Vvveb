@@ -146,7 +146,8 @@ class Edit extends Base {
 
 			//$productImages = $posts->getImages($postOptions);
 		} else {
-			$post['image_url'] = Images::image('',$this->object);
+			$post['image_url']  = Images::image('',$this->object);
+			$post['updated_at'] = date('Y-m-d H:i:s', time());
 		}
 
 		/*
