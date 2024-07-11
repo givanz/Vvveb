@@ -12,7 +12,9 @@
 if (isset($this->menu) && $this->menu)
 foreach($this->menu as $key => $menu_item) {
 	
-	if (isset($menu_item['permission']) && !$menu_item['permission']) continue;?>
+	if (isset($menu_item['permission']) && !$menu_item['permission']) continue;
+	if (isset($menu_item['heading'])) $menu_item['url'] = 'javascript:void(0)';
+	?>
 
 	@menu_item [data-v-menu-item-url]|href = $menu_item['url']
 	@menu_item [data-v-menu-item-url]|title = $menu_item['name']
@@ -34,7 +36,7 @@ foreach($this->menu as $key => $menu_item) {
 	@menu_item [data-v-menu-item-badge] = $menu_item['badge']
 
 	@menu_item|addClass = <?php 
-		if (isset($menu_item['heading'])) echo ' heading';
+		if (isset($menu_item['heading'])) echo 'heading';
 		if (isset($menu_item['class'])) echo $menu_item['class'];
 	?>
 	@menu_item [data-v-menu-item-url]|addClass = <?php if (isset($menu_item['items'])) echo 'items';?>
@@ -61,7 +63,9 @@ foreach($this->menu as $key => $menu_item) {
 	
 	@submenumenu_item [data-v-submenu-item]|before = <?php
 		foreach($items as $key => $submenu_item) {
-			if (isset($submenu_item['permission']) && !$submenu_item['permission']) continue;?>
+			if (isset($submenu_item['permission']) && !$submenu_item['permission']) continue;
+			if (isset($submenu_item['heading'])) $submenu_item['url'] = 'javascript:void(0)';
+			?>
 		
 			@submenumenu_item [data-v-submenu-item-url]|href = $submenu_item['url']
 			@submenumenu_item [data-v-submenu-item-name] = $submenu_item['name']
