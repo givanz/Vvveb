@@ -56,7 +56,9 @@ class Base {
 		//if no id set default
 		if ($site_id) {
 			$site  = Sites::getSiteById($site_id);
-		} else {
+		}
+		
+		if (!$site_id || !$site) {
 			$site = Sites::getDefault();
 		}
 
