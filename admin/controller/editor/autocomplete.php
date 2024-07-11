@@ -34,7 +34,7 @@ class Autocomplete extends Base {
 		$options = [
 			'start'  => 0,
 			'limit'  => 10,
-			'search' => '%' . $text . '%',
+			'like' => $text,
 		] + $this->global;
 
 		unset($options['admin_id']);
@@ -105,8 +105,8 @@ class Autocomplete extends Base {
 			'start'  => 0,
 			'limit'  => 10,
 			'type'   => $type,
-			'search' => $text,
-			//s'like' => '%' . $text . '%',
+			'like' => $text,
+			//'like' => '%' . $text . '%',
 		] + $this->global;
 
 		unset($options['admin_id']);
@@ -114,7 +114,7 @@ class Autocomplete extends Base {
 		$results = $posts->getAll($options);
 
 		$search = [];
-		
+
 		if (isset($results['posts'])) {
 			foreach ($results['posts'] as $post) {
 				$search[$post['post_id']] = substr($post['name'],0, 50);
