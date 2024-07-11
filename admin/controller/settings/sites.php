@@ -39,6 +39,10 @@ class Sites extends Base {
 		$site_id    = $this->request->post['site_id'] ?? $this->request->get['site_id'] ?? false;
 
 		if ($site_id) {
+			$active_deleted = false;
+			$active_site_id = $this->session->get('site_id');
+
+			
 			if (is_numeric($site_id)) {
 				$site_id = [$site_id];
 			}
@@ -48,6 +52,10 @@ class Sites extends Base {
 
 				if ($site) {
 					SitesList::deleteSite($site);
+				}
+
+				if ($id == $active_site_id) {
+					$active_deleted = true;
 				}
 			}
 
@@ -60,6 +68,10 @@ class Sites extends Base {
 
 			if ($result && isset($result['site'])) {
 				$this->view->success[] = ucfirst(__('site')) . __(' deleted!');
+				//if active site was deleted set the next valid site as active
+				if ($active_deleted) {
+					$this->setSite();
+				}
 			} else {
 				$this->view->errors[] = sprintf(__('Error deleting %s!'),  __(' site'));
 			}
@@ -79,7 +91,7 @@ class Sites extends Base {
 		} else {
 			$options['site_id'] = Admin :: siteAccess();
 		}
-
+		
 		$page    = $this->request->get['page'] ?? 1;
 		$limit   = $this->request->get['limit'] ?? 10;
 
