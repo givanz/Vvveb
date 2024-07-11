@@ -45,19 +45,23 @@ class Redis {
 		}
 	}
 
+	private function key($namespace, $key = '') {
+		return $this->cachePrefix . ($namespace ? ".$namespace" : '') . $key;
+	}
+
 	public function get($namespace, $key) {
-		$data = $this->redis->get($this->options['prefix'] . $key);
+		$data = $this->redis->get($this->key($namespace, $key));
 
 		return json_decode($data, true);
 	}
 
 	public function set($namespace, $key, $value, $expire = null) {
-		$expire = $expire ?? $this->options['expire'];
-		$prefix = $this->options['prefix'];
-		$status = $this->redis->set($prefix . $key, json_encode($value));
+		$expire = $expire ?? $this->expire;
+		$_key   = $this->key($namespace, $key);
+		$status = $this->redis->set($_key, json_encode($value));
 
-		if ($status) {
-			$this->redis->expire($prefix . $key, $expire);
+		if ($status && $expire) {
+			$this->redis->expire($_key, $expire);
 		}
 	}
 
@@ -65,19 +69,33 @@ class Redis {
 		$result = [];
 
 		foreach ($keys as $key) {
-			$result[$key] = $this->get($namespace, $key);
+			$result[$key] = $this->get($this->key($namespace, $key));
 		}
 
 		return $result;
 	}
 
-	public function setMulti($namespace, $items, $expire = 0, $serverKey = false) {
+	public function setMulti($namespace, $items, $expire = null, $serverKey = false) {
+		$expire = $expire ?? $this->expire;
+
 		foreach ($items as $key => $value) {
-			$this->set($namespace, $key, $value);
+			$this->set($this->key($namespace, $key), $value, $expire);
 		}
 	}
 
 	public function delete($namespace, $key) {
-		$this->redis->del($this->options['prefix'] . $key);
+		if ($key) {
+			$keys = $this->key($namespace, $key);
+		} else {
+			if ($namespace) {
+				$keys = $this->key($namespace, '*');
+			} else {
+				$keys = $this->key('*');
+			}
+		}
+
+		$this->redis->del($keys);
+
+		return true;
 	}
 }
