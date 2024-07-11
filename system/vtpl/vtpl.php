@@ -1983,7 +1983,33 @@ class Vtpl {
 						$f = $this->document->createElement('_script');
 						$f->setAttribute('language', 'php');
 						$f->appendChild($c);
-						$node = $node->parentNode->replaceChild($f, $node);
+						$node->parentNode->replaceChild($f, $node);
+
+						//add previously trimmed space around text
+						$space   = str_replace($trimmed, '|', $text);
+						$explode = explode('|', $space);
+						//space before text
+						if ($explode[0]) {
+							$s = $this->document->createTextNode($explode[0]);
+							$f->parentNode->insertBefore($s, $f);
+						}
+						//space after text
+						if (isset($explode[1]) && $explode[1]) {
+							$e = $this->document->createTextNode($explode[1]);
+							//php 8
+							if (isset($f->nextElementSibling) && $f->nextElementSibling) {
+								//add before next element
+								$f->parentNode->insertBefore($e, $f->nextSibling);
+							} else {
+								if ($f->nextSibling) {
+									//add before next element
+									$f->parentNode->insertBefore($e, $f->nextSibling);
+								} else {
+									//add as last element
+									$f->parentNode->appendChild($e);
+								}
+							}
+						}
 					}
 					//$node->parentNode->replaceChild($f, $node);
 				} else {
