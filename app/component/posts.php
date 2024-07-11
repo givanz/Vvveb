@@ -50,6 +50,7 @@ class Posts extends ComponentBase {
 		'taxonomy_item_id'   => NULL,
 		'taxonomy_item_slug' => NULL,
 		'search'             => NULL,
+		'like'               => NULL,
 		'admin_id'           => NULL,
 		//archive
 		'month'              => NULL,
@@ -176,6 +177,7 @@ class Posts extends ComponentBase {
 
 				//rfc
 				$post['pubDate'] = date('r', strtotime($post['created_at']));
+				$post['modDate'] = date('r', strtotime($post['updated_at']));
 
 				//url
 				$url                  =  ['slug' => $post['slug'], 'post_id' => $post['post_id']] + $language;

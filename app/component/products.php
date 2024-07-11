@@ -48,6 +48,7 @@ class Products extends ComponentBase {
 		'product_image'    => true,
 		'product_id'       => [],
 		'search'           => null,
+		'like'             => null,
 		'slug'             => null,
 		'related'          => null,
 		'variant'          => null,
@@ -63,7 +64,7 @@ class Products extends ComponentBase {
 		if ($page = $this->options['page']) {
 			$this->options['start'] = ($page - 1) * $this->options['limit'];
 		}
-		
+
 		if ($this->options['filter']) {
 			foreach ($this->options['filter'] as $name => $values) {
 				if ($name == 'manufacturer_id' || $name == 'vendor_id') {
@@ -135,9 +136,10 @@ class Products extends ComponentBase {
 
 				//rfc
 				$product['pubDate'] = date('r', strtotime($product['created_at']));
+				$product['modDate'] = date('r', strtotime($product['updated_at']));
 
 				$url                         = ['slug' => $product['slug'], 'product_id' => $product['product_id']] + $language;
-				$product['url']      	     = url('product/product/index', $url);
+				$product['url']      	       = url('product/product/index', $url);
 				$product['add_cart_url']     = url('cart/cart/add', ['product_id' => $product['product_id']]);
 				$product['buy_url']          = url('checkout/checkout/index', ['product_id' => $product['product_id']]);
 				$product['add_wishlist_url'] = url('user/wishlist/add', ['product_id' => $product['product_id']]);
