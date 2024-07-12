@@ -69,7 +69,7 @@ class Redis {
 		$result = [];
 
 		foreach ($keys as $key) {
-			$result[$key] = $this->get($this->key($namespace, $key));
+			$result[$key] = $this->get($namespace, $key);
 		}
 
 		return $result;
@@ -79,7 +79,7 @@ class Redis {
 		$expire = $expire ?? $this->expire;
 
 		foreach ($items as $key => $value) {
-			$this->set($this->key($namespace, $key), $value, $expire);
+			$this->set($namespace, $key, $value, $expire);
 		}
 	}
 
