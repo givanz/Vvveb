@@ -24,6 +24,7 @@ namespace Vvveb\Controller\Theme;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use function Vvveb\fileUploadErrMessage;
 use function Vvveb\rcopy;
 use function Vvveb\rrmdir;
 use function Vvveb\sanitizeFileName;
@@ -95,7 +96,7 @@ class Themes extends Base {
 		foreach ($files as $file) {
 			$this->themeSlug = str_replace('.zip', '', strtolower($file['name']));
 
-			if ($file) {
+			if ($file && $file['error'] == UPLOAD_ERR_OK) {
 				try {
 					// use temorary file, php cleans temporary files on request finish.
 					$this->themeSlug = ThemesList :: install($file['tmp_name'], $this->themeSlug, false);
@@ -103,6 +104,10 @@ class Themes extends Base {
 					$error                = $e->getMessage();
 					$this->view->errors[] = $error;
 				}
+			} else {
+				$error                 = true;
+				$this->view->errors[]  = sprintf(__('Error uploading %s!'), $this->themeSlug);
+				$this->view->warning[] = sprintf(fileUploadErrMessage($file['error']));
 			}
 
 			if (! $error && $this->themeSlug) {
@@ -111,7 +116,7 @@ class Themes extends Base {
 				$this->themeActivateUrl  = \Vvveb\url(['module' => 'theme/themes', 'action'=> 'activate', 'theme' => $this->themeSlug]);
 				$successMessage          = sprintf(__('Theme %s was successfully installed!'), $this->themeSlug);
 				$successMessage .= "<p><a href='{$this->themeActivateUrl}'>" . __('Activate theme') . '</a></p>';
-				$this->view->success[] = $successMessage;
+				$this->view->success[]   = $successMessage;
 			}
 		}
 

@@ -1828,3 +1828,46 @@ function reconstructJson($array) {
 
 	return $helper;
 }
+
+function fileUploadErrMessage($errorCode) {
+	switch ($errorCode) {
+		case UPLOAD_ERR_OK:
+			return __('No file sent');
+
+			break;
+
+		case UPLOAD_ERR_NO_FILE:
+			return __('No file sent');
+
+			break;
+
+		case UPLOAD_ERR_PARTIAL:
+			return __('The uploaded file was only partially uploaded');
+
+			break;
+
+		case UPLOAD_ERR_NO_TMP_DIR:
+			return __('Missing a temporary folder');
+
+			break;
+
+		case UPLOAD_ERR_CANT_WRITE:
+			return __('Failed to write file to disk');
+
+			break;
+
+		case UPLOAD_ERR_EXTENSION:
+			return __('A PHP extension stopped the file upload');
+
+			break;
+
+		case UPLOAD_ERR_INI_SIZE:
+		case UPLOAD_ERR_FORM_SIZE:
+			return __('Exceeded filesize limit');
+
+			break;
+
+		default:
+			return __('Unknown errors');
+	}
+}

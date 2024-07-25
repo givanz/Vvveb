@@ -24,8 +24,8 @@ namespace Vvveb\Controller\Media;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use function Vvveb\fileUploadErrMessage;
 use function Vvveb\sanitizeFileName;
-use Vvveb\System\Core\View;
 
 class Media extends Base {
 	protected $uploadDenyExtensions = ['php', 'svg', 'js'];
@@ -70,47 +70,19 @@ class Media extends Base {
 		$path      = sanitizeFileName($this->request->post['mediaPath']);
 		$file      = $this->request->files['file'] ?? [];
 		$fileName  = sanitizeFileName($file['name']);
-		$path      = preg_replace('@^/public/media|^/media|^/public@', '', $path);
+		$path      = preg_replace('@^[\\\/]public[\\\/]media|^[\\\/]media|^[\\\/]public@', '', $path);
 		$extension = strtolower(substr($fileName, strrpos($fileName, '.') + 1));
-		$success = false;
-		$return = '';
-		$message = '';
-		
-		if ($file) {
-			switch ($file['error']) {
-				case UPLOAD_ERR_OK:
-					$success = true;
-					break;
+		$success   = false;
+		$return    = '';
+		$message   = '';
 
-				case UPLOAD_ERR_NO_FILE:
-					$message = __('No file sent');
-					break;
-					
-				case UPLOAD_ERR_PARTIAL:
-					$message = __('The uploaded file was only partially uploaded');
-					break;
-					
-				case UPLOAD_ERR_NO_TMP_DIR:
-					$message = __('Missing a temporary folder');
-					break;
-					
-				case UPLOAD_ERR_CANT_WRITE:
-					$message = __('Failed to write file to disk');
-					break;
-					
-				case UPLOAD_ERR_EXTENSION:
-					$message = __('A PHP extension stopped the file upload');
-					break;
-					
-				case UPLOAD_ERR_INI_SIZE:
-				case UPLOAD_ERR_FORM_SIZE:
-					$message = __('Exceeded filesize limit');
-					break;
-					
-				default:
-					$message = __('Unknown errors');
+		if ($file) {
+			if ($file['error'] == UPLOAD_ERR_OK) {
+				$success = true;
+			} else {
+				$message = fileUploadErrMessage($file['error']);
 			}
-			
+
 			if (in_array($extension, $this->uploadDenyExtensions)) {
 				$message = __('File type not allowed!');
 				$success = false;
@@ -118,7 +90,7 @@ class Media extends Base {
 
 			$origFilename = $fileName;
 			$i            = 1;
-		
+
 			if ($success) {
 				while (file_exists($destination = DIR_MEDIA . $path . DS . $fileName) && ($i++ < 5)) {
 					$fileName = rand(0, 10000) . '-' . $origFilename;
@@ -133,9 +105,9 @@ class Media extends Base {
 					$message = __('File uploaded successfully!');
 				} else {
 					$destination = DIR_MEDIA . $path . DS;
-					$success = false;
-					
-					if (!is_writable($destination)) {
+					$success     = false;
+
+					if (! is_writable($destination)) {
 						$message = sprintf(__('%s not writable!'), $destination);
 					} else {
 						$message = __('Error moving uploaded file!');
@@ -145,9 +117,9 @@ class Media extends Base {
 		} else {
 			$message = __('Invalid upload!');
 		}
-			
-		$message = ['success' => true, 'message' => $message, 'file' => $return];
-		
+
+		$message = ['success' => $success, 'message' => $message, 'file' => $return];
+
 		$this->response->setType('json');
 		$this->response->output($message);
 	}
@@ -191,7 +163,6 @@ class Media extends Base {
 				$message = ['success' => false, 'message' => __('Error renaming file!')];
 			}
 		}
-
 
 		$this->response->setType('json');
 		$this->response->output($message);
