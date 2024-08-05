@@ -6,7 +6,7 @@
 		-- variables
 		IN  language_id INT,
 		IN  site_id INT,
-		IN 	user_id INT
+		IN  user_id INT
 		
 		IN order_status CHAR,
 		IN order_status_id INT,
@@ -32,7 +32,7 @@
 	)
 	BEGIN
         
-        SELECT "order".*,os.name as order_status FROM "order" AS "order" 
+        SELECT "order".*,os.name as order_status,ops.name as payment_status,oss.name as shipping_status FROM "order" AS "order"
 		
 			LEFT JOIN order_status AS os ON ("order".order_status_id = os.order_status_id AND os.language_id = :language_id) 
 			LEFT JOIN shipping_status AS oss ON ("order".shipping_status_id = oss.shipping_status_id AND oss.language_id = :language_id) 
@@ -55,7 +55,27 @@
 		@IF isset(:order_status_id)
 		THEN 
 			AND "order".order_status_id = :order_status_id
-		END @IF		
+		END @IF	
+
+		@IF isset(:shipping_status)
+		THEN 
+			AND oss.name = :shipping_status
+		END @IF					
+		
+		@IF isset(:shipping_status_id)
+		THEN 
+			AND "order".shipping_status_id = :shipping_status_id
+		END @IF					
+		
+		@IF isset(:payment_status)
+		THEN 
+			AND ops.name = :payment_status
+		END @IF					
+		
+		@IF isset(:payment_status_id)
+		THEN 
+			AND "order".payment_status_id = :payment_status_id
+		END @IF
 
 		@IF isset(:email) AND !empty(:email)
 		THEN 

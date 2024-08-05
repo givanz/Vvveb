@@ -62,6 +62,8 @@ if(is_array($logs)) foreach ($logs as $index => $log) {
 [data-v-order] [data-v-order-site_url]|href = $this->order['site_url']
 
 [data-v-order] .badge[data-v-order-order_status]|addClass = <?php echo $this->order['class'] ?? '';?>
+[data-v-order] .badge[data-v-order-payment_status]|addClass = <?php echo $this->order['payment_class'] ?? '';?>
+[data-v-order] .badge[data-v-order-shipping_status]|addClass = <?php echo $this->order['shipping_class'] ?? '';?>
 
 [data-v-order-print-url]|href = $this->printUrl
 [data-v-order-print-shipping-url]|href = $this->printShippingUrl

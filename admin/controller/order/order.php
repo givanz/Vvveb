@@ -23,11 +23,13 @@
 namespace Vvveb\Controller\Order;
 
 use function Vvveb\__;
-use function Vvveb\email;
 use Vvveb\Controller\Base;
 use Vvveb\Controller\Content\AutocompleteTrait;
+use function Vvveb\email;
 use function Vvveb\orderStatusBadgeClass;
+use function Vvveb\paymentStatusBadgeClass;
 use function Vvveb\prefixArrayKeys;
+use function Vvveb\shippingStatusBadgeClass;
 use function Vvveb\siteSettings;
 use Vvveb\Sql\Order_LogSQL;
 use Vvveb\Sql\OrderSQL;
@@ -112,6 +114,8 @@ class Order extends Base {
 				$order['shipping_data']   = json_decode($order['shipping_data'] ?? '', true);
 				$order['payment_data']    = json_decode($order['payment_data'] ?? '', true);
 				$order['class']           = orderStatusBadgeClass($order['order_status_id']);
+				$order['payment_class']   = paymentStatusBadgeClass($order['payment_status_id']);
+				$order['shipping_class']  = shippingStatusBadgeClass($order['shipping_status_id']);
 
 				$order += prefixArrayKeys('shipping_', $order['shipping_data']) ?? [];
 				$order += prefixArrayKeys('payment_', $order['payment_data']) ?? [];
@@ -214,6 +218,7 @@ class Order extends Base {
 					
 					if ($notify) {
 						$message = '';
+
 						if ($public) { 
 							$message = $log['note'];
 						}
@@ -221,7 +226,6 @@ class Order extends Base {
 						$email = $this->view->order['email'];
 						$this->sendNotification($order_id, $email, $message);
 					}
-					
 				} else {
 					$view->errors[] = $orderLog->error;
 				}

@@ -15,6 +15,8 @@ if(isset($this->orders) && is_array($this->orders)) {
 	[data-v-orders] [data-v-order] input[data-v-*]|value = $order['@@__data-v-(*)__@@']
 	
 	[data-v-orders] [data-v-order] .badge[data-v-order_status]|addClass = <?php echo $order['class'];?>
+	[data-v-orders] [data-v-order] .badge[data-v-payment_status]|addClass = <?php echo $order['payment_class'];?>
+	[data-v-orders] [data-v-order] .badge[data-v-shipping_status]|addClass = <?php echo $order['shipping_class'];?>
 
 	[data-v-orders] [data-v-order]|after = <?php 
 	} 

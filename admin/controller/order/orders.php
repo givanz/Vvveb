@@ -25,6 +25,8 @@ namespace Vvveb\Controller\Order;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use function Vvveb\orderStatusBadgeClass;
+use function Vvveb\paymentStatusBadgeClass;
+use function Vvveb\shippingStatusBadgeClass;
 use Vvveb\Sql\OrderSQL;
 use Vvveb\System\Cart\Currency;
 use Vvveb\System\Core\View;
@@ -71,6 +73,8 @@ class Orders extends Base {
 			foreach ($results['order'] as $id => &$order) {
 				$order['total_formatted'] = $currency->format($order['total']);
 				$order['class']           = orderStatusBadgeClass($order['order_status_id']);
+				$order['payment_class']   = paymentStatusBadgeClass($order['payment_status_id']);
+				$order['shipping_class']  = shippingStatusBadgeClass($order['shipping_status_id']);
 				$order['delete-url']      = \Vvveb\url(['module' => 'order/orders', 'action' => 'delete'] + ['order_id[]' => $order['order_id']]);
 			}
 		}

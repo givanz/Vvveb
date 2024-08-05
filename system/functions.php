@@ -1626,15 +1626,50 @@ function nl2p($string) {
 
 function orderStatusBadgeClass($order_status_id = 1) {
 	$classes = [
-		1 => 'bg-primary-subtle text-body',
-		2 => 'bg-success-subtle text-body',
-		3 => 'bg-danger-subtle text-body',
-		4 => 'bg-success',
-		5 => 'bg-danger',
-		6 => 'bg-danger',
+		1 => 'bg-primary-subtle text-body', //pending
+		2 => 'bg-info-subtle text-body', //processing
+		3 => 'bg-primary', //processed
+		4 => 'bg-success', //complete
+		5 => 'bg-danger', //canceled
+		6 => 'bg-secondary', //archived
+		7 => 'bg-warning', //requires_action
 	];
 
 	return $classes[$order_status_id] ?? 'bg-warning text-dark';
+}
+
+function paymentStatusBadgeClass($payment_status_id = 1) {
+	$classes = [
+		1  => 'bg-warning-subtle text-body', //not_paid
+		2  => 'bg-success-subtle text-body', //awaiting
+		3  => 'bg-danger-subtle text-body', //captured
+		4  => 'bg-success', //paid
+		5  => 'bg-danger', //canceled
+		6  => 'bg-danger', //refunded
+		7  => 'bg-danger', //partially_refunded
+		8  => 'bg-danger', //chargeback
+		9  => 'bg-danger', //requires_action
+		10 => 'bg-danger', //fraud
+	];
+
+	return $classes[$payment_status_id] ?? 'bg-warning text-dark';
+}
+
+function shippingStatusBadgeClass($shipping_status_id = 1) {
+	$classes = [
+		1  => 'bg-warning-subtle text-body', //not_fulfilled
+		2  => 'bg-success-subtle text-body', //fulfilled
+		3  => 'bg-success-subtle text-body', //partially_fulfilled
+		4  => 'bg-success', //shipped
+		5  => 'bg-success-subtle text-body', //partially_shipped
+		6  => 'bg-danger-subtle text-body', //returned
+		7  => 'bg-danger-subtle text-body', //partially_returned
+		8  => 'bg-success', //delivered
+		9  => 'bg-danger', //canceled
+		10 => 'bg-warning', //requires_action
+	];
+
+	return $classes[$shipping_status_id] ?? 'bg-warning text-dark';
 }
 
 function commentStatusBadgeClass($status = 0) {

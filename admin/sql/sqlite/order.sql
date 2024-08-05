@@ -6,7 +6,7 @@
 		-- variables
 		IN  language_id INT,
 		IN  site_id INT,
-		IN 	user_id INT
+		IN  user_id INT
 		
 		IN order_status CHAR,
 		IN order_status_id INT,
@@ -32,7 +32,7 @@
 	)
 	BEGIN
         
-        SELECT `order`.*,os.name as order_status FROM `order` AS `order`
+        SELECT `order`.*,os.name as order_status,ops.name as payment_status,oss.name as shipping_status FROM `order` AS `order`
 		
 			LEFT JOIN order_status AS os ON (`order`.order_status_id = os.order_status_id AND os.language_id = :language_id) 
 			LEFT JOIN shipping_status AS oss ON (`order`.shipping_status_id = oss.shipping_status_id AND oss.language_id = :language_id) 
