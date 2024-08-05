@@ -93,11 +93,10 @@ class APCu {
 	public function delete($namespace, $key = '') {
 		if ($this->active) {
 			if ($namespace) {
-				return apcu_delete(new \APCUIterator('/' . $this->key($namespace, $key) . '.*/'));
-
 				if ($key) {
 					return apcu_delete($this->key($namespace, $key));
 				} else {
+					return apcu_delete(new \APCUIterator('/' . $this->key($namespace, $key) . '.*/'));
 					$cache_info = apcu_cache_info();
 
 					$cache_list = $cache_info['cache_list'];
