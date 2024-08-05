@@ -86,13 +86,16 @@ class CategoriesComponent {
 
     init(node)
 	{
-		if (node.dataset.type != undefined) {
-			document.querySelectorAll('.mb-3[data-group="'+ + node.dataset.type + '"]').forEach((el, i) => {
-				el.classList.remove("d-none");
-			});			
-		} else {		
-			document.querySelector('.mb-3[data-group]:first').classList.remove("d-none");
-		}
+		document.querySelectorAll('.mb-3[data-group]').forEach((el, i) => {
+			el.classList.add("d-none");
+		});			
+		
+		let source = node.dataset.vSource;
+		if (!source) {
+			source = "automatic";
+		} 
+
+		document.querySelectorAll('.mb-3[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
 	}
 }
 

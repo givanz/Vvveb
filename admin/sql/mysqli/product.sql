@@ -411,9 +411,9 @@
 		@EACH(:product.product_content) 
 			INSERT INTO product_content 
 		
-				( @KEYS(:each), product_id, meta_title, meta_description, meta_keywords )
+				( @KEYS(:each), product_id)
 			
-			VALUES ( :each, :product_id, '', '', '' )
+			VALUES ( :each, :product_id)
 
 			ON DUPLICATE KEY UPDATE @LIST(:each);
 
@@ -509,9 +509,9 @@
 		@EACH(:product_content) 
 			INSERT INTO product_content 
 		
-				( @KEYS(:each), product_id, meta_title, meta_description, meta_keywords )
+				( @KEYS(:each), product_id )
 			
-			VALUES ( :each, @result.product, '', '', '' );
+			VALUES ( :each, @result.product );
 		
 		@EACH(:product_data.taxonomy_item) 
 			INSERT INTO product_to_taxonomy_item 

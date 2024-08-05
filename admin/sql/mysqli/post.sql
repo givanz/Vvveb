@@ -329,12 +329,16 @@
 		
 	 
 		-- meta
-		SELECT `key` as array_key,value as array_value FROM post_meta as _
-			WHERE _.post_id = @result.post_id;	 
+		SELECT `key` as array_key,value as array_value FROM post_meta
+			WHERE post_meta.post_id = @result.post_id;	 
 
 		-- post_to_site
 		SELECT site_id as array_key, site_id FROM post_to_site
-			WHERE post_to_site.post_id = @result.post_id;	 
+			WHERE post_to_site.post_id = @result.post_id;		
+			
+		-- post_to_taxonomy_item
+		SELECT taxonomy_item_id as array_key, taxonomy_item_id FROM post_to_taxonomy_item
+			WHERE post_to_taxonomy_item.post_id = @result.post_id;	 
 	 
 	END
 
@@ -343,9 +347,9 @@
 	CREATE PROCEDURE add(
 		IN post ARRAY,
 		IN site_id ARRAY,
-		OUT insert_id
-		OUT insert_id
-		OUT insert_id
+		OUT insert_id,
+		OUT insert_id,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN

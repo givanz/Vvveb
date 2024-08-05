@@ -271,6 +271,10 @@
 		SELECT site_id as array_key, site_id FROM post_to_site
 			WHERE post_to_site.post_id = @result.post_id;	 
 	 
+		-- post_to_taxonomy_item
+		SELECT taxonomy_item_id as array_key, taxonomy_item_id FROM post_to_taxonomy_item
+			WHERE post_to_taxonomy_item.post_id = @result.post_id;	 
+	 
 	END
 
 	-- Add new post

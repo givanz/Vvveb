@@ -29,6 +29,7 @@ use Vvveb\Sql\PostSQL;
 use Vvveb\System\Cache;
 use Vvveb\System\Images;
 use Vvveb\System\User\Admin;
+use function Vvveb\url;
 
 class Posts extends Base {
 	protected $type = 'post';
@@ -42,6 +43,59 @@ class Posts extends Base {
 		}
 
 		return parent::init();
+	}
+
+	function duplicate() {
+		$post_id    = $this->request->post['post_id'] ?? $this->request->get['post_id'] ?? false;
+
+		if ($post_id) {
+			$this->posts   = new PostSQL();
+			$data          = $this->posts->get(['post_id' => $post_id, 'type' => $this->type]);
+
+			unset($data['post_id']);
+			$id = rand(1, 1000);
+
+			foreach ($data['post_content'] as &$content) {
+				unset($content['post_id']);
+				$content['name'] .= ' [' . __('duplicate') . ']';
+				$content['slug'] .= '-' . __('duplicate') . "-$id";
+			}
+
+			if (isset($data['post_to_taxonomy_item'])) {
+				foreach ($data['post_to_taxonomy_item'] as &$item) {
+					$taxonomy_item[] = $item['taxonomy_item_id'];
+				}
+			}
+
+			if (isset($data['post_to_site'])) {
+				foreach ($data['post_to_site'] as &$item) {
+					$site_id[] = $item['site_id'];
+				}
+			}
+
+			if ($data) {
+				$result = $this->posts->add([
+					'post' => [
+						'post_content'  => $data['post_content'],
+						'taxonomy_item' => $taxonomy_item ?? [],
+					] + $data,
+					'site_id' => $site_id,
+				]);
+
+				if ($result && isset($result['post'])) {
+					$post_id = $result['post'];
+					$url     = url(['module' => 'content/post', 'post_id' => $post_id, 'type' => $this->type]);
+
+					$success = ucfirst($this->type) . __(' duplicated!');
+					$success .= sprintf(' <a href="%s">%s</a>', $url, __('Edit') . " {$this->type}");
+					$this->view->success[] = $success;
+				} else {
+					$this->view->errors[] = sprintf(__('Error duplicating %s!'),  $this->type);
+				}
+			}
+		}
+
+		return $this->index();
 	}
 
 	function delete() {
@@ -108,31 +162,31 @@ class Posts extends Base {
 
 			$return[$archive['year'] . '/' . $archive['month']] = $name;
 		}
-/*
-		$return = [];
+		/*
+				$return = [];
 
-		if (isset($archives['archives'])) {
-			foreach ($archives['archives'] as $index => &$archive) {
-				if (isset($archive['month'])) {
-					$monthNum              = $archive['month'];
+				if (isset($archives['archives'])) {
+					foreach ($archives['archives'] as $index => &$archive) {
+						if (isset($archive['month'])) {
+							$monthNum              = $archive['month'];
 
-					$archive['month_text'] = $monthNum;
+							$archive['month_text'] = $monthNum;
 
-					if ($df) {
-						$dt->setDate(0, $archive['month'], 0);
-						$archive['month_text'] = ucfirst(datefmt_format($df, $dt));
+							if ($df) {
+								$dt->setDate(0, $archive['month'], 0);
+								$archive['month_text'] = ucfirst(datefmt_format($df, $dt));
+							}
+						}
+
+						$archive['month'] = sprintf('%02d', $archive['month']);
+						$name             =
+						(isset($archive['month']) ? $archive['month_text'] . ' ' : '') .
+						(isset($archive['year']) ? $archive['year'] . ' ' : '');
+
+						$return[$archive['year'] . '/' . $archive['month']] = $name;
 					}
 				}
-
-				$archive['month'] = sprintf('%02d', $archive['month']);
-				$name             =
-				(isset($archive['month']) ? $archive['month_text'] . ' ' : '') .
-				(isset($archive['year']) ? $archive['year'] . ' ' : '');
-
-				$return[$archive['year'] . '/' . $archive['month']] = $name;
-			}
-		}
-*/
+		*/
 		return $return;
 	}
 
@@ -177,16 +231,16 @@ class Posts extends Base {
 					$post['image'] = Images::image($post['image'], 'post');
 				}
 
-				$url                = ['module' => 'content/post', 'post_id' => $post['post_id'], 'type' => $post['type']];
-				$admin_path         = \Vvveb\adminPath();
-				$template           = $post['template'] ? $post['template'] : $defaultTemplate;
-				$post['url']        = \Vvveb\url($url);
-				$post['edit-url']   = $post['url'];
-
-				$post['admin-url']   = \Vvveb\url(['module' => 'content/posts']) . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
-				$post['delete-url']  = \Vvveb\url(['module' => 'content/posts', 'action' => 'delete'] + $url + ['post_id[]' => $post['post_id']]);
-				$post['view-url']    = \Vvveb\url("content/{$this->type}/index", $post + $url + ['host' => $this->global['site_url']]);
-				$post['design-url']  = \Vvveb\url(['module' => 'editor/editor', 'url' => $post['view-url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
+				$url                   = ['module' => 'content/post', 'post_id' => $post['post_id'], 'type' => $post['type']];
+				$admin_path            = \Vvveb\adminPath();
+				$template              = $post['template'] ? $post['template'] : $defaultTemplate;
+				$post['url']           = url($url);
+				$post['edit-url']      = $post['url'];
+				$post['admin-url']     = url(['module' => 'content/posts']) . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
+				$post['delete-url']    = url(['module' => 'content/posts', 'action' => 'delete'] + $url + ['post_id[]' => $post['post_id']]);
+				$post['duplicate-url'] = url(['module' => 'content/posts', 'action' => 'duplicate'] + $url + ['post_id' => $post['post_id']]);
+				$post['view-url']      = url("content/{$this->type}/index", $post + $url + ['host' => $this->global['site_url']]);
+				$post['design-url']    = url(['module' => 'editor/editor', 'url' => $post['view-url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
 			}
 		}
 
@@ -203,7 +257,7 @@ class Posts extends Base {
 		$view->filter           = $this->filter;
 		$view->limit            = $options['limit'];
 		$view->type             = $this->type;
-		$view->addUrl           = \Vvveb\url(['module' => 'content/post', 'type' => $this->type]);
+		$view->addUrl           = url(['module' => 'content/post', 'type' => $this->type]);
 		$view->type_name        = humanReadable(__($this->type));
 		$view->type_name_plural = humanReadable(__($view->type . 's'));
 	}

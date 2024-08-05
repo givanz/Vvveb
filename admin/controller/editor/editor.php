@@ -87,7 +87,7 @@ class Editor extends Base {
 	private function loadTemplateList($theme = null) {
 		$list = $this->themeConfig['pages'] ?? [];
 
-		$pages = $list + Cache::getInstance()->cache(APP,'template-list.' . $theme,
+		$pages = $list + Cache::getInstance()->cache(APP, 'template-list.' . $theme,
 		function () use ($theme) {
 			return \Vvveb\getTemplateList($theme);
 		}, 604800);
@@ -95,6 +95,10 @@ class Editor extends Base {
 		list($pages) = Event::trigger(__CLASS__, __FUNCTION__, $pages);
 
 		return $pages;
+	}
+
+	private function clearTemplateListCache($theme = null) {
+		return Cache::getInstance()->delete(APP, 'template-list.' . $theme);
 	}
 
 	private function loadEditorData() {
@@ -328,7 +332,6 @@ class Editor extends Base {
 		$post_id     = $this->request->post['post_id'] ?? false;
 		$file        = sanitizeFileName($this->request->post['file']);
 		$themeFolder = $this->getThemeFolder();
-		//echo $themeFolder . DS . $file;
 
 		if ($post_id) {
 			$type = 'page';
@@ -375,7 +378,7 @@ class Editor extends Base {
 		}
 
 		$currentFile = $themeFolder . DS . $file;
-		$targetFile  =  $themeFolder . DS . $newfile;
+		$targetFile  = dirname($currentFile) . DS . basename($newfile); //save in same folder
 
 		$message = ['success' => false, 'message' => __('Error!')];
 
@@ -386,15 +389,61 @@ class Editor extends Base {
 				$slug          = slugify($name);
 
 				$this->posts   = new PostSQL();
-				$options       = [
-					'post_id'      => $post_id,
-					'post_content' => [
-						'name'     => $name,
-						'slug'     => $slug,
-					],
-				] + $this->global;
+				$data          = $this->posts->get(['post_id' => $post_id]);
 
 				if ($duplicate === 'true') {
+					$data = $this->posts->get(['post_id' => $post_id]);
+
+					if ($data) {
+						unset($data['post_id']);
+						$id = rand(1, 1000);
+
+						foreach ($data['post_content'] as &$content) {
+							unset($content['post_id']);
+
+							if ($content['language_id'] == $this->global['language_id']) {
+								$content['name'] = $name;
+								$content['slug'] = $slug;
+							} else {
+								$content['name'] .= ' [' . __('duplicate') . ']';
+								$content['slug'] .= '-' . __('duplicate') . "-$id";
+							}
+						}
+
+						if (isset($data['post_to_taxonomy_item'])) {
+							foreach ($data['post_to_taxonomy_item'] as &$item) {
+								$taxonomy_item[] = $item['taxonomy_item_id'];
+							}
+						}
+
+						if (isset($data['post_to_site'])) {
+							foreach ($data['post_to_site'] as &$item) {
+								$site_id[] = $item['site_id'];
+							}
+						}
+						
+						$startTemplateUrl = $data['template'] ?? "content/$type.html";
+						$template = "content/$slug.html";
+						
+						if (!@copy($themeFolder . DS . $startTemplateUrl, $themeFolder . DS . $template)) {
+							$template = $data['template'] ?? '';
+						}
+						
+						$result = $this->posts->add([
+							'post' => [
+								'post_content'  => $data['post_content'],
+								'taxonomy_item' => $taxonomy_item ?? [],
+								'template' => $template,
+							] + $data,
+							'site_id' => $site_id,
+						]);
+
+						if ($result && isset($result['post'])) {
+							$message = ['success' => true, 'url' => url('content/page/index', ['slug' => $slug]), 'message' => ucfirst($type) . __(' duplicated!')];
+						} else {
+							$message = ['success' => false, 'message' => sprintf(__('Error duplicating %s!'),  $type)];
+						}
+					}
 				} else {
 					$result  = $this->posts->editContent($options);
 				}
@@ -402,13 +451,13 @@ class Editor extends Base {
 				if ($result && isset($result['post_content'])) {
 					$message = ['success' => true, 'url' => url('content/page/index', ['slug' => $slug]), 'message' => ucfirst($type) . __(' renamed!')];
 				} else {
-					$message = ['success' => false, 'message' => sprintf(__('Error deleting %s!'),  $type)];
+					$message = ['success' => false, 'message' => sprintf(__('Error renaming %s!'),  $type)];
 				}
 			}
 		} else {
 			if ($duplicate === 'true') {
-				if (copy($currentFile, $targetFile)) {
-					$message = ['success' => true, 'newfile' => $newfile,  'message' => __('File copied!')];
+				if (@copy($currentFile, $targetFile)) {
+					$message = ['success' => true, 'newfile' => $newfile,  'message' => __('File copied!'),  'url' => $newfile];
 				} else {
 					$message = ['success' => false, 'message' => __('Error copying file!')];
 				}
@@ -421,6 +470,7 @@ class Editor extends Base {
 			}
 		}
 
+		$this->clearTemplateListCache(sanitizeFileName($this->request->get['theme'] ?? false));
 		$this->response->setType('json');
 		$this->response->output($message);
 	}
@@ -520,13 +570,13 @@ class Editor extends Base {
 			$startTemplate = $themeFolder . DS . $startTemplateUrl;
 
 			if (file_exists($startTemplate)) {
-				if (! ($html = @file_get_contents($startTemplate)) ) {
+				if (! ($html = @file_get_contents($startTemplate))) {
 					$text .= sprintf(__('%s is not readable!'), $startTemplate);
 				}
 			} else {
 				$text .= sprintf(__('%s does not exist!'), $startTemplate);
 			}
-			
+
 			$html = preg_replace('@<base href[^>]+>@', '<base href="' . $baseUrl . '">', $html);
 		}
 
@@ -546,7 +596,16 @@ class Editor extends Base {
 			}
 		}
 
-		if (! $startTemplateUrl) {
+		//if plugins template use public path
+		$isPlugin = false;
+		if (substr_compare($file,'/plugins/', 0, 9) === 0) {
+			$fileName = DIR_PUBLIC . DS . ($folder ? $folder . DS : '') . $file;
+			$isPlugin = true;
+		} else {
+			$fileName = $themeFolder . DS . ($folder ? $folder . DS : '') . $file;
+		}
+		
+		if (! $startTemplateUrl && !$isPlugin) {
 			$backupFolder = $themeFolder . DS . 'backup' . DS;
 
 			if (is_writable($backupFolder)) {
@@ -579,13 +638,6 @@ class Editor extends Base {
 			if ($results) {
 				$text .= "\n" . __('Menu item added!');
 			}
-		}
-
-		//if plugins template use public path
-		if (substr_compare($file[0],'/plugins/', 0, 9) === 0) {
-			$fileName = DIR_PUBLIC . DS . ($folder ? $folder . DS : '') . $file;
-		} else {
-			$fileName = $themeFolder . DS . ($folder ? $folder . DS : '') . $file;
 		}
 
 		if ($html) {

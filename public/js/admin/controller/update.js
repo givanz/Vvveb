@@ -87,13 +87,19 @@ class UpdateController {
 				}
 			})*/
 			.catch(error => {
-					let message = error.statusText ?? error.clone().text();
+					let message = error?.statusText ?? "Error updating!";
+					displayToast("bg-danger", "Error", message);
+
+					if (err.hasOwnProperty('text')) err.text().then( errorMessage => {
+						let message = errorMessage.substr(0, 200);
+						displayToast("bg-danger", "Error", message);
+					});
 
 					if (typeof error.json === "function") {
 						error.json().then(jsonError => {
 							message = jsonError;
 						}).catch(genericError => {
-							message = error.statusText + " " + message;
+							message = error?.statusText + " " + message;
 						});
 					}				
 				

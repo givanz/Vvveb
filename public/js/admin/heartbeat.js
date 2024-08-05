@@ -55,7 +55,7 @@ let HeartBeat = setInterval(function () {
 									document.querySelector('.btn-login .loading').classList.add('d-none');
 									document.querySelector('.btn-login .button-text').classList.remove('d-none');
 									console.log(error.statusText);
-									displayToast("bg-danger", "Revision", "Error!");
+									displayToast("bg-danger", "Login", "Error!");
 								});
 								
 								

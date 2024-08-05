@@ -1022,7 +1022,7 @@ Vvveb.Builder = {
 			let type = list.dataset.type;
 			list.replaceChildren();
 
-			for (group in Vvveb.BlocksGroup) {
+			for (group in Vvveb.StylesGroup) {
 				list.append(generateElements(
 				`<li class="header" data-section="${group}"  data-search="">
 					<label class="header" for="${type}_stylehead_${group}">
@@ -1033,7 +1033,7 @@ Vvveb.Builder = {
 				</li>`)[0]);
 
 				let stylesSubList = list.querySelector('li[data-section="' + group + '"]  ol');
-				styles = Vvveb.BlocksGroup[ group ];
+				styles = Vvveb.StylesGroup[ group ];
 
 				for (i in styles) {
 					styleType = styles[i];
@@ -1804,16 +1804,16 @@ Vvveb.Builder = {
 			let value = selectedEl.innerHTML.trim();
 			// uncomment to use outerHTML, not recommended
 			//let value = selectedEl.outerHTML;
-			Vvveb.ModalCodeEditor.show();
-			Vvveb.ModalCodeEditor.setValue(value);
+			Vvveb.ModalTranslateEditor.show();
+			Vvveb.ModalTranslateEditor.setValue(value);
 
 			let onSave = function(event) { 
 				selectedEl.innerHTML = event.detail;
 				//selectedEl.outerHTML = value;
 			};
 
-			window.removeEventListener("vvveb.ModalCodeEditor.save", onSave); 
-			window.addEventListener("vvveb.ModalCodeEditor.save", onSave); 
+			window.removeEventListener("vvveb.ModalTranslateEditor.save", onSave); 
+			window.addEventListener("vvveb.ModalTranslateEditor.save", onSave); 
 				
 			event.preventDefault();
 			return false;
@@ -2215,13 +2215,14 @@ Vvveb.Builder = {
 
 Vvveb.ModalCodeEditor = {
 	modal: false,
+	modalId: 'codeEditorModal',
 	editor: false,
 	
 	init: function(modal = false, editor = false) {
 		if (modal) {
 			this.modal = modal;
 		} else {
-			this.modal = document.getElementById('codeEditorModal');
+			this.modal = document.getElementById(this.modalId);
 		}
 		if (editor) {
 			this.editor = editor;
@@ -2263,6 +2264,10 @@ Vvveb.ModalCodeEditor = {
 		this.editor.value = value;
 	},
 }
+
+//Vvveb.ModalTranslateEditor = structuredClone(Vvveb.ModalCodeEditor);
+Vvveb.ModalTranslateEditor = Object.assign({}, Vvveb.ModalCodeEditor);
+Vvveb.ModalTranslateEditor.modalId = 'translateEditorModal';
 
 Vvveb.CodeEditor = {
 	
@@ -2675,6 +2680,7 @@ Vvveb.StyleManager = {
 	mobileWidth: '320px',
 	tabletWidth: '768px',
 	doc:false,
+	inlineCSS:false,
 	
 	init: function(doc) {
 		if (doc) {
@@ -2796,6 +2802,11 @@ Vvveb.StyleManager = {
 			}
 
 			selector = this.getSelectorForElement(node);	
+		}
+		
+		if (this.inlineCSS) {
+			element.style[styleProp] = value;
+			return element;	
 		}
 		
 		media = document.getElementById("canvas").classList.contains("tablet") ? "tablet" : document.getElementById("canvas").classList.contains("mobile") ? "mobile" : "desktop";
@@ -3594,14 +3605,14 @@ Vvveb.FileManager = {
 		let name;
 		let _self = this;
 
+		name = element.querySelector('label span')?.textContent.replace('.html', '');
 		if (post_id) {
-			name = element.querySelector('label span')?.textContent;
 			name = prompt(`Enter new name for "${name}"`, name);
 			if (name) {
 				newfile = page.file;
 			}
 		} else {
-			newfile = prompt(`Enter new file name for "${page.file}"`, page.file);
+			newfile = prompt(`Enter new file name for "${page.file}"`, name.toLowerCase());
 		}
 
 		if (newfile || name) {
@@ -3620,7 +3631,7 @@ Vvveb.FileManager = {
 				.then((data) => {
 						let bg = "bg-success";
 						if (data.success) {		
-							document.querySelectorAll("#top-panel .save-btn").forEach(e => e.setAttribute("disabled", "true"));
+							//document.querySelectorAll("#top-panel .save-btn").forEach(e => e.setAttribute("disabled", "true"));
 						} else {
 							bg = "bg-danger";
 						}
@@ -3631,10 +3642,18 @@ Vvveb.FileManager = {
 						let newName = name || friendlyName(newfile.replace(/.*[\/\\]+/, '')).replace('.html', '');
 						
 						if (duplicate) {
-							let data = _self.pages[page.page];
-							data["file"] = newfile;
-							data["title"] = newName;
-							Vvveb.FileManager.addPage(baseName, data);
+							let addPage = _self.pages[page.page];
+							addPage["name"] = baseName;
+							addPage["file"] = newfile;
+							addPage["title"] = newName;
+							addPage["url"] = data.url;
+							if (data.newfile) {
+								//addPage["url"] = Vvveb.themeBaseUrl + addPage["url"]
+								addPage["url"] =  page.url.substring(0, page.url.lastIndexOf("/") + 1) + addPage["url"];
+							}
+
+							let newPage = Vvveb.FileManager.addPage(baseName, addPage, page.page);
+							Vvveb.FileManager.scrollToPage(newPage);
 						} else {
 							_self.pages[page.page]["file"] = newfile;
 							_self.pages[page.page]["title"] = newName;
@@ -3651,7 +3670,7 @@ Vvveb.FileManager = {
 					let message = error.statusText ?? "Error renaming page!";
 					displayToast("bg-danger", "Error", message);
 
-					err.text().then( errorMessage => {
+					error.text().then( errorMessage => {
 						let message = errorMessage.substr(0, 200);
 						displayToast("bg-danger", "Error", message);
 					})
@@ -3660,7 +3679,7 @@ Vvveb.FileManager = {
 		}
 	},
 	
-	addPage: function(name, data) {
+	addPage: function(name, data, afterPage = false) {
 
 		//allow event to change name or cancel by setting name to false
 		window.dispatchEvent(new CustomEvent("vvveb.FileManager.addPage", {
@@ -3686,7 +3705,12 @@ Vvveb.FileManager = {
 		} 
 		
 		let page = generateElements(tmpl("vvveb-filemanager-page", data))[0];
-		folder.append(page);
+		if (afterPage && (afterPage = folder.querySelector('[data-page="' + afterPage + '"]'))) {
+			afterPage.after(page);
+		} else {
+			folder.append(page);
+		}
+		
 		return page;
 	},
 	

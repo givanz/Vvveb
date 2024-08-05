@@ -95,7 +95,7 @@ class BackupController {
 					}
 				})*/
 				.catch(error => {
-						let message = error.clone().text();
+						let message = error.statusText ?? error;
 
 						if (typeof error.json === "function") {
 							error.json().then(jsonError => {

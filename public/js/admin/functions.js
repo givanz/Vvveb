@@ -1,16 +1,16 @@
 //Tables
-function addTemplate(id, name, parent, element = false) {
+function addTemplate(id, name, parent, element = false, parentElement = "table", container = "tbody", callback) {
 	// id = attribute-template 
 	// name = product_attribute
 	// parent = attribute
 	let template;
 	let tbody;
 	if (element) {
-		element = element.closest("table");
+		element = element.closest(parentElement);
 	} else {
 		element = document;
 	}
-	template = element.querySelector(id).cloneNode(true);
+	template = document.querySelector(id).cloneNode(true);
 	
 	template.querySelectorAll('[type="date"]', template).forEach(e => e.setAttribute("value", date()));
 	template.querySelectorAll('[type="datetime-local"]').forEach(e => e.setAttribute("value", datetime()));
@@ -26,7 +26,12 @@ function addTemplate(id, name, parent, element = false) {
 						replace('id="' + id + '"', '');
 	
 	let row = generateElements(template)[0];
-	element.querySelector(parent + " tbody").append(row);
+	element.querySelector(parent + " " + container).append(row);
+	
+	if (callback) {
+		callback(row);
+	}
+
 	return row;
 }
 
@@ -57,7 +62,7 @@ const slugify = (str) => {
 }
 
 
-function addTab(element, event) {
+function addTab(element, callback) {
 	let nav = element.closest(".nav");
 	let content = element.closest(".row").querySelector(".tab-content");
 
@@ -77,7 +82,12 @@ function addTab(element, event) {
 	contentTemplate = contentTemplate.replaceAll('[0]', '[' + newId + ']').replaceAll('-0-', '-' + newId + '-').replaceAll('disabled', '');
 
 	nav.append(navTemplate);
-	content.append(generateElements(contentTemplate)[0]);
+	let contentElement = generateElements(contentTemplate)[0];
+	content.append(contentElement);
+
+	if (callback) {
+		callback(navTemplate, contentElement);
+	}
 	
 	document.querySelectorAll("#tab-" + newId +" .product_option_id").forEach(e => {
 		e.dispatchEvent(new Event("change"));
