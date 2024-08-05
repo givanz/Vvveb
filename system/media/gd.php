@@ -123,7 +123,7 @@ class Image {
 	}
 
 	public function stretch($width, $height = 0) {
-		if (! $this->width || ! $this->height) {
+		if (! $this->width || ! $this->height || ! $this->image) {
 			return;
 		}
 
@@ -152,6 +152,10 @@ class Image {
 	}
 
 	public function crop($topX, $topY, $bottomX, $bottomY) {
+		if (! $this->width || ! $this->height || ! $this->image) {
+			return;
+		}
+
 		$imageOld    = $this->image;
 		$this->image = imagecreatetruecolor($bottomX - $topX, $bottomY - $topY);
 
@@ -163,7 +167,7 @@ class Image {
 	}
 
 	public function cropsize($width, $height = 0) {
-		if (! $this->width || ! $this->height) {
+		if (! $this->width || ! $this->height || ! $this->image) {
 			return;
 		}
 
@@ -185,7 +189,14 @@ class Image {
 			$crop_y    = 0;
 		}
 
-		$this->image = imagescale($this->image, $newWidth, $newHeight, IMG_BICUBIC_FIXED);
-		$this->image = imagecrop($this->image, ['x' => 0, 'y' => 0, 'width' => $width, 'height' => $height]);
+		$image = imagescale($this->image, $newWidth, $newHeight, IMG_BICUBIC_FIXED);
+
+		if ($image) {
+			$image = imagecrop($image, ['x' => 0, 'y' => 0, 'width' => $width, 'height' => $height]);
+
+			if ($image) {
+				$this->image = $image;
+			}
+		}
 	}
 }
