@@ -123,7 +123,7 @@ if(isset($this->capabilities) && is_array($this->capabilities)) {
 	@capability [data-v-capability-value]                 = $value
 	@capability [data-v-capability-value]|name            = <?php echo "capabilities[$value]";?>
 	@capability [data-v-capability-value]|addNewAttribute = <?php 
-		if (in_array($value, $this->role['permissions']['capabilities'])) echo 'checked';
+		if (isset($this->role['permissions']['capabilities']) && in_array($value, $this->role['permissions']['capabilities'])) echo 'checked';
 	?>
 
 	@capability|after = <?php 

@@ -1,10 +1,15 @@
 import(common.tpl)
 import(pagination.tpl)
 
+[data-v-sites]|before = <?php
+	$count = $this->count;
+?>
+
 @site = [data-v-sites] [data-v-site]
 @site|deleteAllButFirstChild
 
 @site|before = <?php
+
 if(isset($this->sitesList) && is_array($this->sitesList)) {
 	//$pagination = $this->sites[$_sites_idx]['pagination'];
 	foreach ($this->sitesList as $index => $site) {?>

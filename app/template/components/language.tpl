@@ -26,9 +26,9 @@ $language['language'] = empty($language['language']) ? $_default : $language['la
 		
 		@language [data-v-language-name] = $lang['name']
 		@language [data-v-language-img]|src = $lang['img']
-		@language [data-v-language-url]|href = <?php echo $lang['url'];?>
+		@language [data-v-language-url]|href = $lang['url']
 		
-		@language button|formaction = <?php echo $lang['url'];?>
+		@language button|formaction =$lang['url']
 		
 		@language [data-v-language-code]|value = $lang['code']
 		@language a[data-v-language-code]|href = $lang['code']

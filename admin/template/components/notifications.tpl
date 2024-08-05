@@ -34,8 +34,8 @@ $count = $notificationComponent['count'] ?? 0;
 		?>
 
 
-	@notifications [data-v-group-notification-count]|addClass = <?php echo $notification['badge'];?>
-	@notifications [data-v-group-icon]|class  = <?php echo $notification['icon'];?>
+	@notifications [data-v-group-notification-count]|addClass = $notification['badge']
+	@notifications [data-v-group-icon]|class  = $notification['icon']
 	
 	
 	@notifications [data-v-group-notification]|after = <?php 

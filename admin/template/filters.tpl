@@ -36,7 +36,7 @@ if (isset($this->filter[$text])) echo $this->filter[$text];
 	foreach($options as $key => $option){?>
 	
 		@option|value = $key
-		@option = <?php echo ucfirst($option);?>
+		@option = <?php echo Vvveb\humanReadable($option);?>
 
 @option|after = <?php
 }}?>
