@@ -7,4 +7,5 @@ INSERT INTO `payment_status` VALUES
 (6,1,'refunded'),
 (7,1,'partially_refunded'),
 (8,1,'chargeback'),
-(9,1,'requires_action');
+(9,1,'requires_action'),
+(10,1,'fraud');

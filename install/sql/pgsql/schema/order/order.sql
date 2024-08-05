@@ -59,7 +59,7 @@ CREATE TABLE "order" (
   "order_status_id" int check ("order_status_id" > 0) NOT NULL DEFAULT 1,
   "language_id" int check ("language_id" > 0) NOT NULL,
   "currency_id" int check ("currency_id" > 0) NOT NULL,
-  "currency_code" varchar(3) NOT NULL DEFAULT '',
+  "currency" varchar(3) NOT NULL DEFAULT '',
   "currency_value" decimal(15,8) NOT NULL DEFAULT 1.00000000,
   "notes" text NOT NULL DEFAULT '',
   "remote_ip" varchar(40) NOT NULL DEFAULT '',
