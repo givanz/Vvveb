@@ -87,15 +87,17 @@ class SystemInfo extends Base {
 		list($info) = Event::trigger(__CLASS__, __FUNCTION__, $info);
 
 		$this->view->info = $info;
-		/*
-		ob_start();
-		phpinfo();
-		$php = ob_get_contents();
-		ob_end_clean();
-		$php = preg_replace('@^.+?<body><div class="center">|</div></body></html>@ms', '', $php);
-		$php = preg_replace('@<table>@ms', '<table class="table table-bordered">', $php);
-		$php = preg_replace('@<h2><a.+?>(.+?)</a></h2>@ms', '<h3>\1</h3>', $php);
+		
+		if (isset($this->request->get['phpinfo'])) {
+			ob_start();
+			phpinfo();
+			$php = ob_get_contents();
+			ob_end_clean();
+			$php = preg_replace('@^.+?<body><div class="center">|</div></body></html>@ms', '', $php);
+			$php = preg_replace('@<table>@ms', '<table class="table table-bordered">', $php);
+			$php = preg_replace('@<h2><a.+?>(.+?)</a></h2>@ms', '<h3>\1</h3>', $php);
 
-		$this->view->phpinfo = $php;*/
+			$this->view->phpinfo = $php;
+		}
 	}
 }
