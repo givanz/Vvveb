@@ -129,6 +129,6 @@ class Mail {
 		ini_set('sendmail_from', $this->option['from']);
 		$subject = '=?UTF-8?B?' . base64_encode($this->option['subject']) . '?=';
 
-		mail($to, $subject, $message, $header, $this->option['parameter'] ?? '');
+		\mail($to, $subject, $message, $header, $this->option['parameter'] ?? '');
 	}
 }

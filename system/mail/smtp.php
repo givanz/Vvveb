@@ -27,6 +27,17 @@
 namespace Vvveb\System\Mail;
 
 class Smtp {
+	protected $socketOptions = [
+		'ssl' => [
+			'allow_self_signed' => true,
+			'verify_peer'       => false,
+			'verify_peer_name'  => false,
+			//'ciphers' => 'TLSv1.3|TLSv1.2|TLSv1|SSLv3',
+			//'crypto_method' => STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT,
+			//'crypto_type' => STREAM_CRYPTO_METHOD_TLS_CLIENT,
+		],
+	];
+
 	protected $option = [
 		'port'          => 25,
 		'timeout'       => 5,
@@ -132,7 +143,14 @@ class Smtp {
 			$hostname = $this->option['host'];
 		}
 
-		$handle = fsockopen($hostname, $this->option['port'], $errno, $errstr, $this->option['timeout']);
+		//$handle = fsockopen($hostname, $this->option['port'], $errno, $errstr, $this->option['timeout']);
+		$context = stream_context_create();
+
+		if ($this->socketOptions) {
+			stream_context_set_options($context, $this->socketOptions);
+		}
+
+		$handle = stream_socket_client("tcp://$hostname:{$this->option['port']}", $errno, $errstr, $this->option['timeout'], STREAM_CLIENT_CONNECT, $context);
 
 		if ($handle) {
 			if (substr(PHP_OS, 0, 3) != 'WIN') {
