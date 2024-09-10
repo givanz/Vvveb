@@ -5,8 +5,8 @@ CREATE TABLE media_content (
   "media_id" int check ("media_id" > 0) NOT NULL,
   "language_id" int check ("language_id" > 0) NOT NULL,
   "name" varchar(191) NOT NULL DEFAULT '',
---  "slug" varchar(191) NOT NULL DEFAULT '',
-  "alt" varchar(191) NOT NULL DEFAULT '',
+  "caption" varchar(191) NOT NULL DEFAULT '',
+  "description" varchar(191) NOT NULL DEFAULT '',
 --  "content" text DEFAULT NULL,
   PRIMARY KEY ("media_id","language_id")
 );
