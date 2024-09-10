@@ -25,7 +25,6 @@ namespace Vvveb\Controller\Editor;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use function Vvveb\sanitizeFileName;
-use Vvveb\System\Core\View;
 
 class Code extends Base {
 	function dirForType($type) {
@@ -53,16 +52,15 @@ class Code extends Base {
 	}
 
 	function index() {
-		$type                = $this->request->get['type'];
-		$admin_path          = \Vvveb\adminPath();
-		$controllerPath      = $admin_path . 'index.php?module=editor/code';
+		$type           = $this->request->get['type'];
+		$admin_path     = \Vvveb\adminPath();
+		$controllerPath = $admin_path . 'index.php?module=editor/code';
 
-		$this->view->scanUrl       = "$controllerPath&action=scan&type=$type";
-		$this->view->uploadUrl     = "$controllerPath&action=upload&type=$type";
-		$this->view->saveUrl       = "$controllerPath&action=save&type=$type";
-		$this->view->loadFileUrl   = "$controllerPath&action=loadFile&type=$type";
-		$this->view->saveUrl       = "$controllerPath&action=save&type=$type";
-		$this->view->type          = $type;
+		$this->view->scanUrl     = "$controllerPath&action=scan&type=$type";
+		$this->view->uploadUrl   = "$controllerPath&action=upload&type=$type";
+		$this->view->loadFileUrl = "$controllerPath&action=loadFile&type=$type";
+		$this->view->saveUrl     = "$controllerPath&action=save&type=$type";
+		$this->view->type        = $type;
 
 		if ($type) {
 			$this->view->mediaPath   = str_replace('/media', "/$type", $this->view->mediaPath);
@@ -161,10 +159,10 @@ class Code extends Base {
 			// Is there actually such a folder/file?
 
 			if (file_exists($dir)) {
-				$files = @scandir($dir);
+				$listdir = @scandir($dir);
 
-				if ($files) {
-					foreach ($files as $f) {
+				if ($listdir) {
+					foreach ($listdir as $f) {
 						if (! $f || $f[0] == '.' || $f == 'node_modules' || $f == 'vendor') {
 							continue; // Ignore hidden files
 						}
@@ -198,20 +196,12 @@ class Code extends Base {
 		$response = $scan($scandir);
 
 		// Output the directory listing as JSON
-		$view         = View::getInstance();
-		$view->noJson = true;
-
-		header('Content-type: application/json');
-
-		echo json_encode([
+		$this->response->setType('json');
+		$this->response->output([
 			'name'  => '',
 			'type'  => 'folder',
 			'path'  => '',
 			'items' => $response,
 		]);
-
-		die();
-
-		return false;
 	}
 }
