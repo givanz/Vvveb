@@ -28,6 +28,8 @@ use Vvveb\System\User\User;
 use Vvveb\System\Validator;
 
 trait LoginTrait {
+	protected $redirectUrl;
+
 	function login() {
 		if (isset($this->request->post['logout'])) {
 			$success             = __('Logout successful!');
@@ -51,7 +53,7 @@ trait LoginTrait {
 						$this->session->close();
 						$this->view->success['login']         = $success;
 						$this->view->global['user_id']        = $user['user_id'];
-						$this->redirect('/user');
+						$this->redirect($this->redirectUrl ?? '/user');
 					} else {
 						//user not found or wrong password
 						$this->view->errors['login'] = __('Authentication failed, wrong email or password!');
