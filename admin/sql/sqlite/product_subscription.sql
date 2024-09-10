@@ -14,8 +14,11 @@
 	BEGIN
 		-- product_subscription
 		SELECT
-			   sp.*, 
-			   spc.name, 
+			   @IF isset(:product_id)
+			   THEN		
+				   sp.*, 
+				   spc.name, 
+			   END @IF	
 			   product_subscription.product_id,
 			   product_subscription.user_group_id,
 			   product_subscription.price, 
