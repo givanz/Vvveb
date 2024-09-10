@@ -23,14 +23,14 @@
 use function Vvveb\__;
 
 return [
-	'billing_first_name' => [
+	'billing_address.first_name' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
 		['maxLength'  => 100,
 			'message'    => __('%s must not be greater than 100'), ],
 	],
-	'billing_last_name' => [
+	'billing_address.last_name' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
@@ -38,51 +38,51 @@ return [
 			'message'    => __('%s must not be greater than 100'), ],
 	],
 	/*
-	'billing_company' => [
+	'billing_address.company' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
 		['maxLength'  => 100,
 			'message'    => __('%s must not be greater than 100'), ],
 	],*/
-	'billing_address_1' => [
+	'billing_address.address_1' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
 		['maxLength'  => 100,
 			'message'    => __('%s must not be greater than 100'), ],
 	],
-	'billing_address_2' => [
+	'billing_address.address_2' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
 		['maxLength'  => 100,
 			'message'    => __('%s must not be greater than 100'), ],
 	],
-	'billing_city' => [
+	'billing_address.city' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
 		['maxLength'  => 100,
 			'message'    => __('%s must not be greater than 100'), ],
 	],
-	'billing_post_code' => [
+	'billing_address.post_code' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
 		['maxLength'  => 100,
 			'message'    => __('%s must not be greater than 100'), ],
 	],
-	'billing_country_id' => [
+	'billing_address.country_id' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 	],
-	'billing_region_id' => [
+	'billing_address.region_id' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 	],
 	/*
-	'billing_phone_number' => [
+	'billing_address.phone_number' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 	],*/

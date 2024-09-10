@@ -47,6 +47,7 @@ class Validator {
 			'captcha'             => __('%s is invalid'),
 			'session'             => __('%s is invalid'),
 			'email'               => __('%s invalid email'),
+			'integer'             => __('%s not numeric'),
 			'passwordComplexity'  => __('%s not complex enough, include uppercase letters and digits'),
 		];
 
@@ -70,13 +71,32 @@ class Validator {
 		$this->rules = $rules;
 	}
 
+	//remove rule
+	function removeRule($rule) {
+		unset($this->rules[$rule]);
+	}
+
 	//remove keys that are not in the validation list
 	function filter($input) {
 		$validKeys = array_keys($this->rules);
+		$filter    = [];
 
+		foreach ($validKeys as $key) {
+			if (strpos($key, '.') != false) {
+				$keys                       = explode('.', $key);
+				$filter[$keys[0]][$keys[1]] = arrayPath($input, $key);
+			} else {
+				if (isset($input[$key])) {
+					$filter[$key] = $input[$key];
+				}
+			}
+		}
+
+		return $filter;
+		/*
 		return array_filter($input, function ($key) use ($validKeys) {
-			return in_array($key,$validKeys);
-		}, ARRAY_FILTER_USE_KEY);
+			return in_array($key, $validKeys);
+		}, ARRAY_FILTER_USE_KEY);*/
 	}
 
 	function validate($input) {
@@ -229,6 +249,14 @@ class Validator {
 	function ruleMatch($value, $options, $name, $message, $input) {
 		if ($input[$options] != $value) {
 			return sprintf(__($message), $name, $options);
+		}
+
+		return false;
+	}
+
+	function ruleNumeric($value, $options, $name, $message, $input) {
+		if (! is_numeric($value)) {
+			return  sprintf(__($message), $name, $options);
 		}
 
 		return false;

@@ -23,60 +23,60 @@
 use function Vvveb\__;
 
 return [
-	'shipping_first_name' => [
+	'shipping_address.first_name' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
 		['maxLength'  => 100,
 			'message'    => __('%s must not be greater than 100'), ],
 	],
-	'shipping_last_name' => [
+	'shipping_address.last_name' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
 		['maxLength'  => 100,
 			'message'    => __('%s must not be greater than 100'), ],
 	], /*
-	'shipping_company' => [
+	'shipping_address.company' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
 		['maxLength'  => 100,
 			'message'    => __('%s must not be greater than 100'), ],
 	],*/
-	'shipping_address_1' => [
+	'shipping_address.address_1' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
 		['maxLength'  => 100,
 			'message'    => __('%s must not be greater than 100'), ],
 	],
-	'shipping_address_2' => [
+	'shipping_address.address_2' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
 		['maxLength'  => 100,
 			'message'    => __('%s must not be greater than 100'), ],
 	],
-	'shipping_city' => [
+	'shipping_address.city' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
 		['maxLength'  => 100,
 			'message'    => __('%s must not be greater than 100'), ],
 	],
-	'shipping_post_code' => [
+	'shipping_address.post_code' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 
 		['maxLength'  => 100,
 			'message'    => __('%s must not be greater than 100'), ],
 	],
-	'shipping_country_id' => [
+	'shipping_address.country_id' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 	],
-	'shipping_region_id' => [
+	'shipping_address.region_id' => [
 		['notEmpty'  => '',
 			'message'   => '%s must not be empty', ],
 	],
