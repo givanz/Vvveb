@@ -17,7 +17,7 @@ $post = $this->_component['post'][$post_idx] ?? [];
 
 
 //manual echo to avoid html escape
-@post [data-v-post-content] = <?php if (isset($post['content'])) echo $post['content'];?>
+@post [data-v-post-content] = <?php if (isset($post['content'])) echo($post['content']);?>
 //@post [data-v-post-content] = $post['content']
 
 

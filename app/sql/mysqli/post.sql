@@ -41,19 +41,19 @@
 			LEFT JOIN admin ad ON (_.admin_id = ad.admin_id)  
 		WHERE 1 = 1
 
-            @IF isset(:slug)
-			THEN 
-				AND pd.slug = :slug 
+        	@IF isset(:slug) && !(isset(:post_id) && :post_id) 
+        	THEN 
+			AND pd.slug = :slug 
         	END @IF			
 
-            @IF isset(:post_id)
-			THEN
-                AND _.post_id = :post_id
+        	@IF isset(:post_id)
+        	THEN
+			AND _.post_id = :post_id
         	END @IF			
 			
-			@IF isset(:type)
-			THEN
-                AND _.type = :type
+        	@IF isset(:type)
+        	THEN
+			AND _.type = :type
         	END @IF			
 
         LIMIT 1; 
@@ -87,12 +87,12 @@
 			
 		WHERE 1 = 1
 
-		@IF isset(:slug)
+		@IF isset(:slug) && !(isset(:post_id) && :post_id) 
 		THEN 
 			AND _.post_id = (SELECT post_id FROM post_content WHERE slug = :slug LIMIT 1)
 		END @IF			
 
-		@IF isset(:post_id)
+		@IF isset(:post_id) && :post_id > 0
 		THEN
            	  AND _.post_id = :post_id
 		END @IF			

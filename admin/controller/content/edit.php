@@ -181,10 +181,10 @@ class Edit extends Base {
 		if (isset($post[$this->object . '_content'])) {
 			foreach ($post[$this->object . '_content'] as &$content) {
 				if (! isset($post['url'])) {
-					$post['url'] = \Vvveb\url($route, ['slug'=> $content['slug']] + $url);
+					$post['url'] = \Vvveb\url($route, ['slug'=> $content['slug'], 'post_id'=> $post_id] + $url);
 
 					if (! $post['url']) {
-						$post['url'] = \Vvveb\url($altRoute, ['slug'=> $content['slug']] + $url);
+						$post['url'] = \Vvveb\url($altRoute, ['slug'=> $content['slug'], 'post_id'=> $post_id] + $url);
 					}
 				}
 				$language = [];

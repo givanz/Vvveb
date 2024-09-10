@@ -24,8 +24,4 @@ namespace Vvveb\Controller\Content;
 
 class Page extends Post {
 	public $type = 'page';
-
-	function index() {
-		parent::index();
-	}
 }

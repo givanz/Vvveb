@@ -47,8 +47,6 @@ trait AutocompleteTrait {
 
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		return false;
 	}
 
 	function manufacturersAutocomplete() {
@@ -72,8 +70,6 @@ trait AutocompleteTrait {
 
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		return false;
 	}
 
 	function vendorsAutocomplete() {
@@ -97,8 +93,6 @@ trait AutocompleteTrait {
 
 		$this->response->setType('json');
 		$this->response->output($search);
-
-		return false;
 	}
 
 	function urlAutocomplete() {
@@ -122,7 +116,7 @@ trait AutocompleteTrait {
 					'type' => 'cardimage',
 					'src'  => $product['image'],
 					'text' => $product['name'],
-					'value'=> '<a href="' . url('product/product/index', ['slug'=> $product['slug']]) . '">' . $product['name'] . '</a>',
+					'value'=> '<a href="' . url('product/product/index', ['slug'=> $product['slug'], 'product_id' => $post['product_id']]) . '">' . $product['name'] . '</a>',
 				];
 			}
 		}
@@ -138,12 +132,12 @@ trait AutocompleteTrait {
 						'type' => 'cardimage',
 						'src'  => $post['image'],
 						'text' => $post['name'],
-						'value'=> '<a href="' . url('content/post/index', ['slug'=> $post['slug']]) . '">' . $post['name'] . '</a>',
+						'value'=> '<a href="' . url('content/post/index', ['slug'=> $post['slug'], 'post_id' => $post['post_id']]) . '">' . $post['name'] . '</a>',
 					];
 				}
 			}
 		}
-		
+
 		$this->response->setType('json');
 		$this->response->output($search);
 	}

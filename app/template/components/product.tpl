@@ -22,13 +22,14 @@ $_pagination_limit = isset($product['limit']) ? $product['limit'] : 5;
 @product|data-v-id = $product['product_id']
 @product|data-v-type = 'product'
 
+//manual echo to avoid html escape
+@product [data-v-product-content] = <?php echo($product['content']);?>
+
 //catch all data attributes
 @product [data-v-product-*]|innerText = $product['@@__data-v-product-(*)__@@']
 @product input[data-v-product-*]|value = $product['@@__data-v-product-(*)__@@']
 @product a[data-v-product-*]|href = $product['@@__data-v-product-(*)__@@']
 
-//manual echo to avoid html escape
-@product [data-v-product-content] = <?php echo $product['content'];?>
 
 @product button[data-v-product-*]|formaction = $product['@@__data-v-product-(*)__@@']
 @product a[data-v-product-*]|href = $product['@@__data-v-product-(*)__@@']

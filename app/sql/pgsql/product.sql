@@ -19,14 +19,14 @@
 			LEFT JOIN product ON (product.product_id = _.product_id)
 		WHERE 1 = 1
 
-            @IF isset(:status)
-			THEN 
-				AND product.status = :status
+        	@IF isset(:status)
+        	THEN 
+			AND product.status = :status
         	END @IF			
 
-            @IF isset(:slug)
-			THEN 
-				AND _.product_id = (SELECT product_id FROM product_content WHERE slug = :slug LIMIT 1)
+        	@IF isset(:slug) && !(isset(:product_id) && :product_id) 
+        	THEN 
+			AND _.product_id = (SELECT product_id FROM product_content WHERE slug = :slug LIMIT 1)
         	END @IF			
 
             @IF isset(:product_id)
