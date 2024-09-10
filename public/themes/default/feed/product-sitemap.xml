@@ -14,13 +14,13 @@
 >
 	<url data-v-product="product">
 		<loc data-v-product-full-url="name">https://vvveb.com/page/about</loc>
-		<lastmod data-v-product-pubDate="date">2023-05-26T12:37:22+00:00</lastmod>
+		<lastmod data-v-product-lastMod="date">2023-05-26T12:37:22+00:00</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.7</priority>
 	</url>	
 	<url data-v-product="product">
 		<loc data-v-product-full-url="name">https://vvveb.com/page/services</loc>
-		<lastmod data-v-product-pubDate="date">2023-05-26T12:37:22+00:00</lastmod>
+		<lastmod data-v-product-lastMod="date">2023-05-26T12:37:22+00:00</lastmod>
 		<changefreq>weekly</changefreq>
 		<priority>0.7</priority>
 	</url>

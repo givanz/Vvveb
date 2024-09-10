@@ -178,6 +178,7 @@ class Posts extends ComponentBase {
 				//rfc
 				$post['pubDate'] = date('r', strtotime($post['created_at']));
 				$post['modDate'] = date('r', strtotime($post['updated_at']));
+				$post['lastMod'] = date('Y-m-d\TH:i:sP', strtotime($post['updated_at']));
 
 				//url
 				$url                  =  ['slug' => $post['slug'], 'post_id' => $post['post_id']] + $language;

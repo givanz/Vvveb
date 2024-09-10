@@ -73,6 +73,10 @@ class Post  extends ComponentBase {
 		$results['author-url']   = url('content/user/index', $results);
 		$results['comments-url'] = $results['url'] . '#comments';
 
+		//rfc
+		$results['pubDate'] = date('r', strtotime($results['created_at']));
+		$results['modDate'] = date('r', strtotime($results['updated_at']));
+
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 
 		return $results;

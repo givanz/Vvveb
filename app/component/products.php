@@ -137,6 +137,7 @@ class Products extends ComponentBase {
 				//rfc
 				$product['pubDate'] = date('r', strtotime($product['created_at']));
 				$product['modDate'] = date('r', strtotime($product['updated_at']));
+				$product['lastMod'] = date('Y-m-d\TH:i:sP', strtotime($product['updated_at']));
 
 				$url                         = ['slug' => $product['slug'], 'product_id' => $product['product_id']] + $language;
 				$product['url']      	       = url('product/product/index', $url);

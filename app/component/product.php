@@ -22,6 +22,7 @@
 
 namespace Vvveb\Component;
 
+use function Vvveb\getCurrency;
 use function Vvveb\model;
 use function Vvveb\sanitizeHTML;
 use Vvveb\Sql\ProductSQL;
@@ -73,6 +74,7 @@ class Product extends ComponentBase {
 
 		$tax                            = Tax::getInstance();
 		$currency                       = Currency::getInstance();
+		$results['price_currency']      = getCurrency();
 		$results['price_tax']           = $tax->addTaxes($results['price'], $results['tax_type_id']);
 		$results['price_tax_formatted'] = $currency->format($results['price_tax']);
 		$results['price_formatted']     = $currency->format($results['price']);
@@ -83,6 +85,10 @@ class Product extends ComponentBase {
 			$results['promotion_formatted']     = $currency->format($results['promotion']);
 			$results['promotion_discount']      = 100 - ceil($results['promotion'] * 100 / $results['price']);
 		}
+
+		//rfc
+		$results['pubDate'] = date('r', strtotime($results['created_at']));
+		$results['modDate'] = date('r', strtotime($results['updated_at']));
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 
