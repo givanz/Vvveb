@@ -8,4 +8,4 @@ INSERT INTO `role` (`role_id`, `name`, `display_name`, `permissions`) VALUES
 (7, 'shop', 'Shop', '{"allow":["index/index","product/*","order/*","media/media/scan"], "deny":[], "capabilities":["view_other_products","edit_other_products"]}'),
 (8, 'vendor', 'Vendor', '{"allow":["index/index","product/*","order/*","media/media/scan"], "deny":["product/vendors/*","product/vendor/*","product/manufacturers/*", "product/manufacturer/*"]}'),
 (9, 'rest', 'Rest', '{"allow":["content/*"],"deny":["*/save","*/delete"], "capabilities":["view_other_products","edit_other_products"]}}'),
-(10, 'demo', 'Demo', '{"allow":["*"],"deny":["*/save","*/delete","*/rename","*/upload", "*/activate","*/deactivate","*/update","*/deletemenu"], "capabilities":["view_other_posts","view_other_products","view_other_sites"]}');
+(10, 'demo', 'Demo', '{"allow":["*"],"deny":["*/save","*/delete","*/rename","*/duplicate","*/upload", "*/activate","*/deactivate","*/update","*/deletemenu"], "capabilities":["view_other_posts","view_other_products","view_other_sites"]}');
