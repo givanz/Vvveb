@@ -309,8 +309,9 @@ class Vtpl {
 		preg_match_all('/(?<!["\'\[])(\$.+)/', $this->template, $variables);
 
 		//$variables[0] = array_values($variables[0]);
-
-		$variables[1] = array_unique($variables[1]);
+		$patternsVariables     = [];
+		$placeholdersVariables = [];
+		$variables[1]          = array_unique($variables[1]);
 		//usort($variables[1],fn($a,$b) => strlen($b) <=> strlen($a));
 		usort($variables[1],function ($a,$b) {return strlen($b) <=> strlen($a); });
 
@@ -864,6 +865,7 @@ class Vtpl {
 				}
 			}
 		}
+
 		//if ($class && preg_match_all('@filter_([^ :$]+)(:\'[^\']+\'|:[^ $]+)*@', $class, $matches, PREG_SET_ORDER) > 0)
 		if ($filters) {
 			$chain = '_$variable';
@@ -1790,6 +1792,7 @@ class Vtpl {
 
 			return false;
 		}
+
 		$this->htmlSourceFile = $filename;
 
 		$this->debug->log('LOAD', $filename);
@@ -1830,6 +1833,8 @@ class Vtpl {
 		} else {
 			//convert json
 			if ($extension == 'json') {
+				//remove json comments from line start
+				$html = Vvveb\removeJsonComments($html);
 				$json = json_decode($html, true);
 				$json = Vvveb\prepareJson($json);
 				$xml  = Vvveb\array2xml($json);
@@ -1959,9 +1964,12 @@ class Vtpl {
 				$text    = \Vvveb\stripExtraSpaces($text);
 				$trimmed = trim($text);
 
-				if (strlen($trimmed) < 2 ||
-					(substr_compare($trimmed, '{$', 0, 2) == 0) ||
-					(substr_compare($trimmed, 'http', 0, 4) == 0) ||
+				//skip untranslatable text
+				if (strlen($trimmed) < 2 || //too small
+					(substr_compare($trimmed, '{$', 0, 2) == 0) || //starts with variable
+					(substr_compare($trimmed, 'http', 0, 4) == 0) || //is url
+					(strpos($trimmed, '{$') !== false) || //string has variable
+					(strpos($trimmed, '<?php') !== false) || //string has php code
 					(is_numeric($trimmed[0]))
 					) {
 					continue;

@@ -23,6 +23,7 @@
 namespace Vvveb\System\Component;
 
 use function Vvveb\dashesToCamelCase;
+use function Vvveb\removeJsonComments;
 use Vvveb\System\Cache;
 use Vvveb\System\Core\View;
 
@@ -333,19 +334,22 @@ class Component {
 			$extension          = strtolower(trim(substr($template, -4), '.'));
 			$this->documentType = $extension;
 
-			if (strpos($template, 'plugins/') === 0) {
-				$template   = str_replace('plugins/', '', $template);
-				$p          = strpos($template, '/');
-				$pluginName = substr($template, 0, $p);
-				$nameSpace  = substr($template, $p + 1);
-				$app        = '';
-
-				if (APP != 'app') {
-					$app = APP . DS;
-				}
-				$template = DIR_PLUGINS . $pluginName . DS . 'public' . DS . $app . $nameSpace;
+			if ($template[0] == '/') {
 			} else {
-				$template = $view->getTemplatePath() . $template;
+				if (strpos($template, 'plugins/') === 0) {
+					$template   = str_replace('plugins/', '', $template);
+					$p          = strpos($template, '/');
+					$pluginName = substr($template, 0, $p);
+					$nameSpace  = substr($template, $p + 1);
+					$app        = '';
+
+					if (APP != 'app') {
+						$app = APP . DS;
+					}
+					$template = DIR_PLUGINS . $pluginName . DS . 'public' . DS . $app . $nameSpace;
+				} else {
+					$template = $view->getTemplatePath() . $template;
+				}
 			}
 
 			if ($this->documentType == 'html') {
@@ -353,8 +357,10 @@ class Component {
 							LIBXML_NOWARNING | LIBXML_NOERROR);
 			} else {
 				$content = file_get_contents($template);
-				
+
 				if ($this->documentType == 'json') {
+					//remove json comments from line start
+					$content = removeJsonComments($content);
 					$json    = json_decode($content, true);
 					$json    = \Vvveb\prepareJson($json);
 					$xml     = \Vvveb\array2xml($json);

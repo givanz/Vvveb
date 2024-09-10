@@ -139,7 +139,7 @@ class FrontController {
 		 */
 		//header(' ', true, $statusCode);
 		$response = Response::getInstance();
-		$view->setType($response->getType('json'));
+		$view->setType($response->getType());
 
 		//return $response->output();
 		PageCache::getInstance()->cleanUp();
@@ -216,11 +216,20 @@ class FrontController {
 		$template = str_replace('/', DS, strtolower(self :: $moduleName));
 		$theme 	  = $controller->view->getTheme();
 		$path     = DIR_THEME . $theme . DS;
+		$pluginName = false;
 
 		if ($actionName && $actionName != 'index') {
 			$html = $path . $template . DS . strtolower($actionName) . '.html';
 
-			if (file_exists($html)) {
+			if (is_file($html)) {
+				if ($pluginName) {
+					$template .= 'plugins' . DS . $nameSpace . DS . strtolower($actionName);
+				} else {
+					$template .= DS . strtolower($actionName);
+				}
+			}
+
+			if ($pluginName) {
 				$template .= DS . strtolower($actionName);
 			}
 		}
@@ -246,7 +255,7 @@ class FrontController {
 		//return $controller->view->render();
 		$response = Response::getInstance();
 
-		$controller->view->setType($response->getType('json'));
+		$controller->view->setType($response->getType());
 
 		$return = $response->output();
 		self :: closeConnections();
