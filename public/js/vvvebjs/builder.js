@@ -788,6 +788,16 @@ Vvveb.WysiwygEditor = {
 				e.preventDefault();
 				return false;
 		});
+
+		doc.addEventListener('keydown', event => {
+		  if (event.key === 'Enter') {
+			  let target = event.target.closest("[contenteditable]");
+			  if (target) {
+				doc.execCommand('insertLineBreak');
+				event.preventDefault();
+			  }
+		  }
+		})		
 	},
 	
 	undo: function(element) {
@@ -949,7 +959,7 @@ Vvveb.Builder = {
 					section = Vvveb.Sections.get(sectionType);
 					
 					if (section) {
-						item = generateElements(`<li data-section="${group}" data-type="${sectionType}" data-search="${section.name.toLowerCase()}">
+						item = generateElements(`<li data-section="${group}" data-drag-type="section" data-type="${sectionType}" data-search="${section.name.toLowerCase()}">
 									<span class="name">${section.name}</span>
 									<div class="add-section-btn" title="Add section"><i class="la la-plus"></i></div>
 									<img class="preview" src="" loading="lazy">
@@ -1215,7 +1225,12 @@ Vvveb.Builder = {
 			
 		Vvveb.component = Vvveb.Components.get(component);	
 		Vvveb.Components.render(component);
+		this.selectedComponent = component;
 
+	},
+	
+	reloadComponent:  function() {
+		Vvveb.Components.render(this.selectedComponent);
 	},
 	
 	moveNodeUp:  function(node) {
@@ -1440,9 +1455,6 @@ Vvveb.Builder = {
 					SelectBox.style.display = "block";
 				
 				} else if (self.isDragging) {
-					let parent = self.highlightEl;
-					let parentTagName = parent.tagName.toLowerCase();
-					
 					let noChildren = {
 						input: true,
 						textarea: true,
@@ -1456,6 +1468,16 @@ Vvveb.Builder = {
 						br: true,
 						wbr: true
 					};
+					
+					let parent = self.highlightEl;
+
+					if (self.dragType == "section") {
+						parent = parent.closest("section, header, footer");
+						noChildren.section = true;
+					}
+
+					let parentTagName = parent.tagName.toLowerCase();
+
 					
 					try {
 							if ((pos.top  < (y - halfHeight)) || (pos.left  < (x - halfWidth))) {
@@ -1568,6 +1590,10 @@ Vvveb.Builder = {
 						bsTab.show(); 
 				}
 				
+				if (self.dragType == "section") {
+					node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
+				}
+
 				if (self.dragMoveMutation === false) {
 					Vvveb.Undo.addMutation({type: 'childList', 
 											target: node.parentNode, 
@@ -1937,15 +1963,16 @@ Vvveb.Builder = {
 			
 			if (element && event.which == 1) {//left click
 				document.getElementById("component-clone")?.remove();
-				document.querySelector("#section-actions, #highlight-name, #select-box").style.display = "none";
+				document.querySelectorAll("#section-actions, #highlight-name, #select-box").forEach(e => e.style.display = "none");
 				
-				if (element.dataset.dragType == "component") {
+				self.dragType  = element.dataset.dragType;
+				if (self.dragType == "component") {
 					self.component = Vvveb.Components.get(element.dataset.type);
 				}
-				else if (element.dataset.dragType == "section") {
+				else if (self.dragType == "section") {
 					self.component = Vvveb.Sections.get(element.dataset.type);
 				}
-				else if (element.dataset.dragType == "block") {
+				else if (self.dragType == "block") {
 					self.component = Vvveb.Blocks.get(element.dataset.type);
 				}
 				
@@ -2670,6 +2697,11 @@ Vvveb.Gui = {
 		}
 		wrapper.style.transform = scale;
 		wrapper.style.height = height;
+	},
+
+	setState: function () {
+		Vvveb.StyleManager.setState(this.value);
+		Vvveb.Builder.reloadComponent();
 	}	
 }
 
@@ -2681,6 +2713,9 @@ Vvveb.StyleManager = {
 	tabletWidth: '768px',
 	doc:false,
 	inlineCSS:false,
+	currentElement:null,
+	currentSelector:null,
+	state:"",//hover, active etc
 	
 	init: function(doc) {
 		if (doc) {
@@ -2788,6 +2823,14 @@ Vvveb.StyleManager = {
 		return selector.reverse().join(" > ");
 	},	
 	
+	setState: function(state) {
+		this.state = state;
+	},
+
+	addSelectorState: function(selector) {
+		return selector + (this.state ? ":" + this.state : "");
+	},
+	
 	setStyle: function(element, styleProp, value) {
 		if (typeof(element) == "string") {
 			selector = element;
@@ -2808,6 +2851,8 @@ Vvveb.StyleManager = {
 			element.style[styleProp] = value;
 			return element;	
 		}
+		
+		selector = this.addSelectorState(selector);
 		
 		media = document.getElementById("canvas").classList.contains("tablet") ? "tablet" : document.getElementById("canvas").classList.contains("mobile") ? "mobile" : "desktop";
 		
@@ -2884,7 +2929,14 @@ Vvveb.StyleManager = {
 		let el;
 
 		el = element;
+		if (el != this.currentElement) {
 		selector = this.getSelectorForElement(el);
+			this.currentElement = el;
+			this.currentSelector = selector
+		} else {
+			selector = this.currentSelector;
+		}
+		selector = this.addSelectorState(selector);
 
 		media = document.getElementById("canvas").classList.contains("tablet") ? "tablet" : document.getElementById("canvas").classList.contains("mobile") ? "mobile" : "desktop";
 
@@ -3999,6 +4051,38 @@ Vvveb.FontsManager = {
 	activeFonts:[],
 	providers: {},//{"google":GoogleFontsManager};
 	
+	addFontList: function(provider, groupName, fontList) {
+		let fonts = {};
+		let fontNames = [];
+		
+		let fontSelect = generateElements("<optgroup label='" + groupName + "'></optgroup>")[0];
+		for (font in fontList) {
+			fontNames.push({"text":font, "value":font, "data-provider": provider});
+			let option = new Option(font, font);
+			option.dataset.provider = provider;
+			//option.style.setProperty("font-family", font);//font preview if the fonts are loaded in editor
+			fontSelect.append(option);
+		}
+		document.getElementById("font-family").append(fontSelect);	
+
+		let list = Vvveb.Components.getProperty("_base", "font-family");
+		if (list) {
+			list.onChange = function (node,value, input, component) {
+				let option = input.options[input.selectedIndex];
+				Vvveb.FontsManager.addFont(option.dataset.provider, value, node);
+				return node;
+			};
+			
+			list.data.options.push({optgroup:groupName});
+			list.data.options = list.data.options.concat(fontNames);
+
+			Vvveb.Components.updateProperty("_base", "font-family", {data:list.data});
+			
+			//update default font list
+			fontList = list.data.options;
+		}
+	},
+	
 	addProvider: function(provider, Obj) {
 		this.providers[provider] = Obj;
 	},
@@ -4015,6 +4099,8 @@ Vvveb.FontsManager = {
 	},
 	
 	removeFont: function(provider, fontFamily) {
+		if (!provider) return;
+
 		let providerObj = this.providers[provider];
 		if (provider!= "default" && providerObj) {
 			providerObj.removeFont(fontFamily);

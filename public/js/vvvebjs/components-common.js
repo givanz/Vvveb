@@ -97,29 +97,7 @@ Vvveb.Components.add("_base", {
         col:6,
         inputtype: TextInput
     	
-    }/*, {
-        name: "State",
-        key: "state",
-        sort: base_sort++,
-        inline:true,
-        col:12,
-        inputtype: SelectInput,
-		data: {
-            options: [{
-                value: "",
-                text: ""
-            },{
-                value: "hover",
-                text: "Hover"
-            },{
-                value: "active",
-                text: "Active"
-            },{
-                value: "focus",
-                text: "Focus"
-            }]
     }
-    } */
    ]
 });    
 
@@ -132,6 +110,29 @@ Vvveb.Components.extend("_base", "_base", {
         sort: base_sort++,
 		section: style_section,
         data: {header:"Display"},
+     }, {
+        name: "State",
+        key: "state",
+        sort: base_sort++,
+        section: style_section,
+        inline:true,
+        col:12,
+        inputtype: SelectInput,
+		data: {
+            options: [{
+                value: "",
+                text: "- none -"
+            },{
+                value: "hover",
+                text: "Hover"
+            },{
+                value: "active",
+                text: "Active"
+            },{
+                value: "focus",
+                text: "Focus"
+            }]
+    }
      },{
 		//linked styles notice message
 		name:"",
@@ -144,7 +145,7 @@ Vvveb.Components.extend("_base", "_base", {
         data: {
 			type:'warning',
 			title:'Linked styles',
-			text:'This element shares styles with other <a class="linked-elements-hover" href="#"><b class="elements-count">4</b> elements</a>, to apply styles <b>only for this element</b> enter a <b>unique id</b> eg: <i>marketing-heading</i> in in <br/><a class="id-input" href="#content-tab" role="tab" aria-controls="components" aria-selected="false" href="#content-tab">Content > General > Id</a>.<br/><span class="text-muted small"></span>',
+			text:'This element shares styles with other <a class="linked-elements-hover" href="javascript:void()"><b class="elements-count">4</b> elements</a>, to apply styles <b>only for this element</b> enter a <b>unique id</b> eg: <i>marketing-heading</i> in in <br/><a class="id-input" href="#content-tab" role="tab" aria-controls="components" aria-selected="false" href="#content-tab">Content > General > Id</a>.<br/><span class="text-muted small"></span>',
 		},
 		afterInit:function(node, inputElement) {
 			let selector = Vvveb.StyleManager.getSelectorForElement(node);
