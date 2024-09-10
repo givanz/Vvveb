@@ -31,6 +31,8 @@ class Payment {
 
 	private $instances = [];
 
+	private $instance;
+
 	public static function getInstance($options = []) {
 		static $inst = null;
 
@@ -69,6 +71,16 @@ class Payment {
 		foreach ($this->instances as $instance) {
 			$instance->init();
 		}
-		$this->instances[$method]->setMethod();
+
+		if (isset($this->instances[$method])) {
+			$this->instance = $this->instances[$method];
+			$this->instance->setMethod();
+		}
+	}
+
+	public function authorize(&$checkoutInfo = []) {
+		if ($this->instance) {
+			$this->instance->authorize($checkoutInfo);
+		}
 	}
 }

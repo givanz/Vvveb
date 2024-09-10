@@ -26,6 +26,7 @@ use function \Vvveb\model;
 use function \Vvveb\url;
 use Vvveb\Sql\Product_Option_ValueSQL;
 use Vvveb\Sql\ProductSQL;
+use Vvveb\Sql\Subscription_PlanSQL;
 use Vvveb\System\Images;
 use Vvveb\System\Session;
 
@@ -143,6 +144,16 @@ class Cart {
 					['product_option_value_id' => array_values($productOptions)] + $this->options
 				)['product_option_value'] ?? [];
 			}
+
+			// if products have subscriptions get all subscriptions in one query
+			$subscriptionResults = [];
+
+			if ($productSubscriptions) {
+				$subscriptionPlanSql         = new Subscription_PlanSQL();
+				$subscriptionResults         = $subscriptionPlanSql->getAll(
+					['subscription_plan_id' => array_values($productSubscriptions)] + $this->options
+				)['subscription_plan'] ?? [];
+			}
 		}
 
 		$products       = $results['products'] ?? [];
@@ -202,7 +213,13 @@ class Cart {
 					}
 				}
 
-				$url                     = ['slug' => $product['slug']];
+				//add subscription data
+				if (isset($prod['subscription_plan_id'])) {
+					$prod['subscription']      = $subscriptionResults[$prod['subscription_plan_id']] ?? [];
+					$prod['subscription_name'] = $prod['subscription']['name'];
+				}
+
+				$url                     = ['slug' => $product['slug'], 'product_id' => $product['product_id']];
 				$prod['url']             = htmlentities(url('product/product/index', $url));
 				$prod['remove-url']      = htmlentities(url('cart/cart/remove', $url));
 
@@ -335,7 +352,7 @@ class Cart {
 		$weight = 0;
 
 		foreach ($this->products as $product) {
-			if ($product['requires_shipping']) {
+			if (isset($product['requires_shipping']) && $product['requires_shipping']) {
 				$weight += $this->weight->convert($product['weight'], $product['weight_type_id'], $this->options['weight_type_id']) * $product['quantity'];
 			}
 		}
@@ -375,7 +392,7 @@ class Cart {
 
 	public function hasShipping() {
 		foreach ($this->products as $product) {
-			if ($product['shipping']) {
+			if ($product['requires_shipping']) {
 				return true;
 			}
 		}
@@ -385,7 +402,7 @@ class Cart {
 
 	public function hasDownload() {
 		foreach ($this->products as $product) {
-			if ($product['download']) {
+			if ($product['digital_asset']) {
 				return true;
 			}
 		}

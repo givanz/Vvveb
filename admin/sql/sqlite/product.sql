@@ -32,7 +32,7 @@
 	)
 	BEGIN
 		-- product
-		SELECT pc.*,_.*, 
+		SELECT pc.*,_.*, _.product_id, 
 			mf.slug as manufacturer_slug, mf.name as manufacturer_name,
 			vd.slug as vendor_slug, vd.name as vendor_name,
 			st.name as stock_status_name
@@ -144,12 +144,12 @@
 	
 		WHERE  1 = 1
 
-            @IF isset(:slug)
+            @IF isset(:slug) && !(isset(:product_id) && :product_id) 
 			THEN 
 				AND pc.slug = :slug 
         	END @IF			
 
-            @IF isset(:product_id)
+            @IF isset(:product_id) && :product_id > 0
 			THEN 
                 AND _.product_id = :product_id
         	END @IF		
@@ -750,6 +750,11 @@
 		IN status INT,
 		IN search CHAR,
 		IN like CHAR,
+		IN sku CHAR,
+		IN barcode CHAR,
+		IN upc CHAR,
+		IN ean CHAR,
+		IN isbn CHAR,
 		IN slug ARRAY,
 		
 		-- pagination
@@ -1002,6 +1007,11 @@
 			@IF isset(:sku) && :sku !== ""
 			THEN 
 				AND products.sku = :sku
+			END @IF	 			
+			
+			@IF isset(:barcode) && :barcode !== ""
+			THEN 
+				AND products.barcode = :barcode
 			END @IF	 
 			
 			@IF isset(:upc) && :upc !== ""

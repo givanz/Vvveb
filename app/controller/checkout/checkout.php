@@ -81,7 +81,7 @@ class Checkout extends Base {
 		$options           = $this->global;
 		$options['status'] = 1;
 		unset($options['limit']);
-		$country	              = $countryModel->getAll($options);
+		$country               = $countryModel->getAll($options);
 		$this->view->countries = $country['country'] ?? [];
 
 		//set default contry and region
@@ -116,28 +116,35 @@ class Checkout extends Base {
 			return $this->redirect('cart/cart/index');
 		}
 
-		$order    = Order::getInstance();
-
 		if (isset($this->request->post['login'])) {
 			return $this->login();
 		}
 
-		$checkoutInfo = $this->session->get('checkout') ?? [];
+		$order    = Order::getInstance();
 
-		$payment  = Payment::getInstance();
-		$shipping = Shipping::getInstance();
+		$checkoutInfo            = $this->session->get('checkout') ?? [];
+		$grandTotal              = $cart->getGrandTotal();
+		$hasShipping             = $cart->hasShipping();
+		$hasPayment              = ($grandTotal > 0);
+		$this->view->hasShipping = $hasShipping;
+		$this->view->hasPayment  = $hasPayment;
 
+		$payment              = Payment::getInstance();
 		$this->view->payment  = $payment->getMethods($checkoutInfo);
-		$this->view->shipping = $shipping->getMethods($checkoutInfo);
 
-		if (isset($this->request->post['shipping_method'])) {
+		if ($hasShipping) {
+			$shipping             = Shipping::getInstance();
+			$this->view->shipping = $shipping->getMethods($checkoutInfo);
+		}
+
+		if ($hasShipping && isset($this->request->post['shipping_method'])) {
 			$shipping_method = $this->request->post['shipping_method'];
 			$shipping->setMethod($shipping_method);
 			$checkoutInfo['shipping_method'] = $shipping_method;
 			$this->view->shipping_method     = $shipping_method;
 		}
 
-		if (isset($this->request->post['payment_method'])) {
+		if ($hasPayment && isset($this->request->post['payment_method'])) {
 			$payment_method = $this->request->post['payment_method'];
 			$payment->setMethod($payment_method);
 			$checkoutInfo['payment_method'] = $payment_method;
@@ -195,39 +202,57 @@ class Checkout extends Base {
 
 					if ($address) {
 						$this->request->post['billing_address'] = $address;
-						$this->request->post += prefixArrayKeys('billing_', $address);
+						//$this->request->post += prefixArrayKeys('billing_', $address);
 					}
 				}
 
-				//different shipping address is selected
-				if (isset($this->request->post['different_shipping_address']) && ! empty($this->request->post['different_shipping_address'])) {
-					$rules[] = 'checkout_shipping';
+				//if card data then validate
+				if (isset($this->request->post['card'])) {
+					$rules[] = 'card';
+				}
 
-					if (isset($this->request->post['shipping_address'])) {
-						$shipping_address = $this->request->post['shipping_address'];
-						$this->request->post += prefixArrayKeys('shipping_', $shipping_address);
-					}
-				} else {
-					//use billing address as shipping address
-					$rules[] = 'checkout_shipping';
+				if ($hasShipping) {
+					//different shipping address is selected
+					if (isset($this->request->post['different_shipping_address']) && ! empty($this->request->post['different_shipping_address'])) {
+						$rules[] = 'checkout_shipping';
 
-					if (isset($this->request->post['billing_address'])) {
-						$this->request->post['shipping_address'] = $this->request->post['billing_address'];
-						$this->request->post += prefixArrayKeys('shipping_', $this->request->post['shipping_address']);
+						if (isset($this->request->post['shipping_address'])) {
+							$shipping_address = $this->request->post['shipping_address'];
+							//$this->request->post += prefixArrayKeys('shipping_', $shipping_address);
+						}
+					} else {
+						//use billing address as shipping address
+						$rules[] = 'checkout_shipping';
+
+						if (isset($this->request->post['billing_address'])) {
+							$this->request->post['shipping_address'] = $this->request->post['billing_address'];
+							//$this->request->post += prefixArrayKeys('shipping_', $this->request->post['shipping_address']);
+						}
 					}
 				}
 
 				//allow only fields that are in the validator list and remove the rest
-				$validator                = new Validator($rules);
-				$checkoutInfo             = ($validator->filter($this->request->post) ?? []) + $checkoutInfo;
+				$post         = $this->request->post;
+				$validator    = new Validator($rules);
 
+				if (! $hasShipping) {
+					$validator->removeRule('shipping_method');
+				}
+
+				if (! $hasPayment) {
+					$validator->removeRule('payment_method');
+				}
+
+				$checkoutInfo = ($validator->filter($this->request->post) ?? []) + $checkoutInfo;
 				$this->session->set('checkout', $checkoutInfo);
 
 				if (($errors = $validator->validate($this->request->post)) === true) {
 					$checkoutInfo['products']        = $cart->getAll();
 					$checkoutInfo['product_options'] = $cart->getProductOptions();
 					$checkoutInfo['totals']          = $cart->getTotals();
-					$checkoutInfo['total']           = $cart->getGrandTotal();
+					$checkoutInfo['total']           = $grandTotal;
+					$checkoutInfo += prefixArrayKeys('shipping_', $checkoutInfo['shipping_address']);
+					$checkoutInfo += prefixArrayKeys('billing_', $checkoutInfo['billing_address']);
 					$checkoutInfo += $this->global;
 
 					//create user account if password is provided
@@ -244,8 +269,16 @@ class Checkout extends Base {
 
 						if ($result = User::add($userInfo)) {
 							$checkoutInfo['user_id'] = $result['user'] ?? NULL;
+							$userInfo                = User::get(['user_id' => $user_id]);
+							//check if user was added before automatic login
+							if ($userInfo) {
+								\Vvveb\session(['user' => $userInfo]);
+								$this->view->global['user_id'] = $userInfo['user_id'];
+							}
 						} else {
 							$this->view->errors[] = $error;
+
+							return;
 						}
 					}
 
@@ -267,8 +300,17 @@ class Checkout extends Base {
 						unset($checkoutInfo['user_id']); //if anonymous then unset user_id
 					}
 
-					$checkoutInfo['shipping_data'] = json_encode($this->view->shipping[$checkoutInfo['shipping_method']] ?? []);
-					$checkoutInfo['payment_data']  = json_encode($this->view->payment[$checkoutInfo['payment_method']] ?? []);
+					$checkoutInfo['shipping_data'] = '';
+
+					if ($hasShipping) {
+						$checkoutInfo['shipping_data'] = json_encode($this->view->shipping[$checkoutInfo['shipping_method']] ?? []);
+					}
+
+					$checkoutInfo['payment_data'] = '';
+
+					if ($hasPayment) {
+						$checkoutInfo['payment_data']  = json_encode($this->view->payment[$checkoutInfo['payment_method']] ?? []);
+					}
 					//default order status
 					$checkoutInfo['order_status_id']  = 1;
 
@@ -299,7 +341,26 @@ class Checkout extends Base {
 						$cart->empty();
 						$site = siteSettings();
 
+						$shippingData = $checkoutInfo['shipping_data'];
+						$paymentData  = $checkoutInfo['payment_data'];
+
+						try {
+							if ($hasShipping) {
+								$shippingOk = $shipping->ship($checkoutInfo);
+							}
+
+							if ($hasPayment) {
+								$paymentOk  = $payment->authorize($checkoutInfo);
+							}
+						} catch (\Exception $e) {
+							$this->view->errors[] = $e->getMessage();
+						}
+
 						list($checkoutInfo, $order_id, $site) = Event::trigger(__CLASS__, 'add:after', $checkoutInfo, $order_id, $site);
+
+						if (($shippingData != $checkoutInfo['shipping_data']) || ($paymentData != $checkoutInfo['payment_data'])) {
+							$order->edit(['shipping_data' => $checkoutInfo['shipping_data'], 'payment_data' => $checkoutInfo['payment_data']], $order_id);
+						}
 
 						try {
 							$error =  __('Error sending order confirmation mail!');

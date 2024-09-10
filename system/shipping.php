@@ -31,6 +31,8 @@ class Shipping {
 
 	private $instances = [];
 
+	private $instance;
+
 	public static function getInstance($options = []) {
 		static $inst = null;
 
@@ -69,6 +71,16 @@ class Shipping {
 		foreach ($this->instances as $instance) {
 			$instance->init();
 		}
-		$this->instances[$method]->setMethod();
+
+		if (isset($this->instances[$method])) {
+			$this->instance = $this->instances[$method];
+			$this->instance->setMethod();
+		}
+	}
+
+	public function ship(&$checkoutInfo = []) {
+		if ($this->instance) {
+			$this->instance->ship($checkoutInfo);
+		}
 	}
 }

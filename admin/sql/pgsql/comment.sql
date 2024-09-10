@@ -30,7 +30,7 @@
 			END @IF			
 			
 			FROM comment AS comment
-			LEFT JOIN "user" ON (comment.user_id = comment.user_id)	
+			LEFT JOIN user ON (user.user_id = comment.user_id)	
 
 			@IF isset(:post_title) AND :post_title
 			THEN 

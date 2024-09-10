@@ -46,6 +46,14 @@ class Order {
 		return $this->model->getData();
 	}
 
+	public function get($order_id) {
+		return $this->model->get(['order_id' => $order_id]);
+	}
+
+	public function edit($data, $order_id) {
+		return $this->model->edit(['order' => $data, 'order_id' => $order_id]);
+	}
+
 	public function add($data) {
 		//set defaults
 		$defaults = ['invoice_format', 'order_id_format', 'order_status_id', 'remote_ip', 'forwarded_for_ip'];

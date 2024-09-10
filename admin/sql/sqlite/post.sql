@@ -202,7 +202,7 @@
 	)
 	BEGIN
 
-		SELECT _.*,pd.*,ad.admin_id,ad.username,ad.display_name,ad.email
+		SELECT _.*,pd.*,_.post_id,ad.admin_id,ad.username,ad.display_name,ad.email
 		
 		@IF isset(:comment_count)
 			THEN
@@ -235,12 +235,12 @@
 			
 		WHERE 1 = 1
 
-            @IF isset(:slug)
+            @IF isset(:slug) && !(isset(:post_id) && :post_id) 
 			THEN 
 				AND pd.slug = :slug 
         	END @IF			
 
-            @IF isset(:post_id)
+            @IF isset(:post_id) && :post_id > 0
 			THEN
                 AND _.post_id = :post_id
         	END @IF			

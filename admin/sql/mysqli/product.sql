@@ -32,7 +32,7 @@
 	)
 	BEGIN
 		-- product
-		SELECT pc.*,_.*, 
+		SELECT pc.*,_.*, _.product_id, 
 			mf.slug as manufacturer_slug, mf.name as manufacturer_name,
 			vd.slug as vendor_slug, vd.name as vendor_name,
 			st.name as stock_status_name
@@ -144,12 +144,12 @@
 	
 		WHERE  1 = 1
 
-            @IF isset(:slug)
+            @IF isset(:slug) && !(isset(:product_id) && :product_id) 
 			THEN 
 				AND pc.slug = :slug 
         	END @IF			
 
-            @IF isset(:product_id)
+            @IF isset(:product_id) && :product_id > 0
 			THEN 
                 AND _.product_id = :product_id
         	END @IF		
@@ -741,11 +741,17 @@
 		IN taxonomy_item_id INT,
 		IN manufacturer_id ARRAY,
 		IN vendor_id ARRAY,
+		IN option_value_id ARRAY,
 		IN related INT,
 		IN variant INT,
 		IN status INT,
 		IN search CHAR,
 		IN like CHAR,
+		IN sku CHAR,
+		IN barcode CHAR,
+		IN upc CHAR,
+		IN ean CHAR,
+		IN isbn CHAR,
 		IN slug ARRAY,
 		
 		-- pagination
@@ -940,8 +946,18 @@
 			@IF !empty(:variant) 
 			THEN 
 				INNER JOIN product_variant pv ON (pv.product_variant_id = products.product_id)
-			END @IF		
+			END @IF				
 			
+			@IF !empty(:option_value_id) 
+			THEN 
+				INNER JOIN product_option_value pov ON (pov.product_id = products.product_id)
+			END @IF		
+
+			@IF !empty(:product_attribute) AND !empty(:product_attribute_id) 
+			THEN 
+				INNER JOIN product_attribute pa ON (pa.product_id = products.product_id)
+			END @IF		
+
 			
 			WHERE p2s.site_id = :site_id
 
@@ -997,6 +1013,11 @@
 			@IF isset(:sku) && :sku !== ""
 			THEN 
 				AND products.sku = :sku
+			END @IF	 			
+			
+			@IF isset(:barcode) && :barcode !== ""
+			THEN 
+				AND products.barcode = :barcode
 			END @IF	 
 			
 			@IF isset(:upc) && :upc !== ""
@@ -1048,7 +1069,6 @@
 				AND pt.taxonomy_item_id = :taxonomy_item_id
 				
 			END @IF		
-			
 		
 			@IF isset(:slug) && count(:slug) > 0
 			THEN 
@@ -1057,7 +1077,24 @@
 				
 			END @IF			
 
-		
+			@IF !empty(:option_value_id) 
+			THEN 
+				AND pov.option_value_id IN (:option_value_id)
+			END @IF		
+
+
+			@IF !empty(:product_attribute_id) 
+			THEN 
+				pa.product_attribute_id IN (:product_attribute_id)
+			END @IF		
+
+
+			@IF !empty(:product_attribute)
+			THEN 
+				pa.text IN (:product_attribute)
+			END @IF		
+
+
 		-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
 		@IF isset(:order_by)
 		THEN

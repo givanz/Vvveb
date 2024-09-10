@@ -34,4 +34,6 @@ abstract class PaymentMethod {
 	abstract public function getMethod($checkoutInfo = []);
 
 	abstract public function setMethod();
+
+	abstract public function authorize();
 }
