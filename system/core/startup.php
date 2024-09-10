@@ -150,7 +150,7 @@ function autoload($class) {
 			//convert camelCase to snake_case
 			$sqlFile    = strtolower(preg_replace('/(?<!^)(?<!\/)(?<!\\\)[A-Z]/', '-$0', $sqlFile));
 			$file       = basename($sqlFile);
-			$pluginName = str_replace([DS . 'plugins' . DS, $file], '', $sqlFile);
+			$pluginName = str_replace([DS . 'plugins' . DS, DS . $file], '', $sqlFile) . DS;
 			$pluginName = strtolower(preg_replace('/(?<!^)(?<!\/)(?<!\\\)[A-Z]/', '-$0', $pluginName));
 			$sqlFile    = DIR_PLUGINS . $pluginName . 'sql' . DS . DB_ENGINE . DS . $file . '.sql';
 		} else {
@@ -173,7 +173,7 @@ function autoload($class) {
 
 		if (SQL_CHECK || ! $fileExists) {
 			if (! file_exists($sqlFile)) {
-				throw new \Exception("SQL file $sqlFile does not exist for $relativeClass!");
+				throw new \Exception(sprintf(\Vvveb\__('SQL file %s does not exist for %s!'), $sqlFile, $relativeClass));
 			}
 			//if the file has not been generated yet or sql files is changed recompile
 			if (! $fileExists || ((filemtime($sqlFile) > filemtime($file)))) {
