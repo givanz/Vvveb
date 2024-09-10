@@ -22,15 +22,17 @@
 
 namespace Vvveb\Component;
 
+use function Vvveb\getConfig;
+use Vvveb\Sql\Digital_assetSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
-use Vvveb\System\Images;
 use function Vvveb\url;
 
 class Digital_assets extends ComponentBase {
 	public static $defaultOptions = [
 		'start'           => 0,
 		'user_id'         => null,
+		'product_id'      => null,
 		'order_status_id' => null,
 		'limit'           => ['url', 4],
 		'digital_asset'   => ['url', 'price asc'],
@@ -39,25 +41,19 @@ class Digital_assets extends ComponentBase {
 	public $options = [];
 
 	function results() {
-		$digital_asset = new \Vvveb\Sql\Digital_assetSQL();
+		$digital_asset = new Digital_assetSQL();
 
 		$results = $digital_asset->getAll($this->options);
+		$key     = getConfig('app.key');
 
 		if (isset($results['digital_asset'])) {
 			foreach ($results['digital_asset'] as $id => &$digital_asset) {
-				if (isset($digital_asset['images'])) {
-					$digital_asset['images'] = json_decode($digital_asset['images'], 1);
-
-					foreach ($digital_asset['images'] as &$image) {
-						$image = Images::image('digital_asset', $image);
-					}
-				}
-
-				if (isset($digital_asset['image'])) {
-					$digital_asset['images'][] = Images::image('digital_asset', $digital_asset['image']);
-				}
-
-				$digital_asset['url'] = url('user/digital_assets/digital_asset', ['digital_asset_id' => $digital_asset['digital_asset_id']]);
+				$digital_asset['url'] = url('user/downloads/download',[
+					'digital_asset_id'  => $digital_asset['digital_asset_id'],
+					'public'            => str_replace(['/', '-'], '_', $digital_asset['public']),
+					'customer_order_id' => $digital_asset['customer_order_id'],
+					'key'               => $key,
+				]);
 			}
 		}
 
