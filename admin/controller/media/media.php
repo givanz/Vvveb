@@ -24,6 +24,7 @@ namespace Vvveb\Controller\Media;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\Sql\media_ContentSQL;
 use function Vvveb\fileUploadErrMessage;
 use function Vvveb\sanitizeFileName;
 
@@ -60,23 +61,26 @@ class Media extends Base {
 		$admin_path          = \Vvveb\adminPath();
 		$controllerPath      = $admin_path . 'index.php?module=media/media';
 
-		$this->view->scanUrl   = "$controllerPath&action=scan";
-		$this->view->uploadUrl = "$controllerPath&action=upload";
-		$this->view->deleteUrl = "$controllerPath&action=delete";
-		$this->view->renameUrl = "$controllerPath&action=rename";
+		$this->view->mediaUrl        = $controllerPath;
+		$this->view->scanUrl         = "$controllerPath&action=scan";
+		$this->view->uploadUrl       = "$controllerPath&action=upload";
+		$this->view->deleteUrl       = "$controllerPath&action=delete";
+		$this->view->renameUrl       = "$controllerPath&action=rename";
+		$this->view->mediaContentUrl = "$controllerPath&action=mediaContent";
 	}
 
 	function upload() {
-		$path      = sanitizeFileName($this->request->post['mediaPath']);
 		$file      = $this->request->files['file'] ?? [];
-		$fileName  = sanitizeFileName($file['name']);
-		$path      = preg_replace('@^[\\\/]public[\\\/]media|^[\\\/]media|^[\\\/]public@', '', $path);
-		$extension = strtolower(substr($fileName, strrpos($fileName, '.') + 1));
 		$success   = false;
 		$return    = '';
 		$message   = '';
 
 		if ($file) {
+			$path      = sanitizeFileName($this->request->post['mediaPath'] ?? '');
+			$fileName  = sanitizeFileName($file['name']);
+			$path      = preg_replace('@^[\\\/]public[\\\/]media|^[\\\/]media|^[\\\/]public@', '', $path);
+			$extension = strtolower(substr($fileName, strrpos($fileName, '.') + 1));
+
 			if ($file['error'] == UPLOAD_ERR_OK) {
 				$success = true;
 			} else {
@@ -127,10 +131,8 @@ class Media extends Base {
 	function delete() {
 		$file        = sanitizeFileName($this->request->post['file']);
 		$themeFolder = DIR_MEDIA;
-		//echo $themeFolder . DS . $file;
-		header('Content-type: application/json; charset=utf-8');
 
-		if (unlink($themeFolder . DS . $file)) {
+		if ($file && @unlink($themeFolder . DS . $file)) {
 			$message = ['success' => true, 'message' => __('File deleted!')];
 		} else {
 			$message = ['success' => false, 'message' => __('Error deleting file!')];
@@ -144,11 +146,10 @@ class Media extends Base {
 		$file        = sanitizeFileName($this->request->post['file']);
 		$newfile     = sanitizeFileName($this->request->post['newfile']);
 		$duplicate   =  $this->request->post['duplicate'] ?? false;
-		$themeFolder = DIR_MEDIA;
+		$dirMedia = DIR_MEDIA;
 
-		header('Content-type: application/json; charset=utf-8');
-		$currentFile = $themeFolder . DS . $file;
-		$targetFile  =  $themeFolder . DS . $newfile;
+		$currentFile = $dirMedia . DS . $file;
+		$targetFile  = $dirMedia . DS . $newfile;
 
 		if ($duplicate) {
 			if (copy($currentFile, $targetFile)) {
@@ -168,6 +169,64 @@ class Media extends Base {
 		$this->response->output($message);
 	}
 
+	function newFolder() {
+		$folder = sanitizeFileName($this->request->post['folder']);
+		$path   = sanitizeFileName($this->request->post['path']);
+		$success = false;
+		
+		$dirMedia = DIR_MEDIA;
+		if (is_dir($dirMedia . $path)) {
+			if (@mkdir($dirMedia . $path . DS . $folder)) {
+				$message = __('Folder created!');
+				$success = true;
+			} else {
+				$message = __('Error creating folder!');
+			}
+		} else {
+			$message = __('Path does not exist!');
+		}
+		
+		$message = ['success' => $success, 'message' => $message];
+
+		$this->response->setType('json');
+		$this->response->output($message);
+	}
+		
+	function mediaContentSave() {
+		$file    = sanitizeFileName($this->request->post['file']);
+		$content = ($this->request->post['media_content']);
+
+		$mediaContent = new media_ContentSQL();
+		$media = $mediaContent->get(['file' => $file] + $this->global);
+		if ($media) {
+			//var_dump(['media_id' => $media['media_id'], 'media_content' => $content]);
+			 $result = $mediaContent->edit(['media_id' => $media['media_id'], 'media_content' => $content, 'media' => []]);
+		} else {
+			//var_dump(['media' => ['file' => $file], 'media_content' => $content]);
+			$result = $mediaContent->add(['media' => ['file' => $file], 'media_content' => $content]);
+		}
+		
+		if ($result) {
+			$message = ['success' => true, 'message' => __('Saved!')];
+		} else {
+			$message = ['success' => false, 'message' => __('Error saving!')];
+		}		
+
+		$this->response->setType('json');
+		$this->response->output($message);
+	}
+	
+	function mediaContent() {
+		$file        = sanitizeFileName($this->request->get['file']);
+		$themeFolder = DIR_MEDIA;
+
+		$mediaContent = new media_ContentSQL();
+		$result = $mediaContent->getContent(['file' => $file] + $this->global);
+
+		$this->response->setType('json');
+		$this->response->output($result ?? []);
+	}
+
 	function scan() {
 		$type          = $this->request->get['type'] ?? 'public';
 		$scandir       = $this->dirForType($type);
@@ -183,10 +242,10 @@ class Media extends Base {
 			// Is there actually such a folder/file?
 
 			if (file_exists($dir)) {
-				$files = @scandir($dir);
+				$listdir = @scandir($dir);
 
-				if ($files) {
-					foreach ($files as $f) {
+				if ($listdir) {
+					foreach ($listdir as $f) {
 						if (! $f || $f[0] == '.' || $f == 'node_modules' || $f == 'vendor') {
 							continue; // Ignore hidden files
 						}
