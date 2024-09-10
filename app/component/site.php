@@ -54,7 +54,8 @@ class Site extends ComponentBase {
 			}
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		$results['url'] = SITE_URL;
+		list($results)  = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 
 		return $results;
 	}
