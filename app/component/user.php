@@ -53,6 +53,8 @@ class User extends ComponentBase {
 		}
 
 		if ($results) {
+			unset($results['password'], $results['token']);
+
 			if (isset($results['avatar'])) {
 				$results['avatar_url'] = Images::image($results['avatar'], 'user');
 			}
