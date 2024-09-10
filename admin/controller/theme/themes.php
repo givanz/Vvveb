@@ -100,6 +100,10 @@ class Themes extends Base {
 				try {
 					// use temorary file, php cleans temporary files on request finish.
 					$this->themeSlug = ThemesList :: install($file['tmp_name'], $this->themeSlug, false);
+
+					if ($this->themeSlug) {
+						ThemesList :: fixIfMissingTemplates($this->themeSlug);
+					}
 				} catch (\Exception $e) {
 					$error                = $e->getMessage();
 					$this->view->errors[] = $error;
@@ -159,6 +163,17 @@ class Themes extends Base {
 	}
 
 	function import() {
+		/*
+		$import              = $this->request->post['import'];
+		$required_plugins    = $this->request->post['required_plugins'];
+		$recommended_plugins = $this->request->post['recommended_plugins'];*/
+
+		//print_r($import);
+		//$this->processImport($import, '');
+		//print_r($required_plugins);
+		//print_r($recommended_plugins);
+
+		return;
 	}
 
 	function activate() {

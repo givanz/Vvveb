@@ -897,6 +897,26 @@ function getThemeFolderList($theme = false) {
 	return $pages;
 }
 
+function getDefaultTemplateList() {
+	return [
+		'index.html',
+		'index.coming-soon.html',
+		'index.maintenance.html',
+		'blank.html',
+		'error404.html',
+		'error500.html',
+		'contact.html',
+		'search/index.html',
+		'content/post.html',
+		'content/page.html',
+		'content/index.html',
+		'content/category.html',
+		'product/index.html',
+		'product/product.html',
+		'product/category.html',
+	];
+}
+
 function getTemplateList($theme = null, $skip = []) {
 	$friendlyNames =  [
 		'index'                     => ['name' =>  __('Home page'), 'description'         =>  __('Website homepage'), 'global' => true],
@@ -1487,11 +1507,14 @@ function download($url) {
 
 	if (function_exists('curl_init')) {
 		$ch = curl_init($url);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_FAILONERROR, true);
-		curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT'] ?? 'Vvveb ' . V_VERSION);
-		$result = curl_exec($ch);
-		curl_close($ch);
+
+		if ($ch) {
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_FAILONERROR, true);
+			curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT'] ?? 'Vvveb ' . V_VERSION);
+			$result = curl_exec($ch);
+			curl_close($ch);
+		}
 	} else {
 		if (ini_get('allow_url_fopen') == '1') {
 			$context_options = [
@@ -1533,7 +1556,6 @@ function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception 
 				curl_setopt($ch, CURLOPT_STDERR, $streamVerboseHandle);
 			}
 			$result = curl_exec($ch);
-			curl_close($ch);
 
 			if ($result) {
 				if ($cache) {
@@ -1554,6 +1576,8 @@ function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception 
 					throw new \Exception($message);
 				}
 			}
+
+			curl_close($ch);
 		} else {
 			//try with file get contents
 			if (ini_get('allow_url_fopen') == '1') {
@@ -1768,7 +1792,8 @@ function array2xml($array, $xml = false) {
 				}
 
 				if ($name) {
-					$attributes[$name] = '';
+					$name                 = explode('=', $name);
+					$attributes[$name[0]] = trim($name[1] ?? '', '\'"');
 				}
 			}
 
@@ -1806,6 +1831,12 @@ function array2xml($array, $xml = false) {
 	return $xml->asXML();
 }
 
+function removeJsonComments($json) {
+	$json = preg_replace('@^\s*//.*([\r\n]|\s)*|^\s*/\*([\r\n]|.)*?\*/([\r\n]|\s)*@m', '', $json);
+
+	return $json;
+}
+
 function prepareJson($array) {
 	if (! is_array($array)) {
 		return;
@@ -1834,7 +1865,7 @@ function prepareJson($array) {
 	return $helper;
 }
 
-function reconstructJson($array) {
+function reconstructJson(&$array, $removeAttrs = false) {
 	if (! is_iterable($array)) {
 		return;
 	}
@@ -1842,6 +1873,10 @@ function reconstructJson($array) {
 	$array  = (array)$array;
 
 	foreach ($array as $key => $value) {
+		if ($removeAttrs && $key == '@attributes') {
+			continue;
+		}
+
 		if (substr_compare($key, 'n--', 0, 3) === 0) {
 			$newkey = substr($key, 3);
 
@@ -1858,7 +1893,7 @@ function reconstructJson($array) {
 			$key = '@' . substr($key, 0, -6);
 		}
 
-		$helper[$key] = (is_iterable($value)) ? reconstructJson($value) : $value;
+		$helper[$key] = (is_iterable($value)) ? reconstructJson($value, $removeAttrs) : $value;
 	}
 
 	return $helper;

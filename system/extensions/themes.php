@@ -25,6 +25,7 @@ namespace Vvveb\System\Extensions;
 use \Vvveb\System\Event;
 use \Vvveb\System\Sites;
 use function Vvveb\__;
+use function Vvveb\getDefaultTemplateList;
 use Vvveb\System\Functions\Str;
 
 class Themes extends Extensions {
@@ -84,6 +85,40 @@ class Themes extends Extensions {
 		static :: $extensions[static :: $extension] = $themes;
 
 		return $themes;
+	}
+
+	/*
+	 * Add missing templates by copying from available template
+	*/
+	static function fixIfMissingTemplates($slug) {
+		//check templates in order
+		$defaultTemplate = '';
+
+		foreach (['content/page.html', 'blank.html', 'index.html'] as $page) {
+			if (file_exists(DIR_THEMES . $slug . DS . $page)) {
+				$defaultTemplate = $page;
+
+				continue;
+			}
+		}
+
+		if ($defaultTemplate) {
+			$templates = getDefaultTemplateList();
+
+			foreach ($templates as $template) {
+				$file = DIR_THEMES . $slug . DS . $template;
+
+				if (! file_exists($file)) {
+					$dir = dirname($template);
+
+					if ($dir && ! file_exists($dir)) {
+						@mkdir(DIR_THEMES . $slug . DS . $dir);
+					}
+
+					@copy(DIR_THEMES . $slug . DS . $defaultTemplate, $file);
+				}
+			}
+		}
 	}
 
 	static function install($extensionZipFile, $slug = false, $validate = false) {
