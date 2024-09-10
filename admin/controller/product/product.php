@@ -108,9 +108,10 @@ class Product extends Edit {
 
 	function save() {
 		$post                    = &$this->request->post;
-		$post['shipping']        = isset($post['shipping']) ? 1 : 0;
-		$post['manufacturer_id'] = isset($post['manufacturer_id']) ? ($post['manufacturer_id'] ?: 0) : null;
-		$post['vendor_id']       = isset($post['vendor_id']) ? ($post['vendor_id'] ?: 0) : null;
+
+		$post['requires_shipping'] = isset($post['requires_shipping']) ? 1 : 0;
+		$post['manufacturer_id']   = isset($post['manufacturer_id']) ? ($post['manufacturer_id'] ?: 0) : null;
+		$post['vendor_id']         = isset($post['vendor_id']) ? ($post['vendor_id'] ?: 0) : null;
 
 		parent::save();
 
