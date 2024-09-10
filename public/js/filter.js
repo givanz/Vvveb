@@ -73,7 +73,11 @@ document.addEventListener("click", (event) => {
   if (target) {
 	let url = target.href;
 	let selector = "#site-content";
-	loadAjax(url, selector);
+	loadAjax(url, selector, () => {
+		//let target = document.querySelector(selector);
+		let target = document.querySelector("body");
+		target.scrollIntoView({behavior: "smooth", block: "start", inline: "start"});
+	});
 	window.history.pushState({url, selector}, null, url);
 	event.preventDefault();
   }

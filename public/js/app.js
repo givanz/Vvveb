@@ -662,7 +662,7 @@ function loadAjax(url, selector, callback = null, params = {}, method = "get") {
 	}
 	
 	if (!url) url = window.location.href;
-	console.log(selector);
+	
 	fetch(url, options).
 	then((response) => {
 		if (!response.ok) { throw new Error(response) }
@@ -688,6 +688,8 @@ function loadAjax(url, selector, callback = null, params = {}, method = "get") {
 					currentElement.replaceWith(newElement);
 				}
 			}
+			
+			if (callback) callback();
 		}		
 
 		window.dispatchEvent(new CustomEvent("vvveb.loadUrl", {detail: {url, selector}}));
@@ -704,7 +706,13 @@ document.addEventListener("click", function (e) {
 		
 		if (!url) return;
 		
-		loadAjax(url, selector, () => window.history.pushState({url, selector}, null));
+		loadAjax(url, selector, () => { 
+			if (element.dataset.scroll) {
+				let target = document.querySelector(selector);
+				target.scrollIntoView({behavior: "smooth", block: element.dataset.scroll ?? "center", inline: "center"});
+			}
+			window.history.pushState({url, selector}, null); 
+		});
 		
 		e.preventDefault();
 	}
