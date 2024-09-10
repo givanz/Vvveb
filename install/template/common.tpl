@@ -40,6 +40,18 @@ input[type="checkbox"]|value =
 	else echo '@@__value__@@';		
 ?>
 
+select|before = <?php
+	$name = '@@__name__@@';
+?>
+
+select option|addNewAttribute = 
+<?php
+	 if (isset($_POST[$name]) && $_POST[$name] == '@@__value__@@') 
+		echo 'selected';
+	else if (isset($this->config[$name]) && $this->config[$name] == '@@__value__@@') 
+		echo 'selected';
+?>
+
 /*
 input[type="checkbox"]|checked = 
 <?php

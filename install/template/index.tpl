@@ -9,9 +9,7 @@ import(language.tpl)
 [data-v-requirements]  [data-v-requirement]|before = <?php 
 if(isset($this->requirements) && is_array($this->requirements)) 
 {
-	foreach ($this->requirements as $requirement) 
-	{
-	?>
+	foreach ($this->requirements as $requirement) {?>
 	
 	[data-v-requirements] [data-v-requirement] [data-v-requirement-text]|innerText = $requirement
 
