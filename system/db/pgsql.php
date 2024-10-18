@@ -201,6 +201,10 @@ class Pgsql extends DBDriver {
 				throw new \Exception($errorMessage);
 			}
 
+			if ($result) {
+				$this->affected_rows = @pg_affected_rows($this->last_res);
+			}
+
 			return $this->last_res;
 		} catch (\Exception $e) {
 			$message = $e->getMessage() . "\n$sql\n";
@@ -295,6 +299,10 @@ class Pgsql extends DBDriver {
 			$this->last_res = pg_query(self :: $link, $sql);
 			//pg_send_query(self :: $link, $sql);
 			//$this->last_res = pg_get_result(self :: $link);
+		}
+
+		if ($this->last_res) {
+			$this->affected_rows = @pg_affected_rows($this->last_res);
 		}
 
 		if ($this->last_res == false) {
