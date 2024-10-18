@@ -50,7 +50,7 @@ if($_images) {
 	$i = 1;
 	foreach ($_images as $index => $_image) { ?>
 
-		@images [data-bs-slide-to]|data-bs-slide-to = <?php echo $i;?>
+		@images [data-bs-slide-to]|data-bs-slide-to = <?php echo $i ?? 1;?>
 		@images img[data-v-product-image-src]|src = $_image['image']
 		@images [data-v-product-image-src] = $_image['image']
 		[data-v-product-image-src]@images = $_image['image']

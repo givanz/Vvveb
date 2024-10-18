@@ -27,7 +27,7 @@ if($shippings && is_array($shippings['shipping'])) {
 		
 		@shipping input[data-v-shipping-key]|addNewAttribute = <?php if ($shipping_method == $key) echo 'checked';?>
 		
-		@shipping .collapse|addClass = <?php if ($shipping_method == $key) echo 'show';?>
+		@shipping .collapse|addClass = <?php if (($shipping_method == $key) && !$vvveb_is_page_edit) echo 'show';?>
 		
 		@shipping img[data-v-shipping-*]|src = $shipping['@@__data-v-shipping-(*)__@@']
 		

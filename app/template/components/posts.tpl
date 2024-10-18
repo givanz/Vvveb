@@ -30,7 +30,7 @@
 //if no posts available and page is loaded in editor then set an empty post to show post content for the editor
 $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : [];
 $_default = [0 => []];
-$_posts = empty($posts['posts']) ? $_default : $posts['posts'];
+$_posts = empty($posts['post']) ? $_default : $posts['post'];
 //$pagination = $this->posts[$_posts_idx]['pagination'];
 $count = 0;
 foreach ($_posts as $index => $post) {?>

@@ -24,9 +24,9 @@ if($questions && is_array($questions)) {
 		
 		@question|data-question_id = $question['question_id']
 		
-		@question|addClass = <?php echo 'level-' . ($question['level'] ?? 0);?>
+		@question|addClass = <?php if (!$vvveb_is_page_edit) echo 'level-' . ($question['level'] ?? 0);?>
 		
-		@question|id = <?php echo 'question-' . $question['product_question_id'];?>
+		@question|id = <?php if (!$vvveb_is_page_edit) echo 'question-' . $question['product_question_id'];?>
 		
 		@question [data-v-question-content] = <?php echo($question['content']);?>
 		

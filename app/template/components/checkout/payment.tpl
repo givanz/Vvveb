@@ -27,7 +27,7 @@ if($payments && is_array($payments['payment'])) {
 		
 		@payment input[data-v-payment-key][type=radio]|addNewAttribute = <?php if ($payment_method == $key) echo 'checked';?>
 
-		@payment .collapse|addClass = <?php if ($payment_method == $key) echo 'show';?>
+		@payment .collapse|addClass = <?php if (($payment_method == $key) && !$vvveb_is_page_edit) echo 'show';?>
 		
 		@payment img[data-v-payment-*]|src = $payment['@@__data-v-payment-(*)__@@']
 		

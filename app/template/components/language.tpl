@@ -21,7 +21,10 @@ $language['language'] = empty($language['language']) ? $_default : $language['la
 		
 		@language .dropdown-item|addClass = <?php 
 			if (isset($lang['code']) && isset($language['active']['code']) && 
-				($lang['code'] == $language['active']['code'])) echo 'active';
+				($lang['code'] == $language['active']['code']) && 
+				!$vvveb_is_page_edit) {
+					echo 'active';
+				}
 		?>
 		
 		@language [data-v-language-name] = $lang['name']

@@ -16,7 +16,7 @@ $_categories = [];
 if (isset($this->_component['menu']) && isset($this->_component['menu'][$_menu_idx])) {
 	//$_pagination_count = $this->menu[$_menu_idx]['count'];
 	//$_pagination_limit = $this->categories[$_menu_idx]['limit'];
-	$_categories = $this->_component['menu'][$_menu_idx]['menus'] ?? [];
+	$_categories = $this->_component['menu'][$_menu_idx]['menu'] ?? [];
 	if (isset($vvveb_is_page_edit) && $vvveb_is_page_edit) {
 		$_categories = [
 			['menu_item_id' => 1, 'parent_id' => 0, 'children' => 1, 'class' => 'vvveb-hidden'],
@@ -37,7 +37,7 @@ if (isset($this->_component['menu']) && isset($this->_component['menu'][$_menu_i
 @category|before = <?php 
 
 	foreach($_categories as $id => $category) {
-		if ($category['parent_id'] == $parent_id) {
+		if (isset($category['parent_id']) && ($category['parent_id'] == $parent_id)) {
 ?>
 
 		//catch all data attributes
@@ -60,10 +60,11 @@ if (isset($this->_component['menu']) && isset($this->_component['menu'][$_menu_i
 ?>
 
 
-@category|addClass = <?php if (isset($category['class'])) echo $category['class'];?>
+@category|addClass = <?php if (isset($category['class']) && !$vvveb_is_page_edit) echo $category['class'];?>
 
 @category-recursive|before = <?php
 $generate_menu = function ($parent_id) use (&$_categories, &$generate_menu, &$parents) {
+	global $vvveb_is_page_edit;
 ?>
 
 @category-recursive|after = <?php 

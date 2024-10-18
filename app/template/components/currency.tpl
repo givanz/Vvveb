@@ -27,7 +27,7 @@ if($currencies)  {
 	
 	@currency [data-v-currency-*]|innerText = $currency['@@__data-v-currency-(*)__@@']
 	@currency button[data-v-currency-code]|value = $currency['code']
-	@currency .dropdown-item|addClass = <?php if ($currency['code'] == $current_component['current']) echo 'active'?>
+	@currency .dropdown-item|addClass = <?php if (($currency['code'] == $current_component['current']) && !$vvveb_is_page_edit) echo 'active'?>
 	
     @currency [data-v-currency-url] = <?php 
         echo Vvveb\url(['module' => 'currency/currency', 'currency_id' => $currency['currency_id']]);

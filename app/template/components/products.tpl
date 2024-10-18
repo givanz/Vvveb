@@ -23,7 +23,7 @@
 	//to render an empty product to avoid losing the html on edit
 	$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
 	//$_default = [0 => []];
-	$_products = empty($products['products']) ? $_default : $products['products'];
+	$_products = empty($products['product']) ? $_default : $products['product'];
 ?>
 
 @products [data-v-products-category] = <?php $_category = current($products);echo $_category['category'];?>

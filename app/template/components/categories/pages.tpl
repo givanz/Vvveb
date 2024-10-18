@@ -40,7 +40,7 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
 		
 		
 			@post|before = <?php 
-			if (isset($category['posts']) && $category['posts'])	
+			if (isset($category['posts']) && $category['post'])	
 			foreach($category['posts'] as $key => $post) {?>
 				//catch all data attributes
 				@post [data-v-post-*]|innerText = $post['@@__data-v-post-(*)__@@']

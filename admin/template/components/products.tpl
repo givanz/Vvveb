@@ -20,9 +20,9 @@ $_pagination_limit = $products['limit'] ?? 5;
 
 
 [data-v-component-products]  [data-v-product]|before = <?php
-if(is_array($products['products']))  {
+if(is_array($products['product']))  {
 	$index = 0;
-	foreach ($products['products'] as $index => $product) { ?>
+	foreach ($products['product'] as $index => $product) { ?>
 
 	@product [data-v-product-image]|src = $product['image']
 	@product [data-v-product-image-url] = $product['image']

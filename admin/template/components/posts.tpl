@@ -15,10 +15,10 @@ $_pagination_limit = isset($this->_component['posts'][$_posts_idx]['limit'])? $t
 //$post = [data-v-component-posts]  [data-v-post]
 
 [data-v-component-posts]  [data-v-post]|before = <?php 
-if(isset($this->_component['posts']) && is_array($this->_component['posts'][$_posts_idx]['posts'])) 
+if(isset($this->_component['posts']) && is_array($this->_component['posts'][$_posts_idx]['post'])) 
 {
 	//$pagination = $this->posts[$_posts_idx]['pagination'];
-	foreach ($this->_component['posts'][$_posts_idx]['posts'] as $index => $post) 
+	foreach ($this->_component['posts'][$_posts_idx]['post'] as $index => $post) 
 	{
 	?>
 	
