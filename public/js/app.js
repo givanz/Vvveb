@@ -24,7 +24,7 @@ VvvebTheme.Ajax = {
 	call: function(url, parameters, element, selector, callback, requestType = "POST") {
 		if (!url) {
 			url = '/index.php?module=' +  parameters["module"] + '&action=' + parameters["action"];
-		}
+		} 
 		
 		if (!selector) {
 			url += '&_component_ajax=' + parameters["component"] + '&_component_id=' + parameters["component_id"];
@@ -284,7 +284,7 @@ VvvebTheme.Search = {
 		parameters['component'] = parameters['component'] ?? this.component;
 		parameters['component_id'] = parameters['component_id'] ?? this.component_id;
 		
-		VvvebTheme.Ajax.call("", parameters, element, selector, callback = false);
+		VvvebTheme.Ajax.call("/search", parameters, element, selector, callback = false);
 	},
 	
 	query: function(parameters, element, selector, callback) {
@@ -575,14 +575,17 @@ VvvebTheme.Gui = {
 	
 	search: function (e) {
 		clearTimeout(window.searchDebounce);
-		
-		let parameters = Object.fromEntries(new URLSearchParams(new FormData(this)));
+		let form = this;
+		if (this.form) {
+			form = this.form;
+		}
+
+		let parameters = Object.fromEntries(new URLSearchParams(new FormData(form)));
 		let element = this;
-		let component = element.closest("[data-v-component-search]");
+		let selector = this.dataset.selector;
 		
 		window.searchDebounce = setTimeout(function () {	
-			component.css("opacity", 0.5);
-			VvvebTheme.Search.query(parameters, element, function(data) { 
+			VvvebTheme.Search.query(parameters, element, selector, function(data) { 
 				component.outerHTML = data;
 		});
 		e.preventDefault();
