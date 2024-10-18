@@ -29,17 +29,19 @@ use Vvveb\System\Images;
 
 class Orders extends ComponentBase {
 	public static $defaultOptions = [
-		'start'              => 0,
-		'limit'              => 10,
-		'language_id'        => NULL,
-		'site_id'            => NULL,
-		'user_id'            => NULL,
-		'email'              => NULL,
-		'phone_number'       => NULL,
-		'search'             => NULL,
-		'id_manufacturer'    => NULL,
-		'order_status'       => NULL,
-		'order_status_id'    => NULL,
+		'start'           => 0,
+		'limit'           => 10,
+		'language_id'     => NULL,
+		'site_id'         => NULL,
+		'user_id'         => NULL,
+		'email'           => NULL,
+		'phone_number'    => NULL,
+		'search'          => NULL,
+		'id_manufacturer' => NULL,
+		'order_status'    => NULL,
+		'order_status_id' => NULL,
+		'order_by'        => NULL,
+		'direction'       => ['url', 'asc', 'desc'],
 	];
 
 	public $options = [];
@@ -48,6 +50,16 @@ class Orders extends ComponentBase {
 		$orders = new \Vvveb\Sql\OrderSQL();
 
 		$results = $orders->getAll($this->options);
+
+		if (isset($this->options['order_by']) &&
+				! in_array($this->options['order_by'], ['order_id', 'customer_order_id', 'order_status_id', 'created_at'])) {
+			unset($this->options['order_by']);
+		}
+
+		if (isset($this->options['direction']) &&
+				! in_array($this->options['direction'], ['asc', 'desc'])) {
+			unset($this->options['direction']);
+		}
 
 		if ($results['order']) {
 			$currency = Currency::getInstance();

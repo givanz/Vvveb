@@ -29,12 +29,13 @@ use Vvveb\System\Images;
 
 class Users extends ComponentBase {
 	public static $defaultOptions = [
-		'start'           => 0,
-		'limit'           => 10,
-		'site_id'         => null,
-		'user_id'         => 'url',
-		'user'            => ['url', 'price asc'],
-		'id'              => NULL,
+		'start'            => 0,
+		'limit'            => 10,
+		'site_id'          => null,
+		'user_id'          => 'url',
+		'user'             => ['url', 'price asc'],
+		'order_by'         => NULL,
+		'direction'        => ['url', 'asc', 'desc'],
 	];
 
 	public $options = [];
@@ -43,6 +44,16 @@ class Users extends ComponentBase {
 		$users = new UserSQL();
 
 		$results = $users->getAll($this->options);
+
+		if (isset($this->options['order_by']) &&
+				! in_array($this->options['order_by'], ['user_id', 'created_at', 'email', 'username'])) {
+			unset($this->options['order_by']);
+		}
+
+		if (isset($this->options['direction']) &&
+				! in_array($this->options['direction'], ['asc', 'desc'])) {
+			unset($this->options['direction']);
+		}
 
 		if (isset($results['user'])) {
 			foreach ($results['user'] as $id => &$user) {
