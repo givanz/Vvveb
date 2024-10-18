@@ -1347,12 +1347,22 @@ Vvveb.Builder = {
 
 		try {
 			let pos = offset(target);
+			let top = (pos.top - (self.frameDoc.scrollTop ?? 0)  - self.selectPadding);
 				
-			SelectBox.style.top  = (pos.top - (self.frameDoc.scrollTop ?? 0)  - self.selectPadding) + "px"; 
+			SelectBox.style.top  = top + "px"; 
 			SelectBox.style.left = (pos.left - (self.frameDoc.scrollLeft ?? 0) - self.selectPadding) + "px"; 			
 			SelectBox.style.width = ((target.offsetWidth ?? target.clientWidth) + self.selectPadding * 2) + "px"; 			
 			SelectBox.style.height = ((target.offsetHeight ?? target.clientHeight) + self.selectPadding * 2) + "px";
 			SelectBox.style.display = "block";
+			
+			//move actions toolbar to bottom if there is no space on top
+			if (top < 30) {
+				SelectActions.style.top = "unset";
+				SelectActions.style.bottom = "-25px";
+			} else {
+				SelectActions.style.top = "";
+				SelectActions.style.bottom = "";
+			}
 				 
 			Vvveb.Breadcrumb.loadBreadcrumb(target);
 		
@@ -1468,7 +1478,7 @@ Vvveb.Builder = {
 						br: true,
 						wbr: true
 					};
-					
+
 					let parent = self.highlightEl;
 
 					if (self.dragType == "section") {
@@ -1477,11 +1487,18 @@ Vvveb.Builder = {
 					}
 
 					let parentTagName = parent.tagName.toLowerCase();
-
+					let isVattribute = false;
+					//check if node is a data-v-attribute dynamic node that will overrite the content if added inside
+					for (let attr of parent.attributes) {
+						if (attr.name.indexOf("data-v-") == 0) {
+							isVattribute = true;
+							false;
+						}
+					}
 					
 					try {
 							if ((pos.top  < (y - halfHeight)) || (pos.left  < (x - halfWidth))) {
-								if (noChildren[parentTagName]) { 
+								if (noChildren[parentTagName] || isVattribute) { 
 									parent.after(self.dragElement);
 								} else {
 									if (parent == self.dragElement.parenNode) {
@@ -1493,7 +1510,7 @@ Vvveb.Builder = {
 
 								prepend = true;
 							} else {
-								if (noChildren[parentTagName]) { 
+								if (noChildren[parentTagName] || isVattribute) { 
 									parent.parentNode.insertBefore(self.dragElement, parent);
 								} else {
 									parent.prepend(self.dragElement);
@@ -1827,15 +1844,59 @@ Vvveb.Builder = {
 		
 		document.getElementById("translate-code-btn")?.addEventListener("click", function(event) {
 			let selectedEl = Vvveb.Builder.selectedEl;
-			let value = selectedEl.innerHTML.trim();
+			let text = selectedEl.innerHTML.trim();
 			// uncomment to use outerHTML, not recommended
-			//let value = selectedEl.outerHTML;
+			//let text = selectedEl.outerHTML;
+			
+			fetch(namespaceUrl + "/translate&action=get", {method: "POST",  body: new URLSearchParams({text})})
+			.then((response) => {
+				if (!response.ok) { throw new Error(response) }
+				return response.json()
+			})
+			.then((data) => {
+				for (code in data) {
+					let translation = data[code];
+					document.querySelector("#lang-" + code + "-editor textarea").value = translation;
+				}
+			})
+			.catch(error => {
+				console.log(error.statusText);
+				displayToast("bg-danger", "Error", "Error loading translations!");
+			});			
+
+			
 			Vvveb.ModalTranslateEditor.show();
-			Vvveb.ModalTranslateEditor.setValue(value);
+			Vvveb.ModalTranslateEditor.setValue(text);
 
 			let onSave = function(event) { 
+				let data = Object.fromEntries(new FormData(document.getElementById("translateForm")));
+
+				fetch(namespaceUrl + "/translate&action=save", {method: "POST",  body: new URLSearchParams(data)})
+				.then((response) => {
+					if (!response.ok) { throw new Error(response) }
+					return response.json()
+				})
+				.then((data) => {
+					let bg = "bg-success";
+					
+					if (data.success || text == "success") {		
+					} else {
+						bg = "bg-danger";
+					}
+					
+					displayToast(bg, "Save", data.message ?? data);		
+				})
+				.catch(error => {
+					console.log(error.statusText);
+					displayToast("bg-danger", "Error", "Error saving translations!");
+				});
+				/*
+				Vvveb.Builder.frameBody.querySelectorAll("form").forEach(f => {
+				   console.log( JSON.stringify(Object.fromEntries(new FormData(f))) ); 
+				});				
+				*/
 				selectedEl.innerHTML = event.detail;
-				//selectedEl.outerHTML = value;
+				//selectedEl.outerHTML = text;
 			};
 
 			window.removeEventListener("vvveb.ModalTranslateEditor.save", onSave); 
@@ -1851,12 +1912,14 @@ Vvveb.Builder = {
 			node = self.selectedEl;
 		
 			Vvveb.Undo.addMutation({type: 'childList', 
-									target: node.parentNode, 
-									removedNodes: [node],
-									nextSibling: node.nextSibling});
+				target: node.parentNode, 
+				removedNodes: [node],
+				nextSibling: node.nextSibling});
 
 			self.selectedEl.remove();
-
+			Vvveb.TreeList.loadComponents();
+			Vvveb.SectionList.loadSections();
+			
 			event.preventDefault();
 			return false;
 		});
@@ -2243,6 +2306,7 @@ Vvveb.Builder = {
 Vvveb.ModalCodeEditor = {
 	modal: false,
 	modalId: 'codeEditorModal',
+	name: 'ModalCodeEditor',
 	editor: false,
 	
 	init: function(modal = false, editor = false) {
@@ -2260,7 +2324,7 @@ Vvveb.ModalCodeEditor = {
 		let self = this;
 
 		this.modal.querySelector('.save-btn').addEventListener("click",  function(event) {
-			window.dispatchEvent(new CustomEvent("vvveb.ModalCodeEditor.save", {detail: self.getValue()}));
+			window.dispatchEvent(new CustomEvent("vvveb." + self.name + ".save", {detail: self.getValue()}));
 			self.hide();
 			return false;
 		});
@@ -2295,6 +2359,7 @@ Vvveb.ModalCodeEditor = {
 //Vvveb.ModalTranslateEditor = structuredClone(Vvveb.ModalCodeEditor);
 Vvveb.ModalTranslateEditor = Object.assign({}, Vvveb.ModalCodeEditor);
 Vvveb.ModalTranslateEditor.modalId = 'translateEditorModal';
+Vvveb.ModalTranslateEditor.name = 'ModalTranslateEditor';
 
 Vvveb.CodeEditor = {
 	
@@ -2427,7 +2492,7 @@ Vvveb.Gui = {
 		folder   =  (folder = /(.+)\//.exec(filename)) ? folder[1] : '/';
 
 		page 	 = Vvveb.FileManager.getCurrentUrl();
-		page     = (page = /[^\/]+$/.exec(page)) ? page[0] : '';
+		page     = (page = /[^\/]+\?$/.exec(page)) ? page[0] : '';
 		page     = page.replace(".html", "");
 		page 	 = page ? page : "new-template";
 		page    += ".html";
@@ -2702,7 +2767,7 @@ Vvveb.Gui = {
 	setState: function () {
 		Vvveb.StyleManager.setState(this.value);
 		Vvveb.Builder.reloadComponent();
-	}	
+	}
 }
 
 Vvveb.StyleManager = {
@@ -2930,7 +2995,7 @@ Vvveb.StyleManager = {
 
 		el = element;
 		if (el != this.currentElement) {
-		selector = this.getSelectorForElement(el);
+			selector = this.getSelectorForElement(el);
 			this.currentElement = el;
 			this.currentSelector = selector
 		} else {
@@ -3152,6 +3217,7 @@ Vvveb.SectionList = {
 				let node = section._node;
 				node.remove();
 				section.remove();
+				Vvveb.TreeList.loadComponents();
 				
 				e.stopPropagation();
 				e.preventDefault();
@@ -3316,8 +3382,9 @@ Vvveb.SectionList = {
 
 	loadSections: function() {
 		let sections = this.getSections();
+		let container = document.querySelector(this.selector);
 
-		document.querySelector(this.selector).replaceChildren();
+		container.replaceChildren();
 		for (i in sections) {
 			this.addSection(sections[i]);
 		}
@@ -3600,7 +3667,7 @@ Vvveb.FileManager = {
 	
 	deletePage: function(element, e) {
 		let page    = element.dataset;
-		let post_id = element.dataset.post_id;
+		let post_id = element.dataset.post_id ?? 0;
 		let name;
 		let _self = this;
 
@@ -3651,14 +3718,15 @@ Vvveb.FileManager = {
 	},	
 	
 	renamePage: function(element, e, duplicate = false) {
-		let page    = element.dataset;
-		let post_id = element.dataset.post_id ?? 0;
+		let page       = element.dataset;
+		let post_id    = element.dataset.post_id ?? 0;
+		let product_id = element.dataset.product_id ?? 0;
 		let newfile;
 		let name;
 		let _self = this;
 
 		name = element.querySelector('label span')?.textContent.replace('.html', '');
-		if (post_id) {
+		if (post_id || product_id) {
 			name = prompt(`Enter new name for "${name}"`, name);
 			if (name) {
 				newfile = page.file;
@@ -3675,7 +3743,7 @@ Vvveb.FileManager = {
 			
 			if (page) {
 
-				fetch(renameFileUrl, {method: "POST",  body: new URLSearchParams({file:page.file, newfile:newfile, name, duplicate, post_id})})
+				fetch(renameFileUrl, {method: "POST",  body: new URLSearchParams({file:page.file, newfile:newfile, name, duplicate, post_id, product_id})})
 				.then((response) => {
 					if (!response.ok) {  return Promise.reject(response);  }
 					return response.json()
@@ -3691,17 +3759,20 @@ Vvveb.FileManager = {
 						newfile = data.newfile ?? newfile;	
 						displayToast(bg, "Rename", data.message ?? data);
 						let baseName = newfile.replace('.html', '');
-						let newName = name || friendlyName(newfile.replace(/.*[\/\\]+/, '')).replace('.html', '');
+						let newName = data.name ?? name ?? friendlyName(newfile.replace(/.*[\/\\]+/, '')).replace('.html', '');
 						
 						if (duplicate) {
 							let addPage = _self.pages[page.page];
-							addPage["name"] = baseName;
-							addPage["file"] = newfile;
-							addPage["title"] = newName;
-							addPage["url"] = data.url;
+							addPage["name"]    = data.name ?? baseName;
+							addPage["file"]    = newfile;
+							addPage["title"]   = newName;
+							addPage["url"]     = data.url;
+							addPage["post_id"] = data.post_id;
+							addPage["product_id"] = data.product_id;
+							
 							if (data.newfile) {
 								//addPage["url"] = Vvveb.themeBaseUrl + addPage["url"]
-								addPage["url"] =  page.url.substring(0, page.url.lastIndexOf("/") + 1) + addPage["url"];
+								//addPage["url"] =  page.url.substring(0, page.url.lastIndexOf("/") + 1) + addPage["url"];
 							}
 
 							let newPage = Vvveb.FileManager.addPage(baseName, addPage, page.page);
@@ -4050,7 +4121,7 @@ Vvveb.FontsManager = {
 	
 	activeFonts:[],
 	providers: {},//{"google":GoogleFontsManager};
-	
+
 	addFontList: function(provider, groupName, fontList) {
 		let fonts = {};
 		let fontNames = [];
