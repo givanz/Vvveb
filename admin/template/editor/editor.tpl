@@ -125,6 +125,7 @@ foreach ($this->languagesList as $language) {
 	[data-v-languages]  [data-v-language-id]|addClass = <?php if ($_i == 0) echo 'show active';?>
 
 	@language [data-v-language-name] = $language['name']
+	@language [data-v-language-code]|name = $language['code']
 	@language [data-v-language-img]|title = $language['name']
 	@language [data-v-language-img]|src = <?php echo 'language/' . $language['code'] . '/' . $language['code'] . '.png';?>
 	@language [data-v-language-link]|href = <?php echo '#lang-' . $language['code'] . '-' . $_lang_instance?>
