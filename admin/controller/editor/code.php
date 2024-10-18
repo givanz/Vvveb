@@ -101,10 +101,8 @@ class Code extends Base {
 			}
 		}
 
-		header('Content-type: application/json; charset=utf-8');
-		echo json_encode($message);
-
-		die();
+		$this->response->setType('json');
+		$this->response->output($message);
 	}
 
 	function loadFile() {
@@ -121,27 +119,6 @@ class Code extends Base {
 		}
 
 		die("Error loading: $file");
-	}
-
-	function upload() {
-		$type = $this->request->post['type'];
-		$path = sanitizeFileName($this->request->post['mediaPath']);
-		$file = sanitizeFileName($this->request->files['file']['name']);
-		$path = str_replace('/media', '', $path);
-
-		$destination = DIR_MEDIA . $path . '/' . $file;
-
-		if (move_uploaded_file($this->request->files['file']['tmp_name'], $destination)) {
-			if (isset($this->request->post['onlyFilename'])) {
-				echo $file;
-			} else {
-				echo $destination;
-			}
-		} else {
-			echo __('Error uploading file!');
-		}
-
-		die();
 	}
 
 	function scan() {
