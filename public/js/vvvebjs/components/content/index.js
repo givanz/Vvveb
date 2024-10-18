@@ -19,6 +19,7 @@
  */
  
 import {postsComponent} from './posts.js';
+import {postComponent} from './post.js';
 import {categoriesComponent} from './categories.js';
 import {archivesComponent} from './archives.js';
 import {recentPostsComponent} from './recentPosts.js';
@@ -32,6 +33,7 @@ import {currencyComponent} from './currency.js';
 
 
 Vvveb.Components.add("content/posts", postsComponent);
+Vvveb.Components.add("content/post", postComponent);
 Vvveb.Components.add("content/categories", categoriesComponent);
 Vvveb.Components.add("content/archives", archivesComponent);
 //Vvveb.Components.add("content/recentPosts", recentPostsComponent);
@@ -46,6 +48,7 @@ Vvveb.Components.add("content/currency", currencyComponent);
 
 Vvveb.ComponentsGroup['Content'] = [
 	"content/posts", 
+	"content/post", 
 	"content/categories",
 	"content/archives",
 //	"content/recentPosts",
