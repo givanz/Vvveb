@@ -43,7 +43,18 @@ $installPathRedirect = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . '/install/in
 
 if (! defined('APP')) {
 	if (is_installed()) {
-		define('APP', 'app');
+		$app = 'app';
+		$url = $_SERVER['REQUEST_URI'] ?? '';
+
+		if (REST && substr_compare($url, '/rest',0 ,5) === 0) {
+			$app = 'rest';
+		} else {
+			if (GRAPHQL && substr_compare($url, '/graphql', 0, 8) === 0) {
+				$app = 'graphql';
+			}
+		}
+
+		define('APP', $app);
 	} else {
 		define('APP', 'install');
 
