@@ -37,7 +37,7 @@ class Routes {
 
 	private static $routes = [];
 
-	private static $urls = null;
+	private static $urls = [];
 
 	private static $modules = null;
 
@@ -102,8 +102,8 @@ class Routes {
 		}
 	}
 
-	public static function init() {
-		self :: $routes += include DIR_ROOT . '/config/routes.php';
+	public static function init($app = 'app') {
+		self :: $routes += include DIR_ROOT . "/config/$app-routes.php";
 		list(self :: $routes) = Event::trigger(__CLASS__, __FUNCTION__ , self :: $routes);
 
 		foreach (self :: $routes as $url => $data) {

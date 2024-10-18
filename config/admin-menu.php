@@ -937,6 +937,13 @@ return
  						'module' => 'settings/email',
  						'action' => 'index',
  					],
+ 					'rest' => [
+ 						'name'   => __('Rest Api'),
+ 						'icon'   => 'la la-database',
+ 						'url'    => $admin_path . '?module=settings/email',
+ 						'module' => 'settings/email',
+ 						'action' => 'index',
+ 					],
  				],
  			],
  		],
