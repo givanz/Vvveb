@@ -76,7 +76,7 @@ class CategoriesComponent {
 	constructor ()
 	{
 		this.name = "Categories";
-		this.attributes = ["data-v-component-categories"],
+		this.attributes = ["data-v-component-product-categories"],
 
 		this.image ="icons/categories.svg";
 		this.html = template;

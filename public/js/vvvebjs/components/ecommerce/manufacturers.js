@@ -35,7 +35,7 @@ class ManufacturersComponent {
 	constructor ()
 	{
 		this.name = "Manufacturers";
-		this.attributes = ["data-v-component-manufacturers"],
+		this.attributes = ["data-v-component-product-manufacturers"],
 
 		this.image ="icons/factory.svg";
 		this.html = template;

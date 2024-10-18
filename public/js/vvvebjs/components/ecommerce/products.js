@@ -97,20 +97,18 @@ class ProductsComponent extends ServerComponent{
 			htmlAttr:"data-v-source",
 			data: {
 				inline: true,
-				extraclass:"btn-group-fullwidth",
+				extraclass:"btn-group-fullwidth btn-group-sm",
 				options: [{
 					value: "automatic",
 					icon:"la la-cog",
 					text: "Configuration",
 					title: "Configuration",
-					extraclass:"btn-sm",
 					checked:true,
 				},{
 					value: "autocomplete",
 					text: "Autocomplete",
 					title: "Autocomplete",
 					icon:"la la-search",
-					extraclass:"btn-sm",
 				}],
 			},
 			

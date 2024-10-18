@@ -18,9 +18,11 @@
  *
  */
  
+import {ServerComponent} from '../server-component.js';
+
 let template = 
 `
-<section class="container product" data-v-component-product>
+<section class="container product" data-v-component-product data-v-product_id="1">
 
 
 	<div class="row g-0">
@@ -28,14 +30,19 @@ let template =
 		
 			<div id="product-gallery" class="carousel slide" data-bs-ride="carousel" data-bs-touch="true" data-v-product-images>
 			  <div class="carousel-inner">
-				<div class="carousel-item" data-v-product-image data-v-class-if-active="i = 0" >
+				<div class="carousel-item active">
+					<div class="zoom" data-v-product-main-image-background-image>
+						<img src="img/demo/product.jpg" loading="lazy" class="d-block w-100" alt="" data-v-product-main-image>
+					</div>
+				</div>					
+				<div class="carousel-item" data-v-product-image>
 					<div class="zoom" data-v-product-image-background-image>
-						<img src="img/demo/product.jpg" class="d-block w-100" alt="" data-v-product-image-src>
+						<img src="img/demo/product.jpg" loading="lazy" class="d-block w-100" alt="" data-v-product-image-src>
 					</div>
 				</div>
 				<div class="carousel-item" data-v-product-image>
 					<div class="zoom" data-v-product-image-background-image>
-						<img src="img/demo/product-2.jpg" class="d-block w-100" alt="" data-v-product-image-src>
+						<img src="img/demo/product-2.jpg" loading="lazy" class="d-block w-100" alt="" data-v-product-image-src>
 					</div>
 				</div>
 			  </div>
@@ -52,14 +59,17 @@ let template =
 		  <div class="carousel">
 		  
 			<div class="carousel-thumbs" data-v-product-images>
-				<button type="button" data-bs-target="#product-gallery" class="img-thumbnail" data-bs-slide-to="0" data-v-product-image>
-					<img src="" alt="" class="d-block w-100" data-v-product-image-src>
+				<button type="button" data-bs-target="#product-gallery" class="img-thumbnail" data-bs-slide-to="0">
+					<img src="" alt="" class="d-block w-100" loading="lazy" data-v-product-main-image>
 				</button>
 				<button type="button" data-bs-target="#product-gallery" class="img-thumbnail" data-bs-slide-to="1" data-v-product-image>
-					<img src="" alt="" class="d-block w-100" data-v-product-image-src>
+					<img src="" alt="" class="d-block w-100" loading="lazy" data-v-product-image-src>
 				</button>
 				<button type="button" data-bs-target="#product-gallery" class="img-thumbnail" data-bs-slide-to="2" data-v-product-image>
-					<img src="" alt="" class="d-block w-100" data-v-product-image-src>
+					<img src="" alt="" class="d-block w-100" loading="lazy" data-v-product-image-src>
+				</button>
+				<button type="button" data-bs-target="#product-gallery" class="img-thumbnail" data-bs-slide-to="3" data-v-product-image>
+					<img src="" alt="" class="d-block w-100" loading="lazy" data-v-product-image-src>
 				</button>
 			</div>
 			
@@ -280,9 +290,10 @@ let template =
 </section>
 `; 
  
-class ProductComponent {
-	constructor ()
-	{
+class ProductComponent extends ServerComponent{
+	constructor () 	{
+		super();
+
 		this.name = "Product";
 		this.attributes = ["data-v-component-product"],
 
@@ -290,166 +301,21 @@ class ProductComponent {
 		this.html = template;
 		
 		this.properties = [{
-			name: false,
-			key: "source",
-			inputtype: RadioButtonInput,
-			htmlAttr:"data-v-source",
-			data: {
-				inline: true,
-				extraclass:"btn-group-fullwidth",
-				options: [{
-					value: "automatic",
-					icon:"la la-cog",
-					text: "Configuration",
-					title: "Configuration",
-					extraclass:"btn-sm",
-					checked:true,
-				},{
-					value: "autocomplete",
-					text: "Autocomplete",
-					title: "Autocomplete",
-					icon:"la la-search",
-					extraclass:"btn-sm",
-				}],
-			},
-			
-			setGroup: group => {
-				document.querySelectorAll('.mb-3[data-group]').forEach(e => e.classList.add("d-none"));
-				document.querySelectorAll('.mb-3[data-group="'+ group + '"].d-none').forEach((el, i) => {
-					el.classList.remove("d-none");
-				});	
-
-				return element;
-			}, 		
-			onChange : function(element, value, input)  {
-				this.setGroup(input.value);
-
-				return element;
-			}, 
-			init: node => {
-				console.log(node, 'init');
-				//return this.setGroup('autocomplete');
-				//return 'autocomplete';
-				return node.dataset.source;
-			},            
-		},{
-			name: "Product",
-			key: "product",
+			name: "Product name <span class='text-muted'>(autocomplete)</span>",
+			key: "post",
 			group:"autocomplete",
-			htmlAttr:"data-v-product",
+			htmlAttr:"data-v-product_id",
 			inline:false,
 			col:12,
-			inputtype: AutocompleteList,
+			inputtype: AutocompleteInput,
 			data: {
-				url: "/admin/?module=editor/editor&action=productAutocomplete",
-			},
-		},{
-			name: "Nr. of product",
-			group:"automatic",
-			col:6,
-			inline:false,
-			key: "limit",
-			htmlAttr:"data-v-limit",
-			inputtype: NumberInput,
-			data: {
-				value: "8",//default
-				min: "1",
-				max: "1024",
-				step: "1"
-			},        
-			getFromNode: node => 10
-			,
-		},{
-			name: "Start from page",
-			group:"automatic",
-			col:6,
-			inline:false,
-			key: "page",
-			htmlAttr:"data-v-page",
-			data: {
-				value: "1",//default
-				min: "1",
-				max: "1024",
-				step: "1"
-			},        
-			inputtype: NumberInput,
-			getFromNode: node =>  0,
-		},{
-			name: "Order by",
-			group:"automatic",
-			key: "order",
-			htmlAttr:"data-v-order",
-			inputtype: SelectInput,
-			data: {
-				options: [{
-					value: "price_asc",
-					text: "Price Ascending"
-				},{
-					value: "price_desc",
-					text: "Price Descending"
-				},{
-					value: "date_asc",
-					text: "Date Ascending"
-				},{
-					value: "date_desc",
-					text: "Date Descending"
-				},{
-					value: "sales_asc",
-					text: "Sales Ascending"
-				},{
-					value: "sales_desc",
-					text: "Sales Descending"
-				}]
-			}
-		},{
-			name: "Category",
-			group:"automatic",
-			key: "category",
-			htmlAttr:"data-v-category",
-			inline:false,
-			col:12,
-			inputtype: TagsInput,
-			data: {
-				url: "/admin/?module=editor&action=productAutocomplete",
+				url: "/admin/?module=editor/autocomplete&action=products&type=",
 			},
 
-		},{
-			name: "Manufacturer",
-			group:"automatic",
-			key: "manufacturer",
-			htmlAttr:"data-v-manufacturer",
-			inline:false,
-			col:12,
-			inputtype: TagsInput,
-			data: {
-				url: "/admin/?module=editor&action=productAutocomplete",
-			}
-		},{
-			name: "Manufacturer 2",
-			group:"automatic",
-			key: "manufacturer 2",
-			htmlAttr:"data-v-manufacturer2",
-			inline:false,
-			col:12,
-			inputtype: TagsInput,
-			data: {
-				url: "/admin/?module=editor&action=productAutocomplete",
-			},
-		}];
+		}];	
 	}
 
-    init(node)
-	{
-		document.querySelectorAll('.mb-3[data-group]').forEach((el, i) => {
-			el.classList.add("d-none");
-		});			
-		
-		let source = node.dataset.vSource;
-		if (!source) {
-			source = "automatic";
-		} 
-
-		document.querySelectorAll('.mb-3[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
+    init(node) {
 	}
 }
 

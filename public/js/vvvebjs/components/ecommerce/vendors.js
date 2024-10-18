@@ -35,7 +35,7 @@ class VendorsComponent {
 	constructor ()
 	{
 		this.name = "Vendors";
-		this.attributes = ["data-v-component-vendors"],
+		this.attributes = ["data-v-component-product-vendors"],
 
 		this.image ="icons/vendor.svg";
 		this.html = template;
