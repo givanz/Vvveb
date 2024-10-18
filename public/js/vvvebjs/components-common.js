@@ -59,8 +59,8 @@ function changeNodeName(node, newNodeName) {
 		newNode.setAttribute(attributes[i].nodeName, attributes[i].nodeValue);
 	}
 
-	for (e of node.childNodes) {
-		newNode.append(e);
+	while (node.hasChildNodes()) {
+		newNode.appendChild(node.removeChild(node.firstChild))
 	}
 	
 	node.replaceWith(newNode);
@@ -110,29 +110,6 @@ Vvveb.Components.extend("_base", "_base", {
         sort: base_sort++,
 		section: style_section,
         data: {header:"Display"},
-     }, {
-        name: "State",
-        key: "state",
-        sort: base_sort++,
-        section: style_section,
-        inline:true,
-        col:12,
-        inputtype: SelectInput,
-		data: {
-            options: [{
-                value: "",
-                text: "- none -"
-            },{
-                value: "hover",
-                text: "Hover"
-            },{
-                value: "active",
-                text: "Active"
-            },{
-                value: "focus",
-                text: "Focus"
-            }]
-    }
      },{
 		//linked styles notice message
 		name:"",
