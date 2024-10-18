@@ -58,6 +58,8 @@ class View {
 
 	private $componentContent;
 
+	private $html;
+
 	private $useComponent;
 
 	private $isEditor = false;
@@ -80,18 +82,23 @@ class View {
 			$this->theme        = config(APP . '.theme', 'default');
 		}
 
+		if (isEditor()) {
+			$this->isEditor = true;
+		}
+
 		$domain = $this->theme . '-domain';
 		addTranslationDomain($domain);
 
 		$this->htmlPath     = DIR_THEME . $this->theme . DS;
 		$this->templatePath = DIR_THEME . $this->theme . DS; //\Vvveb\config(APP . '.theme', 'default') . DS;
 
-		if (isset($_REQUEST['_component_ajax'])) {
+		if (isset($_REQUEST['_component_ajax']) && $this->isEditor) {
 			$this->component        = \Vvveb\filter('/[a-z\-]*/', $_REQUEST['_component_ajax'], 15);
 			$this->componentCount   = \Vvveb\filter('/\d+/', $_REQUEST['_component_id'],  2);
 			//$this->componentCount   = 0;
 			//if (isset($_REQUEST['_server_template'])) {
 			$this->componentContent = $_POST['_component_content'] ?? '';
+			$this->html             = $_POST['html'] ?? '';
 			//}
 		}
 
@@ -109,7 +116,7 @@ class View {
 		$template->addTemplatePath($this->htmlPath . 'template' . DS);
 		$template->setHtmlPath($this->htmlPath);
 
-		if (isEditor()) {
+		if ($this->isEditor) {
 			$this->isEditor = true;
 			$template->removeVattrs(false);
 		}
@@ -257,13 +264,24 @@ class View {
 		if ($this->useComponent && ! defined('CLI')) {
 			//regenerate components cache
 			if (! $service) {
-				$service = Component::getInstance($this, true, $this->componentContent);
+				if ($this->html) {
+					$html = $this->html;
+				} else {
+					$html = $this->componentContent;
+				}
+
+				$service = Component::getInstance($this, true, $html);
 			}
 		}
 
 		list($this->template, $filename, $this->tplFile) =
 		Event :: trigger(__CLASS__,__FUNCTION__, $this->template, $filename, $this->tplFile, $this->templateEngine, $this);
-		$errors = $this->templateEngine->loadHtmlTemplate($filename);
+
+		if ($this->html) {
+			$errors = $this->templateEngine->loadHtml($this->html);
+		} else {
+			$errors = $this->templateEngine->loadHtmlTemplate($filename);
+		}
 
 		//if no template defined use the default
 		if ($this->tplFile[0] == '/') {
