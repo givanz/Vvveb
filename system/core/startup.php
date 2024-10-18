@@ -154,8 +154,8 @@ function autoload($class) {
 			$pluginName = strtolower(preg_replace('/(?<!^)(?<!\/)(?<!\\\)[A-Z]/', '-$0', $pluginName));
 			$sqlFile    = DIR_PLUGINS . $pluginName . 'sql' . DS . DB_ENGINE . DS . $file . '.sql';
 		} else {
-			$sqlFile   = strtolower($sqlFile);
-			$sqlFile   = DIR_SQL . $sqlFile . '.sql';
+			$sqlFile   = strtolower($sqlFile) . '.sql';
+			//$sqlFile   = DIR_SQL . $sqlFile . '.sql';
 		}
 
 		$name      = str_replace(['\\', 'sql' . DS], [DS, ''], strtolower($relativeClass));
@@ -172,12 +172,30 @@ function autoload($class) {
 		$fileExists = file_exists($file);
 
 		if (SQL_CHECK || ! $fileExists) {
-			if (! file_exists($sqlFile)) {
+			$sqlExists = false;
+
+			if ($isFromPlugin > 0) {
+				$fullSqlFile = $sqlFile;
+				$sqlExists   = file_exists($fullSqlFile);
+			} else {
+				//fallback to admin if sql file is missing in APP
+				foreach ([APP, 'admin'] as $app) {
+					$fullSqlFile = DIR_ROOT . $app . DS . 'sql' . DS . DB_ENGINE . DS . $sqlFile;
+
+					if (file_exists($fullSqlFile)) {
+						$sqlExists = true;
+
+						break;
+					}
+				}
+			}
+
+			if (! $sqlExists) {
 				throw new \Exception(sprintf(\Vvveb\__('SQL file %s does not exist for %s!'), $sqlFile, $relativeClass));
 			}
 			//if the file has not been generated yet or sql files is changed recompile
-			if (! $fileExists || ((filemtime($sqlFile) > filemtime($file)))) {
-				regenerateSQL($sqlFile, $file, $modelName, $namespace);
+			if (! $fileExists || ((filemtime($fullSqlFile) > filemtime($file)))) {
+				regenerateSQL($fullSqlFile, $file, $modelName, $namespace);
 				$fileExists = true;
 			}
 		}
