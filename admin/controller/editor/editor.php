@@ -26,6 +26,7 @@ use \Vvveb\Sql\menuSQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use function Vvveb\getUrl;
+use function Vvveb\model;
 use function Vvveb\sanitizeFileName;
 use function Vvveb\slugify;
 use Vvveb\Sql\PostSQL;
@@ -106,7 +107,7 @@ class Editor extends Base {
 
 		//menu list
 		$menuSql = new \Vvveb\Sql\menuSQL();
-		$results = $menuSql->getMenusList($this->global);
+		$results = $menuSql->getAll($this->global);
 
 		$data += $results;
 
@@ -167,7 +168,7 @@ class Editor extends Base {
 		$results = $this->posts->getAll($options);
 		$posts   = [];
 
-		foreach ($results['posts'] as $post) {
+		foreach ($results['post'] as $post) {
 			$slug = $post['slug'];
 			$url  = url('content/page/index',['slug' => $slug, 'post_id' => $post['post_id']]);
 
@@ -187,28 +188,55 @@ class Editor extends Base {
 		}
 
 		if (isset($this->request->get['url'])) {
-			$name     = $url      = $this->request->get['url'];
-			$template = $this->request->get['template'] ?? \Vvveb\getUrlTemplate($url) ?? 'index.html';
-			$folder 	 = $this->request->get['folder'] ?? false;
-			$filename = $template;
-			$file     = $template;
-			$title    = \Vvveb\humanReadable(str_replace('.html', '', $url));
+			$url          = $this->request->get['url'];
+			$name         = $this->request->get['name'] ?? '';
+			$template     = $this->request->get['template'] ?? ''; //\Vvveb\getUrlTemplate($url) ?? 'index.html';
+			$folder       = $this->request->get['folder'] ?? false;
+			$route        = \Vvveb\getUrlRoute($url);
+			$file         = $template;
+			$className    = 'url';
+			$current_page = [];
 
-			if ($url == '/') {
-				$title = __('Homepage');
-				$name  = 'index';
+			switch ($route['module']) {
+				case 'product/product/index':
+					$className                  = 'product';
+					$current_page['product_id'] = $route['product_id'];
+
+				break;
+
+				case 'content/post/index':
+				case 'content/page/index':
+					$className               = 'page';
+					$current_page['post_id'] = $route['post_id'];
+
+				break;
 			}
 
-			$current_page = [
-				'name'      => $name,
+			$key  = slugify($url);
+			$slug = slugify(str_replace('.html', '', $template));
+
+			if ($url == '/') {
+				$key = $slug = 'index';
+			}
+
+			if (! $name) {
+				//if in page list get pretty name
+				if (isset($view->pages[$slug])) {
+					$name = $view->pages[$slug]['title'];
+				} else {
+					$name = \Vvveb\humanReadable($url);
+				}
+			}
+			$current_page += [
+				'name'      => $key,
 				'file'      => $file,
 				'url'       => $url . ($theme ? '?theme=' . $theme : ''),
-				'title'     => $title,
+				'title'     => $name,
 				'folder'    => '',
-				'className' => 'page',
+				'className' => $className,
 			];
 
-			$view->pages = [$name => $current_page] + $view->pages;
+			$view->pages = [$key => $current_page] + $view->pages;
 		}
 
 		$admin_path                    = \Vvveb\adminPath();
@@ -224,6 +252,8 @@ class Editor extends Base {
 		$this->view->renameUrl         = "$mediaControllerPath&action=rename";
 
 		//editor endpoints
+		$this->view->namespaceUrl      =  $admin_path . 'index.php?module=editor';
+		$this->view->editorUrl         =  $controllerPath;
 		$this->view->saveUrl           = "$controllerPath&action=save";
 		$this->view->deleteFileUrl     = "$controllerPath&action=delete";
 		$this->view->renameFileUrl     = "$controllerPath&action=rename";
@@ -368,38 +398,54 @@ class Editor extends Base {
 
 	function rename() {
 		$post_id     = $this->request->post['post_id'] ?? false;
+		$product_id  = $this->request->post['product_id'] ?? false;
 		$file        = sanitizeFileName($this->request->post['file']);
 		$newfile     = sanitizeFileName($this->request->post['newfile']);
 		$duplicate   = $this->request->post['duplicate'] ?? 'false';
 		$themeFolder = $this->getThemeFolder();
+		$name        = $this->request->post['name'] ?? $newfile;
+		$theme       = $this->getTheme();
+		$dir         = dirname($file);
 
-		if (strpos($newfile, '.html') === false) {
-			$newfile .= '.html';
+		if ($newfile) {
+			$slug    = sanitizeFileName(str_ireplace('.html', '', (basename($newfile))));
+			$newfile = $slug . '.html';
 		}
 
 		$currentFile = $themeFolder . DS . $file;
-		$targetFile  = dirname($currentFile) . DS . slugify(basename($newfile)); //save in same folder
+		$targetFile  = dirname($currentFile) . DS . $newfile; //save in same folder
 
 		$message = ['success' => false, 'message' => __('Error!')];
 
-		if ($post_id) {
+		if ($post_id || $product_id) {
+			$model      = 'post';
+			$type       = 'page';
+			$namespace  = 'content';
+			$model_id   = $post_id;
+
+			if ($product_id) {
+				$model_id   = $product_id;
+				$namespace  = 'product';
+				$model      = 'product';
+				$type       = 'product';
+			}
+
 			if ($newfile) {
-				$type          = 'page';
 				$name          = sanitizeFileName($this->request->post['name']);
 				$slug          = slugify($name);
 
-				$this->posts   = new PostSQL();
-				$data          = $this->posts->get(['post_id' => $post_id]);
+				$this->posts   = model($model);
+				$data          = $this->posts->get([$model . '_id' => $model_id]);
 
 				if ($duplicate === 'true') {
-					$data = $this->posts->get(['post_id' => $post_id]);
+					$data = $this->posts->get([$model . '_id' => $model_id]);
 
 					if ($data) {
-						unset($data['post_id']);
+						unset($data[$model . '_id']);
 						$id = rand(1, 1000);
 
-						foreach ($data['post_content'] as &$content) {
-							unset($content['post_id']);
+						foreach ($data[$model . '_content'] as &$content) {
+							unset($content[$model . '_id']);
 
 							if ($content['language_id'] == $this->global['language_id']) {
 								$content['name'] = $name;
@@ -410,65 +456,68 @@ class Editor extends Base {
 							}
 						}
 
-						if (isset($data['post_to_taxonomy_item'])) {
-							foreach ($data['post_to_taxonomy_item'] as &$item) {
+						if (isset($data[$model . '_to_taxonomy_item'])) {
+							foreach ($data[$model . '_to_taxonomy_item'] as &$item) {
 								$taxonomy_item[] = $item['taxonomy_item_id'];
 							}
 						}
 
-						if (isset($data['post_to_site'])) {
-							foreach ($data['post_to_site'] as &$item) {
+						if (isset($data[$model . '_to_site'])) {
+							foreach ($data[$model . '_to_site'] as &$item) {
 								$site_id[] = $item['site_id'];
 							}
 						}
 
-						$startTemplateUrl = $data['template'] ?? "content/$type.html";
-						$template         = "content/$slug.html";
+						$startTemplateUrl = $data['template'] ?? "$namespace/$type.html";
+						$template         = "$namespace/$slug.html";
 
 						if (! @copy($themeFolder . DS . $startTemplateUrl, $themeFolder . DS . $template)) {
 							$template = $data['template'] ?? '';
 						}
 
 						$result = $this->posts->add([
-							'post' => [
-								'post_content'  => $data['post_content'],
-								'taxonomy_item' => $taxonomy_item ?? [],
-								'template'      => $template,
+							$model => [
+								$model . '_content'  => $data[$model . '_content'],
+								'taxonomy_item'      => $taxonomy_item ?? [],
+								'template'           => $template,
 							] + $data,
 							'site_id' => $site_id,
 						]);
 
-						if ($result && isset($result['post'])) {
-							$message = ['success' => true, 'url' => url('content/page/index', ['slug' => $slug, 'post_id' => $post_id]), 'message' => ucfirst($type) . ' ' . __('duplicated') . '!'];
+						if ($result && isset($result[$model])) {
+							$model_id = $result[$model];
+							$message  = ['success' => true, 'name' => $name, 'slug' => $slug, $model . '_id' => $model_id, 'url' => url("$namespace/$type/index", ['slug' => $slug, $model . '_id' => $model_id]), 'message' => ucfirst($type) . ' ' . __('duplicated') . '!'];
 						} else {
 							$message = ['success' => false, 'message' => sprintf(__('Error duplicating %s!'),  $type)];
 						}
 					}
 				} else {
 					$data = [
-						'post_content'  => ['name' => $name, 'slug' => $slug],
-						'post_id'       => $post_id,
-						'language_id'   => $this->global['language_id'],
+						$model . '_content'  => ['name' => $name, 'slug' => $slug],
+						$model . '_id'       => $model_id,
+						'language_id'        => $this->global['language_id'],
 					];
 					$result  = $this->posts->editContent($data);
 
-					if ($result && isset($result['post_content'])) {
-						$message = ['success' => true, 'url' => url('content/page/index', ['slug' => $slug, 'post_id' => $post_id]), 'message' => ucfirst($type) . ' ' . __('renamed') . '!'];
+					if ($result && isset($result[$model . '_content'])) {
+						$message = ['success' => true, 'name' => $name, 'slug' => $slug, $model . '_id' => $model_id, 'url' => url("$namespace/$type/index", ['slug' => $slug, $model . '_id' => $model_id]), 'message' => ucfirst($type) . ' ' . __('renamed') . '!'];
 					} else {
 						$message = ['success' => false, 'message' => sprintf(__('Error renaming %s!'),  $type)];
 					}
 				}
 			}
 		} else {
+			$newfile = PUBLIC_PATH . "themes/$theme/" . ($dir ? $dir . '/' : '') . $newfile;
+
 			if ($duplicate === 'true') {
 				if (@copy($currentFile, $targetFile)) {
-					$message = ['success' => true, 'newfile' => $newfile,  'message' => __('File copied!'),  'url' => $newfile];
+					$message = ['success' => true, 'newfile' => $newfile, 'name' => $name, 'message' => __('File copied!'),  'url' => $newfile];
 				} else {
 					$message = ['success' => false, 'message' => __('Error copying file!')];
 				}
 			} else {
 				if (rename($currentFile, $targetFile)) {
-					$message = ['success' => true, 'newfile' => $newfile, 'message' => __('File renamed!')];
+					$message = ['success' => true, 'newfile' => $newfile, 'name' => $name, 'message' => __('File renamed!')];
 				} else {
 					$message = ['success' => false, 'message' => __('Error renaming file!')];
 				}
@@ -520,9 +569,10 @@ class Editor extends Base {
 						'site_id' => [$this->global['site_id']], ] + $this->global);
 
 					if ($result['post']) {
+						$post_id    = $result['post'];
 						$success    = true;
 						$route      = "content/{$type}/index";
-						$url        = \Vvveb\url($route, ['slug'=> $slug]);
+						$url        = \Vvveb\url($route, ['slug'=> $slug, 'post_id'=> $post_id]);
 					}
 
 				break;
@@ -550,9 +600,10 @@ class Editor extends Base {
 						'site_id' => [$this->global['site_id']], ] + $this->global);
 
 					if ($result['product']) {
+						$product_id = $result['product'];
 						$success    = true;
 						$route      = "product/{$type}/index";
-						$url        = \Vvveb\url($route, ['slug'=> $slug]);
+						$url        = \Vvveb\url($route, ['slug' => $slug, 'product_id'=> $product_id]);
 					}
 
 				break;
