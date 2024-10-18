@@ -30,7 +30,10 @@ class Session {
 
 		if ($inst === null) {
 			$driver = \Vvveb\config(APP . '.session.driver', 'php');
-			$inst   = new Session($driver);
+
+			if ($driver) {
+				$inst   = new Session($driver);
+			}
 		}
 
 		return $inst;
@@ -50,22 +53,22 @@ class Session {
 	}
 
 	public function get($key) {
-		return $this->driver->get($key);
+		return $this->driver ? $this->driver->get($key) : null;
 	}
 
 	public function set($key, $value) {
-		return $this->driver->set($key, $value);
+		return $this->driver ? $this->driver->set($key, $value) : null;
 	}
 
 	public function delete($key) {
-		return $this->driver->delete($key);
+		return $this->driver ? $this->driver->delete($key) : null;
 	}
 
 	public function close() {
-		return $this->driver->close();
+		return $this->driver ? $this->driver->close() : null;
 	}
 
 	public function sessionId($id = null) {
-		return $this->driver->sessionId($id);
+		return $this->driver ? $this->driver->sessionId($id) : null;
 	}
 }

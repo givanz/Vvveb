@@ -57,7 +57,7 @@ class Php {
 			$domain = preg_replace('/^[^\.]*\./', '', $host);
 			$name   = str_replace('.', '', $domain);
 			// skip if ip number
-			if (! is_numeric($name)) {
+			if ((! is_numeric($name)) && ($name != 'localhost')) {
 				@ini_set('session.cookie_domain', ".$domain");
 				session_set_cookie_params(0, '/', ".$domain");
 				$sessionName = session_name($name);
