@@ -84,6 +84,7 @@ class Post extends Base {
 					$this->request->get['post_id']         = $languageContent['post_id'];
 					$this->request->get['admin_id']        = $languageContent['admin_id'];
 					$this->request->request['post_id']     = $languageContent['post_id'];
+					$this->request->get['name']            = $languageContent['name'];
 					$this->request->request['name']        = $languageContent['name'];
 					$this->request->request['code']        = $languageContent['code'];
 					$this->request->request['language_id'] = $languageContent['language_id'];

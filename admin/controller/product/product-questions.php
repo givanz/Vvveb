@@ -27,7 +27,7 @@ use Vvveb\Controller\Content\Comments;
 class ProductQuestions extends Comments {
 	protected $type = 'product_question';
 
-	protected $list = 'product_questions';
+	protected $list = 'product_question';
 
 	protected $listController = 'product-questions';
 

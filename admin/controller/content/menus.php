@@ -81,7 +81,7 @@ class Menus extends Categories {
 			echo $menus->error;
 		}
 
-		die();
+		die(0);
 
 		return $this->index();
 	}
@@ -95,7 +95,7 @@ class Menus extends Categories {
 			echo __('Items reordered!');
 		}
 
-		die();
+		die(0);
 	}
 
 	function add() {
@@ -118,13 +118,14 @@ class Menus extends Categories {
 			}
 		}
 
-		$response = [];
-		$success = true;
+		$response     = [];
+		$success      = true;
 		$menu_item_id = false;
-		
+
 		if (isset($data['menu_item_id']) && $data['menu_item_id']) {
-			$results = $menus->editMenuItem(['menu_item' => $data, 'menu_item_id' => $data['menu_item_id']]);
+			$results      = $menus->editMenuItem(['menu_item' => $data, 'menu_item_id' => $data['menu_item_id']]);
 			$menu_item_id = $data['menu_item_id'];
+
 			if ($results) {
 				$message = __('Item saved!');
 			} else {
@@ -136,13 +137,13 @@ class Menus extends Categories {
 
 			if ($results) {
 				$menu_item_id = $results['menu_item'];
-				$message =  __('Item added!');
+				$message      =  __('Item added!');
 			} else {
 				$message =  __('Error!');
 				$success = false;
 			}
 		}
-		
+
 		$response += ['success' => $success, 'message' => $message, 'menu_item_id' => $menu_item_id];
 
 		$this->response->setType('json');
@@ -229,7 +230,7 @@ class Menus extends Categories {
 			'limit' => 10000,
 		] + $this->global;
 
-		$results = $menus->getMenusList($options);
+		$results = $menus->getAll($options);
 
 		if (isset($results['menu'])) {
 			foreach ($results['menu'] as &$menu) {

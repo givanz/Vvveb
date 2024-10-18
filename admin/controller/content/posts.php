@@ -225,8 +225,8 @@ class Posts extends Base {
 
 		$defaultTemplate = "content/{$this->type}.html";
 
-		if ($results && isset($results['posts'])) {
-			foreach ($results['posts'] as $id => &$post) {
+		if ($results && isset($results['post'])) {
+			foreach ($results['post'] as $id => &$post) {
 				if (isset($post['image'])) {
 					$post['image'] = Images::image($post['image'], 'post');
 				}
@@ -240,7 +240,7 @@ class Posts extends Base {
 				$post['delete-url']    = url(['module' => 'content/posts', 'action' => 'delete'] + $url + ['post_id[]' => $post['post_id']]);
 				$post['duplicate-url'] = url(['module' => 'content/posts', 'action' => 'duplicate'] + $url + ['post_id' => $post['post_id']]);
 				$post['view-url']      = url("content/{$this->type}/index", $post + $url + ['host' => $this->global['site_url']]);
-				$post['design-url']    = url(['module' => 'editor/editor', 'url' => $post['view-url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
+				$post['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($post['name'] ?? ''), 'url' => $post['view-url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
 			}
 		}
 

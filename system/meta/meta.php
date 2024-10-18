@@ -31,7 +31,7 @@ class Meta {
 
 	private static $instance;
 
-	protected $model;
+	protected $modelName;
 
 	protected $item_id;
 
@@ -44,7 +44,7 @@ class Meta {
 	}
 
 	function __construct() {
-		$this->settingSql = model($this->model);
+		$this->settingSql = model($this->modelName);
 	}
 
 	public function getMulti($item_id, $namespace, $key = null, $default = null, $language_id = false) {

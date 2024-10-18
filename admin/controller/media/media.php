@@ -24,9 +24,9 @@ namespace Vvveb\Controller\Media;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
-use Vvveb\Sql\media_ContentSQL;
 use function Vvveb\fileUploadErrMessage;
 use function Vvveb\sanitizeFileName;
+use Vvveb\Sql\media_ContentSQL;
 
 class Media extends Base {
 	protected $uploadDenyExtensions = ['php', 'svg', 'js'];
@@ -146,7 +146,7 @@ class Media extends Base {
 		$file        = sanitizeFileName($this->request->post['file']);
 		$newfile     = sanitizeFileName($this->request->post['newfile']);
 		$duplicate   =  $this->request->post['duplicate'] ?? false;
-		$dirMedia = DIR_MEDIA;
+		$dirMedia    = DIR_MEDIA;
 
 		$currentFile = $dirMedia . DS . $file;
 		$targetFile  = $dirMedia . DS . $newfile;
@@ -170,11 +170,12 @@ class Media extends Base {
 	}
 
 	function newFolder() {
-		$folder = sanitizeFileName($this->request->post['folder']);
-		$path   = sanitizeFileName($this->request->post['path']);
+		$folder  = sanitizeFileName($this->request->post['folder']);
+		$path    = sanitizeFileName($this->request->post['path']);
 		$success = false;
-		
+
 		$dirMedia = DIR_MEDIA;
+
 		if (is_dir($dirMedia . $path)) {
 			if (@mkdir($dirMedia . $path . DS . $folder)) {
 				$message = __('Folder created!');
@@ -185,43 +186,42 @@ class Media extends Base {
 		} else {
 			$message = __('Path does not exist!');
 		}
-		
+
 		$message = ['success' => $success, 'message' => $message];
 
 		$this->response->setType('json');
 		$this->response->output($message);
 	}
-		
+
 	function mediaContentSave() {
 		$file    = sanitizeFileName($this->request->post['file']);
 		$content = ($this->request->post['media_content']);
 
 		$mediaContent = new media_ContentSQL();
-		$media = $mediaContent->get(['file' => $file] + $this->global);
+		$media        = $mediaContent->get(['file' => $file] + $this->global);
+
 		if ($media) {
-			//var_dump(['media_id' => $media['media_id'], 'media_content' => $content]);
-			 $result = $mediaContent->edit(['media_id' => $media['media_id'], 'media_content' => $content, 'media' => []]);
+			$result = $mediaContent->edit(['media_id' => $media['media_id'], 'media_content' => $content, 'media' => []]);
 		} else {
-			//var_dump(['media' => ['file' => $file], 'media_content' => $content]);
 			$result = $mediaContent->add(['media' => ['file' => $file], 'media_content' => $content]);
 		}
-		
+
 		if ($result) {
 			$message = ['success' => true, 'message' => __('Saved!')];
 		} else {
 			$message = ['success' => false, 'message' => __('Error saving!')];
-		}		
+		}
 
 		$this->response->setType('json');
 		$this->response->output($message);
 	}
-	
+
 	function mediaContent() {
 		$file        = sanitizeFileName($this->request->get['file']);
 		$themeFolder = DIR_MEDIA;
 
 		$mediaContent = new media_ContentSQL();
-		$result = $mediaContent->getContent(['file' => $file] + $this->global);
+		$result       = $mediaContent->getContent(['file' => $file] + $this->global);
 
 		$this->response->setType('json');
 		$this->response->output($result ?? []);

@@ -75,7 +75,7 @@ if ($pagecount > $maxpages)
 	
 	@page [data-page-no] = $page
 	@page [data-page-url]|href = <?php echo htmlentities(Vvveb\url($url, ['page' => $page] + $parameters)) . $query_string;?>
-	@page|addClass = <?php if ($current_page == $page) echo 'active'?>
+	@page|addClass = <?php if (($current_page == $page) && !$vvveb_is_page_edit) echo 'active'?>
 
 @page|after = <?php 
 	} 

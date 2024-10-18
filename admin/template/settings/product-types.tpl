@@ -1,1 +1,1 @@
-import(listing.tpl, {"type":"type", "list": "types"})
+import(listing.tpl, {"type":"type", "list": "type"})

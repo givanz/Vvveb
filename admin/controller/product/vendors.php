@@ -27,7 +27,7 @@ use Vvveb\Controller\Listing;
 class Vendors extends Listing {
 	protected $type = 'vendor';
 
-	protected $list = 'vendors';
+	protected $list = 'vendor';
 
 	protected $module = 'product';
 }

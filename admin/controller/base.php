@@ -560,7 +560,7 @@ class Base {
 			FrontController::closeConnections();
 			PageCache::getInstance()->cleanUp();
 
-			die();
+			die(0);
 		}
 	}
 

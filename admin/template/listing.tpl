@@ -6,8 +6,8 @@ import(pagination.tpl)
 
 @{{type}}|before = <?php
 $count = 0;
-if(isset($this->{{list}}) && is_array($this->{{list}})) {
-	foreach ($this->{{list}} as $index => ${{type}}) { ?>
+if(isset($this->{{type}}) && is_array($this->{{type}})) {
+	foreach ($this->{{type}} as $index => ${{type}}) { ?>
 	
 	@{{type}} [data-v-{{type}}-*]|innerText  = ${{type}}['@@__data-v-{{type}}-(*)__@@']
 	@{{type}} input[data-v-{{type}}-*]|value = ${{type}}['@@__data-v-{{type}}-(*)__@@']	

@@ -138,7 +138,7 @@ class OrderCart extends Cart {
 			}
 		}
 
-		$products       = $results['products'] ?? [];
+		$products       = $results['product'] ?? [];
 
 		if ($products) {
 			foreach ($this->products as $key => &$prod) {
@@ -278,9 +278,9 @@ class OrderCart extends Cart {
 				$this->addTotal($total['key'], $total['title'], $total['value'], '', $total['order_total_id']);
 			}
 		}
-		//$this->products = $results['products'];
-		if (isset($results['products']) && $results['products']) {
-			foreach ($results['products'] as $product) {
+		//$this->products = $results['product'];
+		if (isset($results['product']) && $results['product']) {
+			foreach ($results['product'] as $product) {
 				$option_value = $product['option_value'] ? json_decode($product['option_value'], true) : [];
 				$this->add($product['product_id'], $product['order_product_id'], $product['quantity'], $option_value);
 			}

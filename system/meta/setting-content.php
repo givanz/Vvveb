@@ -23,7 +23,7 @@
 namespace Vvveb\System\Meta;
 
 class SettingContent extends Meta {
-	protected $model = 'setting_content';
+	protected $modelName = 'setting_content';
 
 	protected $item_id = 'site_id';
 }

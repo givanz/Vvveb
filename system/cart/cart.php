@@ -156,7 +156,7 @@ class Cart {
 			}
 		}
 
-		$products       = $results['products'] ?? [];
+		$products       = $results['product'] ?? [];
 
 		if ($products) {
 			foreach ($this->products as $key => &$prod) {

@@ -51,10 +51,10 @@ class Plugins extends Base {
 		return $this->index();
 	}
 
-	function activate() {
+	function checkPluginAndActivate() {
 		$global                     = $this->request->get['plugin'] ?? false;
 		$this->category             = $this->request->get['category'] ?? false;
-		$this->pluginCheckUrl       = \Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'checkPluginAndActivate', 'plugin' => $this->plugin, 'category' => $this->category]);
+		$this->pluginCheckUrl       = \Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'activate', 'plugin' => $this->plugin, 'category' => $this->category]);
 		$this->view->checkPluginUrl = $this->pluginCheckUrl;
 		$this->view->info[]         = sprintf(__('Activating %s plugin ...'), '<b>' . \Vvveb\humanReadable($this->plugin) . '</b> <span class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>');
 
@@ -118,7 +118,7 @@ class Plugins extends Base {
 				if ($this->pluginSlug) {
 					$this->pluginName        = \Vvveb\humanReadable($this->pluginSlug);
 					$this->pluginName        = "<b>$this->pluginName</b>";
-					$this->pluginActivateUrl = \Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'activate', 'plugin' => $this->pluginSlug]);
+					$this->pluginActivateUrl = \Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'checkPluginAndActivate', 'plugin' => $this->pluginSlug]);
 					$successMessage          = sprintf(__('Plugin %s was successfully installed!'), $this->pluginName, $this->pluginActivateUrl);
 					$successMessage .= "<p><a class='btn btn-primary btn-sm m-2'  href='{$this->pluginActivateUrl}'>" . __('Activate plugin') . '</a></p>';
 					$this->view->success[]   = $successMessage;
@@ -132,7 +132,7 @@ class Plugins extends Base {
 		return $this->index();
 	}
 
-	function checkPluginAndActivate() {
+	function activate() {
 		header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 		header('Cache-Control: post-check=0, pre-check=0', false);
 		header('Pragma: no-cache');
@@ -158,7 +158,7 @@ class Plugins extends Base {
 			$error['title']   = sprintf(__('Error activating plugin `%s`!'), $this->plugin);
 			FrontController::notFound(false, $error, 500);
 
-			die();
+			die(0);
 		}
 
 		if ($active) {

@@ -160,8 +160,8 @@ class Products extends Base {
 
 		$defaultTemplate = "product/{$this->type}.html";
 
-		if ($results && isset($results['products'])) {
-			foreach ($results['products'] as $id => &$product) {
+		if ($results && isset($results['product'])) {
+			foreach ($results['product'] as $id => &$product) {
 				if (isset($product['images'])) {
 					$product['images'] = json_decode($product['images'], 1);
 
@@ -181,7 +181,7 @@ class Products extends Base {
 				$product['duplicate-url'] = url(['module' => 'product/products', 'action' => 'duplicate', 'product_id' => $product['product_id'], 'type' => $product['type']]);
 				$product['view-url']      = url('product/product/index', $product + ['host' => $this->global['site_url']]);
 				$admin_path               = \Vvveb\adminPath();
-				$product['design-url']    = url(['module' => 'editor/editor', 'url' => $product['view-url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
+				$product['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($product['name'] ?? ''), 'url' => $product['view-url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
 			}
 		}
 

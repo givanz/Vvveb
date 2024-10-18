@@ -117,19 +117,21 @@ class Product extends Edit {
 
 		$this->product_id = $this->request->get[$this->object . '_id'] ?? $post[$this->object . '_id'] ?? false;
 
-		$this->saveOptions();
+		if ($this->product_id) {
+			$this->saveOptions();
 
-		$product          = new ProductSQL();
-		$features         = ['related', 'variant', 'subscription', 'discount', 'promotion', 'points', 'attribute', 'digital_asset'];
+			$product          = new ProductSQL();
+			$features         = ['related', 'variant', 'subscription', 'discount', 'promotion', 'points', 'attribute', 'digital_asset'];
 
-		foreach ($features as $feature) {
-			$feature = $this->object . '_' . $feature; //eg: product_related
-			$data    = $this->request->post[$feature] ?? [];
+			foreach ($features as $feature) {
+				$feature = $this->object . '_' . $feature; //eg: product_related
+				$data    = $this->request->post[$feature] ?? [];
 
-			if ($data) {
-				$fn = lcfirst(dashesToCamelCase($feature, '_')); //eg: $product->productRelated()
-				unset($data['#']);
-				$product->$fn([$this->object . '_id' => $this->product_id, $feature => array_unique($data, SORT_REGULAR)]);
+				if ($data) {
+					$fn = lcfirst(dashesToCamelCase($feature, '_')); //eg: $product->productRelated()
+					unset($data['#']);
+					$product->$fn([$this->object . '_id' => $this->product_id, $feature => array_unique($data, SORT_REGULAR)]);
+				}
 			}
 		}
 

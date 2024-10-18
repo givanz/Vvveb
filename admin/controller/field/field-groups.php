@@ -20,35 +20,18 @@
  *
  */
 
-namespace Vvveb\Controller;
+namespace Vvveb\Controller\Field;
 
-#[\AllowDynamicProperties]
-class Rest {
-	private $method = 'GET';
+use Vvveb\Controller\Listing;
 
-	function _construct() {
-		$this->method = $this->request->method;
+class FieldGroups extends Listing {
+	protected $type = 'field_group';
 
-		switch ($this->method) {
-			case 'GET':
-			break;
+	protected $controller = 'field-group';
 
-			case 'POST':
-			break;
+	protected $listController = 'field-group';
 
-			case 'PUT':
-			break;
+	protected $list = 'field_group';
 
-			case 'DELETE':
-				$this->action = 'delete';
-
-			break;
-		}
-	}
-
-	function index() {
-		var_dump($this->request->get);
-
-		die();
-	}
+	protected $module = 'field';
 }

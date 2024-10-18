@@ -27,7 +27,7 @@ use Vvveb\Controller\Listing;
 class Currencies extends Listing {
 	protected $type = 'currency';
 
-	protected $list = 'currencies';
+	protected $list = 'currency';
 
 	protected $listController = 'currencies';
 

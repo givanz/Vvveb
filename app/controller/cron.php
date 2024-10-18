@@ -50,10 +50,10 @@ class Cron {
 		}
 
 		if (! empty($this->request->post) || defined('CLI')) {
-			die();
+			die(0);
 		}
 
-		die();
+		die(0);
 	}
 
 	function call() {

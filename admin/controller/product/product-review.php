@@ -27,7 +27,7 @@ use Vvveb\Controller\Content\Comment;
 class ProductReview extends Comment {
 	protected $type = 'product_review';
 
-	protected $list = 'product_reviews';
+	protected $list = 'product_review';
 
 	protected $module = 'product';
 

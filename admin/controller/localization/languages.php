@@ -27,7 +27,7 @@ use Vvveb\Controller\Listing;
 class Languages extends Listing {
 	protected $type = 'language';
 
-	protected $list = 'languages';
+	protected $list = 'language';
 
 	protected $module = 'localization';
 }

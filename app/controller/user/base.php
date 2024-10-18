@@ -32,7 +32,7 @@ class Base extends \Vvveb\Controller\Base {
 		if (! $user) {
 			$this->redirect('/user/login');
 
-			die();
+			die(0);
 		}
 
 		if (isset($this->request->post['logout'])) {

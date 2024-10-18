@@ -80,6 +80,6 @@ class Downloads extends Base {
 			die(__('Invalid download!'));
 		}
 
-		die();
+		die(0);
 	}
 }

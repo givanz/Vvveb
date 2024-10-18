@@ -42,7 +42,6 @@ class Sites extends Base {
 			$active_deleted = false;
 			$active_site_id = $this->session->get('site_id');
 
-			
 			if (is_numeric($site_id)) {
 				$site_id = [$site_id];
 			}
@@ -91,7 +90,7 @@ class Sites extends Base {
 		} else {
 			$options['site_id'] = Admin :: siteAccess();
 		}
-		
+
 		$page    = $this->request->get['page'] ?? 1;
 		$limit   = $this->request->get['limit'] ?? 10;
 
@@ -102,14 +101,14 @@ class Sites extends Base {
 			]
 		);
 
-		if (isset($results['sites'])) {
-			foreach ($results['sites'] as &$site) {
+		if (isset($results['site'])) {
+			foreach ($results['site'] as &$site) {
 				$site['url']         = SitesList::url($site['host']);
 				$site['delete-url']  = \Vvveb\url(['module' => 'settings/sites', 'action' => 'delete', 'site_id[]' => $site['site_id']]);
 			}
 		}
 
-		$view->sitesList = $results['sites'] ?? [];
+		$view->sitesList = $results['site'] ?? [];
 		$view->count     = $results['count'] ?? 0;
 	}
 }

@@ -54,11 +54,11 @@ class Compare extends Base {
 				}
 			}
 
-			if ($results && isset($results['products'])) {
+			if ($results && isset($results['product'])) {
 				$tax      = Tax::getInstance($this->global);
 				$currency = Currency::getInstance($this->global);
 
-				foreach ($results['products'] as $id => &$product) {
+				foreach ($results['product'] as $id => &$product) {
 					if (isset($product['image']) && $product['image']) {
 						$product['image'] = Images::image($product['image'], 'product', 'thumb');
 					}
@@ -77,7 +77,7 @@ class Compare extends Base {
 				$specs = [];
 
 				foreach ($names as $attribute_id => $name) {
-					foreach ($results['products'] as $prod) {
+					foreach ($results['product'] as $prod) {
 						$id                        = $prod['product_id'];
 						$specs[$attribute_id][$id] = $attrs[$id][$attribute_id] ?? '-';
 					}

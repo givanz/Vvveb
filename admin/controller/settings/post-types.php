@@ -91,7 +91,7 @@ class PostTypes extends Listing {
 
 		$types = $this->defaultTypes + $pluginTypes + $userTypes;
 
-		$this->view->types = $types;
+		$this->view->type  = $types;
 		$this->view->count = count($types);
 	}
 }

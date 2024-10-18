@@ -23,7 +23,7 @@
 namespace Vvveb\System\Meta;
 
 class PostMeta extends Meta {
-	protected $model = 'post_meta';
+	protected $modelName = 'post_meta';
 
 	protected $item_id = 'post_id';
 }

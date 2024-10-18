@@ -36,7 +36,7 @@ class Categories extends Base {
 			echo __('Item removed!');
 		}
 
-		die();
+		die(0);
 	}
 
 	function reorder() {
@@ -48,7 +48,7 @@ class Categories extends Base {
 			echo __('Items reordered!');
 		}
 
-		die();
+		die(0);
 	}
 
 	function add() {
@@ -76,7 +76,7 @@ class Categories extends Base {
 			}
 		}
 
-		die();
+		die(0);
 
 		return;
 	}

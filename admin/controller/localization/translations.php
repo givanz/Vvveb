@@ -106,7 +106,6 @@ class Translations extends Base {
 		if ($lang && $domain) {
 			$poFile       = DIR_ROOT . 'locale' . DS . $lang . DS . 'LC_MESSAGES' . DS . $domain . '.po';
 			$view->poFile = $poFile;
-			//$poFile = '/home/www/vvveb/vvveb/locale/ro_RO/LC_MESSAGES/vvveb.po';
 
 			if (file_exists($poFile)) {
 				$view->translations = phpmo_parse_po_file($poFile);

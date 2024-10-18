@@ -109,8 +109,8 @@ trait AutocompleteTrait {
 
 		$search = [];
 
-		if (isset($results['products'])) {
-			foreach ($results['products'] as $product) {
+		if (isset($results['product'])) {
+			foreach ($results['product'] as $product) {
 				$product['image'] = Images::image($product['image'], 'product', 'thumb');
 				$search[]         = [
 					'type' => 'cardimage',
@@ -125,8 +125,8 @@ trait AutocompleteTrait {
 			$posts   = new \Vvveb\Sql\PostSQL();
 			$results = $posts->getAll($options);
 
-			if (isset($results['posts'])) {
-				foreach ($results['posts'] as $post) {
+			if (isset($results['post'])) {
+				foreach ($results['post'] as $post) {
 					$post['image'] = Images::image($post['image'], 'post', 'thumb');
 					$search[]      = [
 						'type' => 'cardimage',
@@ -155,8 +155,8 @@ trait AutocompleteTrait {
 
 		$search = [];
 
-		if (isset($results['products'])) {
-			foreach ($results['products'] as $product) {
+		if (isset($results['product'])) {
+			foreach ($results['product'] as $product) {
 				$product['image']                        = Images::image($product['image'], $this->object);
 				$search[$product[$this->object . '_id']] = '<img width="32" height="32" src="' . $product['image'] . '"> ' . $product['name'];
 			}

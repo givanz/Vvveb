@@ -64,7 +64,7 @@ class Edit extends Base {
 				'start'        => 0,
 				'limit'        => 100,
 			]
-		)['sites'] ?? [];
+		)['site'] ?? [];
 
 		if ($results && $selectedSites) {
 			foreach ($results as &$site) {
@@ -177,6 +177,7 @@ class Edit extends Base {
 		$url = ['host' => $this->global['site_url']];
 
 		$revisionsUrl = \Vvveb\url(['module' => "$controller/revisions", 'object' => $this->object, 'type' => $this->type, $this->object . '_id' => $post_id]);
+		$name         = '';
 
 		if (isset($post[$this->object . '_content'])) {
 			foreach ($post[$this->object . '_content'] as &$content) {
@@ -196,6 +197,8 @@ class Edit extends Base {
 						}
 					}
 					$language = ['language' => $code];
+				} else {
+					$name = $content['name'];
 				}
 
 				$content['url']             = \Vvveb\url($route, $content + $language + $url);
@@ -209,13 +212,13 @@ class Edit extends Base {
 					$revision = $revisions->getAll([$this->object . '_id' => $post_id, 'language_id' => $content['language_id']]);
 
 					if ($revision) {
-						foreach ($revision['revision'] as &$rev) {
+						foreach ($revision[$this->object . '_content_revision'] as &$rev) {
 							$rev['preview-url'] = $content['url'] . '?revision=preview&created_at=' . $rev['created_at'];
 							$rev['compare-url'] = $revisionsUrl . '&created_at=' . $rev['created_at'];
 						}
 
 						$content['revision_count'] = $revision['count'];
-						$content['revision']       = $revision['revision'];
+						$content['revision']       = $revision[$this->object . '_content_revision'];
 					}
 				}
 			}
@@ -230,7 +233,7 @@ class Edit extends Base {
 		$design_url = '';
 
 		if (isset($post['url'])) {
-			$design_url         = \Vvveb\url(['module' => 'editor/editor', 'url' => $post['url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
+			$design_url         = \Vvveb\url(['module' => 'editor/editor', 'name' => urlencode($name),  'url' => $content['url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
 			$post['design_url'] = $design_url;
 		}
 
