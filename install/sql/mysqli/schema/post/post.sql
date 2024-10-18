@@ -18,5 +18,6 @@ CREATE TABLE `post` (
   PRIMARY KEY (`post_id`),
   KEY `type_status_date` (`type`,`status`,`sort_order`,`created_at`,`post_id`),
   KEY `parent` (`parent`),
-  KEY `author` (`admin_id`)
+  KEY `author` (`admin_id`),
+  KEY `updated_at` (`updated_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

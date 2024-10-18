@@ -134,6 +134,7 @@ INSERT INTO `menu_item_content` VALUES
 (74,1, 'Blog', 'Blog', ''),
 (75,1, 'Services', 'Services', ''),
 (76,1, 'About us', 'About us', ''),
+(80,1, 'Marketplace', 'Marketplace', ''),
 
 (53,1, 'Information', 'Information', ''),
 (54,1, 'Delivery Information', 'Delivery Information', 'Delivery Information'),

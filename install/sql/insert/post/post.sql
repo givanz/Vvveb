@@ -15,6 +15,7 @@ INSERT INTO `post` (`admin_id`, `status`, `image`, `comment_status`, `password`,
 (1,'publish','','open','',0,0,'page','about.html',0,'2022-05-01 00:00:00','2022-05-01 00:00:00'),
 (1,'publish','','open','',0,0,'page','services.html',0,'2022-05-01 00:00:00','2022-05-01 00:00:00'),
 (1,'publish','','open','',0,0,'page','pricing.html',0,'2022-05-01 00:00:00','2022-05-01 00:00:00'),
-(1,'publish','','open','',0,0,'page','portfolio.html',0,'2022-05-01 00:00:00','2022-05-01 00:00:00');
+(1,'publish','','open','',0,0,'page','portfolio.html',0,'2022-05-01 00:00:00','2022-05-01 00:00:00'),
+(1,'publish','','open','',0,0,'page','',0,'2022-05-01 00:00:00','2022-05-01 00:00:00');
 
 -- UNLOCK TABLES

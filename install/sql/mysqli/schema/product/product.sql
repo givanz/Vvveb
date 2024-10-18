@@ -11,6 +11,10 @@ CREATE TABLE `product` (
   `jan` varchar(13) NOT NULL DEFAULT '',
   `isbn` varchar(17) NOT NULL DEFAULT '',
   `mpn` varchar(64) NOT NULL DEFAULT '',
+  `barcode` varchar(13) NOT NULL DEFAULT '',
+  `hs_code` varchar(10) NOT NULL DEFAULT '',
+  `origin_country` varchar(64) NOT NULL DEFAULT '',
+  `mid_code` varchar(13) NOT NULL DEFAULT '',
   `location` varchar(128) NOT NULL DEFAULT '',
   `stock_quantity` int(4) NOT NULL DEFAULT '0',
   `stock_status_id` INT UNSIGNED NOT NULL DEFAULT 1,
@@ -21,6 +25,7 @@ CREATE TABLE `product` (
   `price` decimal(15,4) NOT NULL DEFAULT 0.0000,
   `points` int(8) NOT NULL DEFAULT '0',
   `tax_type_id` INT UNSIGNED NOT NULL DEFAULT 0,
+  `material` varchar(64) NOT NULL DEFAULT '',
   `weight` decimal(15,8) NOT NULL DEFAULT '0.00000000',
   `weight_type_id` INT UNSIGNED NOT NULL DEFAULT '0',
   `length` decimal(15,8) NOT NULL DEFAULT '0.00000000',
@@ -39,6 +44,10 @@ CREATE TABLE `product` (
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`product_id`),
   KEY `type_status_date` (`type`,`status`,`created_at`,`product_id`),
-  KEY `stock_status_id` (`stock_status_id`)
+  KEY `stock_status_id` (`stock_status_id`),
+  KEY `vendor_id` (`vendor_id`),
+  KEY `manufacturer_id` (`stock_status_id`),
+  KEY `barcode` (`barcode`),
+  KEY `sku` (`sku`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 

@@ -4,11 +4,11 @@ DROP SEQUENCE IF EXISTS order_seq;
 CREATE SEQUENCE order_seq;
 -- SELECT setval('order_seq', 0, true); -- last inserted id by sample data
 
-CREATE TYPE shipping_status AS ENUM
-    ('not_fulfilled', 'partially_fulfilled', 'fulfilled', 'partially_shipped', 'shipped', 'partially_returned', 'returned', 'canceled', 'requires_action');
+-- CREATE TYPE shipping_status AS ENUM
+--    ('not_fulfilled', 'partially_fulfilled', 'fulfilled', 'partially_shipped', 'shipped', 'partially_returned', 'returned', 'canceled', 'requires_action');
 
-CREATE TYPE shipping_status AS ENUM
-    ('not_paid', 'awaiting', 'captured', 'partially_refunded', 'refunded', 'canceled', 'requires_action');
+-- CREATE TYPE shipping_status AS ENUM
+--    ('not_paid', 'awaiting', 'captured', 'partially_refunded', 'refunded', 'canceled', 'requires_action');
 
 
 CREATE TABLE "order" (
@@ -70,5 +70,5 @@ CREATE TABLE "order" (
   PRIMARY KEY ("order_id")
 );
 
-CREATE INDEX "order_order_status_id" ON order ("site_id","order_status_id","created_at");
-CREATE INDEX "order_customer_order_id" ON order ("customer_order_id","order_status_id","created_at");
+CREATE INDEX "order_order_status_id" ON "order" ("site_id","order_status_id","created_at");
+CREATE INDEX "order_customer_order_id" ON "order" ("customer_order_id","order_status_id","created_at");

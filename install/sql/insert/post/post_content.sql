@@ -205,6 +205,38 @@ INSERT INTO `post_content` VALUES
 (12,1,'Services','services','Services', '','',''),
 (13,1,'Pricing','pricing','Pricing', '','',''),
 (14,1,'Portfolio','portfolio','Portfolio', '','',''),
+(15,1,'Marketplace','marketplace','Marketplace', '
+<div class="text-center m-4">
+<div class="my-5"><img src="../../media/biglogo.png"></div>
+<h1 class="mb-3">Marketplace vendor</h1>
+<p class="lead">Become a vendor and sell your products on our marketplace</p>
+<p class="lead">Access a market of million of customers</p>
+<div class="mt-4"><a href="/vendor/signup" class="btn btn-primary btn-lg btn-login"><span>Signup now</span> <i class="la la-arrow-right float-end ms-2"></i></a> <a href="/vendor" class="btn btn-secondary btn-lg"><span>Login</span> <i class="la la-user float-end ms-2"></i></a></div>
+<div class="mt-4">Frequently asked questions:</div>
+<div class="my-4 text-start row">
+<div class="col-md-6 mx-auto">
+<details>
+<summary>What kind of products can I sell?</summary>
+<p>You can sell any products that match our categories.</p>
+</details>
+<details>
+<summary>How much does it cost?</summary>
+<p>It`s free, we only take a ##% comission on each sale.</p>
+</details>
+<details>
+<summary>Q3</summary>
+<p>A</p>
+</details>
+<details>
+<summary>Q4</summary>
+<p>A</p>
+</details>
+<br>
+<p class="">Check our <a href="/blog">knowledge base</a> for more information </p>
+</div>
+</div>
+<p class="text-muted small">Our marketplace is subject to certain <a href="/page/terms-conditions-9">terms and conditions</a></p>
+</div>','',''),
 (1,2,'Incepe fiecare zi prin a-ti spune','buna-lume-1','
 <blockquote cite="https://en.wikipedia.org/wiki/Marcus_Aurelius">
 	<p>Spuneţi în fiecare dimineaţă: astăzi o să mă întâlnesc cu un om nechibzuit, nerecunoscător, neruşinat, viclean, invidios, nesociabil. Toate defectele acestea sunt urmările neştiinţei oamenilor cu privire la bine şi la rău. Eu însă am recunoscut clar că binele din firea sa este frumos, şi răul este urât, că omul care păcătuieşte contra mea, în realitate îmi este înrudit, nu doar că am fi din acelaşi sânge şi origine, ci fiindcă suntem deopotrivă părtaşi la raţiune, la menirea divină.</p>

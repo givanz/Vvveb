@@ -368,7 +368,7 @@ class Index extends Base {
 				$menus  = new menuSQL();
 
 				foreach ([1, 5] as $menu_id) { //main menu and footer menu id's
-					$menuItems = $menus->getMenus(['menu_id' => $menu_id, 'language_id' => 1])['menus'] ?? [];
+					$menuItems = $menus->getAll(['menu_id' => $menu_id, 'language_id' => 1])['menus'] ?? [];
 
 					foreach ($menuItems as $menuItem) {
 						$data = ['url' => V_SUBDIR_INSTALL . $menuItem['url'], 'menu_item_content' => []];

@@ -21,6 +21,7 @@ CREATE TABLE "user" (
   "avatar" varchar(250) NOT NULL DEFAULT '',
   "bio" varchar(250) NOT NULL DEFAULT '',
   "token" varchar(32) NOT NULL DEFAULT '',
+  "subscribe" smallint check ("status" >= 0) NOT NULL DEFAULT '0',
   "created_at" timestamp(0) NOT NULL DEFAULT now(),
   "updated_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("user_id")
