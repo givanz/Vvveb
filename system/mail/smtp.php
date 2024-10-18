@@ -71,6 +71,7 @@ class Smtp {
 		}
 
 		$serverName = ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? getenv('SERVER_NAME'));
+		$messageId  = base_convert(str_replace(['.', ' '], '', microtime()), 10, 36) . '.' . base_convert(bin2hex(openssl_random_pseudo_bytes(8)), 16, 36) . substr($this->option['from'], strrpos($this->option['from'], '@'));
 
 		$boundary = '----=_NextPart_' . md5(time());
 
@@ -86,6 +87,7 @@ class Smtp {
 			$header .= 'Reply-To: =?UTF-8?B?' . base64_encode($this->option['reply_to']) . '?= <' . $this->option['reply_to'] . '>' . EOL;
 		}
 
+		$header .= 'Message-ID: <' . $messageId . '>' . PHP_EOL;
 		$header .= 'Return-Path: ' . $this->option['from'] . EOL;
 		$header .= 'X-Mailer: PHP/' . phpversion() . EOL;
 		$header .= 'Content-Type: multipart/mixed; boundary="' . $boundary . '"' . EOL . EOL;
