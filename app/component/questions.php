@@ -27,7 +27,7 @@ class Questions extends Comments {
 
 	protected $route = 'product/product/index';
 
-	protected $model = 'product_question';
+	protected $modelName = 'product_question';
 
 	public static $defaultOptions = [
 		'product_id'    => 'url',

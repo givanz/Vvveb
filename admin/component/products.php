@@ -49,18 +49,17 @@ class Products extends ComponentBase {
 	}
 
 	function results() {
-		
 		$products = new \Vvveb\Sql\ProductSQL();
 
 		$results = $products->getAll($this->options);
 
-		$results['products'] = $results['products'] ?? [];
+		$results['product'] = $results['product'] ?? [];
 
-		if ($results['products']) {
+		if ($results['product']) {
 			$tax      = Tax::getInstance($this->options);
 			$currency = Currency::getInstance($this->options);
 
-			foreach ($results['products'] as $id => &$product) {
+			foreach ($results['product'] as $id => &$product) {
 				if (isset($product['images'])) {
 					$product['images'] = json_decode($product['images'], true);
 

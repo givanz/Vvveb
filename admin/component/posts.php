@@ -47,7 +47,7 @@ class Posts extends ComponentBase {
 
 		$results = $posts->getAll($this->options);
 
-		foreach ($results['posts'] as $id => &$post) {
+		foreach ($results['post'] as $id => &$post) {
 			if (isset($post['images'])) {
 				$post['images'] = json_decode($post['images'], 1);
 

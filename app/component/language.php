@@ -65,10 +65,10 @@ class Language extends ComponentBase {
 
 		$publicPath = \Vvveb\publicUrlPath();
 		$request    = Request::getInstance();
-		$view   	   = View::getInstance();
+		$view       = View::getInstance();
 
 		if ($results) {
-			$results['current']    = $code    = $request->request['language'] ?? Session::getInstance()->get('language') ?? 'en_US';
+			$results['current']    = $code = $request->request['language'] ?? Session::getInstance()->get('language') ?? 'en_US';
 			$language              = $results['language'][$code] ?? [];
 
 			if (! $language) {

@@ -58,8 +58,8 @@ class Order extends ComponentBase {
 			if ($results && $results['order']) {
 				$currency = Currency::getInstance();
 
-				if (isset($results['products'])) {
-					foreach ($results['products'] as $id => &$product) {
+				if (isset($results['product'])) {
+					foreach ($results['product'] as $id => &$product) {
 						$product['url'] = htmlentities(\Vvveb\url('product/product/index', $product + $url));
 
 						if (isset($product['images'])) {

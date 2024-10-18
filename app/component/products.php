@@ -22,6 +22,7 @@
 
 namespace Vvveb\Component;
 
+use function Vvveb\getCurrency;
 use Vvveb\System\Cart\Currency;
 use Vvveb\System\Cart\Tax;
 use Vvveb\System\Component\ComponentBase;
@@ -42,18 +43,19 @@ class Products extends ComponentBase {
 		'parent'           => null,
 		'manufacturer_id'  => NULL,
 		'vendor_id'        => NULL,
-		'order_by'         => NULL,
-		'direction'        => ['url', 'asc', 'desc'],
 		'taxonomy_item_id' => NULL,
 		'product_image'    => true,
 		'product_id'       => [],
 		'search'           => null,
+		'search_boolean'   => true,
 		'like'             => null,
 		'slug'             => null,
 		'related'          => null,
 		'variant'          => null,
 		'image_size'       => 'medium',
 		'filter'           => null,
+		'order_by'         => NULL,
+		'direction'        => ['url', 'asc', 'desc'],
 	];
 
 	public $options = [];
@@ -108,13 +110,18 @@ class Products extends ComponentBase {
 			$this->options['vendor_id'] = [$this->options['vendor_id']];
 		}
 
-		$results = $products->getAll($this->options) + $this->options;
+		if ($this->options['search'] && $this->options['search_boolean']) {
+			$this->options['search'] .= '*';
+		}
 
-		if ($results && isset($results['products'])) {
+		$results         = $products->getAll($this->options) + $this->options;
+		$currentCurrency = getCurrency();
+
+		if ($results && isset($results['product'])) {
 			$tax      = Tax::getInstance($this->options);
 			$currency = Currency::getInstance($this->options);
 
-			foreach ($results['products'] as $id => &$product) {
+			foreach ($results['product'] as $id => &$product) {
 				$language = [];
 
 				if ($product['language_id'] != $this->options['default_language_id']) {
@@ -150,8 +157,13 @@ class Products extends ComponentBase {
 				$product['price_tax']           = $tax->addTaxes($product['price'], $product['tax_type_id']);
 				$product['price_tax_formatted'] = $currency->format($product['price_tax']);
 				$product['price_formatted']     = $currency->format($product['price']);
+				$product['price_currency']      = $currentCurrency;
 			}
 		}
+
+		$results['limit']  = $this->options['limit'];
+		$results['start']  = $this->options['start'];
+		$results['search'] = $this->options['search'];
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 

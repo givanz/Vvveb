@@ -34,7 +34,7 @@ class Comments extends ComponentBase {
 
 	protected $route = 'content/post/index';
 
-	protected $model = 'comment';
+	protected $modelName = 'comment';
 
 	public static $defaultOptions = [
 		'post_id'     => 'url',
@@ -50,7 +50,7 @@ class Comments extends ComponentBase {
 
 	//called when fetching data, when cache expires
 	function results() {
-		$this->modelInstance         = model($this->model); //new CommentSQL();
+		$this->modelInstance         = model($this->modelName); //new CommentSQL();
 		$results                     = $this->modelInstance->getAll($this->options);
 		$results[$this->type]        = $results[$this->type] ?? [];
 

@@ -98,11 +98,11 @@ class Wishlist extends ComponentBase {
 
 		$results = $products->getAll($this->options) + $this->options;
 
-		if ($results && isset($results['products'])) {
+		if ($results && isset($results['product'])) {
 			$tax      = Tax::getInstance($this->options);
 			$currency = Currency::getInstance($this->options);
 
-			foreach ($results['products'] as $id => &$product) {
+			foreach ($results['product'] as $id => &$product) {
 				$language = [];
 
 				if ($product['language_id'] != $this->options['default_language_id']) {

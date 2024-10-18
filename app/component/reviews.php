@@ -30,7 +30,7 @@ class Reviews extends Comments {
 
 	protected $route = 'product/product/index';
 
-	protected $model = 'product_review';
+	protected $modelName = 'product_review';
 
 	public static $defaultOptions = [
 		'product_id'    => 'url',

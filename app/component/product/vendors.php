@@ -31,9 +31,9 @@ class Vendors extends ComponentBase {
 		'start' => 0,
 		//'language_id' => 1,
 		'count'                    => ['url', 4],
-		'id_vendor'                => NULL,
+		'vendor_id'                => NULL,
 		'order'                    => ['url', 'price asc'],
-		'id_category'              => NULL,
+		'category_id'              => NULL,
 		'limit'                    => 7,
 		'page'                     => 1,
 		'type'                     => 'tags',
@@ -48,6 +48,7 @@ class Vendors extends ComponentBase {
 		$results  = $category->getAll($this->options);
 
 		$filter = [];
+
 		if ($this->options['filter']) {
 			$filter = $this->options['filter']['vendor_id'] ?? [];
 		}

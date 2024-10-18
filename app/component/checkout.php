@@ -41,7 +41,7 @@ class Checkout extends ComponentBase {
 
 	function results() {
 		$cart                   = ShoppingCart::getInstance($this->options);
-		$results['products']    = $cart->getAll();
+		$results['product']     = $cart->getAll();
 		$results['total_items'] = $cart->getNoProducts();
 		$results['total']       = '500$';
 

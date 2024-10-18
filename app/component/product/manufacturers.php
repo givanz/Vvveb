@@ -31,9 +31,9 @@ class Manufacturers extends ComponentBase {
 		'start' => 0,
 		//'language_id' => 1,
 		'count'                    => ['url', 4],
-		'id_manufacturer'          => NULL,
+		'manufacturer_id'          => NULL,
 		'order'                    => ['url', 'price asc'],
-		'id_category'              => NULL,
+		'category_id'              => NULL,
 		'limit'                    => 7,
 		'page'                     => 1,
 		'type'                     => 'tags',
@@ -46,8 +46,9 @@ class Manufacturers extends ComponentBase {
 	function results() {
 		$category = new \Vvveb\Sql\ManufacturerSQL();
 		$results  = $category->getAll($this->options);
-		
+
 		$filter = [];
+
 		if ($this->options['filter']) {
 			$filter = $this->options['filter']['manufacturer_id'] ?? [];
 		}
