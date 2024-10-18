@@ -22,7 +22,9 @@
 
 namespace Vvveb\System\Core;
 
+use function Vvveb\__;
 use Vvveb\System\Component\Component;
+use Vvveb\System\Event;
 use Vvveb\System\PageCache;
 use Vvveb\System\Routes;
 use Vvveb\System\Session;
@@ -103,7 +105,7 @@ class FrontController {
 				PageCache::getInstance()->cleanUp();
 				self :: redirect('Error' . $statusCode, 'index');
 
-				die();*/
+				die(0);*/
 
 		if (include_once DIR_APP . DS . 'controller' . DS . "error$statusCode.php") {
 			$controller         = 'Vvveb\Controller\Error' . $statusCode;
@@ -119,7 +121,8 @@ class FrontController {
 		}
 
 		//$view = View :: getInstance();
-		$view = new View();
+		$response = Response::getInstance();
+		$view     = new View();
 		$view->setTheme();
 
 		if (is_string($message)) {
@@ -129,24 +132,37 @@ class FrontController {
 		$view->set($message);
 		$view->template(self :: $moduleName . '.html'); //default html
 
-		$controller = new $controller();
-		$template   = call_user_func([$controller, 'index']);
-		unset($controller);
+		$controller           = new $controller();
+		$controller->response = $response;
+		$controller->view     = $view;
+		$template             = call_user_func([$controller, 'index']);
+
+		if ($template === false) {
+			$view->template(false);
+		} else {
+			if (is_array($template)) {
+				return $response->output($template);
+			//echo json_encode($template);
+			} else {
+				if ($template) {
+					$view->template($template);
+				}
+			}
+		}
 		/*
 		if ($service === true) {
 			$component = Component :: getInstance();
 		}
 		 */
 		//header(' ', true, $statusCode);
-		$response = Response::getInstance();
+		PageCache::getInstance()->cleanUp();
+
 		$view->setType($response->getType());
+		$view->render();
 
 		//return $response->output();
-		PageCache::getInstance()->cleanUp();
-		$view->render($service, true, $service);
-
-		die();
 		//self :: closeConnections();
+		//$view->render($service, true, $service);
 	}
 
 	static function closeConnections() {
@@ -178,7 +194,7 @@ class FrontController {
 		if ((! @include_once(DIR_APP . DS . 'controller' . DS . 'base.php')) ||
 			 (! file_exists($file) || ! @include_once($file))) {
 			$message = [
-				'message' => 'Controller file not found!',
+				'message' => __('Controller file not found!'),
 				'file'    => $file,
 			];
 
@@ -186,20 +202,22 @@ class FrontController {
 		}
 
 		// We check if the controller's class really exists
+		$controller = false;
+
 		if (class_exists($controllerClass , false)) {// if the controller does not exist route to controller main
 			$controller = new $controllerClass();
 
 			if (! $controller || ! method_exists($controller , $actionName) || $actionName == 'init') {
 				$message = [
-					'message' => 'Method does not exist!',
-					'file'    => "$controllerClass ::  $actionName",
+					'message' => __('Method does not exist!'),
+					'file'    => "$controllerClass :: $actionName",
 				];
 
 				return self :: notFound(false, $message);
 			}
 		} else {
 			$message = [
-				'message' => 'Controller does not exist!',
+				'message' => __('Controller does not exist!'),
 				'file'    => $controllerClass,
 			];
 
@@ -209,13 +227,26 @@ class FrontController {
 		self :: di($controller);
 
 		if (method_exists($controller, 'init')) {
-			$controller->init();
+			$return = $controller->init();
+
+			if ($return) {
+				$actionName = $return;
+
+				if (! method_exists($controller , $actionName)) {
+					$message = [
+						'message' => __('Method does not exist!'),
+						'file'    => "$controllerClass :: $actionName",
+					];
+
+					return self :: notFound(false, $message);
+				}
+			}
 		}
 
-		//$controller->db = $db;
-		$template = str_replace('/', DS, strtolower(self :: $moduleName));
-		$theme 	  = $controller->view->getTheme();
-		$path     = DIR_THEME . $theme . DS;
+		$response   = Response::getInstance();
+		$template   = str_replace('/', DS, strtolower(self :: $moduleName));
+		$theme 	    = $controller->view->getTheme();
+		$path       = DIR_THEME . $theme . DS;
 		$pluginName = false;
 
 		if ($actionName && $actionName != 'index') {
@@ -234,28 +265,29 @@ class FrontController {
 			}
 		}
 
-		$controller->view->template($template . '.html'); //default html
-		$template = call_user_func([$controller, $actionName]);
+		$controller->view->template($template . '.html'); //default html that can be overwritten
+
+		//list($template) = Event :: trigger($controllerClass, "$actionName:before", $template);
+
+		//$controller->view->template($template . '.html'); //default html
+		$template     = call_user_func([$controller, $actionName]);
+		$responseType = $response->getType();
+		$controller->view->setType($responseType);
 
 		if ($template === false) {
 			$controller->view->template(false);
 		} else {
 			if (is_array($template)) {
-				echo json_encode($template);
+				$response->output($template);
+			//echo json_encode($template);
 			} else {
 				if ($template) {
-					$controller->view->template($template); //default html
+					$controller->view->template($template);
 				}
 			}
 		}
 
-		$controller->view = View :: getInstance();
-
-		//render template
-		//return $controller->view->render();
-		$response = Response::getInstance();
-
-		$controller->view->setType($response->getType());
+		//list($responseType) = Event :: trigger($controllerClass, "$actionName:after", $response->getType('json'));
 
 		$return = $response->output();
 		self :: closeConnections();
@@ -331,7 +363,7 @@ class FrontController {
 		}
 		$uri = preg_replace('/\?.*$/', '', $uri);
 
-		if (! $module && (APP != 'admin' && APP != 'install' && (Routes::init() && $parameters = Routes::match($uri)))) {
+		if (! $module && (APP != 'admin' && APP != 'install' && (Routes::init(APP) && $parameters = Routes::match($uri)))) {
 			$_GET = array_merge($parameters, $_GET);
 		} else {
 			$module         = $module ?? ((APP == 'app') ? 'error404' : 'index');
