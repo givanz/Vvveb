@@ -1,21 +1,23 @@
-/*
-Copyright 2017 Ziadin Givan
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-https://github.com/givanz/VvvebJs
-*/
-
+/**
+ * Vvveb
+ *
+ * Copyright (C) 2021  Ziadin Givan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+ 
 let Input = {
 	
 	init: function(name) {
@@ -734,7 +736,11 @@ let ListInput = { ...Input, ...{
 		let data = input.data;
 		
 		if (data.removeElement) {
-			input.node.querySelector(data.container + " " + data.selector + ":nth-child(" + (index + 1) + ")").remove();
+			let container = input.node;
+			if (data.container) {
+				container.querySelector(data.container);
+			}
+			container.querySelector(data.selector + ":nth-child(" + (index + 1) + ")").remove();
 		}
 		sectionItem.remove();
 		
@@ -748,7 +754,11 @@ let ListInput = { ...Input, ...{
 	add: function(event, node, input) {
 		let newElement = input.data.newElement ?? false;
 		if (newElement) {
-			event.data.input.node.querySelector(input.data.container).append(generateElements(newElement)[0]);
+			let container = input.node;
+			if (data.container) {
+				container.querySelector(data.container);
+			}			
+			container.append(generateElements(newElement)[0]);
 		}
 		
 		event.action = "add";
@@ -784,7 +794,7 @@ let ListInput = { ...Input, ...{
 			if (data.nameElement) {
 				element = element.querySelector(data.nameElement);
 			}
-			let name = (data.name = "text" ? element.textContent : element.id);
+			let name = (data.name = "text" ? element.textContent.substr(0, 15) : element.id);
 			options.push({
 				name: name,
 				type: (data.prefix ?? "") + (i + 1) + (data.suffix ?? ""),
@@ -806,9 +816,10 @@ let AutocompleteInput = { ...Input, ...{
         ["autocomplete.change", "onAutocompleteChange", "input"],
 	 ],
 
-	onAutocompleteChange: function(event, value, text) {
-		input.value = value;
-		return this.onChange(event, node);
+	onAutocompleteChange: function(event, node, input) {
+		input.value = event.detail.value;
+		//return input.onChange(event, node, input);
+		return input.onChange.call(this, event, node, input);
 	},
 
 	init: function(data) {
