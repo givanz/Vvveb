@@ -51,6 +51,9 @@ defined('V_SHARED_SESSION') || define('V_SHARED_SESSION', false);
 
 defined('LOG_SQL_QUERIES') || define('LOG_SQL_QUERIES', false);
 
+defined('REST') || define('REST', false);
+defined('GRAPHQL') || define('GRAPHQL', false);
+
 if (DEBUG) {
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
