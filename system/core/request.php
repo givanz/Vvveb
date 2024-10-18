@@ -35,7 +35,7 @@ class Request {
 
 	public $server = [];
 
-	public $method;
+	private $method;
 
 	protected static $instance;
 
@@ -47,7 +47,7 @@ class Request {
 		return static::$instance;
 	}
 
-	private function __construct() {
+	final private function __construct() {
 		$this->get     = &$_GET;
 		$this->post    = &$_POST;
 		$this->request = &$_REQUEST;
@@ -60,7 +60,7 @@ class Request {
 		$this->request = $this->filter($this->request);
 		$this->cookie  = $this->filter($this->cookie);
 		$this->files   = $this->filter($this->files);
-		$this->method  = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+		$this->method  = strtolower($_SERVER['REQUEST_METHOD'] ?? 'GET');
 
 		$this->request = array_merge($this->request, $this->get, $this->post);
 	}
@@ -83,6 +83,10 @@ class Request {
 		}
 
 		return $data;
+	}
+
+	public function getMethod() {
+		return $this->method;
 	}
 
 	public function isAjax() {

@@ -97,7 +97,9 @@ class Login {
 			$this->view->redir = $this->request->get['module'];
 		}
 
-		if (($this->request->method == 'POST') &&
+		$method = $this->request->getMethod();
+
+		if (($method == 'post') &&
 			($this->view->errors = $validator->validate($this->request->post)) === true) {
 			$user	    = $this->request->post['user'];
 
