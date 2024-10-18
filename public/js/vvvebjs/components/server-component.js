@@ -35,6 +35,7 @@ class ServerComponent {
 
 		let data = new FormData();
 		data.append("_component_content", this.content);
+		data.append("html", Vvveb.Builder.getHtml());
 		
 		fetch(this.url + '&_component_ajax=' + this.component + '&_component_id=' + this.index + '&_server_template=' + this.userServerTemplate + '&r=true',{
 			method: 'POST', 
