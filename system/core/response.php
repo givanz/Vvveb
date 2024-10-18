@@ -29,11 +29,15 @@ class Response {
 
 	private $type = ''; //html, json, xml
 
-	private $typeHeaders = ['html' => 'text/html', 'xml' => 'text/xml', 'text' => 'text/plain', 'json' => 'application/json'];
+	private $status = 200;
+
+	private $callback = 'callback';
+
+	private $typeHeaders = ['html' => 'text/html', 'xml' => 'text/xml', 'text' => 'text/plain', 'json' => 'application/json', 'jsonp' => 'application/javascript'];
 
 	protected static $instance;
 
-	public static function getInstance() {
+	final public static function getInstance() {
 		if (is_null(static::$instance)) {
 			static::$instance = new static();
 		}
@@ -45,8 +49,12 @@ class Response {
 		$this->addHeader('X-Powered-By', 'Vvveb'/* . V_VERSION*/);
 	}
 
-	public function addHeader($header, $value) {
+	public function addHeader($header, $value = null) {
 		$this->headers[$header] = $value;
+	}
+
+	public function removeHeader($header) {
+		unset($this->headers[$header]);
 	}
 
 	public function getHeaders() {
@@ -59,7 +67,7 @@ class Response {
 		exit();
 	}
 
-	public function getType($type) {
+	public function getType() {
 		return $this->type;
 	}
 
@@ -78,20 +86,30 @@ class Response {
 		}
 
 		if (! headers_sent()) {
-			foreach ($this->headers as $header => $value) {
-				header("$header: $value", true);
+			foreach ($this->headers as $name => $value) {
+				if ($value) {
+					$header = "$name: $value";
+				} else {
+					$header = $name;
+				}
+
+				header($header, true);
 			}
 		}
-		
+
 		if ($this->type == 'text' && $data !== null) {
 			echo $data;
 		} else {
-			if ($this->type == 'json' && $data !== null && (! defined('CLI'))) {
-				if (is_array($data)) {
-					echo json_encode($data);
-				} else {
-					echo $data;
+			if (($this->type == 'json' || $this->type == 'jsonp') && $data !== null && (! defined('CLI'))) {
+				if (is_array($data) || is_object($data)) {
+					$data = json_encode($data, JSON_PRETTY_PRINT);
+
+					if ($this->type == 'jsonp') {
+						$data = "/**/{$this->callback}($data)";
+					}
 				}
+
+				echo $data;
 			} else {
 				$view = View :: getInstance();
 
