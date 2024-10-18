@@ -32,9 +32,15 @@ list($menu) = Vvveb\System\Event::trigger('admin-bar', 'menu', $menu);
 list($top)  = Vvveb\System\Event::trigger('admin-bar', 'top', []);
 
 $template    = Vvveb\getCurrentTemplate();
-$url         =  Vvveb\getCurrentUrl();
-$admin_path  =  Vvveb\adminPath() . 'index.php';
-$design_url  = $admin_path . Vvveb\url(['module' => 'editor/editor', 'template' => $template, 'url' => $url], false, false);
+$url         = Vvveb\getCurrentUrl();
+$admin_path  = Vvveb\adminPath() . 'index.php';
+$params		    = ['module' => 'editor/editor', 'template' => $template, 'url' => $url];
+$name 		     = $_GET['name'] ?? $_GET['slug'] ?? '';
+
+if ($name) {
+	$params['name'] = urlencode($name);
+}
+$design_url  = $admin_path . Vvveb\url($params, false, false);
 $urlData     = Vvveb\System\Routes::getUrlData($url);
 $edit_url    = isset($urlData['edit']) ? $admin_path . $urlData['edit'] : '';
 $admin       = \Vvveb\System\User\Admin :: current();
