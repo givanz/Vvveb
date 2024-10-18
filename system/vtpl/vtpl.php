@@ -1778,29 +1778,10 @@ class Vtpl {
 		return $elements;
 	}
 
-	function loadHtmlTemplate($filename) {
-		$extension          = strtolower(trim(substr($filename, -4), '.'));
-		$this->documentType = $extension;
-
-		if (strpos($filename, DS) === false) {
-			$filename = $this->htmlPath . $filename;
-		}
-
-		if (! ($html = @file_get_contents($filename))) {
-			Vvveb\logError("can't load template $filename");
-			$this->debug->log('LOAD', '<b>ERROR</b> ' . $filename);
-
-			return false;
-		}
-
-		$this->htmlSourceFile = $filename;
-
-		$this->debug->log('LOAD', $filename);
-
+	function loadHtml($html) {
 		if (VTPL_DONT_ALLOW_PHP) {
 			$html = $this->removePhp($html);
 		}
-
 		//replace script tags with placeholders to preserve formatting.
 
 		//preg_match_all("@<script[^>]*>.*?script>@s", $html, $this->_scripts);
@@ -1832,7 +1813,7 @@ class Vtpl {
 			@$this->document->loadHTML($html, LIBXML_NOERROR);
 		} else {
 			//convert json
-			if ($extension == 'json') {
+			if ($this->documentType == 'json') {
 				//remove json comments from line start
 				$html = Vvveb\removeJsonComments($html);
 				$json = json_decode($html, true);
@@ -1893,6 +1874,27 @@ class Vtpl {
 		}
 
 		return $errors;
+	}
+
+	function loadHtmlTemplate($filename) {
+		$extension          = strtolower(trim(substr($filename, -4), '.'));
+		$this->documentType = $extension;
+
+		if (strpos($filename, DS) === false) {
+			$filename = $this->htmlPath . $filename;
+		}
+
+		if (! ($html = @file_get_contents($filename))) {
+			Vvveb\logError("can't load template $filename");
+			$this->debug->log('LOAD', '<b>ERROR</b> ' . $filename);
+
+			return false;
+		}
+
+		$this->htmlSourceFile = $filename;
+		$this->debug->log('LOAD', $filename);
+
+		$this->loadHtml($html);
 	}
 
 	private function setMultiLanguageText($currentNode) {
@@ -1978,8 +1980,6 @@ class Vtpl {
 				$before = $currentNode->childNodes->length;
 
 				if ($trimmed != '') {
-					$trimmed = addcslashes($trimmed, "'");
-
 					if (strlen($trimmed) < 1024) {
 						/*
 						$php     = '<_script language="php"><![CDATA[ echo ' . $this->translationFunction . '(\'' . $trimmed . '\');]]></_script>';
@@ -1988,7 +1988,7 @@ class Vtpl {
 						$f   = $this->document->createDocumentFragment();
 						$f->appendXML($php);
 						*/
-						$c = $this->document->createCDATASection('echo ' . $this->translationFunction . '(\'' . $trimmed . '\');');
+						$c = $this->document->createCDATASection('echo ' . $this->translationFunction . '(\'' . addcslashes($trimmed, "'") . '\');');
 						$f = $this->document->createElement('_script');
 						$f->setAttribute('language', 'php');
 						$f->appendChild($c);
@@ -2134,7 +2134,8 @@ class Vtpl {
 					  	if (isset($matches[2])) {
 					  		$modifier = $matches[2];
 					  	}
-					  	$variable = Vvveb\dotToArrayKey($matches[1]);
+					  	$variable = str_replace('$this.', '$this->', $matches[1]);
+					  	$variable = Vvveb\dotToArrayKey($variable);
 					  	$template =
 						"<?php if (isset($variable)) {
                                 if (is_array($variable)) {
@@ -2171,7 +2172,22 @@ class Vtpl {
 
 			if ($componentNode) {
 				$tmpDom = new DOMDocument();
+
+				//add before php code if available
+				$currentNode = $componentNode;
+
+				while (($currentNode = $currentNode->previousSibling) && $currentNode->nodeName === '_script') {
+					$tmpDom->appendChild($tmpDom->importNode($currentNode, true));
+				}
+
 				$tmpDom->appendChild($tmpDom->importNode($componentNode, true));
+
+				//add after php code if available
+				$currentNode = $componentNode;
+
+				while (($currentNode = $currentNode->nextSibling) && $currentNode->nodeName === '_script') {
+					$tmpDom->appendChild($tmpDom->importNode($currentNode, true));
+				}
 
 				if ($this->documentType == 'html') {
 					$html = $tmpDom->saveHTML();
