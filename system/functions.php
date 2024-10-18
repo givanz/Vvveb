@@ -167,7 +167,7 @@ function getCurrentTemplate() {
 	return System\Core\View :: getInstance()->template();
 }
 
-function getUrlTemplate($url) {
+function getUrlRoute($url) {
 	$urlData = \Vvveb\System\Routes::getUrlData($url);
 
 	return $urlData;
@@ -957,7 +957,7 @@ function getTemplateList($theme = null, $skip = []) {
 		}
 		$name        = $title       = str_replace('.html', '', $filename);
 		$description = '';
-		$name        = ! empty($folder) ? "$folder-$name" : $name;
+		$name        = (! empty($folder) && $folder != '/') ? "$folder-$name" : $name;
 
 		if (isset($friendlyNames[$name])) {
 			if (isset($friendlyNames[$name]['description'])) {
@@ -1024,7 +1024,7 @@ function dd(...$variables) {
 		echo highlight_string("<?php\n" . var_export($variable, true), true);
 	}
 
-	die();
+	die(0);
 }
 
 function encrypt($key, $value, $cipher = 'aes-256-gcm', $digest = 'sha256') {
@@ -1779,45 +1779,47 @@ function array2xml($array, $xml = false) {
 			$i     = 0;
 			$start = 0;
 
-			while (($start = strpos($key, '@@', $start))) {
-				$i++;
-				$start += 2;
-				$end  = (int)strpos($key,' ', $start);
-				$name = substr($key, $start, $end ? $end - $start : null);
+			if ($key) {
+				while (($start = strpos($key, '@@', $start))) {
+					$i++;
+					$start += 2;
+					$end  = (int)strpos($key,' ', $start);
+					$name = substr($key, $start, $end ? $end - $start : null);
 
-				if ($end == 0) {
-					$start += strlen($name);
-				} else {
-					$start = (int)$end;
+					if ($end == 0) {
+						$start += strlen($name);
+					} else {
+						$start = (int)$end;
+					}
+
+					if ($name) {
+						$name                 = explode('=', $name);
+						$attributes[$name[0]] = trim($name[1] ?? '', '\'"');
+					}
 				}
 
-				if ($name) {
-					$name                 = explode('=', $name);
-					$attributes[$name[0]] = trim($name[1] ?? '', '\'"');
-				}
+				$key = strstr($key, ' @@', true) ?: $key;
 			}
-
-			$key = strstr($key, ' @@', true) ?: $key;
 		};
 
 		$processAttr($key);
 
-		if (is_array($value)) {
+		if (is_array($value) || is_object($value)) {
 			$node = $xml->addChild($key);
 
 			if ($attributes) {
 				foreach ($attributes as $key => $val) {
-					$node->addAttribute($key, $val);
+					$node->addAttribute($key, htmlentities($val));
 				}
 			}
 			array2xml($value, $node);
 		} else {
 			if (substr_compare($key, '--xmlattr', -9, 9) === 0) {
 				$key = substr($key, 0, -9);
-				$xml->addAttribute($key, $value);
+				$xml->addAttribute($key, htmlentities($value));
 			} else {
 				$processAttr($value);
-				$node = $xml->addChild($key, $value);
+				$node = $xml->addChild($key, htmlentities($value));
 
 				if ($attributes) {
 					foreach ($attributes as $key => $val) {
@@ -1837,9 +1839,34 @@ function removeJsonComments($json) {
 	return $json;
 }
 
+function encodeXmlName($name) {
+	$len     = strlen($name);
+	$newName = '';
+
+	for ($i = 0; $i < $len; $i++) {
+		$char = $name[$i];
+		$code = ord($char);
+
+		// = @ _ - . A-Z a-z 0-9
+		if (! ($code == 32 || $code == 34 || $code == 61 || $code == 64 || $code == 95 || $code == 45 || $code == 46 || ($code <= 90 && $code >= 65) || ($code <= 122 && $code >= 97) || ($code <= 57 && $code >= 48))) {
+			$char = '_x' . sprintf('%03d', $code) . '_';
+		}
+
+		$newName .= $char;
+	}
+
+	return $newName;
+}
+
+function decodeXmlName($name) {
+	return preg_replace_callback('/_x(\d+)_/',function ($matches) {
+		return chr(ltrim($matches[1], '0'));
+	}, $name);
+}
+
 function prepareJson($array) {
 	if (! is_array($array)) {
-		return;
+		//return;
 	}
 	$helper = [];
 
@@ -1859,6 +1886,32 @@ function prepareJson($array) {
 		if (strpos($key, '@')) {
 		}
 
+		//keep empty arrays as array type
+		if (is_object($value) && ! $value) {
+			$key .= '--object';
+		} else {
+			if (is_array($value) && ! $value) {
+				$key .= '--array';
+			}
+		}
+
+		//keep boolean type
+		if (is_bool($value)) {
+			$key .= '--boolean';
+		}
+
+		//keep int type
+		if (is_int($value)) {
+			$key .= '--int';
+		}
+
+		//keep null type
+		if ($value === null) {
+			$key .= '--null';
+		}
+
+		$key = encodeXmlName(trim($key));
+
 		$helper[$key] = is_array($value) ? prepareJson($value) : $value;
 	}
 
@@ -1875,6 +1928,37 @@ function reconstructJson(&$array, $removeAttrs = false) {
 	foreach ($array as $key => $value) {
 		if ($removeAttrs && $key == '@attributes') {
 			continue;
+		}
+
+		$key = decodeXmlName($key);
+
+		if (substr_compare($key, '--array', -7, 7) === 0) {
+			$key   = substr($key, 0, -7);
+			$value = (array)$value;
+		} else {
+			if (! $value) {
+				$value = '';
+			}
+		}
+
+		if (substr_compare($key, '--boolean', -9, 9) === 0) {
+			$key   = substr($key, 0, -9);
+			$value = (boolean)$value;
+		}
+
+		if (substr_compare($key, '--null', -6, 6) === 0) {
+			$key   = substr($key, 0, -6);
+			$value = null;
+		}
+
+		if (substr_compare($key, '--int', -5, 5) === 0) {
+			$key   = substr($key, 0, -5);
+			$value = (int)$value;
+		}
+
+		if (substr_compare($key, '--object', -8, 8) === 0) {
+			$key   = substr($key, 0, -8);
+			$value = (object)$value;
 		}
 
 		if (substr_compare($key, 'n--', 0, 3) === 0) {
