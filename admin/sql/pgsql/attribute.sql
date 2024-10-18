@@ -20,7 +20,7 @@
 					,pa.value
 				END @IF		
 		
-			FROM attribute AS attribute
+			FROM attribute
 			INNER JOIN attribute_content 
 				ON attribute_content.attribute_id = attribute.attribute_id AND attribute_content.language_id = :language_id
 			INNER JOIN attribute_group_content 

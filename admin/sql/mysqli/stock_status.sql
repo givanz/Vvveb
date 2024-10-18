@@ -12,7 +12,7 @@
 	BEGIN
 		-- stock_status
 		SELECT *
-			FROM stock_status AS stock_status WHERE 1 = 1
+			FROM stock_status WHERE 1 = 1
 			
 		@IF !empty(:language_id) 
 		THEN			

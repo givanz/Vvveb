@@ -3,13 +3,17 @@
 	-- get all entries
 
 	CREATE PROCEDURE getAll(
-		IN start INT,
-		IN limit INT,
         IN status INT,
 		IN search CHAR,
 		IN email CHAR,
 		IN phone_number CHAR,
-		
+
+		-- pagination
+		IN start INT,
+		IN limit INT,
+		IN order_by CHAR,
+		IN direction CHAR,
+
 		-- return array of user
 		OUT fetch_all,
 		-- return user count for count query
@@ -42,7 +46,14 @@
 				user.first_name LIKE CONCAT('%',:search,'%') OR
 				user.last_name LIKE CONCAT('%',:search,'%')
         	END @IF	        
-            
+
+			-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
+			@IF isset(:order_by)
+			THEN
+				ORDER BY user.$order_by $direction		
+			@ELSE
+				ORDER BY user.user_id DESC
+			END @IF
 			
 			-- limit
 			@IF isset(:limit)

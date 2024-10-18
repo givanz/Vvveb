@@ -26,13 +26,13 @@
 	)
 	BEGIN
 
-		SELECT  SQL_CALC_FOUND_ROWS *, posts.post_id as array_key
+		SELECT  SQL_CALC_FOUND_ROWS *, post.post_id as array_key
 
-		FROM post AS posts
+		FROM post
 		
-			LEFT JOIN post_content pd ON (posts.post_id = pd.post_id AND pd.language_id = :language_id)  
-			LEFT JOIN post_to_site ps ON (posts.post_id = ps.post_id)  
-			LEFT JOIN post_to_taxonomy_item pt ON (posts.post_id = pt.post_id)   
+			LEFT JOIN post_content pd ON (post.post_id = pd.post_id AND pd.language_id = :language_id)  
+			LEFT JOIN post_to_site ps ON (post.post_id = ps.post_id)  
+			LEFT JOIN post_to_taxonomy_item pt ON (post.post_id = pt.post_id)   
 
 			LEFT JOIN taxonomy_item categories ON (categories.taxonomy_item_id = pt.taxonomy_item_id) 
 			LEFT JOIN taxonomy_to_site c2s ON (categories.taxonomy_item_id = c2s.taxonomy_item_id) 

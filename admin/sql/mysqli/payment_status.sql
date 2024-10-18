@@ -12,7 +12,7 @@
 	BEGIN
 
 		SELECT *
-			FROM payment_status AS payment_status WHERE 1 = 1
+			FROM payment_status WHERE 1 = 1
 			
 		@IF !empty(:language_id) 
 		THEN			

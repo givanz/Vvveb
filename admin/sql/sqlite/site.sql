@@ -15,14 +15,14 @@
 	BEGIN
 		-- site
 		SELECT *, site_id as array_key
-			FROM site as sites
+			FROM site
 
 		WHERE 1 = 1
 		
 		-- site_id
 		@IF isset(:site_id) && !empty(:site_id)
 		THEN
-			AND sites.site_id IN (:site_id)
+			AND site.site_id IN (:site_id)
 		END @IF
 
 		-- limit
@@ -34,7 +34,7 @@
 		-- SELECT FOUND_ROWS() as count;
 		SELECT count(*) FROM (
 			
-			@SQL_COUNT(sites.site_id, site) -- this takes previous query removes limit and replaces select columns with parameter product_id
+			@SQL_COUNT(site.site_id, site) -- this takes previous query removes limit and replaces select columns with parameter product_id
 			
 		) as count;
 	END	

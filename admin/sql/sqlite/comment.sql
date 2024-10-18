@@ -29,7 +29,7 @@
 				,post_content.name, post_content.slug
 			END @IF			
 			
-			FROM comment AS comment
+			FROM comment
 			LEFT JOIN user ON (user.user_id = comment.user_id)	
 
 			@IF isset(:post_title) AND :post_title

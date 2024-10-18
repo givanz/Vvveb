@@ -12,7 +12,7 @@
 	BEGIN
 		-- subscription_status
 		SELECT *
-			FROM subscription_status AS subscription_status WHERE 1 = 1
+			FROM subscription_status WHERE 1 = 1
 			
 		@IF !empty(:language_id) 
 		THEN			

@@ -12,7 +12,7 @@
 	BEGIN
 		-- coupon
 		SELECT *
-			FROM coupon AS coupon WHERE 1 = 1
+			FROM coupon WHERE 1 = 1
 			
 		
 		@SQL_LIMIT(:start, :limit);

@@ -12,7 +12,7 @@
 	BEGIN
 		-- subscription
 		SELECT *
-			FROM subscription AS subscription WHERE 1 = 1
+			FROM subscription WHERE 1 = 1
 			
 		-- limit
 		@IF isset(:limit)

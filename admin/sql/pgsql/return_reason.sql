@@ -12,7 +12,7 @@
 	BEGIN
 		-- return_reason
 		SELECT *
-			FROM return_reason AS return_reason WHERE 1 = 1
+			FROM return_reason WHERE 1 = 1
 			
 		@IF !empty(:language_id) 
 		THEN			

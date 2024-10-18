@@ -12,7 +12,7 @@
 	BEGIN
 		-- tax_type
 		SELECT *
-			FROM tax_type AS tax_type WHERE 1 = 1
+			FROM tax_type WHERE 1 = 1
 			
 		
 		@SQL_LIMIT(:start, :limit);

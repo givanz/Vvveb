@@ -13,7 +13,7 @@
 	BEGIN
 		-- subscription_plan
 		SELECT subscription_plan.*,subscription_plan_content.name,subscription_plan.subscription_plan_id as array_key
-			FROM subscription_plan AS subscription_plan 
+			FROM subscription_plan 
 			INNER JOIN subscription_plan_content ON subscription_plan_content.subscription_plan_id = subscription_plan.subscription_plan_id 
 												 AND subscription_plan_content.language_id = :language_id
 		WHERE 1 = 1

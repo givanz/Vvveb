@@ -11,7 +11,7 @@
 	BEGIN
 		-- currency
 		SELECT *, code as array_key
-			FROM currency as currency WHERE 1 = 1
+			FROM currency WHERE 1 = 1
 			
 		@IF isset(:status) AND :status != "" 
 		THEN			

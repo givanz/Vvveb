@@ -90,7 +90,7 @@
 	
 	-- get all menus 
 
-	CREATE PROCEDURE getMenusList(
+	CREATE PROCEDURE getAll(
 
 		-- variables
 		IN  language_id INT,
@@ -113,7 +113,7 @@
 
 		SELECT  *, menu.menu_id as array_key
 			
-			FROM menu AS menu
+			FROM menu
 			
 		
 		@SQL_LIMIT(:start, :limit);
@@ -125,12 +125,12 @@
 		) as count;
 
 
-	END -- get all menus 	
+	END
 	
 	
-	-- get all menus 
+	-- get menu 
 
-	CREATE PROCEDURE getMenus(
+	CREATE PROCEDURE get(
 
 		-- variables
 		IN  language_id INT,
@@ -150,13 +150,13 @@
 	)
 	BEGIN
 
-		SELECT td.*,menus.url, menus.sort_order, menus.parent_id, menus.type, menus.item_id, menus.menu_item_id as array_key
+		SELECT td.*,menu.url, menu.sort_order, menu.parent_id, menu.type, menu.item_id, menu.menu_item_id as array_key
 			
 		
-			FROM menu_item AS menus
+			FROM menu_item AS menu
 		
-			-- INNER JOIN menu_to_site c2s ON (menus.menu_id = c2s.menu_id AND c2s.site_id = :site_id) 
-			INNER JOIN menu_item_content td ON (menus.menu_item_id = td.menu_item_id AND td.language_id = :language_id)  
+			-- INNER JOIN menu_to_site c2s ON (menu.menu_id = c2s.menu_id AND c2s.site_id = :site_id) 
+			INNER JOIN menu_item_content td ON (menu.menu_item_id = td.menu_item_id AND td.language_id = :language_id)  
 			
 			WHERE 
 			
@@ -166,18 +166,18 @@
 			@IF isset(:menu_id)
 			THEN 
 			
-				AND menus.menu_id = :menu_id
+				AND menu.menu_id = :menu_id
 				
 			END @IF			
 			
 			@IF isset(:slug)
 			THEN 
 			
-				AND menus.menu_id = (SELECT menu_id FROM menu WHERE slug = :slug LIMIT 1)
+				AND menu.menu_id = (SELECT menu_id FROM menu WHERE slug = :slug LIMIT 1)
 				
 			END @IF			
 
-		ORDER BY menus.parent_id, menus.sort_order, menus.menu_id
+		ORDER BY menu.parent_id, menu.sort_order, menu.menu_id
 
 		@IF isset(:limit)
 		THEN 

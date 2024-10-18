@@ -21,7 +21,7 @@
 				, o.customer_order_id, o.order_id, op.name as product_name
 			END @IF
 			
-			FROM digital_asset AS digital_asset
+			FROM digital_asset
 			INNER JOIN digital_asset_content ON digital_asset_content.digital_asset_id = digital_asset.digital_asset_id 
 												 AND digital_asset_content.language_id = :language_id
 

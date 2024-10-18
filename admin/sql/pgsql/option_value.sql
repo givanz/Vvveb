@@ -13,7 +13,7 @@
 	BEGIN
 		-- option_value
 		SELECT option_value.*, option_value_content.name
-			FROM option_value AS option_value
+			FROM option_value
 			INNER JOIN option_value_content 
 				ON option_value_content.option_value_id = option_value.option_value_id AND option_value_content.language_id = :language_id
 		

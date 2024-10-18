@@ -12,7 +12,7 @@
 	BEGIN
 		-- weight_type
 		SELECT *, weight_type.weight_type_id as array_key
-			FROM weight_type AS weight_type
+			FROM weight_type
 		INNER JOIN weight_type_content ON weight_type_content.weight_type_id = weight_type.weight_type_id
 		WHERE 1 = 1
 			

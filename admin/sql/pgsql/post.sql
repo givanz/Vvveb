@@ -28,6 +28,9 @@
 		IN tags INT,
 		IN taxonomy CHAR,
 		
+		IN order_by CHAR,
+		IN direction CHAR,
+
 		-- return array of posts for posts query
 		OUT fetch_all,
 		-- return posts count for count query
@@ -35,13 +38,13 @@
 	)
 	BEGIN
 
-		SELECT pd.*,posts.*,ad.username,ad.display_name,ad.admin_id,ad.email, ad.avatar, ad.bio, ad.first_name, ad.last_name
+		SELECT pd.*,post.*,ad.username,ad.display_name,ad.admin_id,ad.email, ad.avatar, ad.bio, ad.first_name, ad.last_name
 			@IF isset(:comment_count)
 			THEN
 				,(SELECT COUNT(c.comment_id) 
 						FROM comment c 
 					WHERE 
-						posts.post_id = c.post_id
+						post.post_id = c.post_id
 					
 						@IF isset(:comment_status)
 						THEN
@@ -62,9 +65,9 @@
 			END @IF	
 
 		
-		FROM post AS posts
+		FROM post
 			LEFT JOIN post_content pd ON (
-				posts.post_id = pd.post_id 
+				post.post_id = pd.post_id 
 				
 				@IF isset(:language_id)
 				THEN
@@ -72,38 +75,38 @@
 				END @IF
 
 			)  
-			LEFT JOIN post_to_site ps ON (posts.post_id = ps.post_id)  
-			LEFT JOIN admin ad ON (posts.admin_id = ad.admin_id)  
+			LEFT JOIN post_to_site ps ON (post.post_id = ps.post_id)  
+			LEFT JOIN admin ad ON (post.admin_id = ad.admin_id)  
 			
 			@IF isset(:taxonomy_item_id) || isset(:taxonomy_item_slug)
 			THEN
-				LEFT JOIN post_to_taxonomy_item pt ON (posts.post_id = pt.post_id)   
+				LEFT JOIN post_to_taxonomy_item pt ON (post.post_id = pt.post_id)   
 			END @IF			
 		
 		WHERE 1 = 1 
 		
 			@IF isset(:type) && !empty(:type)
 			THEN
-				AND posts.type = :type
+				AND post.type = :type
 			END @IF			
 			
 			@IF isset(:status) && !empty(:status)
 			THEN
-				AND posts.status = :status
+				AND post.status = :status
 			@ELSE
-				AND posts.status = 'publish'
+				AND post.status = 'publish'
 			END @IF
 			
 			-- username/author
 			@IF isset(:username)
 			THEN
-				AND posts.admin_id = (SELECT admin_id FROM admin WHERE username = :username LIMIT 1)
+				AND post.admin_id = (SELECT admin_id FROM admin WHERE username = :username LIMIT 1)
 			END @IF
 
 			-- admin_id
 			@IF isset(:admin_id)
 			THEN
-				AND posts.admin_id = :admin_id
+				AND post.admin_id = :admin_id
 			END @IF
 
             -- search
@@ -125,7 +128,7 @@
 			@IF isset(:post_id) && count(:post_id) > 0
 			THEN 
 			
-				AND posts.post_id IN (:post_id)
+				AND post.post_id IN (:post_id)
 				
 			END @IF		
 
@@ -155,21 +158,21 @@
 			-- month
 			@IF isset(:month) && !empty(:month)
 			THEN
-				AND date_part('month',posts.created_at) = :month
+				AND date_part('month',post.created_at) = :month
 			END @IF					
 
 			-- year
 			@IF isset(:year) && !empty(:year)
 			THEN
-				AND date_part('year',posts.created_at) = :year
+				AND date_part('year',post.created_at) = :year
 			END @IF					
 
-			-- order by
+			-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
 			@IF isset(:order_by)
 			THEN
-				ORDER BY posts.$order_by $direction		
+				ORDER BY post.$order_by $direction		
 			@ELSE
-				ORDER BY posts.post_id DESC
+				ORDER BY post.post_id DESC
 			END @IF		
 			
 			-- limit
@@ -182,7 +185,7 @@
 		-- SELECT FOUND_ROWS() as count;
 		SELECT count(*) FROM (
 			
-			@SQL_COUNT(posts.post_id, post) -- this takes previous query removes limit and replaces select columns with parameter product_id
+			@SQL_COUNT(post.post_id, post) -- this takes previous query removes limit and replaces select columns with parameter product_id
 			
 		) as count;
 	 
@@ -264,7 +267,7 @@
 		
 		-- content
 		SELECT *, language_id as array_key -- (underscore) _ column means that this column (language_id) value will be used as array key when adding row to result array
-			FROM post_content AS post_content 
+			FROM post_content 
 		WHERE post_id = @result.post_id;
 		
 	 

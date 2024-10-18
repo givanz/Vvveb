@@ -12,7 +12,7 @@
 	BEGIN
 		-- voucher
 		SELECT *
-			FROM voucher AS voucher WHERE 1 = 1
+			FROM voucher WHERE 1 = 1
 			
 		
 		@SQL_LIMIT(:start, :limit);

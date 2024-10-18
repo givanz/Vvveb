@@ -18,7 +18,7 @@
 	BEGIN
 		-- field_item
 		SELECT *, field_id as array_key 
-			FROM field as field 
+			FROM field 
 				-- LEFT JOIN field_to_site t2s ON (field_item.field_item_id = t2s.field_item_id) 
 			
 			WHERE 1 = 1

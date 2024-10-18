@@ -12,7 +12,7 @@
 	BEGIN
 		-- option
 		SELECT "option".*, option_content.name
-			FROM "option" AS "option"
+			FROM "option"
 			INNER JOIN option_content 
 				ON option_content.option_id = "option".option_id AND option_content.language_id = :language_id
 		

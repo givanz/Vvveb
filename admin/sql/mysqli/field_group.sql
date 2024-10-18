@@ -12,7 +12,7 @@
 	BEGIN
 		-- field_group
 		SELECT *
-			FROM field_group AS field_group
+			FROM field_group
 		INNER JOIN field_group_content	ON field_group_content.field_group_id = field_group.field_group_id
 		WHERE 1 = 1
 			

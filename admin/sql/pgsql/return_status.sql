@@ -12,7 +12,7 @@
 	BEGIN
 		-- return_status
 		SELECT *
-			FROM return_status AS return_status WHERE 1 = 1
+			FROM return_status WHERE 1 = 1
 			
 		@IF !empty(:language_id) 
 		THEN			

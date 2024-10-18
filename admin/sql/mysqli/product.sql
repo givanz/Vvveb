@@ -346,13 +346,13 @@
 			user_group.user_group_id as array_key, -- stock_status_id as key
 			name as array_value -- name as value
 			
-		FROM user_group as user_group
+		FROM user_group
 		INNER JOIN user_group_content ON user_group_content.user_group_id = user_group.user_group_id;	
 		
 		-- subscription plan	
 		SELECT subscription_plan.subscription_plan_id as array_key,
 				subscription_plan_content.name as array_value
-			FROM subscription_plan AS subscription_plan
+			FROM subscription_plan
 		INNER JOIN subscription_plan_content ON subscription_plan_content.subscription_plan_id = subscription_plan.subscription_plan_id 
 												 AND subscription_plan_content.language_id = :language_id 
 		-- LIMIT 100
@@ -362,7 +362,7 @@
 			`option`.option_id as array_key, -- option_id as key
 			option_content.name,
 			`option`.type
-			FROM `option` AS `option`
+			FROM `option`
 		INNER JOIN option_content 
 				ON option_content.option_id = `option`.option_id AND option_content.language_id = :language_id
 		-- LIMIT 100
@@ -776,7 +776,7 @@
 	)
 	BEGIN
 
-		SELECT  pd.*,products.*, products.product_id as array_key
+		SELECT  pd.*,product.*, product.product_id as array_key
 
 				@IF !empty(:manufacturer) 
 				THEN 
@@ -790,7 +790,7 @@
 			THEN 
 				-- ,(SELECT CONCAT('[', GROUP_CONCAT('{"id":"', pi.product_image_id, '","image":"', pi.image, '"}'), ']') 
 				,(SELECT JSON_ARRAYAGG( JSON_OBJECT('id', pi.product_image_id, 'image', pi.image) ) 
-				FROM product_image as pi WHERE pi.product_id = products.product_id GROUP BY pi.product_id) as images
+				FROM product_image as pi WHERE pi.product_id = product.product_id GROUP BY pi.product_id) as images
 			END @IF
 
 			-- include discount 	
@@ -799,7 +799,7 @@
 			
 				 ,(SELECT price
 				   FROM product_discount pd2
-				   WHERE pd2.product_id = products.product_id
+				   WHERE pd2.product_id = product.product_id
 					 AND pd2.user_group_id = :user_group_id
 					 AND pd2.quantity = '1'
 					 AND ((pd2.from_date = NULL
@@ -817,7 +817,7 @@
 			
 			  ,(SELECT price
 			   FROM product_promotion ps
-			   WHERE ps.product_id = products.product_id
+			   WHERE ps.product_id = product.product_id
 				 AND ps.user_group_id = :user_group_id
 				 AND ((ps.from_date = NULL
 					   OR ps.from_date < NOW())
@@ -835,7 +835,7 @@
 			
 			  ,(SELECT points
 			   FROM product_points pp
-			   WHERE pp.product_id = products.product_id
+			   WHERE pp.product_id = product.product_id
 				 AND pp.user_group_id = :user_group_id
 			   AS points
 			   
@@ -847,7 +847,7 @@
 
 			  ,(SELECT ss.name
 			   FROM stock_status ss
-			   WHERE ss.stock_status_id = products.stock_status_id
+			   WHERE ss.stock_status_id = product.stock_status_id
 				 AND ss.language_id = :language_id) 
 			  AS stock_status
 
@@ -861,7 +861,7 @@
 			
 			  ,(SELECT wcd.unit
 			   FROM weight_type_content wcd
-			   WHERE products.weight_type_id = wcd.weight_type_id
+			   WHERE product.weight_type_id = wcd.weight_type_id
 				 AND wcd.language_id = :language_id) 
 			   AS weight_type
 			   
@@ -874,7 +874,7 @@
 			
 			  ,(SELECT lcd.unit
 			   FROM length_type_content lcd
-			   WHERE products.length_type_id = lcd.length_type_id
+			   WHERE product.length_type_id = lcd.length_type_id
 				 AND lcd.language_id = :language_id) 
 			   AS length_type
 			   
@@ -887,7 +887,7 @@
 			
 			  ,(SELECT AVG(rating) AS total
 			   FROM review r1
-			   WHERE r1.product_id = products.product_id
+			   WHERE r1.product_id = product.product_id
 				 AND r1.status = '1'
 			   GROUP BY r1.product_id) 
 			  AS rating
@@ -901,7 +901,7 @@
 
 			  ,(SELECT COUNT(*) AS total
 			   FROM review r2
-			   WHERE r2.product_id = products.product_id
+			   WHERE r2.product_id = product.product_id
 				 AND r2.status = '1'
 			   GROUP BY r2.product_id) AS reviews
 									
@@ -911,15 +911,22 @@
 		
 			@IF isset(:search)
 			THEN 
-				,MATCH(pd.name, pd.content) AGAINST(:search) as score
+				,MATCH(pd.name, pd.content)				
+				AGAINST(
+					:search
+					 @IF isset(:search_boolean) && !empty(:search_boolean)
+					 THEN 
+						IN BOOLEAN MODE
+					 END @IF	     
+				) as score
 			END @IF	
 
 		 
-		FROM product AS products
+		FROM product
 		
-			LEFT JOIN product_to_site p2s ON (products.product_id = p2s.product_id) 
+			LEFT JOIN product_to_site p2s ON (product.product_id = p2s.product_id) 
 			LEFT JOIN product_content pd ON (
-				products.product_id = pd.product_id
+				product.product_id = pd.product_id
 		
 				@IF isset(:language_id)
 				THEN
@@ -930,32 +937,32 @@
 
 			@IF !empty(:manufacturer) 
 			THEN 
-				LEFT JOIN manufacturer m ON (products.manufacturer_id = m.manufacturer_id)
+				LEFT JOIN manufacturer m ON (product.manufacturer_id = m.manufacturer_id)
 			END @IF
 			
 			@IF !empty(:taxonomy_item_id) 
 			THEN 
-				INNER JOIN product_to_taxonomy_item pt ON (products.product_id = pt.product_id AND pt.taxonomy_item_id = :taxonomy_item_id)
+				INNER JOIN product_to_taxonomy_item pt ON (product.product_id = pt.product_id AND pt.taxonomy_item_id = :taxonomy_item_id)
 			END @IF				
 			
 			@IF !empty(:related) 
 			THEN 
-				INNER JOIN product_related pr ON (pr.product_related_id = products.product_id)
+				INNER JOIN product_related pr ON (pr.product_related_id = product.product_id)
 			END @IF		
 
 			@IF !empty(:variant) 
 			THEN 
-				INNER JOIN product_variant pv ON (pv.product_variant_id = products.product_id)
+				INNER JOIN product_variant pv ON (pv.product_variant_id = product.product_id)
 			END @IF				
 			
 			@IF !empty(:option_value_id) 
 			THEN 
-				INNER JOIN product_option_value pov ON (pov.product_id = products.product_id)
+				INNER JOIN product_option_value pov ON (pov.product_id = product.product_id)
 			END @IF		
 
 			@IF !empty(:product_attribute) AND !empty(:product_attribute_id) 
 			THEN 
-				INNER JOIN product_attribute pa ON (pa.product_id = products.product_id)
+				INNER JOIN product_attribute pa ON (pa.product_id = product.product_id)
 			END @IF		
 
 			
@@ -965,7 +972,14 @@
 			@IF isset(:search) && !empty(:search)
 			THEN 
 				-- AND pd.name LIKE CONCAT('%',:search,'%')
-				AND MATCH(pd.name, pd.content) AGAINST(:search)
+				AND MATCH(pd.name, pd.content)
+				AGAINST(
+					:search
+					 @IF isset(:search_boolean) && !empty(:search_boolean)
+					 THEN 
+						IN BOOLEAN MODE
+					 END @IF	     
+				)
 			END @IF     
                                 
 			-- like
@@ -977,75 +991,75 @@
 					   
 			@IF isset(:type) && !empty(:type)
 			THEN  
-				AND products.type = :type
+				AND product.type = :type
 			END @IF		
 			
 			@IF isset(:manufacturer_id) && !empty(:manufacturer_id)
 			THEN 
-				AND products.manufacturer_id IN (:manufacturer_id)
+				AND product.manufacturer_id IN (:manufacturer_id)
 			END @IF	   		
 
 			@IF isset(:admin_id) && !empty(:admin_id)
 			THEN 
-				AND products.admin_id = :admin_id
+				AND product.admin_id = :admin_id
 			END @IF	   		
 			
 			@IF isset(:vendor_id) && !empty(:vendor_id)
 			THEN 
-				AND products.vendor_id IN (:vendor_id)
+				AND product.vendor_id IN (:vendor_id)
 			END @IF	    			
 			
 			@IF isset(:price) && :price !== ""
 			THEN 
-				AND products.price = :price
+				AND product.price = :price
 			END @IF	  			
 			
 			@IF isset(:quantity) && :quantity !== ""
 			THEN 
-				AND products.quantity = :quantity
+				AND product.quantity = :quantity
 			END @IF				
 			
 			@IF isset(:model) && :model !== ""
 			THEN 
-				AND products.model = :model
+				AND product.model = :model
 			END @IF				
 			
 			@IF isset(:sku) && :sku !== ""
 			THEN 
-				AND products.sku = :sku
+				AND product.sku = :sku
 			END @IF	 			
 			
 			@IF isset(:barcode) && :barcode !== ""
 			THEN 
-				AND products.barcode = :barcode
+				AND product.barcode = :barcode
 			END @IF	 
 			
 			@IF isset(:upc) && :upc !== ""
 			THEN 
-				AND products.upc = :upc
+				AND product.upc = :upc
 			END @IF	 	
 			
 			@IF isset(:ean) && :ean !== ""
 			THEN 
-				AND products.ean = :ean
+				AND product.ean = :ean
 			END @IF	    
 			
 			@IF isset(:isbn) && :isbn !== ""
 			THEN 
-				AND products.isbn = :isbn
+				AND product.isbn = :isbn
 			END @IF				
 			
 			
 			@IF isset(:status) && :status !== ""
 			THEN 
-				AND products.status = :status
+				AND product.status = :status
 			END @IF				
 
 
 			@IF isset(:product_id) && count(:product_id) > 0
 			THEN 
 			
-				AND products.product_id IN (:product_id)
+				AND product.product_id IN (:product_id)
 				
 			END @IF				
 			
@@ -1098,9 +1112,9 @@
 		-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
 		@IF isset(:order_by)
 		THEN
-			ORDER BY products.$order_by $direction		
+			ORDER BY product.$order_by $direction		
 		@ELSE
-			ORDER BY products.product_id DESC
+			ORDER BY product.product_id DESC
 		END @IF
 		
 
@@ -1113,7 +1127,7 @@
 		
 		SELECT count(*) FROM (
 			
-			@SQL_COUNT(products.product_id, product) -- this takes previous query removes limit and replaces select columns with parameter product_id
+			@SQL_COUNT(product.product_id, product) -- this takes previous query removes limit and replaces select columns with parameter product_id
 			
 		) as count;
 

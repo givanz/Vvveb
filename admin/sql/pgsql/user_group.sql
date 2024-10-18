@@ -12,7 +12,7 @@
 	BEGIN
 		-- user_group
 		SELECT user_group.*,user_group_content.name, user_group_content.content, user_group_content.language_id
-			FROM user_group AS user_group 
+			FROM user_group 
 			INNER JOIN user_group_content ON user_group_content.user_group_id = user_group.user_group_id
 		WHERE 1 = 1
 		

@@ -19,7 +19,7 @@
 	BEGIN
 
             SELECT user.username, user.email, user.first_name, user.last_name, user.display_name, user.avatar, user.bio,  user.subscribe, product_question.*,user.user_id as user_id
-            FROM product_question AS product_question
+            FROM product_question
 	    LEFT JOIN user on user.user_id = product_question.user_id
 		
 			WHERE 1 = 1

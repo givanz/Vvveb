@@ -12,7 +12,7 @@
 	BEGIN
 		-- region_group
 		SELECT *
-			FROM region_group AS region_group WHERE 1 = 1
+			FROM region_group WHERE 1 = 1
 			
 		@IF !empty(:limit) 
 		THEN			

@@ -12,7 +12,7 @@
 	BEGIN
 		-- return resolution
 		SELECT *
-			FROM return_resolution AS return_resolution WHERE 1 = 1
+			FROM return_resolution WHERE 1 = 1
 			
 		@IF !empty(:language_id) 
 		THEN			

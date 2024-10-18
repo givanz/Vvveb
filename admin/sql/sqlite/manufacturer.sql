@@ -109,7 +109,7 @@
 	)
 	BEGIN
 
-		SELECT * FROM manufacturer AS manufacturer
+		SELECT * FROM manufacturer
 		
 			LEFT JOIN manufacturer_to_site p2s ON (manufacturer.manufacturer_id = p2s.manufacturer_id) 
 			WHERE p2s.site_id = :site_id

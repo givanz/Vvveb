@@ -17,7 +17,7 @@
 	)
 	BEGIN
         
-        SELECT * FROM admin AS admin WHERE 1 = 1 
+        SELECT * FROM admin WHERE 1 = 1 
 
 
             @IF isset(:status) AND !empty(:status)

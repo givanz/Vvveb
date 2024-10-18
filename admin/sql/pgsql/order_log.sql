@@ -12,7 +12,7 @@
 	BEGIN
 		-- order_log
 		SELECT *
-			FROM order_log AS order_log WHERE 1 = 1
+			FROM order_log WHERE 1 = 1
 			
 		@IF !empty(:order_id) 
 		THEN			

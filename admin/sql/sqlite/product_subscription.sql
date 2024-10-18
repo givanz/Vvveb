@@ -24,7 +24,7 @@
 			   product_subscription.price, 
 			   product_subscription.trial_price
 			   
-			FROM product_subscription AS product_subscription
+			FROM product_subscription
 			
 			-- product_id
 			@IF isset(:product_id)

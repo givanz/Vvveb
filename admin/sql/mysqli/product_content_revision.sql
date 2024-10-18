@@ -14,34 +14,34 @@
 	)
 	BEGIN
 		-- product_content_revision
-		SELECT revision.product_id, revision.language_id, revision.created_at, revision.admin_id, admin.display_name, admin.username
+		SELECT product_content_revision.product_id, product_content_revision.language_id, product_content_revision.created_at, product_content_revision.admin_id, admin.display_name, admin.username
 
 			@IF !empty(:content) 
 			THEN			
 				,content
 			END @IF
 		
-			FROM product_content_revision AS revision
-			LEFT JOIN admin ON (admin.admin_id = revision.admin_id)
+			FROM product_content_revision
+			LEFT JOIN admin ON (admin.admin_id = product_content_revision.admin_id)
 		WHERE 1 = 1
 		
 		@IF !empty(:product_id) 
 		THEN			
-			AND revision.product_id = :product_id
+			AND product_content_revision.product_id = :product_id
 		END @IF		
 				
 		@IF !empty(:language_id) 
 		THEN			
-			AND revision.language_id = :language_id
+			AND product_content_revision.language_id = :language_id
 		END @IF	
 					
 		@IF !empty(:created_at) 
 		THEN			
-			AND revision.created_at = :created_at
+			AND product_content_revision.created_at = :created_at
 		END @IF				
 		
 		
-		ORDER BY revision.created_at DESC
+		ORDER BY product_content_revision.created_at DESC
 		
 		@IF !empty(:limit) 
 		THEN			
@@ -51,7 +51,7 @@
 		
 		SELECT count(*) FROM (
 			
-			@SQL_COUNT(revision.product_id, product_content_revision) -- this takes previous query removes limit and replaces select columns with parameter product_id
+			@SQL_COUNT(product_content_revision.product_id, product_content_revision) -- this takes previous query removes limit and replaces select columns with parameter product_id
 			
 		) as count;		
 			

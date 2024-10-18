@@ -107,7 +107,7 @@
 	)
 	BEGIN
 
-		SELECT * FROM vendor AS vendor
+		SELECT * FROM vendor
 		
 			LEFT JOIN vendor_to_site p2s ON (vendor.vendor_id = p2s.vendor_id) 
 			WHERE p2s.site_id = :site_id

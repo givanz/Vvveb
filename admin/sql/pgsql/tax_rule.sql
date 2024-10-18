@@ -12,7 +12,7 @@
 	BEGIN
 		-- tax_rule
 		SELECT *
-			FROM tax_rule AS tax_rule WHERE 1 = 1
+			FROM tax_rule WHERE 1 = 1
 
 			
 		@IF !empty(:tax_type_id) 

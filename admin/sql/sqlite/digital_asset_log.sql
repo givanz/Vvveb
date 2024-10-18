@@ -13,7 +13,7 @@
 
 		SELECT digital_asset_log.*
 			
-			FROM digital_asset_log AS digital_asset_log
+			FROM digital_asset_log
 
 		WHERE 1 = 1
 			

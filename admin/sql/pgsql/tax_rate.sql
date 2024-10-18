@@ -12,7 +12,7 @@
 	BEGIN
 		-- tax_rate
 		SELECT *
-			FROM tax_rate AS tax_rate WHERE 1 = 1
+			FROM tax_rate WHERE 1 = 1
 			
 		
 		@IF !empty(:limit) 

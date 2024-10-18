@@ -12,24 +12,24 @@
 	)
 	BEGIN
 		-- media_content
-		SELECT media.*,media_content.*
+		SELECT media_content.*,media_content.*
 
 			@IF !empty(:content) 
 			THEN			
 				,content
 			END @IF
 		
-			FROM media_content AS media
+			FROM media_content
 		WHERE 1 = 1
 		
 		@IF !empty(:media_id) 
 		THEN			
-			AND media.media_id = :media_id
+			AND media_content.media_id = :media_id
 		END @IF		
 			
 		@IF !empty(:language_id) 
 		THEN			
-			AND media.language_id = :language_id
+			AND media_content.language_id = :language_id
 		END @IF
 		
 		@IF !empty(:limit) 
@@ -40,7 +40,7 @@
 		
 		SELECT count(*) FROM (
 			
-			@SQL_COUNT(media.media_id, media_content) -- this takes previous query removes limit and replaces select columns with parameter product_id
+			@SQL_COUNT(media_content.media_id, media_content) -- this takes previous query removes limit and replaces select columns with parameter product_id
 			
 		) as count;		
 			

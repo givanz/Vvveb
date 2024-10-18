@@ -23,14 +23,14 @@
 	)
 	BEGIN
 
-		SELECT user.username, user.email, user.first_name,  user.last_name,  user.display_name, user.avatar, user.bio,  user.subscribe, comment.*, comment_id as array_key
+		SELECT "user".username, "user".email, "user".first_name,  "user".last_name,  "user".display_name, "user".avatar, "user".bio,  "user".subscribe, comment.*, comment_id as array_key
 			@IF isset(:post_title) AND :post_title
 			THEN 
 				,post_content.name, post_content.slug
 			END @IF			
 			
-			FROM comment AS comment
-			LEFT JOIN user ON (user.user_id = comment.user_id)	
+			FROM comment
+			LEFT JOIN "user" ON ("user".user_id = comment.user_id)	
 
 			@IF isset(:post_title) AND :post_title
 			THEN 
@@ -95,7 +95,7 @@
 
 		SELECT * 
 			FROM comment AS _
-			LEFT JOIN user ON user.user_id = _.user_id
+			LEFT JOIN "user" ON "user".user_id = _.user_id
 		WHERE 1 = 1
 
             @IF isset(:comment_id)

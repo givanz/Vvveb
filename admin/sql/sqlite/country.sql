@@ -13,7 +13,7 @@
 	BEGIN
 		-- country
 		SELECT *
-			FROM country AS country WHERE 1 = 1
+			FROM country WHERE 1 = 1
 			
 		@IF isset(:status) AND :status != "" 
 		THEN			

@@ -19,7 +19,7 @@
 	BEGIN
 		-- taxonomy_item
 		SELECT *, taxonomy_id as array_key 
-			FROM taxonomy as taxonomy 
+			FROM taxonomy 
 				-- LEFT JOIN taxonomy_to_site t2s ON (taxonomy_item.taxonomy_item_id = t2s.taxonomy_item_id) 
 			
 			WHERE 1 = 1

@@ -13,7 +13,7 @@
 	BEGIN
 		-- language
 		SELECT *, code as array_key
-			FROM language as language WHERE 1 = 1
+			FROM language WHERE 1 = 1
 			
 			@IF isset(:status) 
 			THEN

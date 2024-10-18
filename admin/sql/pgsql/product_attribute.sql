@@ -12,7 +12,7 @@
 	BEGIN
 		-- product_attribute
 		SELECT product_attribute.*
-			FROM product_attribute AS product_attribute
+			FROM product_attribute
 		
 		WHERE 1 = 1
 			

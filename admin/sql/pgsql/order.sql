@@ -24,6 +24,8 @@
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN order_by CHAR,
+		IN direction CHAR,
 		
 		
 		-- return
@@ -95,7 +97,13 @@
 			"order".last_name LIKE '%' || :search || '%'
         	END @IF	  
 			
-		ORDER BY order_id DESC
+			-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
+			@IF isset(:order_by)
+			THEN
+				ORDER BY $order_by $direction		
+			@ELSE
+				ORDER BY order_id DESC
+			END @IF
 
 		@SQL_LIMIT(:start, :limit);
 		

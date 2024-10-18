@@ -19,7 +19,7 @@
 
 		SELECT *
 		
-			FROM user_address AS user_address
+			FROM user_address
 		WHERE 1 = 1
             
 		-- user
