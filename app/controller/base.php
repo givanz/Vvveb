@@ -39,6 +39,8 @@ use Vvveb\System\User\User;
 
 #[\AllowDynamicProperties]
 class Base {
+	protected $global;
+
 	protected function language($defaultLanguage = false, $defaultLanguageId = false) {
 		$languages = availableLanguages();
 
@@ -48,7 +50,7 @@ class Base {
 		$language_id         = $this->session->get('language_id');
 		$site_language       = false;
 
-		if (($lang = ($this->request->post['language'] ?? false)) && ! is_array($lang)) {
+		if (($lang = ($this->request->post['language'] ?? $this->request->get['language'] ?? false)) && ! is_array($lang)) {
 			$language  = filter('/[A-Za-z_-]+/', $lang, 50);
 			$this->session->set('language', $language);
 			$this->session->set('language_id', $languages[$language]['language_id']);
