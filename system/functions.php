@@ -72,7 +72,9 @@ function url($parameters, $mergeParameters = false, $useCurrentUrl = true) {
 			$result .= '//' . \Vvveb\System\Sites::url($parameters['host']);
 			unset($parameters['host']);
 		} else {
-			$result .= (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
+			if (! $useCurrentUrl) {
+				$result .= (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
+			}
 		}
 
 		$result .= ($useCurrentUrl ? $url['path'] ?? '' : '') . ($parameters ? '?' . urldecode(http_build_query($parameters)) : '');
