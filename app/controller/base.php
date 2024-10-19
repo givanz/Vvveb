@@ -51,11 +51,13 @@ class Base {
 		$site_language       = false;
 
 		if (($lang = ($this->request->post['language'] ?? $this->request->get['language'] ?? false)) && ! is_array($lang)) {
-			$language  = filter('/[A-Za-z_-]+/', $lang, 50);
-			$this->session->set('language', $language);
-			$this->session->set('language_id', $languages[$language]['language_id']);
-			$default_language = false; //recheck default language
-			clearLanguageCache($language);
+			$language  = filter('/[A-Za-z_-]+/', $lang, 10);
+			if (isset($languages[$language])) {
+				$this->session->set('language', $language);
+				$this->session->set('language_id', $languages[$language]['language_id']);
+				$default_language = false; //recheck default language
+				clearLanguageCache($language);
+			}
 		}
 
 		if (! $default_language) {
