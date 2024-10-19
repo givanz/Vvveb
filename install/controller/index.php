@@ -88,7 +88,7 @@ class Index extends Base {
 		}
 	}
 
-	function checkRequirements() {
+	private function checkRequirements() {
 		$notMet = [];
 
 		if (version_compare(PHP_VERSION, MIN_PHP_VERSION) < 0) {
@@ -112,7 +112,7 @@ class Index extends Base {
 		return $notMet;
 	}
 
-	function writeConfig($data) {
+	private function writeConfig($data) {
 		return \Vvveb\setConfig('db', $data);
 		$configFile = DIR_ROOT . 'config/db.php';
 		file_put_contents($configFile, "<?php\n return " . var_export($data, true) . ';');
@@ -368,7 +368,7 @@ class Index extends Base {
 				$menus  = new menuSQL();
 
 				foreach ([1, 5] as $menu_id) { //main menu and footer menu id's
-					$menuItems = $menus->getAll(['menu_id' => $menu_id, 'language_id' => 1])['menus'] ?? [];
+					$menuItems = $menus->get(['menu_id' => $menu_id, 'language_id' => 1])['menu'] ?? [];
 
 					foreach ($menuItems as $menuItem) {
 						$data = ['url' => V_SUBDIR_INSTALL . $menuItem['url'], 'menu_item_content' => []];
