@@ -197,19 +197,21 @@ class Editor extends Base {
 			$className    = 'url';
 			$current_page = [];
 
-			switch ($route['module']) {
-				case 'product/product/index':
-					$className                  = 'product';
-					$current_page['product_id'] = $route['product_id'];
+			if ($route && isset($route['module'])) {
+				switch ($route['module']) {
+					case 'product/product/index':
+						$className                  = 'product';
+						$current_page['product_id'] = $route['product_id'];
 
-				break;
+					break;
 
-				case 'content/post/index':
-				case 'content/page/index':
-					$className               = 'page';
-					$current_page['post_id'] = $route['post_id'];
+					case 'content/post/index':
+					case 'content/page/index':
+						$className               = 'page';
+						$current_page['post_id'] = $route['post_id'];
 
-				break;
+					break;
+				}
 			}
 
 			$key  = slugify($url);
