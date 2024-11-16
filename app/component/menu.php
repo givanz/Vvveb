@@ -29,6 +29,7 @@ use Vvveb\Sql\postSQL;
 use Vvveb\Sql\productSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use Vvveb\System\Sites;
 use function Vvveb\url;
 
 class Menu extends ComponentBase {
@@ -85,6 +86,10 @@ class Menu extends ComponentBase {
 				if (($type == 'post' || $type == 'page') && $category['item_id']) {
 					$postIds[$category['item_id']]         = $category['item_id'];
 					$taxonomyPosts[$category['item_id']][] = $taxonomy_item_id;
+				}
+
+				if ($type == 'link') {
+					$category['url'] = Sites::url($category['url'] ?? '');
 				}
 			}
 

@@ -169,7 +169,8 @@ class Sites {
 			}
 
 			//if host is ip number, localhost or does not have tld remove tld and subdomain
-			if (is_numeric($host_matches['domain'] ?? null) || $hostWp == 'localhost' || (strpos($hostWp, '.') === false)) {
+			if (! ($matches['prefix'] || ($matches['tld'] && $matches['tld'] !== '*')) &&
+				(is_numeric($host_matches['domain'] ?? null) || $hostWp == 'localhost' || (strpos($hostWp, '.') === false))) {
 				$matches['domain']    = $host;
 				$matches['subdomain'] = $matches['tld'] = $matches['prefix'] = '';
 			}
