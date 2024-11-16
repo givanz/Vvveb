@@ -57,8 +57,8 @@ class Base {
 		if ($site_id) {
 			$site  = Sites::getSiteById($site_id);
 		}
-		
-		if (!$site_id || !$site) {
+
+		if (! $site_id || ! $site) {
 			$site = Sites::getDefault();
 		}
 
@@ -99,7 +99,7 @@ class Base {
 		];
 
 		$custom_posts_types        = \Vvveb\getSetting('post', 'types', []);
-		$custom_posts_types       += $default_custom_posts;
+		$custom_posts_types += $default_custom_posts;
 		list($custom_posts_types) = Event::trigger(__CLASS__, __FUNCTION__, $custom_posts_types);
 
 		$custom_post_menu = \Vvveb\config('custom-post-menu', []);
@@ -166,7 +166,7 @@ class Base {
 		];
 
 		$custom_products_types       = \Vvveb\getSetting('product', 'types', []);
-		$custom_products_types      += $default_custom_products;
+		$custom_products_types += $default_custom_products;
 		list($custom_products_types) = Event::trigger(__CLASS__, __FUNCTION__, $custom_products_types);
 
 		$custom_product_menu = \Vvveb\config('custom-product-menu', []);
@@ -224,7 +224,7 @@ class Base {
 	protected function permissions() {
 		$module     = strtolower(FrontController::getModuleName());
 		$action     = strtolower(FrontController::getActionName());
-		$action     = $action ? '/' . $action : '';
+		$action     = ($action && $action != 'index') ? '/' . $action : '';
 		$permission = $module . $action;
 
 		//if current module/action does not have permission then show permission denied page
@@ -238,7 +238,7 @@ class Base {
 		//get current controller methods to check for permission
 		$methods = get_class_methods($this);
 		//$methods = array_map(fn ($value) => "$module/$value", $methods);
-		$methods = array_map(function ($value) use ($module) {return "$module/$value"; }, $methods);
+		$methods = array_map(function ($value) use ($module) {return ($value == 'index') ? $module : "$module/$value"; }, $methods);
 
 		//check if controller requires additional permission check
 		if (isset($this->additionalPermissionCheck)) {
@@ -262,7 +262,7 @@ class Base {
 			if (is_array($v)) {
 				if (isset($v['url'])) {
 					if (isset($v['module'])) {
-						$permissions[$v['url']] = ($v['module'] ?? '') . (isset($v['action']) ? '/' . $v['action'] : '');
+						$permissions[$v['url']] = ($v['module'] ?? '') . ((isset($v['action']) && $v['action'] != 'index') ? '/' . $v['action'] : '');
 					} else {
 						$permissions[$v['url']] = \Vvveb\pregMatch('/module=([^&$]+)/', $v['url'], 1);
 					}
@@ -287,21 +287,25 @@ class Base {
 		}
 	}
 
-	protected function language($defaultLanguage = false, $defaultLanguageId = false) {
+	protected function language($defaultLanguage = false, $defaultLanguageId = false, $defaultLocale = false) {
 		$languages = availableLanguages();
 
 		$default_language    = $this->session->get('default_language');
 		$default_language_id = $this->session->get('default_language_id');
-		$language            = $this->session->get('language');
-		$language_id         = $this->session->get('language_id');
+		$default_locale      = $this->session->get('default_locale');
 		$site_language       = false;
 
 		if (($lang = ($this->request->post['language'] ?? false)) && ! is_array($lang)) {
-			$language  = filter('/[A-Za-z_-]+/', $lang, 50);
-			$this->session->set('language', $language);
-			$this->session->set('language_id', $languages[$language]['language_id']);
-			$default_language = false; //recheck default language
-			clearLanguageCache($language);
+			$language  = filter('/[A-Za-z_-]+/', $lang, 10);
+
+			if (isset($languages[$language])) {
+				$this->session->set('language', $language);
+				$this->session->set('language_id', $languages[$language]['language_id']);
+				$this->session->set('locale', $languages[$language]['locale']);
+				$this->session->set('rtl', $languages[$language]['rtl'] ?? false);
+				$default_language = false; //recheck default language
+				clearLanguageCache($language);
+			}
 		}
 
 		if (! $default_language) {
@@ -310,11 +314,14 @@ class Base {
 				if ($defaultLanguageId && ($defaultLanguageId == $lang['language_id'])) {
 					$site_language    = $code;
 					$site_language_id = $lang['language_id'];
+					$site_locale      = $lang['locale'];
 				}
+
 				//set global default language
 				if ($lang['default']) {
 					$default_language    = $code;
 					$default_language_id = $lang['language_id'];
+					$default_locale      = $lang['locale'];
 
 					break;
 				}
@@ -323,39 +330,53 @@ class Base {
 			if ($site_language) {
 				$default_language    = $site_language;
 				$default_language_id = $site_language_id;
+				$default_locale      = $site_locale;
 			}
 
 			//no valid default site or global language? set english as default
 			if (! $default_language) {
 				$default_language    = 'en_US';
 				$default_language_id = 1;
+				$default_locale      = 'en-us';
 			}
 
 			$this->session->set('default_language', $default_language);
 			$this->session->set('default_language_id', $default_language_id);
+			$this->session->set('default_locale', $default_locale);
+		}
+
+		$language    = $this->session->get('language') ?? $default_language;
+		$language_id = $this->session->get('language_id') ?? $default_language_id;
+		$locale      = $this->session->get('locale') ?? $default_locale;
+		$rtl         = $this->session->get('rtl') ?? false;
+
+		//if no default language configured then set first language as current language
+		if (! isset($languages[$language])) {
+			$default_language    = key($languages);
+			$lang                = $languages[$default_language];
+			$default_language_id = $lang['language_id'] ?? $defaultLanguageId;
+			$default_locale      = $lang['locale'] ?? $defaultLocale;
+			$default_rtl         = $lang['rtl'] ?? false;
 		}
 
 		//if no language configured then set default language as current language
 		if (! $language) {
 			$language    = $default_language;
 			$language_id = $default_language_id;
+			$locale      = $default_locale;
+			$rtl         = $default_rtl;
 			$this->session->set('language', $language);
 			$this->session->set('language_id', $language_id);
+			$this->session->set('locale', $locale);
+			$this->session->set('rtl', $rtl);
 		}
-
-		//if no default language configured then set first language as current language
-		if (! isset($languages[$language])) {
-			$language = key($languages);
-			$this->session->set('language', $language);
-			$this->session->set('language_id', $languages[$language]['language_id'] ?? $defaultLanguageId);
-		}
-
-		$language    = $request->request['language'] ?? $this->session->get('language') ?? 'en_US';
-		$language_id = $request->request['language_id'] ?? $this->session->get('language_id') ?? $defaultLanguageId;
 
 		$this->global['language']            = $language;
+		$this->global['locale']              = $locale;
 		$this->global['language_id']         = $language_id;
+		$this->global['rtl']                 = $rtl;
 		$this->global['default_language']    = $default_language;
+		$this->global['default_locale']      = $default_locale;
 		$this->global['default_language_id'] = $default_language_id;
 
 		setLanguage($language);
@@ -515,6 +536,8 @@ class Base {
 		if (defined('CLI')) {
 			return;
 		}
+
+		$this->view->global = $this->global;
 
 		//send to view for button visibillity check
 		$this->view->actionPermissions = $this->actionPermissions ?? [];

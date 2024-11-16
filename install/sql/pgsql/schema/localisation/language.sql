@@ -10,6 +10,7 @@ CREATE TABLE language (
   "name" varchar(64) NOT NULL,
   "code" varchar(12) NOT NULL,
   "locale" varchar(20) NOT NULL,
+  "rtl" smallint NOT NULL DEFAULT 0,
   "sort_order" int NOT NULL DEFAULT 0,
   "status" smallint NOT NULL,
   "default" smallint NOT NULL DEFAULT 0,

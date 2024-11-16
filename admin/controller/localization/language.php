@@ -36,7 +36,7 @@ class Language extends Crud {
 
 	protected $installUrl = 'https://raw.githubusercontent.com/Vvveb/{code}/master/LC_MESSAGES/';
 
-	protected $files = ['vvveb.po', 'landing-theme.po'];
+	protected $files = ['vvveb.po'];
 
 	protected $listUrl = 'https://www.vvveb.com/page/contribute#language';
 
@@ -99,7 +99,7 @@ class Language extends Crud {
 
 		$this->view->language_list  = $languageList;
 
-		$this->view->status  = [1 => 'Active', 0 => 'Inactive'];
-		$this->view->default = [0 => 'No', 1 => 'Yes'];
+		$this->view->status  = [1 => __('Active'), 0 => __('Inactive')];
+		$this->view->default = $this->view->rtl =  [0 => __('No'), 1 => __('Yes')];
 	}
 }
