@@ -6,7 +6,7 @@ input[type="text"]|value =
 <?php
  if (isset($_POST['@@__name__@@'])) 
 		echo htmlspecialchars($_POST['@@__name__@@']);
-	else if (isset(htmlspecialchars($this->config['@@__name__@@']))) 
+	else if (isset($this->config['@@__name__@@'])) 
 		echo htmlspecialchars($this->config['@@__name__@@']);
 	else echo '@@__value__@@';		
 ?>
@@ -15,7 +15,7 @@ input[type="password"]|value =
 <?php
  if (isset($_POST['@@__name__@@'])) 
 		echo htmlspecialchars($_POST['@@__name__@@']);
-	else if (isset(htmlspecialchars($this->config['@@__name__@@']))) 
+	else if (isset($this->config['@@__name__@@'])) 
 		echo htmlspecialchars($this->config['@@__name__@@']);
 	else echo '@@__value__@@';		
 ?>
@@ -25,7 +25,7 @@ input[type="email"]|value =
 <?php
  if (isset($_POST['@@__name__@@'])) 
 		echo htmlspecialchars($_POST['@@__name__@@']);
-	else if (isset(htmlspecialchars($this->config['@@__name__@@']))) 
+	else if (isset($this->config['@@__name__@@'])) 
 		echo htmlspecialchars($this->config['@@__name__@@']);
 	else echo '@@__value__@@';		
 ?>
@@ -35,7 +35,7 @@ input[type="checkbox"]|value =
 <?php
 	 if (isset($_POST['@@__name__@@'])) 
 		echo htmlspecialchars($_POST['@@__name__@@']);
-	else if (isset(htmlspecialchars($this->config['@@__name__@@']))) 
+	else if (isset($this->config['@@__name__@@'])) 
 		echo htmlspecialchars($this->config['@@__name__@@']);
 	else echo '@@__value__@@';		
 ?>

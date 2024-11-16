@@ -109,7 +109,7 @@ class Order extends Base {
 				}
 
 				$order                    = &$results['order'];
-				$oder['user_url']         = \Vvveb\url(['module' => 'user/user', 'user_id' => $order['user_id']]);
+				$order['user_url']        = \Vvveb\url(['module' => 'user/user', 'user_id' => $order['user_id']]);
 				$order['total_formatted'] = $currency->format($order['total']);
 				$order['shipping_data']   = json_decode($order['shipping_data'] ?? '', true);
 				$order['payment_data']    = json_decode($order['payment_data'] ?? '', true);
