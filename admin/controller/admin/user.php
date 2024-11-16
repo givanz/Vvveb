@@ -35,6 +35,7 @@ class User extends UserBase {
 
 		$options    =  [
 			'type'         => 'admin', //$this->type,
+			'limit'=> 100,
 		] + $this->global;
 
 		$roles             = $roles->getAll($options);

@@ -84,7 +84,19 @@ class Role {
 			$denyList = array_map(function ($value) {return false; }, array_flip($matches[0]));
 		}
 
-		$result = $denyList + $allowList;
+		//rules that match exactly the permission takes precedence (does not have *)
+		$exactAllow = array_intersect($allowRules, $permissions);
+		$exactDeny  = array_intersect($denyRules, $permissions);
+
+		if ($exactAllow) {
+			$exactAllow = array_map(function ($value) { return true; }, array_flip($exactAllow));
+		}
+
+		if ($exactDeny) {
+			$exactDeny = array_map(function ($value) { return false; }, array_flip($exactDeny));
+		}
+
+		$result = $exactDeny + $exactAllow + $denyList + $allowList;
 
 		if (is_array($permission)) {
 			return $result;
@@ -142,7 +154,11 @@ class Role {
 			foreach ($methods as $method) {
 				//ignore constructor
 				if ($method[0] != '_') {
-					$data[$method] = $permission . "/$method";
+					if ($method == 'index') {
+						$data[$method] = $permission;
+					} else {
+						$data[$method] = "$permission/$method";
+					}
 				}
 			}
 		}
@@ -198,7 +214,11 @@ class Role {
 				foreach ($methods as $method) {
 					//ignore constructor
 					if ($method[0] != '_') {
-						$data['permissions'][] = $permission . "/$method";
+						if ($method == 'index') {
+							$data['permissions'][] = $permission;
+						} else {
+							$data['permissions'][] = "$permission/$method";
+						}
 					}
 				}
 			}
