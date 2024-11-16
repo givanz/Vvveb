@@ -306,7 +306,7 @@ VvvebTheme.Alert  = {
 	}
 }
 
-document.querySelector('.alert-top .btn-close').addEventListener('click', function (e) {
+document.querySelector('.alert-top .btn-close')?.addEventListener('click', function (e) {
     let alert = this.closest(".alert");
     alert.classList.remove('show')
     alert.style.display = "";
@@ -714,7 +714,7 @@ document.addEventListener("click", function (e) {
 				let target = document.querySelector(selector);
 				target.scrollIntoView({behavior: "smooth", block: element.dataset.scroll ?? "center", inline: "center"});
 			}
-			window.history.pushState({url, selector}, null); 
+			window.history.pushState({url, selector}, null, url); 
 		});
 		
 		e.preventDefault();
