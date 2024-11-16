@@ -103,13 +103,15 @@ class Checkout extends Base {
 	function index() {
 		$options = array_intersect_key($this->global['site'],
 		array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
-		$cart = Cart :: getInstance($options);
+		$cart = Cart :: getInstance($this->global + $options);
 
 		//buy now product
-		if (isset($this->request->request['product_id'])) {
-			$productId = $this->request->request['product_id'];
-			$quantity  = $this->request->post['quantity'] ?? 1;
-			$cart->add($productId, $quantity);
+		if (isset($this->request->get['product_id'])) {
+			$productId          = $this->request->get['product_id'];
+			$quantity           = $this->request->post['quantity'] ?? 1;
+			$option             = $this->request->post['option'] ?? [];
+			$subscriptionPlanId = $this->request->post['subscription_plan_id'] ?? false;
+			$cart->add($productId, $quantity, $option, $subscriptionPlanId);
 		}
 
 		if (! $cart->hasProducts()) {
@@ -265,18 +267,24 @@ class Checkout extends Base {
 						$userInfo['display_name'] = $userInfo['first_name'] . ' ' . $userInfo['last_name'];
 						$userInfo['username']     = str_replace(' ', '', $userInfo['first_name'] . $userInfo['last_name']);
 
-						$error =  __('Error creating account!');
+						$result = User::add($userInfo);
 
-						if ($result = User::add($userInfo)) {
-							$checkoutInfo['user_id'] = $result['user'] ?? NULL;
-							$userInfo                = User::get(['user_id' => $user_id]);
-							//check if user was added before automatic login
-							if ($userInfo) {
-								\Vvveb\session(['user' => $userInfo]);
-								$this->view->global['user_id'] = $userInfo['user_id'];
+						if ($result) {
+							if (isset($result['user'])) {
+								$checkoutInfo['user_id'] = $result['user'] ?? NULL;
+								$userInfo                = User::get(['user_id' => $checkoutInfo['user_id']]);
+								//check if user was added before automatic login
+								if ($userInfo) {
+									\Vvveb\session(['user' => $userInfo]);
+									$this->view->global['user_id'] = $userInfo['user_id'];
+								}
+							} else {
+								$this->view->errors[] = __('This email is already in use. Please use another one or login.');
+
+								return;
 							}
 						} else {
-							$this->view->errors[] = $error;
+							$this->view->errors[] = __('Error creating account!');
 
 							return;
 						}
