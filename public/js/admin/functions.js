@@ -44,13 +44,7 @@ function removeRow(element, elementName = false) {
 	return row.remove();
 }
 
-
-function clearMedia(id = "featured-image") {
-	document.getElementById(id + "-input").value = "";
-	document.getElementById(id + "-thumb").setAttribute("src","img/placeholder.svg");
-}
-
-const slugify = (str) => {
+function slugify(str) {
 	if (str) {	
 		return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove accents
 			.replace(/([^\w]+|\s+)/g, '-') // Replace space and other characters by hyphen
