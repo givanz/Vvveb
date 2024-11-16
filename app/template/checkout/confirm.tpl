@@ -1,5 +1,5 @@
 //keep post values
-input|value = <?php if (isset($_POST['@@__name__@@'])) echo $_POST['@@__name__@@'];?>
+input|value = <?php if (isset($_POST['@@__name__@@'])) echo htmlspecialchars($_POST['@@__name__@@']);?>
 
 [data-v-order-*] = $this->order['@@__data-v-order-(*)__@@']
 

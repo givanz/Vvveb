@@ -1,16 +1,16 @@
 import(common.tpl)
 
 @categories = [data-v-categories] [data-v-cats]
-@menu   = [data-v-categories] [data-v-cats] [data-v-taxonomy_item]
+@menu       = [data-v-categories] [data-v-cats] [data-v-taxonomy_item]
 @language   = [data-v-languages] [data-v-language]
 
 @categories|deleteAllButFirstChild
 @menu|deleteAllButFirstChild
 
 
-[data-v-taxonomy_id] = <?php echo $this->menu_data['menu_id'] ?? '';?>
-[data-v-name] = <?php echo $this->menu_data['name'] ?? '';?>
-[data-v-slug] = <?php echo $this->menu_data['slug'] ?? '';?>
+[data-v-taxonomy_id] = <?php echo (int)$this->menu_data['menu_id'];?>
+[data-v-name]        = <?php echo htmlspecialchars($this->menu_data['name'] ?? '');?>
+[data-v-slug]        = <?php echo htmlspecialchars($this->menu_data['slug'] ?? '');?>
 
 
 @categories|before = <?php
@@ -57,7 +57,7 @@ if ($_categories) {
 		@menu [data-v-taxonomy_item-*] = $menu['@@__data-v-taxonomy_item-(*)__@@']
 		
 		
-		@menu [data-v-taxonomy_item-url]|href = <?php echo htmlentities(Vvveb\url('post/menu/index', $menu));?>
+		@menu [data-v-taxonomy_item-url]|href = <?php echo htmlspecialchars(Vvveb\url('post/menu/index', $menu));?>
 		@menu [data-v-taxonomy_item-img]|src = $menu['images'][0]
 				
 		@menu|append = <?php 
@@ -88,22 +88,22 @@ foreach ($languages as $key => $language) {
 	$code = $language['code'];
 ?>
 
-	[data-v-languages] [data-v-language-id]|id = <?php echo 'lang-' . $language_id . '-' . $_lang_instance . '-' . $uniq;?>
-	[data-v-languages] [data-v-language-id]|addClass = <?php if ($_i == 0) echo 'show active';?>
+	[data-v-languages] [data-v-language-id]|id         = <?php echo 'lang-' . $language_id . '-' . $_lang_instance . '-' . $uniq;?>
+	[data-v-languages] [data-v-language-id]|addClass   = <?php if ($_i == 0) echo 'show active';?>
 	[data-v-languages] input[data-v-language_id]|value = <?php echo $language_id;?>
-	[data-v-languages] input[data-v-language_id]|name = <?php echo "menu_item_content[$language_id][language_id]";?>
+	[data-v-languages] input[data-v-language_id]|name  = <?php echo "menu_item_content[$language_id][language_id]";?>
 	
 	@language [data-v-language-lang-name]|innerText = <?php echo ucfirst($language['name']);?>
-	@language [data-v-language-*]|innerText = $menu['languages'][$language_id]['@@__data-v-language-(*)__@@']
-	@language [data-v-language-*]|name = <?php echo "menu_item_content[$language_id][@@__data-v-language-(*)__@@]";?>
-	@language input[data-v-language-*]|value = $menu['languages'][$language_id]['@@__data-v-language-(*)__@@']
+	@language [data-v-language-*]|innerText         = $menu['languages'][$language_id]['@@__data-v-language-(*)__@@']
+	@language [data-v-language-*]|name              = <?php echo "menu_item_content[$language_id][@@__data-v-language-(*)__@@]";?>
+	@language input[data-v-language-*]|value        = $menu['languages'][$language_id]['@@__data-v-language-(*)__@@']
 
-	@language [data-v-language-img]|title = $language['name']
-	@language [data-v-language-img]|src = <?php echo 'language/' . $language_id . '/' . $language_id . '.png';?>
-	@language [data-v-language-link]|href = <?php echo '#lang-' . $language_id . '-' . $_lang_instance . '-' . $uniq;?>
+	@language [data-v-language-img]|title     = $language['name']
+	@language [data-v-language-img]|src       = <?php echo 'language/' . $language_id . '/' . $language_id . '.png';?>
+	@language [data-v-language-link]|href     = <?php echo '#lang-' . $language_id . '-' . $_lang_instance . '-' . $uniq;?>
 	@language [data-v-language-link]|addClass = <?php if ($_i == 0) echo 'active';?>
 
 @language|after = <?php 
-$_i++;
+	$_i++;
 }
 ?>

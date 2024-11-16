@@ -11,7 +11,7 @@ if(isset($this->regions) && is_array($this->regions)) {
 	foreach ($this->regions as $region_index => $region) { ?>
 	
 	@region [data-v-region-*]|name  = <?php echo "region[$region_index][@@__data-v-region-(*)__@@]";?>
-	@region [data-v-region-*]|data-v-region-id  = <?php echo $region['region_id'];?>
+	@region [data-v-region-*]|data-v-region-id  = $region['region_id']
 
 	@region [data-v-region-*]|innerText  = $region['@@__data-v-region-(*)__@@']
 	@region input[data-v-region-*]|value = $region['@@__data-v-region-(*)__@@']	

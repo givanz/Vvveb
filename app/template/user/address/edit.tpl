@@ -1,6 +1,6 @@
 import(common.tpl) 
 
-[data-v-user_address-*] = <?php echo($this->user_address['@@__data-v-user_address-(*)__@@'] ?? '');?>
+[data-v-user_address-*] = $this->user_address['@@__data-v-user_address-(*)__@@']
 
 [data-v-countries]|data-v-region-id = $this->user_address['region_id']
 

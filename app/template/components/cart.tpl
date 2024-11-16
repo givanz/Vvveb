@@ -36,7 +36,7 @@ if($products) {
 	@cart-product a[data-v-cart-product-url]|href = $product['url']
 
 	@cart-product [data-v-cart-product-remove-url]|href = 
-		<?php echo htmlentities(Vvveb\url(['module' => 'cart', 'action' => 'remove', 'product_id' => $product['product_id']]));?>
+		<?php echo htmlspecialchars(Vvveb\url(['module' => 'cart', 'action' => 'remove', 'product_id' => $product['product_id']]));?>
 		
 	@cart-product|data-product_id = $product['product_id']		
 	@cart-product|data-key = $key	

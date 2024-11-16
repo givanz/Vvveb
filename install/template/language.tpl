@@ -25,7 +25,7 @@
 		if (isset($language['emoji'])) {
 			echo $language['emoji'] . ' ';
 		}
-		echo $language['name'];
+		echo htmlspecialchars($language['name']);
 	?>
 	
 

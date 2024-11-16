@@ -6,9 +6,9 @@ import(common.tpl)
 [data-v-role] input[data-v-role-*]|value = 
 <?php
 	 if (isset($_POST['role']['@@__data-v-role-(*)__@@'])) 
-		echo $_POST['role']['@@__data-v-role-(*)__@@']; 
+		echo htmlspecialchars($_POST['role']['@@__data-v-role-(*)__@@']); 
 	 else if (isset($this->role['@@__data-v-role-(*)__@@'])) 
-		echo $this->role['@@__data-v-role-(*)__@@'];
+		echo htmlspecialchars($this->role['@@__data-v-role-(*)__@@']);
 ?>
 
 
@@ -16,12 +16,10 @@ import(common.tpl)
 [data-v-role] textarea[data-v-role-*] = 
 <?php
 	 if (isset($_POST['role']['@@__data-v-role-(*)__@@'])) 
-		echo $_POST['role']['@@__data-v-role-(*)__@@']; 
+		echo htmlspecialchars($_POST['role']['@@__data-v-role-(*)__@@']); 
 	 else if (isset($this->role['@@__data-v-role-(*)__@@'])) 
-		echo $this->role['@@__data-v-role-(*)__@@'];
-?>/* textarea elements */
-
-
+		echo htmlspecialchars($this->role['@@__data-v-role-(*)__@@']);
+?>
 
 [data-v-role] select[data-v-role-*]|before = 
 <?php

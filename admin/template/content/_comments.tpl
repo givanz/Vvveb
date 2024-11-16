@@ -11,7 +11,7 @@ foreach ($this->{{type}}_status as $type => $status) {?>
 	
 	@status [data-v-status-link] = $status
 	@status [data-v-status-link]|addClass = <?php if (isset($this->status) && $type == $this->status) echo 'active';?>
-	@status [data-v-status-link]|href = <?php echo htmlentities(Vvveb\url(['module' => $this->module . str_replace('_','-','/{{list}}'), 'status' => $type]));?>
+	@status [data-v-status-link]|href = <?php echo htmlspecialchars(Vvveb\url(['module' => $this->module . str_replace('_','-','/{{list}}'), 'status' => $type]));?>
 	
 @status|after = <?php } 
 }?>

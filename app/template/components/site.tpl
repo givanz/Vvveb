@@ -13,14 +13,14 @@
 $name = '@@__data-v-site-(*)__@@';
 if (strpos($name, 'phone-number') !== false) echo 'tel:';
 if (strpos($name, 'email') !== false) echo 'mailto:';
-echo $site[$name] ?? '';
+echo htmlspecialchars($site[$name] ?? '');
 ?>
 
 [data-v-component-site] a[data-v-site-description-*]|href = <?php
 $name = '@@__data-v-site-description-(*)__@@';
 if (strpos($name, 'phone-number') !== false) echo 'tel:';
 if (strpos($name, 'email') !== false) echo 'mailto:';
-echo $site['description'][$name] ?? '';
+echo htmlspecialchars($site['description'][$name] ?? '');
 ?>
 
 

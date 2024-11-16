@@ -1,32 +1,35 @@
 //keep post values
-//input|value = <?php if (isset($_POST['@@__name__@@'])) echo $_POST['@@__name__@@'];?>
+//input|value = <?php if (isset($_POST['@@__name__@@'])) echo htmlspecialchars($_POST['@@__name__@@']);?>
 
 /* input elements */
 input[type="text"]|value = 
 <?php
 	$post = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? $this->checkout@@macro postNameToArrayKey("@@__name__@@")@@ ?? '';
 	$value = '@@__value__@@';
-	 if ($post) 
-		echo $post; 
-	 else echo $value;
+	 if ($post) {
+		$value = $post; 
+	 }
+	 echo htmlspecialchars($value);
 ?>
 
 input[type="email"]|value = 
 <?php
 	$post = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? $this->checkout@@macro postNameToArrayKey("@@__name__@@")@@ ?? '';
 	$value = '@@__value__@@';
-	 if ($post) 
-		echo $post; 
-	 else echo $value;
+	 if ($post) {
+		$value = $post; 
+	 }
+	 echo htmlspecialchars($value);
 ?>
 
 input[type="password"]|value = 
 <?php
 	$post = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? $this->checkout@@macro postNameToArrayKey("@@__name__@@")@@ ?? '';
 	$value = '@@__value__@@';
-	 if ($post) 
-		echo $post; 
-	 else echo $value;
+	 if ($post) {
+		$value = $post; 
+	 }
+	 echo htmlspecialchars($value);
 ?>
 
 
@@ -35,9 +38,10 @@ textarea =
 <?php
 	$post = $_POST@@macro postNameToArrayKey("@@__name__@@")@@ ?? $this->checkout@@macro postNameToArrayKey("@@__name__@@")@@ ?? '';
 	$value = '@@__value__@@';
-	 if ($post) 
-		echo $post; 
-	 else echo $value;
+	 if ($post) {
+		$value = $post; 
+	 }
+	 echo htmlspecialchars($value);
 ?>
 
 

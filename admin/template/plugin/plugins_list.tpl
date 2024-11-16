@@ -16,7 +16,7 @@ if(isset($this->plugins) && is_array($this->plugins)) {
 	@plugin [data-v-plugin-*]|innerText  = $plugin['@@__data-v-plugin-([-_\w]+)__@@']
 	@plugin a[data-v-plugin-*]|href  = $plugin['@@__data-v-plugin-([-_\w]+)__@@']
 
-	@plugin [data-v-plugin-author-url]|href  = <?php echo $plugin['author-url'] ?? '';?>
+	@plugin [data-v-plugin-author-url]|href  = $plugin['author-url']
 	
 	@plugin [data-v-plugin-activate-url]|href  = <?php echo Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'checkPluginAndActivate', 'plugin' => $plugin['slug'], 'category' => $category]);?>
 	@plugin [data-v-plugin-deactivate-url]|href = <?php echo Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'deactivate', 'plugin' => $plugin['slug'], 'category' => $category]);?>

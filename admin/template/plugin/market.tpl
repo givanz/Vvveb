@@ -19,7 +19,7 @@ if(isset($this->plugins) && is_array($this->plugins))
 	@plugin [data-v-plugin-install-url]|href   		= <?php echo Vvveb\url( ['module' => 'plugin/market', 'action' => 'install', 'slug' => $plugin['slug']]); ?>
 	@plugin [data-v-plugin-install-url]|data-slug 	= $plugin['slug']
 
-    //@plugin [data-v-plugin-author]  = <?php echo $plugin['author'];?>
+    //@plugin [data-v-plugin-author]  = $plugin['author'];
     
 	[data-v-plugins]  [data-v-plugin]|after = <?php 
 	} 

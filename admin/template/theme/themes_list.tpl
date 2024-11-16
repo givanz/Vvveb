@@ -37,7 +37,7 @@ if (!function_exists("import_generate_list")) {
 ?>
 
 
-[data-v-import] [data-v-list] [data-v-list-item-name] = <?php echo ucfirst($name);?>
+[data-v-import] [data-v-list] [data-v-list-item-name] = <?php echo htmlspecialchars(ucfirst($name));?>
 [data-v-import] [data-v-list] label|for = <?php echo 'menu-' . $uniqId;?>
 [data-v-import] [data-v-list] input|id = <?php echo 'menu-' . $uniqId;?>
 

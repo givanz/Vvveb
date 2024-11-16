@@ -12,14 +12,13 @@ if(isset($this->attributes) && is_array($this->attributes)) {
 	
 
 	@attribute [data-v-attribute-*]|innerText  = $attribute['@@__data-v-attribute-(*)__@@']
-	@attribute input[data-v-attribute-*]|value  = $attribute['@@__data-v-attribute-(*)__@@']
+	@attribute input[data-v-attribute-*]|value = $attribute['@@__data-v-attribute-(*)__@@']
 	@attribute input[data-v-attribute-*]|value = $attribute['@@__data-v-attribute-(*)__@@']	
-	@attribute a[data-v-attribute-*]|href 	 = $attribute['@@__data-v-attribute-(*)__@@']	
+	@attribute a[data-v-attribute-*]|href 	   = $attribute['@@__data-v-attribute-(*)__@@']	
 
 	@attribute [data-v-attribute-*]|name  = <?php echo "attribute[$attribute_index][@@__data-v-attribute-(*)__@@]";?>
-	@attribute [data-v-attribute-*]|data-v-attribute-id  = <?php echo $attribute['attribute_id'];?>
-	@attribute|data-id  = <?php echo $attribute['attribute_id'];?>
-	
+	@attribute [data-v-attribute-*]|data-v-attribute-id  = $attribute['attribute_id']
+	@attribute|data-id  = $attribute['attribute_id']
 	
 	@attribute|after = <?php 
 		$count++;

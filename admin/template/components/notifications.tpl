@@ -18,7 +18,7 @@ $count = $notificationComponent['count'] ?? 0;
 		if ($name == 'updates') continue;
 ?>
 
-	@notifications [data-v-group-name] = $name
+	@notifications [data-v-group-name] = <?php if ($name) echo Vvveb\__(ucfirst($name));?>
 	
 	@notifications [data-v-group-notification]|deleteAllButFirstChild
 
@@ -30,7 +30,7 @@ $count = $notificationComponent['count'] ?? 0;
 		@notifications a[data-v-group-notification-*]|href = $notification['@@__data-v-group-notification-(*)__@@']
 		@notifications [data-v-group-notification-*]|innerText = <?php 
 			$name = '@@__data-v-group-notification-(*)__@@';
-			if (isset($notification[$name])) echo Vvveb\humanReadable($notification[$name]);
+			if (isset($notification[$name]) && $notification[$name]) echo Vvveb\humanReadable(Vvveb\__(ucfirst($notification[$name])));
 		?>
 
 

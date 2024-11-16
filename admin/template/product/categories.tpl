@@ -37,7 +37,7 @@ if ($_categories) {
 		//catch all data attributes
 		@taxonomy_item [data-v-taxonomy_item-*] = $taxonomy_item['@@__data-v-taxonomy_item-(*)__@@']
 		
-		@taxonomy_item [data-v-taxonomy_item-url]|href = <?php echo htmlentities(Vvveb\url('post/taxonomy_item/index', $taxonomy_item));?>
+		@taxonomy_item [data-v-taxonomy_item-url]|href = <?php echo htmlspecialchars(Vvveb\url('post/taxonomy_item/index', $taxonomy_item));?>
 		@taxonomy_item [data-v-taxonomy_item-img]|src = $taxonomy_item['images'][0]
 				
 		@taxonomy_item|append = <?php 
@@ -70,7 +70,7 @@ foreach ($languages as $key => $language) {
 	[data-v-languages] [data-v-language-id]|id = <?php echo 'lang-' . $language_id . '-' . $_lang_instance . '-' . $uniq;?>
 	[data-v-languages] [data-v-language-id]|addClass = <?php if ($_i == 0) echo 'show active';?>
 	[data-v-languages] [data-v-language_id]|name = <?php echo "taxonomy_item_content[$language_id][language_id]";?>
-	[data-v-languages] [data-v-language_id]|value = <?php echo $language_id;?>
+	[data-v-languages] [data-v-language_id]|value = $language_id
 
 	@language [data-v-language-lang-name]|innerText = <?php echo ucfirst($language['name']);?>
 	@language [data-v-language-*]|innerText = $taxonomy_item['languages'][$language_id]['@@__data-v-language-(*)__@@']

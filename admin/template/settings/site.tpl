@@ -8,9 +8,7 @@ import(crud.tpl, {"type":"site"})
 
 	[data-v-theme-list] option|value = $code
 	[data-v-theme-list] option|addNewAttribute = <?php if (isset($this->site['theme']) && ($code == $this->site['theme'])) echo 'selected';?>
-	[data-v-theme-list] option = <?php 
-		echo $theme['name'];
-	?>
+	[data-v-theme-list] option = $theme['name']
 
 [data-v-theme-list] option|after = <?php 
 } ?>
@@ -26,7 +24,7 @@ import(crud.tpl, {"type":"site"})
 	foreach($options as $key => $option){?>
 	
 		@templates-select-option|value = $option
-		@templates-select-option = <?php echo ucfirst($option);?>
+		@templates-select-option = <?php echo htmlspecialchars(ucfirst($option));?>
 
 @templates-select-option|after = <?php
 }?>
@@ -48,9 +46,9 @@ if (($optgroup != $option['folder'])) {
 }
 ?>
 
-@templates-select-option|value = <?php echo $option['file'];?>
+@templates-select-option|value = $option['file']
 @templates-select-option|addNewAttribute = <?php if (isset($this->site['template']) && $option['file']== $this->site['template']) echo 'selected';?>
-@templates-select-option = <?php echo ucfirst($option['title']);?>
+@templates-select-option = <?php echo htmlspecialchars(ucfirst($option['title']));?>
 
 
 input[data-v-site-*]|value = <?php
@@ -64,7 +62,7 @@ input[data-v-site-*]|value = <?php
 		$value = $_default;
 	}
 	
-	echo $value;
+	echo htmlspecialchars($value);
 ?>		
 
 input[data-v-site-*][type=checkbox]|addNewAttribute = <?php
@@ -81,7 +79,7 @@ input[data-v-setting]|value = <?php
 	$_setting = '@@__data-v-setting__@@';
 	$_default = '@@__value__@@';
 	$value = $_POST['settings'][$_setting] ?? $this->setting[$_setting] ?? $_default;
-	echo $value;
+	echo htmlspecialchars($value);
 	//name="settings[setting-name] > get only setting-name
 	//$_setting = '@@__name:\[(.*)\]__@@';
 ?>
@@ -90,7 +88,7 @@ img[data-v-setting]|src = <?php
 	$_setting = '@@__data-v-setting__@@';
 	$_default = '@@__value__@@';
 	$value = $this->setting[$_setting] ?? $_default;
-	echo $value;
+	echo htmlspecialchars($value);
 	//name="settings[setting-name] > get only setting-name
 	//$_setting = '@@__name:\[(.*)\]__@@';
 ?>
@@ -148,9 +146,7 @@ $setting = '@@__name:\[(.*)\]__@@';
 
 	[data-v-resize] option|value = $value
 	[data-v-resize] option|addNewAttribute = <?php if (isset($this->site[$setting]) && $this->site[$setting] == $value) echo 'selected';?>
-	[data-v-resize] option = <?php 
-		echo $name;
-	?>
+	[data-v-resize] option = $name
 
 [data-v-resize] option|after = <?php 
 } ?>
@@ -218,11 +214,11 @@ $_i++;
 [data-v-languages] input[data-v-site-description-*]|value = <?php
 	$desc = '@@__data-v-site-description-(*)__@@';
 	if (isset($content[$desc])) 
-		echo $content[$desc];
+		echo htmlspecialchars($content[$desc]);
 ?>
 
 [data-v-languages] [data-v-site-description-*]|innerText = <?php
 	$desc = '@@__data-v-site-description-(*)__@@';
 	if (isset($this->site['description'][$language['language_id']][$desc])) 
-		echo $this->site['description'][$language['language_id']][$desc];
+		echo htmlspecialchars($this->site['description'][$language['language_id']][$desc]);
 ?>

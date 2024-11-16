@@ -5,18 +5,18 @@ head base|href = <?php echo Vvveb\themeUrlPath()?>;
 input[type="text"]|value = 
 <?php
  if (isset($_POST['@@__name__@@'])) 
-		echo $_POST['@@__name__@@'];
-	else if (isset($this->config['@@__name__@@'])) 
-		echo $this->config['@@__name__@@'];
+		echo htmlspecialchars($_POST['@@__name__@@']);
+	else if (isset(htmlspecialchars($this->config['@@__name__@@']))) 
+		echo htmlspecialchars($this->config['@@__name__@@']);
 	else echo '@@__value__@@';		
 ?>
 
 input[type="password"]|value = 
 <?php
  if (isset($_POST['@@__name__@@'])) 
-		echo $_POST['@@__name__@@'];
-	else if (isset($this->config['@@__name__@@'])) 
-		echo $this->config['@@__name__@@'];
+		echo htmlspecialchars($_POST['@@__name__@@']);
+	else if (isset(htmlspecialchars($this->config['@@__name__@@']))) 
+		echo htmlspecialchars($this->config['@@__name__@@']);
 	else echo '@@__value__@@';		
 ?>
 
@@ -24,9 +24,9 @@ input[type="password"]|value =
 input[type="email"]|value = 
 <?php
  if (isset($_POST['@@__name__@@'])) 
-		echo $_POST['@@__name__@@'];
-	else if (isset($this->config['@@__name__@@'])) 
-		echo $this->config['@@__name__@@'];
+		echo htmlspecialchars($_POST['@@__name__@@']);
+	else if (isset(htmlspecialchars($this->config['@@__name__@@']))) 
+		echo htmlspecialchars($this->config['@@__name__@@']);
 	else echo '@@__value__@@';		
 ?>
 
@@ -34,9 +34,9 @@ input[type="email"]|value =
 input[type="checkbox"]|value = 
 <?php
 	 if (isset($_POST['@@__name__@@'])) 
-		echo $_POST['@@__name__@@'];
-	else if (isset($this->config['@@__name__@@'])) 
-		echo $this->config['@@__name__@@'];
+		echo htmlspecialchars($_POST['@@__name__@@']);
+	else if (isset(htmlspecialchars($this->config['@@__name__@@']))) 
+		echo htmlspecialchars($this->config['@@__name__@@']);
 	else echo '@@__value__@@';		
 ?>
 
@@ -69,7 +69,7 @@ input[type="checkbox"]|checked =
 @error|before = <?php 
 if (isset($this->errors)) foreach($this->errors as $message) {?>
 	
-	@error [data-v-notification-text] = <?php echo $message;?>
+	@error [data-v-notification-text] = $message
 		
 @error|after = <?php 
 	}
@@ -80,7 +80,7 @@ if (isset($this->errors)) foreach($this->errors as $message) {?>
 @success|before = <?php 
 if (isset($this->success)) foreach($this->success as $message) {?>
 	
-	@success [data-v-notification-text] = <?php echo $message;?>
+	@success [data-v-notification-text] = $message
 	
 @success|after = <?php 
 	}
@@ -91,7 +91,7 @@ if (isset($this->success)) foreach($this->success as $message) {?>
 @info|before = <?php 
 if (isset($this->info)) foreach($this->info as $message) {?>
 	
-	@info [data-v-notification-text] = <?php echo $message;?>
+	@info [data-v-notification-text] = $message
 	
 @info|after = <?php 
 	}
@@ -101,7 +101,7 @@ if (isset($this->info)) foreach($this->info as $message) {?>
 @message|before = <?php 
 if (isset($this->message)) foreach($this->message as $message) {?>
 	
-	@message [data-v-notification-text] = <?php echo $message;?>
+	@message [data-v-notification-text] = $message
 	
 @message|after = <?php 
 	}

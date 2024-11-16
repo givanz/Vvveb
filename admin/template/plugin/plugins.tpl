@@ -10,7 +10,7 @@ foreach ($this->categories as $category => $plugins) {?>
 	
 	@category [data-v-category-link] = $category
 	@category [data-v-category-link]|addClass = <?php if (isset($this->category) && $category == $this->category) echo 'active';?>
-	@category [data-v-category-link]|href = <?php echo htmlentities(Vvveb\url(['module' => 'plugin/plugins', 'category' => $category]));?>
+	@category [data-v-category-link]|href = <?php echo htmlspecialchars(Vvveb\url(['module' => 'plugin/plugins', 'category' => $category]));?>
 	
 @category|after = <?php } 
 }?>

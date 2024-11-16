@@ -1,8 +1,8 @@
 //keep post values
-input|value = <?php if (isset($_POST['@@__name__@@'])) echo $_POST['@@__name__@@']; else echo '@@__value__@@';?>
+input|value = <?php if (isset($_POST['@@__name__@@'])) echo htmlspecialchars($_POST['@@__name__@@']); else echo '@@__value__@@';?>
 #redir|value = <?php 
 	if (isset($this->redir)) {
-		echo $this->redir;
+		echo htmlspecialchars($this->redir);
 	} else {
 		//echo '/admin';
 		//echo Vvveb\escUrl($_SERVER['REQUEST_URI']);

@@ -35,17 +35,17 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
 		//catch all data attributes
 		@category [data-v-cat-*]|innerText = $category['@@__data-v-cat-(*)__@@']
 		
-		@category [data-v-cat-url]|href = <?php echo htmlentities(Vvveb\url('content/category/index', $category));?>
+		@category [data-v-cat-url]|href = <?php echo htmlspecialchars(Vvveb\url('content/category/index', $category));?>
 		@category [data-v-cat-img]|src = $category['images'][0]
 		
 		
 			@post|before = <?php 
-			if (isset($category['posts']) && $category['post'])	
-			foreach($category['posts'] as $key => $post) {?>
+			if (isset($category['post']) && $category['post'])	
+			foreach($category['post'] as $key => $post) {?>
 				//catch all data attributes
 				@post [data-v-post-*]|innerText = $post['@@__data-v-post-(*)__@@']
 				
-				@post a[data-v-post-url]|href = <?php echo htmlentities(Vvveb\url('content/post/index', $post));?>
+				@post a[data-v-post-url]|href = <?php echo htmlspecialchars(Vvveb\url('content/post/index', $post));?>
 
 			@post|after = <?php 
 				}

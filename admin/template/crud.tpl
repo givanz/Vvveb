@@ -10,7 +10,7 @@ import(common.tpl)
 		$value = $this->{{type}}[$name];
 	 else $value = '@@__value__@@';
 	 
-	 echo $value;
+	 echo htmlspecialchars($value);
 ?>
 
 /* textarea elements */
@@ -23,7 +23,7 @@ import(common.tpl)
 		$value =  $this->{{type}}[$name];
 	 else $value = '@@__innerHTML__@@';
 	 
-	 echo $value;
+	 echo htmlspecialchars($value);
 ?>
 
 [data-v-{{type}}] select[data-v-{{type}}-*]|before = 

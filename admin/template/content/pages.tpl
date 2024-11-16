@@ -30,13 +30,13 @@ if(isset($this->posts) && is_array($this->posts))
 	[data-v-posts] [data-v-post] [data-v-img]|src = 
 	<?php 
 		echo 'http://anne2.givan.ro/image/' .$post['image'];
-		//echo htmlentities(str_replace('large', '@@__class:image_([a-zA-Z_]+)__@@', $post['images'][$post['main_image']]['url']));
+		//echo htmlspecialchars(str_replace('large', '@@__class:image_([a-zA-Z_]+)__@@', $post['images'][$post['main_image']]['url']));
 	?>
 
 	
-	[data-v-posts] [data-v-post] [data-v-post-cart-url]|href = <?php echo htmlentities(Vvveb\url(['module' => 'content/post', 'post_id' => $post['post_id']]));?>
+	[data-v-posts] [data-v-post] [data-v-post-cart-url]|href = <?php echo htmlspecialchars(Vvveb\url(['module' => 'content/post', 'post_id' => $post['post_id']]));?>
 	
-	[data-v-posts] [data-v-post] [data-v-url]|href =<?php echo htmlentities(Vvveb\url(['module' => 'content/post', 'post_id' => $post['post_id']]));?>
+	[data-v-posts] [data-v-post] [data-v-url]|href =<?php echo htmlspecialchars(Vvveb\url(['module' => 'content/post', 'post_id' => $post['post_id']]));?>
 	[data-v-posts] [data-v-post] [data-v-url]|title = $post['title']	
 	
 	[data-v-posts] [data-v-post] [data-v-category] = $post['category'];

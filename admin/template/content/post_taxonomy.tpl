@@ -55,7 +55,7 @@ if(isset($this->taxonomies) && is_array($this->taxonomies)) {
 		//catch all data attributes
 		@category [data-v-taxonomy_item-*] = $taxonomyItem['@@__data-v-taxonomy_item-(*)__@@']
 		
-		@category [data-v-taxonomy_item-url]|href = <?php echo htmlentities(Vvveb\url('product/taxonomy_item/index', $taxonomyItem));?>
+		@category [data-v-taxonomy_item-url]|href = <?php echo htmlspecialchars(Vvveb\url('product/taxonomy_item/index', $taxonomyItem));?>
 		@category [data-v-taxonomy_item-img]|src = $taxonomyItem['images'][0]
 				
 		@category|append = <?php 
@@ -94,10 +94,10 @@ if(isset($this->taxonomies) && is_array($this->taxonomies)) {
 		//catch all data attributes
 		@tag [data-v-taxonomy_item-*] = $taxonomyItem['@@__data-v-taxonomy_item-(*)__@@']
 		
-		@tag [data-v-taxonomy_item-url]|href = <?php echo htmlentities(Vvveb\url('product/taxonomy_item/index', $taxonomyItem));?>
+		@tag [data-v-taxonomy_item-url]|href = <?php echo htmlspecialchars(Vvveb\url('product/taxonomy_item/index', $taxonomyItem));?>
 		@tag [data-v-taxonomy_item-img]|src = $taxonomyItem['images'][0]
 		@tag [data-v-taxonomy_item-list-name]|name = <?php echo "tag[$taxonomy_item[taxonomy_id]][$taxonomyItem[taxonomy_item_id]]";?>
-		@tag [data-v-taxonomy_item-list-name]|value = <?php echo $taxonomyItem['name'];?>
+		@tag [data-v-taxonomy_item-list-name]|value = $taxonomyItem['name']
 				
 		@tag|append = <?php 
 	}?>

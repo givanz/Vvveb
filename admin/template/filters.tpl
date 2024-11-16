@@ -1,16 +1,16 @@
-input[name="module"]|value 	  = <?php echo htmlentities(Vvveb\get('module'));?>
-input[name="action"]|value 	  = <?php echo htmlentities(Vvveb\get('action'));?>
-input[name="type"]|value 	  = <?php echo htmlentities(Vvveb\get('type'));?>
+input[name="module"]|value = <?php echo htmlspecialchars(Vvveb\get('module'));?>
+input[name="action"]|value = <?php echo htmlspecialchars(Vvveb\get('action'));?>
+input[name="type"]|value   = <?php echo htmlspecialchars(Vvveb\get('type'));?>
 
 #filters|addClass = <?php if ($this->filter) echo 'show';?>
 #filters input[type="text"],#filters input[type="search"]|value = <?php 
 	$name = str_replace(['filter[',']'], '', '@@__name__@@');
-	if (isset($this->filter[$name])) echo $this->filter[$name];
+	if (isset($this->filter[$name])) echo htmlspecialchars($this->filter[$name]);
 ?>
 
 #filters input.autocomplete|data-text = <?php
 $text = $name. '_text';
-if (isset($this->filter[$text])) echo $this->filter[$text];
+if (isset($this->filter[$text])) echo htmlspecialchars($this->filter[$text]);
 ?>
 
 
@@ -36,7 +36,7 @@ if (isset($this->filter[$text])) echo $this->filter[$text];
 	foreach($options as $key => $option){?>
 	
 		@option|value = $key
-		@option = <?php echo Vvveb\humanReadable($option);?>
+		@option = <?php echo htmlspecialchars(Vvveb\humanReadable($option));?>
 
 @option|after = <?php
 }}?>

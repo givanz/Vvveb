@@ -22,8 +22,8 @@
 
 @post|deleteAllButFirstChild
 
-@posts [data-v-posts-category] = <?php $_category = current($posts['posts']);echo $_category['category'];?>
-@posts [data-v-posts-count] = <?php echo $posts['count'] ?? ''?>
+@posts [data-v-posts-category] = <?php $_category = current($posts['posts']);echo htmlspecialchars($_category['category']);?>
+@posts [data-v-posts-count]    = $posts['count']
 
 
 @post|before = <?php 
@@ -46,9 +46,9 @@ foreach ($_posts as $index => $post) {?>
 		$size = '@@__data-v-size__@@';
 		if ($size) {
 			//$image = Vvveb\System\Images::size($image, $size);
-			echo $image;
+			echo htmlspecialchars($image);
 		} else {
-			echo $image;
+			echo htmlspecialchars($image);
 		}
 	?>
 	

@@ -44,8 +44,8 @@ if (isset($this->_component['menu']) && isset($this->_component['menu'][$_menu_i
 		@category [data-v-menu-item-*]|innerText = $category['@@__data-v-menu-item-(*)__@@']
 		@category [data-v-menu-item-content] = <?php echo($category['content'] ?? '');?>
 		
-		@category [data-v-menu-item-url]|href = <?php if (isset($category['url'])) echo Vvveb\System\Sites::url($category['url']);?>
-		@category [data-v-menu-item-img]|src = $category['images'][0]
+		@category [data-v-menu-item-url]|href = $category['url']
+		@category [data-v-menu-item-img]|src  = $category['images'][0]
 		
 		@category|append = <?php 
 		  if ($category['children'] > 0 && isset($generate_menu)) {
@@ -60,7 +60,7 @@ if (isset($this->_component['menu']) && isset($this->_component['menu'][$_menu_i
 ?>
 
 
-@category|addClass = <?php if (isset($category['class']) && !$vvveb_is_page_edit) echo $category['class'];?>
+@category|addClass = <?php if (isset($category['class']) && !$vvveb_is_page_edit) echo htmlspecialchars($category['class']);?>
 
 @category-recursive|before = <?php
 $generate_menu = function ($parent_id) use (&$_categories, &$generate_menu, &$parents) {

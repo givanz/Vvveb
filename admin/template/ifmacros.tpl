@@ -17,3 +17,6 @@ if  (!@($condition) || (isset($vvveb_is_page_edit) && $vvveb_is_page_edit)) {
 
 [data-v-class-if-*]|addClass = <?php @@macro IfClass("")@@?>
 [data-v-class-if-not-*]|addClass = <?php @@macro IfClass("")@@?>
+
+[data-v-attr-if-*]|addClass = <?php @@macro IfAttr("")@@?>
+[data-v-attr-if-not-*]|addClass = <?php @@macro IfAttr("")@@?>

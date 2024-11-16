@@ -48,7 +48,7 @@ if(is_array($logs)) foreach ($logs as $index => $log) {
 ?>
 
 	//catch all data attributes
-	@log [data-v-order-log-note]|innerText  = <?php echo nl2br(htmlentities($log['@@__data-v-order-log-(*)__@@']));?>
+	@log [data-v-order-log-note]|innerText  = <?php echo nl2br(htmlspecialchars($log['@@__data-v-order-log-(*)__@@']));?>
 	@log [data-v-order-log-*]|innerText     = $log['@@__data-v-order-log-(*)__@@']
 	@log a[data-v-order-log-*]|href         = $log['@@__data-v-order-log-(*)__@@']
 	@log input[data-v-order-log-*]|value    = $log['@@__data-v-order-log-(*)__@@']
@@ -58,6 +58,7 @@ if(is_array($logs)) foreach ($logs as $index => $log) {
 
 
 [data-v-order] [data-v-order-*]|innerText = $this->order['@@__data-v-order-(*)__@@']
+[data-v-order] a[data-v-order-*]|href = $this->order['@@__data-v-order-(*)__@@']
 
 [data-v-order] [data-v-order-site_url]|href = $this->order['site_url']
 

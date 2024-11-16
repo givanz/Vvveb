@@ -16,7 +16,7 @@ if(is_array($products)) foreach ($products as $key => $product) {
 
 	//@cart-product [data-v-cart-product-name] = $product['name']
 	//@cart-product [data-v-cart-product-content] = $product['content']
-	//@cart-product [data-v-cart-product-amount] = <?php echo $product['amount'];?>
+	//@cart-product [data-v-cart-product-amount] = <?php echo htmlspecialchars($product['amount']);?>
 
 	@cart-product|data-product_id = $product['product_id']	
 	@cart-product|data-key = $key	

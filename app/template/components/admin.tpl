@@ -9,7 +9,7 @@
 [data-v-component-admin] a[data-v-admin-*]|href = $admin['@@__data-v-admin-(*)__@@']
 [data-v-component-admin] img[data-v-admin-*]|src = <?php
 	if (isset($admin['@@__data-v-admin-(*)__@@'])) {
-		echo $admin['@@__data-v-admin-(*)__@@'];
+		echo htmlspecialchars($admin['@@__data-v-admin-(*)__@@']);
 	} else if ('@@__src__@@') {
 		echo '@@__src__@@';
 	} else {

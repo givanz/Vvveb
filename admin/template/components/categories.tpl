@@ -24,7 +24,7 @@ if(isset($this->_component['categories']) && is_array($this->_component['categor
 	@category [data-v-img]|src = 
 	<?php 
 		echo '/image/' .$category['image'];
-		//echo htmlentities(str_replace('large', '@@__class:image_([a-zA-Z_]+)__@@', $category['images'][$category['main_image']]['url']));
+		//echo htmlspecialchars(str_replace('large', '@@__class:image_([a-zA-Z_]+)__@@', $category['images'][$category['main_image']]['url']));
 	?>
 	
 	

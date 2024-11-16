@@ -26,9 +26,9 @@
 	$_wishlist = empty($wishlist['user_wishlist']) ? $_default : $wishlist['user_wishlist'];
 ?>
 
-@wishlist [data-v-wishlist-category] = <?php $_category = current($wishlist);echo $_category['category'];?>
-@wishlist [data-v-wishlist-count] = <?php echo($wishlist['count'] ?? '')?>
-@wishlist [data-v-wishlist-manufacturer] = <?php $_manufacturer = current($wishlist);echo $_manufacturer['manufacturer'];?>
+@wishlist [data-v-wishlist-category]     = <?php $_category = current($wishlist);echo htmlspecialchars($_category['category']);?>
+@wishlist [data-v-wishlist-count]        = $wishlist['count']
+@wishlist [data-v-wishlist-manufacturer] = <?php $_manufacturer = current($wishlist);echo htmlspecialchars($_manufacturer['manufacturer']);?>
 
 
 @product|before = <?php
@@ -85,7 +85,7 @@ if ($_wishlist) {
 		$size = '@@__data-v-size__@@';
 		$nr = '@@__data-v-product-image-(\d+)__@@';
 		if (isset($_product['images'][$nr]['image'])) {
-			$image = $_product['images'][$nr]['image'];
+			$image = htmlspecialchars($_product['images'][$nr]['image']);
 			if ($size) {
 				//echo imageSize($_product['image'], $size);
 				//$image = Vvveb\System\Images::size($image, $size);
@@ -117,7 +117,7 @@ if ($_wishlist) {
 
     //catch all data attributes
     @product [data-v-product-*]|innerText = $_product['@@__data-v-product-(*)__@@']
-	//echo description directly to avoid htmlentities escape
+	//echo description directly to avoid htmlspecialchars escape
 	@product [data-v-product-content] = <?php echo($_product['content']);?>	
 	
 	@product|after = <?php 

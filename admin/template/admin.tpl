@@ -1,5 +1,5 @@
-[data-v-url]|href = <?php echo htmlentities(Vvveb\url('@@__data-v-url__@@'));?>
-form[data-v-url]|action = <?php echo htmlentities(Vvveb\url('@@__data-v-url__@@'));?>
+[data-v-url]|href = <?php echo htmlspecialchars(Vvveb\url('@@__data-v-url__@@'));?>
+form[data-v-url]|action = <?php echo htmlspecialchars(Vvveb\url('@@__data-v-url__@@'));?>
 
 [data-v-url-params]|href = <?php echo Vvveb\url(@@__data-v-url-params__@@);?>
 form[data-v-url-params]|action = <?php echo Vvveb\url(@@__data-v-url-params__@@);?>

@@ -6,7 +6,7 @@ import(common.tpl)
 foreach ($this->info as $category => $info) {
 ?>
 
-	[data-v-category] = <?php echo ucfirst($category);?>
+	[data-v-category] = <?php echo htmlspecialchars(ucfirst($category));?>
 	.header|for = $category
 	.header_check|id = $category
 
@@ -17,7 +17,7 @@ foreach ($this->info as $category => $info) {
 		@entry [data-v-name] = $name
 		@entry [data-v-value] = <?php 
 			if (is_string($value)) { 
-				echo htmlentities($value);
+				echo htmlspecialchars($value);
 			} else {
 				highlight_string(var_export($value, true)); 
 			}
@@ -29,4 +29,4 @@ foreach ($this->info as $category => $info) {
 
 [data-v-info]|after = <?php } ?>
 
-[data-v-phpinfo] = <?php echo $this->phpinfo ?? '';?>
+[data-v-phpinfo] = $this->phpinfo

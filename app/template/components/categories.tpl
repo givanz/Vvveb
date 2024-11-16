@@ -28,7 +28,7 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
 		//catch all data attributes
 		@category [data-v-cat-*]|innerText = $category['@@__data-v-cat-(*)__@@']
 		
-		@category [data-v-cat-url]|href = <?php echo htmlentities(Vvveb\url('content/category/index', $category));?>
+		@category [data-v-cat-url]|href = <?php echo htmlspecialchars(Vvveb\url('content/category/index', $category));?>
 		@category [data-v-cat-img]|src = $category['images'][0]
 		
 		@category|append = <?php 

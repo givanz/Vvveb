@@ -38,22 +38,21 @@ if ($pagecount > $maxpages)
 }
 ?>
 
-@page|before = <?php  for (;$page <= $page_stop;$page++) {
-?>
+@page|before = <?php for (;$page <= $page_stop;$page++) { ?>
 
 [data-pagination] [data-count] = $this->count
 [data-pagination] [data-current-page] = $current_page
 [data-pagination] [data-pagecount] = $pagecount
+
 @page [data-page-no] = $page
-@page [data-page-url]|href = <?php echo htmlentities(Vvveb\url(['page' => $page] , true));?>
+@page [data-page-url]|href = <?php echo htmlspecialchars(Vvveb\url(['page' => $page] , true));?>
 @page|addClass = <?php if ($current_page == $page) echo 'active'?>
 
-[data-pagination] [data-current-url]|action = <?php echo htmlentities(Vvveb\url(['page' => $current_page], true));?>
-
-[data-pagination] [data-first] [data-page-url]|href = <?php echo htmlentities(Vvveb\url(['page' => 1], true));?>
-[data-pagination] [data-prev] [data-page-url]|href = <?php echo htmlentities(Vvveb\url(['page' => max($current_page - 1, 1)], true));?>
-[data-pagination] [data-next] [data-page-url]|href = <?php echo htmlentities(Vvveb\url(['page' => min($current_page + 1, $pagecount)], true));?>
-[data-pagination] [data-last] [data-page-url]|href = <?php echo htmlentities(Vvveb\url(['page' => $pagecount], true));?>
+[data-pagination] [data-current-url]|action         = <?php echo htmlspecialchars(Vvveb\url(['page' => $current_page], true));?>
+[data-pagination] [data-first] [data-page-url]|href = <?php echo htmlspecialchars(Vvveb\url(['page' => 1], true));?>
+[data-pagination] [data-prev] [data-page-url]|href  = <?php echo htmlspecialchars(Vvveb\url(['page' => max($current_page - 1, 1)], true));?>
+[data-pagination] [data-next] [data-page-url]|href  = <?php echo htmlspecialchars(Vvveb\url(['page' => min($current_page + 1, $pagecount)], true));?>
+[data-pagination] [data-last] [data-page-url]|href  = <?php echo htmlspecialchars(Vvveb\url(['page' => $pagecount], true));?>
 
 @page|after = <?php } ?>
 

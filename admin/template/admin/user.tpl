@@ -6,9 +6,9 @@ import(common.tpl)
 [data-v-user] input[data-v-user-*]|value = 
 <?php
 	 if (isset($_POST['@@__data-v-user-(*)__@@'])) 
-		echo $_POST['@@__data-v-user-(*)__@@']; 
+		echo htmlspecialchars($_POST['@@__data-v-user-(*)__@@']); 
 	 else if (isset($this->user['@@__data-v-user-(*)__@@'])) 
-		echo $this->user['@@__data-v-user-(*)__@@'];
+		echo htmlspecialchars($this->user['@@__data-v-user-(*)__@@']);
 ?>
 
 
@@ -16,9 +16,9 @@ import(common.tpl)
 [data-v-user] textarea[data-v-user-*] = 
 <?php
 	 if (isset($_POST['@@__data-v-user-(*)__@@'])) 
-		echo $_POST['@@__data-v-user-(*)__@@']; 
+		echo htmlspecialchars($_POST['@@__data-v-user-(*)__@@']); 
 	 else if (isset($this->user['@@__data-v-user-(*)__@@'])) 
-		echo $this->user['@@__data-v-user-(*)__@@'];
+		echo htmlspecialchars($this->user['@@__data-v-user-(*)__@@']);
 ?>/* textarea elements */
 
 
