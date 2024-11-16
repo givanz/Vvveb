@@ -58,7 +58,6 @@ class Pages extends ComponentBase {
 
 			break;
 		}
-
 		//count the number of child categories (subcategories) for each category
 		if (isset($results['categories'])) {
 			foreach ($results['categories'] as $taxonomy_item_id => &$category) {
@@ -74,11 +73,11 @@ class Pages extends ComponentBase {
 					$category['children'] = 0;
 				}
 
-				if (isset($category['posts']) && $category['posts'] && $category['posts'][0] = '[') {
-					$category['posts'] = json_decode($category['posts'], true);
+				if (isset($category['post']) && $category['post'] && $category['post'][0] = '[') {
+					$category['post'] = json_decode($category['post'], true);
 
-					if (is_array($category['posts'])) {
-						$category['posts_count'] = count($category['posts']);
+					if (is_array($category['post'])) {
+						$category['posts_count'] = count($category['post']);
 					}
 				}
 

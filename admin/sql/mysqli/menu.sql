@@ -1,5 +1,5 @@
 -- Menus
-	
+
 	-- get menu 
 
 	CREATE PROCEDURE getMenu(
@@ -96,8 +96,6 @@
 		IN  language_id INT,
 		IN  menu_id INT,
 		IN  site_id INT,
-		IN  post_id INT,
-		IN  search CHAR,
 		IN  type CHAR,
 		
 		-- pagination
@@ -113,10 +111,19 @@
 
 		SELECT  *, menu.menu_id as array_key
 			
-			FROM menu
+			FROM menu 
+
+			@IF isset(:menu_id)
+			THEN 
+				WHERE menu.menu_id IN (:menu_id)
+			END @IF			
+
+			-- limit
+			@IF isset(:limit)
+			THEN
+				@SQL_LIMIT(:start, :limit)
+			END @IF;
 			
-		
-		@SQL_LIMIT(:start, :limit);
 		
 		SELECT count(*) FROM (
 			

@@ -172,7 +172,7 @@
 					LEFT JOIN post p ON (pc.post_id = p.post_id)  
 					LEFT JOIN post_to_taxonomy_item ptt ON (ptt.taxonomy_item_id = @taxonomy_item_id AND ptt.post_id = p.post_id)  
 				WHERE ptt.taxonomy_item_id = @taxonomy_item_id ORDER by p.sort_order
-			) AS posts
+			) AS post
 		
 			FROM taxonomy_item AS categories
 		
