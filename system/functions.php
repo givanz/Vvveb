@@ -80,7 +80,7 @@ function url($parameters, $mergeParameters = false, $useCurrentUrl = true) {
 		$result .= ($useCurrentUrl ? $url['path'] ?? '' : '') . ($parameters ? '?' . urldecode(http_build_query($parameters)) : '');
 	}
 
-	return $result;
+	return  $result;
 }
 
 function config($key = null, $default = null) {
@@ -320,6 +320,10 @@ function filterText($data) {
 
 function session($data, $default = null) {
 	$session = System\Session :: getInstance();
+
+	if (! $session) {
+		return $default;
+	}
 
 	if (is_array($data)) {
 		foreach ($data as $key => $value) {
@@ -950,7 +954,7 @@ function getTemplateList($theme = null, $skip = []) {
 	$files       = globBrace($themeFolder . DS, $glob, '*.html');
 
 	foreach ($files as $file) {
-		$file     = preg_replace('@^.*/themes/[^/]+/@', '', $file);
+		$file     = preg_replace('@^.*[\\\/]themes[\\\/][^\\\/]+[\\\/]@', '', $file);
 		$filename = basename($file);
 
 		$folder   = \Vvveb\System\Functions\Str::match('@(\w+)/.*?$@', $file) ?? '/';
@@ -980,7 +984,7 @@ function getTemplateList($theme = null, $skip = []) {
 		}
 	}
 
-	ksort($pages);
+	//ksort($pages);
 
 	return $pages;
 }
@@ -1823,7 +1827,11 @@ function array2xml($array, $xml = false) {
 				$xml->addAttribute($key, htmlentities($value));
 			} else {
 				$processAttr($value);
-				$node = $xml->addChild($key, htmlentities($value));
+
+				if ($value && is_string($value)) {
+					$value = htmlentities($value);
+				}
+				$node = $xml->addChild($key, $value);
 
 				if ($attributes) {
 					foreach ($attributes as $key => $val) {
