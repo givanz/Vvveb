@@ -450,82 +450,85 @@ class Vtpl {
 
 		$cssSelector = [
 			// E > F: Matches any F element that is a child of an element E
-			'/\s*>\s*/',
+			'/\s*>\s*/',	// /
 
 			// E + F: Matches any F element immediately preceded by an element
-			'/\s+\+\s+/',
+			'/\s+\+\s+/',	// /following-sibling::*[1]/self::
 
 			// E F: Matches any F element that is a descendant of an E element
-			'/([a-zA-Z\*="\[\]#._-])\s+([a-zA-Z\*="\[\]#._-])/', //'/([a-zA-Z\*="\[\]#._-])\s+([a-zA-Z\*#._-])/',
+			'/([a-zA-Z\*="\[\]#._-])\s+([a-zA-Z\*="\[\]#._-])/', 	// \1//\2'  //'/([a-zA-Z\*="\[\]#._-])\s+([a-zA-Z\*#._-])/',
 
 			// E:first-child: Matches element E when E is the first child of its parent
-			'/([a-z#\.]\w*):first-child/',
+			'/([a-z#\.]\w*):first-child/',	// *[1]/self::\1
 
 			// E:nth-child() Matches the nth child element
-			'/([a-z#\.]\w*):nth-child\((\d+)\)/',
+			'/([a-z#\.]\w*):nth-child\((\d+)\)/',	// *[\2]/self::\1
 
 			// E:first: Matches the first element from the set
-			'/([a-z#\.]\w*):first/',
+			'/([a-z#\.]\w*):first/',	// \1[1]
 
 			// E:nth(2): Matches the nth element from the set
-			'/([a-z#\.]\w*):nth\((\d+)\)/',
+			'/([a-z#\.]\w*):nth\((\d+)\)/',		// \1[\2]
 
 			// E[foo="warning"]: Matches any E element whose "foo" attribute value is exactly equal to "warning"
-			'/([a-z]\w*)\[([a-z][\w\-_]*)\="([^"]*)"\]/',
+			'/([a-z]\w*)\[([a-z][\w\-_]*)\="([^"]*)"\]/',	// \1[ contains( concat( " ", @\2, " " ), concat( " ", "\3", " " ) ) ]
 
 			// E[foo]: Matches any E element with the "foo" attribute set (whatever the value)
-			'/([a-z]\w*)\[([a-z][\w_\-]*)\]/',
+			'/([a-z]\w*)\[([a-z][\w_\-]*)\]/',	// \1 [ @\2 ]'
 
 			// E[!foo]: Matches any E element without the "foo" attribute set
-			'/([a-z]\w*)\[!([a-z][\w\-_]*)\]/',
+			'/([a-z]\w*)\[!([a-z][\w\-_]*)\]/',		//	\1 [ not(@\2) ]
 
 			// [foo="warning"]: Matches any element whose "foo" attribute value is exactly equal to "warning"
-			'/\[([a-z][\w\-_]*)\=\"(.*)\"\]/',
+			'/\[([a-z][\w\-_]*)\=\"(.*)\"\]/',	//	*[@\1 = "\2"]
+
+			// element[foo*="warning"]: Matches any element whose "foo" attribute value contains the string "warning"
+			'/([a-z]\w*|\*)\[([a-z][\w\-_]*)\*\=\"([^"]+)\"\]/',	// \1[ contains( @\2, "\3" ) ]
 
 			// [foo*="warning"]: Matches any element whose "foo" attribute value contains the string "warning" and has other attributes
-			'/(?<=\])\[([a-z][\w\-_]*)\*\=\"([^"]+)\"\]/',
+			'/(?<=\])\[([a-z][\w\-_]*)\*\=\"([^"]+)\"\]/',		//	[contains(@\1,"\2")]
 
 			// [foo*="warning"]: Matches any element whose "foo" attribute value contains the string "warning"
-			'/\[([a-z][\w\-_]*)\*\=\"([^"]+)\"\]/',
+			'/\[([a-z][\w\-_]*)\*\=\"([^"]+)\"\]/',		//	[ contains( @\1, "\2" ) ]
 
 			// [foo^="warning"]: Matches any element whose "foo" attribute value begins with the string "warning"
-			'/\[([a-z][\w_\-]*)\^\=\"([^"]+)\"\]/',
+			'/\[([a-z][\w_\-]*)\^\=\"([^"]+)\"\]/',		//	[starts-with(@\1,"\2")]
 
 			// [foo$="warning"]: Matches any element whose "foo" attribute value ends  with the string "warning"
-			'/\[([a-z][\w_\-]*)\$\=\"([^"]+)\"\]/',
+			'/\[([a-z][\w_\-]*)\$\=\"([^"]+)\"\]/',		// [ends-with(@\1,"\2")]
 
 			// [foo][baz]: Matches any element with the "foo" attribute set (whatever the value)
-			'/(?<=\])(?<! )\[([a-z][\w_\-]*)\]/',
+			'/(?<=\])(?<! )\[([a-z][\w_\-]*)\]/',		//	[ @\1 ]
 
 			// [foo]: Matches any element with the "foo" attribute set (whatever the value)
-			'/\[([a-z][\w_\-]*)\]/',
+			'/\[([a-z][\w_\-]*)\]/',	//	*[ @\1 ]
 
 			// element[foo*]: Matches any element that starts with "foo" attribute (whatever the value)
-			'/(\w+)\[([a-z][\w\-]*)\*\]/',
+			'/(\w+)\[([a-z][\w\-]*)\*\]/',	//	\1 [ @*[starts-with(name(), "\2")] ]
 
 			// [foo*]: Matches any element that starts with "foo" attribute (whatever the value) and has other attributes
-			'/(?<=\])\[([a-z][\w\-]*)\*\]/',
+			'/(?<=\])\[([a-z][\w\-]*)\*\]/',	//	[ @*[starts-with(name(), "\1")] ]
 
 			// [foo*]: Matches any element that starts with "foo" attribute (whatever the value) and is a single attribute
-			'/(?<!\])\[([a-z][\w\-]*)\*\]/',
+			'/(?<!\])\[([a-z][\w\-]*)\*\]/',	//	*[ @*[starts-with(name(), "\1")] ]
 
 			// div.warn*: HTML only. The same as DIV[class*="warning"]
-			'/([a-z]\w*|\*)\.([a-z][\w\-_]*)\*/',
+			'/([a-z]\w*|\*)\.([a-z][\w\-_]*)\*/',	//	\1[ contains( concat( " ", @class, " " ), concat( " ", "\2") ) ]
 
 			// div.warning: HTML only. The same as DIV[class~="warning"]
-			'/([a-z]\w*|\*)\.([a-z][\w\-_]*)+/',
+			'/([a-z]\w*|\*)\.([a-z][\w\-_]*)+/',	//	\1[ contains( concat( " ", @class, " " ), concat( " ", "\2", " " ) ) ]
 
 			// .warn*: HTML only. The same as [class*="warning"]
-			'/\.([a-z][\w\-\_]*)\*/',
+			'/\.([a-z][\w\-\_]*)\*/',	//	*[ contains( concat( " ", @class, " " ), concat( " ", "\1") ) ]
 
 			// .warning: HTML only. The same as [class~="warning"]
-			'/\.([a-z][\w\-\_]*)+/',
+			'/\.([a-z][\w\-\_]*)+/',	//	*[ contains( concat( " ", @class, " " ), concat( " ", "\1", " " ) ) ]
 
 			// E#myid: Matches any E element with id-attribute equal to "myid"
-			'/([a-z]\w*)\#([a-z][\w\-_]*)/',
+			'/([a-z]\w*)\#([a-z][\w\-_]*)/',	//	\1[ @id = "\2" ]
 
 			// #myid: Matches any E element with id-attribute equal to "myid"
-			'/\#([a-z][\w\-_]*)/',
+			'/\#([a-z][\w\-_]*)/',		//	*[ @id = "\1" ]
 		];
 
 		$xpathQuery = [
@@ -539,9 +542,10 @@ class Vtpl {
 			'\1[ contains( concat( " ", @\2, " " ), concat( " ", "\3", " " ) ) ]', //element[attribute="string"]
 			'\1 [ @\2 ]', //element[attribute]
 			'\1 [ not(@\2) ]', //element[!attribute]
-			'*[contains(@\1,"\2")]', //[foo="warning"]
-			'[contains(@\1,"\2")]', //[foo="warning"]
-			'[ contains( concat( " ", @\1, " " ), "\2" ) ]', //[foo*="warning"]
+			'*[@\1 = "\2"]', //[foo="warning"]
+			'\1[ contains( @\2, "\3" ) ]', //element[foo*="warning"]
+			'[contains(@\1,"\2")]', //[foo*="warning"]
+			'[ contains( @\1, "\2" ) ]', //[foo*="warning"]
 			'[starts-with(@\1,"\2")]', //[foo^="warning"]
 			'[ends-with(@\1,"\2")]', //[foo$="warning"]
 			'[ @\1 ]', //[attribute][attribute]
@@ -779,14 +783,14 @@ class Vtpl {
 									$val = $this->variables[(int) $valueElements[1]];
 								} else {
 									if (! in_array($modifier, $this->_modifiers)) {
-										$val = '<_script language="php"><![CDATA[if (isset(' . $this->variables[(int) $valueElements[1]] . ')) echo htmlentities(' . $this->variables[(int) $valueElements[1]] . ');]]></_script>';
+										$val = '<_script language="php"><![CDATA[if (isset(' . $this->variables[(int) $valueElements[1]] . ')) echo htmlspecialchars(' . $this->variables[(int) $valueElements[1]] . ');]]></_script>';
 									}
 								}
 							} else {
 								if ($isConstant) {
 									$val = '<_script language="php"><![CDATA[if (isset(' . $this->variables[(int) $valueElements[1]] . ')) echo ' . $this->variables[(int) $valueElements[1]] . ';]]></_script>';
 								} else {
-									$val = '<_script language="php"><![CDATA[if (isset(' . $this->variables[(int) $valueElements[1]] . ')) echo htmlentities(' . $this->variables[(int) $valueElements[1]] . ');]]></_script>';
+									$val = '<_script language="php"><![CDATA[if (isset(' . $this->variables[(int) $valueElements[1]] . ')) echo htmlspecialchars(' . $this->variables[(int) $valueElements[1]] . ');]]></_script>';
 								}
 							}
 							$this->debug->log('SELECTOR_VARIABLE', $this->variables[(int) $valueElements[1]]);
@@ -977,11 +981,11 @@ class Vtpl {
 				}
 			}
 
-			preg_match('@echo htmlentities\(([^)]+)\)@', $value, $variable);
+			preg_match('@echo htmlspecialchars\(([^)]+)\)@', $value, $variable);
 
 			if ($variable) {
 				$chain = str_replace('_$variable', $variable[1], $chain);
-				$value = str_replace($variable[0], 'echo htmlentities(' . $chain . ')', $value);
+				$value = str_replace($variable[0], 'echo htmlspecialchars(' . $chain . ')', $value);
 			} else {
 				preg_match('@echo\(([^)]+)\)@', $value, $variable);
 
@@ -1637,6 +1641,7 @@ class Vtpl {
 	}
 
 	private function delete(&$nodeList) {
+		if ($nodeList) {
 		foreach ($nodeList as $node) {
 			$this->removeChildren($node);
 
@@ -1644,6 +1649,7 @@ class Vtpl {
 				$node->parentNode->removeChild($node);
 			}
 		}
+	}
 	}
 
 	private function setNodeAttribute($node, $attribute, $val) {
@@ -1697,11 +1703,15 @@ class Vtpl {
 		}
 	}
 
-	private function addNewAttribute(&$nodeList, $val) {
-		if ($nodeList && $nodeList->length > 0) {
-			foreach ($nodeList as $node) {
+	public function addNodeNewAttribute(&$node, $val) {
 				$this->newAttributes[++$this->newAttributesIndex] = $this->processAttributeConstants($val, $node);
 				$node->setAttribute("__VTPL__NEW_ATTRIBUTE_PLACEHOLDER__{$this->newAttributesIndex}",'');
+	}
+
+	public function addNewAttribute(&$nodeList, $val) {
+		if ($nodeList && $nodeList->length > 0) {
+			foreach ($nodeList as $node) {
+				$this->addNodeNewAttribute($node, $val);
 			}
 		}
 	}
@@ -1936,7 +1946,7 @@ class Vtpl {
 							  		$value = str_replace('$this.', '$this->', $value);
 							  	}
 							  	$value   = Vvveb\dotToArrayKey($value);
-							  	$php  = '<_script language="php"><![CDATA[ if (isset(' . $value . ')) echo htmlentities(' . $value . ');]]></_script>';
+							  	$php  = '<_script language="php"><![CDATA[ if (isset(' . $value . ')) echo htmlspecialchars(' . $value . ');]]></_script>';
 
 							  	return $php;
 							  }, $value);

@@ -187,3 +187,39 @@ function vtplIfClass($vtpl, $node) {
 
 	return $return;
 }
+
+function vtplIfAttr($vtpl, $node) {
+	$if      = [];
+	$ifnot   = [];
+	$length  = $node->attributes->length;
+
+	for ($i = 0; $i < $length; ++$i) {
+		if ($item = $node->attributes->item($i)) {
+			$name = $item->name;
+
+			if (strpos($name, 'data-v-attr-if-not-') !== false) {
+				$name           = str_replace('data-v-attr-if-not-', '', $name);
+				$ifnot[$name]   = $item->value;
+			} else {
+				if (strpos($name, 'data-v-attr-if-') !== false) {
+					$name           = str_replace('data-v-attr-if-', '', $name);
+					$if[$name]      = $item->value;
+				}
+			}
+		}
+	}
+
+	foreach ($ifnot as $value => $cond) {
+		$node->removeAttribute("data-v-attr-if-not-$value");
+		$condition = ifCondition($cond);
+		$if        = "<?php if  (!($condition)) {echo '$value';}?>";
+		$vtpl->addNodeNewAttribute($node, $if);
+	}
+
+	foreach ($if as $value => $cond) {
+		$node->removeAttribute("data-v-attr-if-$value");
+		$condition = ifCondition($cond);
+		$if        = "<?php if  ($condition) {echo '$value';}?>";
+		$vtpl->addNodeNewAttribute($node, $if);
+	}
+}
