@@ -3346,7 +3346,7 @@ Vvveb.SectionList = {
 			window.FrameDocument.body.querySelectorAll(':scope > section, :scope > header, :scope > footer, :scope > main, :scope > nav');
 		
 		sectionList.forEach(function (node, i) {
-			let id = node.id ? node.id : (node.title ? node.title : node.className);
+			let id = node.id ? node.id : (node.title ? node.title : node.ariaLabel ?? node.className);
 			if (!id) {
 				id = 'section-' +  Math.floor(Math.random() * 10000);
 			}
@@ -3637,6 +3637,7 @@ Vvveb.FileManager = {
 			if (element) {
 				let page = element.parentNode.dataset.page;
 				if (page) Vvveb.FileManager.loadPage(page, allowedComponents);
+				e.preventDefault();
 				return false;			
 			}
 		});
