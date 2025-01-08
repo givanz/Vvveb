@@ -1,0 +1,84 @@
+  <div class="collapse navbar-collapse" id="navbar" data-v-component-menu="header" data-v-slug="main-menu">
+	<ul class="navbar-nav mx-auto mb-2 mb-lg-0" data-v-menu-items>
+	  <li class="nav-item dropdown position-static" data-v-menu-item data-v-class-if-has-dropdown="category.children > 0" data-v-class-if-position-static="category.has-text">
+		
+		<a class="nav-link dropdown-toggle" href="#" data-v-class-if-dropdown-toggle="category.children > 0" data-v-class-if-active="category.active"  aria-expanded="false" data-v-menu-item-url>
+			<span data-v-menu-item-name data-v-if-not="category.type = 'text'"></span>
+			<span data-v-menu-item-content>
+				<p><img src="/media/vvveb.svg" height="24" alt="" class="me-2">Mega menu</p>
+			</span>
+		</a>
+		
+		<div class="dropdown-menu" data-v-menu-item-recursive>
+		  <div data-v-menu-item class="nav-item" data-v-class-if-dropdown="category.children > 0">
+			<a class="dropdown-item" data-v-class-if-active="category.active"  href="https://github.com/givanz/VvvebJs/wiki" data-v-menu-item-url>
+				<span data-v-menu-item-name data-v-if-not="category.type = 'text'"></span>
+				<span data-v-if="category.content" data-v-menu-item-content>
+					<div class="row">
+						<div class="col-6 align-self-center"><img src="img/demo/video-1.jpg" alt="Post" width="250" loading="lazy" class="rounded img-fluid"></div>
+						<div class="col-6">
+							<h4>Features</h4>
+							<p class="text-muted">Just a few mentions, but there is more</p>
+							<ul class="list-unstyled">
+								<li class="text-primary">Page builder</li>
+								<li class="text-primary">Mega menu</li>
+								<li class="text-primary">Multi language</li>
+								<li class="text-primary">Advanced SEO</li>
+								<li class="text-primary">Ecommerce</li>
+							</ul>
+						</div>
+					</div>
+				</span>
+			</a>
+		  </div> 
+		  <div data-v-menu-item class="nav-item" data-v-class-if-dropdown="category.children > 0">
+			<a class="dropdown-item" href="https://github.com/givanz/VvvebJs/wiki" data-v-class-if-active="category.active"  data-v-menu-item-url>
+				<span data-v-menu-item-name data-v-if-not="category.type = 'text'">Developer Documentation</span>
+				<span data-v-menu-item-content></span>
+			</a>
+		  </div> 
+		</div>
+	  </li>
+	  <li class="nav-item dropdown" data-v-menu-item>
+		<a class="nav-link dropdown-toggle" href="https://blog.vvveb.com"  data-v-menu-item-url><span data-v-menu-item-name>Blog</span></a>
+		
+			<div class="dropdown-menu" data-v-menu-item-recursive>
+			  <div data-v-menu-item class="nav-item" data-v-class-if-dropdown="category.children > 0">
+				<a class="dropdown-item" href="https://github.com/givanz/VvvebJs/wiki" data-v-menu-item-url>
+					<span data-v-menu-item-name data-v-if-not="category.type = 'text'">User Documentation</span>
+					<span data-v-menu-item-content></span>
+				</a>
+			  </div> 
+			  <div data-v-menu-item class="nav-item" data-v-class-if-dropdown="category.children > 0">
+				<a class="dropdown-item" href="https://github.com/givanz/VvvebJs/wiki" data-v-menu-item-url>
+					<span data-v-menu-item-name data-v-if-not="category.type = 'text'">Developer Documentation</span>
+					<span data-v-menu-item-content></span>
+				</a>
+			  </div> 
+			</div>
+	  </li>
+	  <li class="nav-item" data-v-menu-item>
+		<a class="nav-link" href="https://www.vvveb.com/page/contact"  data-v-menu-item-url><span data-v-menu-item-name>Contact</span></a>
+	  </li>
+	  <li class="nav-item" data-v-menu-item>
+		<a class="nav-link" href="https://www.vvveb.com"  data-v-menu-item-url><span data-v-menu-item-name>About us</span></a>
+	  </li>
+	 <a href="#!" class="btn btn-outline-primary">Log In</a>
+	 <a href="#!" class="btn btn-primary ms-2 ms-lg-3">Sign Up</a>	  
+	</ul>
+<!--
+	<div class="search-area toggle-hover">
+		<form action="/search" method="get" data-v-action="/search">
+			<input type="hidden" name="route" value="search">
+			<div class="input-group">
+				<input type="search" name="search" class="form-control" id="headerSearch" placeholder="Type for search" data-v-vvveb-action="search" data-v-vvveb-on="keyup">
+				<button class="btn border-0" type="submit" title="Search">
+					<div class="la-flip-horizontal">
+						<i class="la la-search la-lg" aria-hidden="true"></i>
+					</div>
+				</button>
+			</div>			  
+		</form>
+	</div>
+-->	
+  </div>

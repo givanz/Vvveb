@@ -1,0 +1,112 @@
+/* Button style */
+.btn {
+  font-size: 15px;
+  text-transform: capitalize;
+  padding: 13px 28px;
+  border-radius: 10px;
+  position: relative;
+  z-index: 1;
+  font-weight: 500;
+  transition: .2s ease;
+  overflow: hidden;
+  border: 0;
+
+  &::after {
+    position: absolute;
+    content: "";
+    height: 15px;
+    width: 15px;
+    background-color: darken($primary-color, 12);
+    top: 100%;
+    left: 60%;
+    z-index: -1;
+    border-radius: 50%;
+    transition: 0.3s;
+    transform: rotate(25deg);
+  }
+  &.w-100,
+  &.d-block,
+  &.d-flex,
+  &.effect-none {
+    &::after {
+      display: none;
+    }
+  }
+
+  &-sm {
+    padding: 13px 25px;
+  }
+
+  &:hover,
+  &:active,
+  &.active,
+  &:focus,
+  &.focus {
+    outline: 0;
+    box-shadow: none !important;
+    text-decoration: none;
+    &::after {
+      top: -75px;
+      left: -55px;
+      height: 300px;
+      width: 300px;
+      transition: 0.4s;
+      transform: rotate(0deg);
+    }
+  }
+}
+
+.btn-primary {
+  background: $primary-color;
+  color: $white;
+  border-color: $primary-color;
+
+  &:hover,
+  &:active,
+  &.active,
+  &:focus,
+  &.focus {
+    background: $primary-color !important;
+    color: $white;
+  }
+  &.w-100,
+  &.d-block,
+  &.d-flex,
+  &.effect-none {
+    &:hover {
+      background-color: darken($primary-color, 10) !important;
+    }
+  }
+}
+
+.btn-outline-primary {
+  background: lighten($primary-color, 40);
+  color: darken($primary-color, 10);
+
+  &::after {
+    background-color: $primary-color;
+  }
+
+  &:hover,
+  &:active,
+  &.active,
+  &:focus,
+  &.focus {
+    background: lighten($primary-color, 40);
+    color: $white;
+  }
+  &.w-100,
+  &.d-block,
+  &.d-flex,
+  &.effect-none {
+    &:hover {
+      background: lighten($primary-color, 40);
+    }
+  }
+}
+.nav-pills .nav-link:hover {
+  color: darken($primary-color, 10) !important;
+}
+.nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+  background-color: $primary-color;
+}

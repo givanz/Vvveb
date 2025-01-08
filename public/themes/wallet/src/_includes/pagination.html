@@ -1,0 +1,55 @@
+<div data-pagination data-v-parent-component="@@component" data-v-parent-index="@@component-index"  @@if (typeof query_string !== "undefined"){data-v-query-string="true"} 
+data-v-parameters='{@@if (typeof parameters === "object") {
+	@@for (let k in parameters) {"`+k+`":"`+parameters[k]+`"}
+}}'	
+> 
+
+	<nav data-v-if="pagecount > 1" >
+		<ul class="pagination pagination-sm justify-content-end" style="--bs-pagination-border-color:transparent;border-top: 1px solid var(--bs-border-color);padding-top: 1rem;">
+		
+			<!--
+			<li class="page-item pager-first" data-first>
+				<a class="page-link" title="First page" href="#" data-page-url data-v-if="current_page > 1">
+					<span aria-hidden="true" class="la la-angle-double-left"></span>
+					<span class="sr-only">First</span>
+				</a>
+			</li>
+			-->
+		
+			<li class="page-item pager-prev" data-prev>
+				
+				<a class="page-link" href="#" aria-label="Previous"  title="Previous page" data-page-url data-v-if="current_page > 1">
+					<span aria-hidden="true" class="la la-angle-left la-lg"></span>
+					<!-- <span>Newer Posts</span> -->
+				</a>
+				
+			</li>
+			
+			
+			
+			<li class="page-item" data-page><a class="page-link" href="#" data-page-no data-page-url>1</a></li>
+			<li class="page-item" data-page><a class="page-link" href="#" data-page-no data-page-url>2</a></li>
+			<li class="page-item" data-page><a class="page-link" href="#" data-page-no data-page-url>3</a></li>
+			<li class="page-item" data-page><a class="page-link" href="#" data-page-no data-page-url>4</a></li>
+			<li class="page-item" data-page><a class="page-link" href="#" data-page-no data-page-url>5</a></li>
+			
+			<li class="page-item pager-next" data-next>
+				<a class="page-link" href="#" aria-label="Next" title="Next page" data-page-url data-v-if="current_page < pagecount">
+					<!-- <span>Older Posts</span> -->
+					<span aria-hidden="true" class="la la-angle-right la-lg"></span>
+				</a>
+			</li>
+
+			<!--
+			<li class="page-item pager-last" data-last>
+				<a class="page-link" title="Last page" href="#" data-page-url data-v-if="current_page < pagecount">
+				<span aria-hidden="true" class="la la-angle-double-right"></span>
+					<span class="sr-only">Last</span>
+				</a>
+			</li>
+			-->
+
+		</ul>
+	</nav>
+</div>
+

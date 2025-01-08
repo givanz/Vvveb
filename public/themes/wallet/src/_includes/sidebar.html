@@ -1,0 +1,165 @@
+<!-- Sidebar Widgets Column -->
+<aside class="@@cols" role="sidebar">
+
+	<div class="sidebar-sticky">
+		<!-- Search Widget -->
+		<div class="card">
+		  <!-- h6 class="card-header">Search</h6 -->
+		  <div class="card-body">
+		    <form method="get" action="/search">
+				<!-- <input type="hidden" name="type" value="posts"> -->
+				<div class="input-group">
+				  <input type="text" name="search" class="form-control" placeholder="Search for...">
+				  <button class="btn btn-secondary" type="submit">
+					<div class="la-flip-horizontal">
+						<i class="la la-search  la-flip-horizontal"></i>
+					</div>
+				  </button>
+				</div>
+			</form>
+		  </div>
+		</div>
+
+		<!-- About Widget -->
+		<div class="card" data-v-component-site>
+		  <h6 class="card-header">About</h6>
+		  <div class="card-body" data-v-site-description-description>
+			Powerful and easy to use drag and drop website builder for blogs, presentation or ecommerce stores.
+		  </div>
+		</div>
+
+		<!-- Recent posts Widget -->
+		<div class="card archives-widget" data-v-component-posts="recent-posts-sidebar" data-v-page="1" data-v-limit="4">
+			<div>
+			  <h6 class="card-header">Recent posts</h6>
+			  <div class="card-body">
+					<div data-v-post>
+						<i class="la la-comment"></i>
+						<a href="content/post.html" data-v-post-url><span data-v-post-name>January 2021</span></a>
+					</div>
+					<div data-v-post>
+						<i class="la la-comment"></i>
+						<a href="content/post.html" data-v-post-url><span data-v-post-name>January 2021</span></a>
+					</div>
+			</div>
+		  </div>
+		</div>
+		
+		<!-- Recent comments Widget -->
+		<div class="card archives-widget" data-v-component-comments="recent-comments-sidebar" data-v-page="1" data-v-limit="4" data-v-post_title="true" data-v-order="desc">
+			<div>
+			  <h6 class="card-header">Recent comments</h6>
+			  <div class="card-body">
+					<div data-v-comment>
+						<span data-v-comment-author>John Doe</span><span>on</span>
+						<a href="content/post.html#comments" data-v-comment-url><span data-v-comment-name>Post name</span></a>
+					</div>
+					<div data-v-comment>
+						<span data-v-comment-author>John Doe</span> on
+						<a href="content/post.html#comments" data-v-comment-url><span data-v-comment-name>Post name</span></a>
+					</div>
+			</div>
+		  </div>
+		</div>	
+		
+		<!-- Categories Widget -->
+		<div class="card categories-widget" data-v-component-content-categories="sidebar" data-v-type="categories" data-v-post_type="post">
+			<div>
+			  <h6 class="card-header">Categories</h6>
+			  <div class="card-body">
+					<ul data-v-cats>
+					  <li data-v-cat>
+						<a href="content/category.html" data-v-cat-url data-v-cat-name>Web Design</a>
+					  </li>
+					  <li data-v-cat>
+						<a href="content/category.html" data-v-cat-url data-v-cat-name>HTML</a>
+					  </li>
+					  <li data-v-cat>
+						<a href="content/category.html" data-v-cat-url data-v-cat-name>Freebies</a>
+					  </li>
+					</ul>
+			  </div>
+		  </div>
+		</div>
+
+		<!-- Archives Widget -->
+		<div class="card archives-widget" data-v-component-content-archives="sidebar">
+			<div>
+			  <h6 class="card-header">Archives</h6>
+			  <div class="card-body">
+				<ul data-v-archives>
+				  <li data-v-archive>
+						<a href="content/archive.html" data-v-archive-url><span data-v-archive-name>January 2021</span></a>
+				  </li>
+				  <li data-v-archive>
+						<a href="content/archive.html" data-v-archive-url><span data-v-archive-name>December 2020</span></a>
+				  </li>
+				  <li data-v-archive>
+						<a href="content/archive.html" data-v-archive-url><span data-v-archive-name>November 2018</span></a>
+				  </li>
+				  <li data-v-archive>
+						<a href="content/archive.html" data-v-archive-url><span data-v-archive-name>October 2018</span></a>
+				  </li>
+				</ul>
+			</div>
+		  </div>
+		</div>		
+		
+		<!-- Popular tags Widget -->
+		<div class="card tags-widget" data-v-component-content-categories="sidebar" data-v-type="tags" data-v-post_type="post">
+			<div>
+			  <h6 class="card-header">Popular tags</h6>
+			  <div class="card-body">
+				<ul data-v-cats class="tags">
+				  <li data-v-cat>
+						<a href="content/tag.html" data-v-cat-url data-v-cat-name>January 2021</a>
+				  </li>
+				  <li data-v-cat>
+						<a href="content/tag.html" data-v-cat-url data-v-cat-name>December 2020</a>
+				  </li>
+				  <li data-v-cat>
+						<a href="content/tag.html" data-v-cat-url data-v-cat-name>November 2018</a>
+				  </li>
+				  <li data-v-cat>
+						<a href="content/tag.html" data-v-cat-url data-v-cat-name>October 2018</a>
+				  </li>
+				</ul>
+			</div>
+		  </div>
+		</div>
+	
+	
+		<!-- Archives Widget Select -->
+		<div class="card archives-widget" data-v-component-content-archives="sidebar">
+			<div>
+			  <h6 class="card-header">Archives</h6>
+			  <div class="card-body">
+				  <select class="form-control" onchange="window.location.href = this.value" data-v-archives>
+						<option class="text-muted">
+							<span>Select month</span>
+						</option>
+						
+						<option data-v-archive value="content/archive.html">
+							<span data-v-archive-name>January 2021</span>
+						</option>
+						
+						<option data-v-archive value="content/archive.html">
+							<span data-v-archive-name>December 2020</span>
+						</option>
+						
+						<option data-v-archive value="content/archive.html">
+							<span data-v-archive-name>November 2018</span>
+						</option>
+						
+						<option data-v-archive value="content/archive.html">
+							<span data-v-archive-name>October 2018</span>
+						</option>
+				  </select>
+				  
+			  </div>
+		  </div>
+		</div>	
+		
+	</div>
+	
+</aside>

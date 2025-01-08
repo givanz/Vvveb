@@ -1,0 +1,208 @@
+<div id="comments" class="post-comments mt-4" data-v-component-comments>
+		<h4 class="comments-title">Comments</h4>
+
+		<ol class="comment-list list-unstyled mb-3" data-v-if="count > 0">
+			<li class="comment mb-4" data-v-comment>
+
+					<div class="comment-wrap d-flex ">
+
+						<figure class="author-avatar me-2">
+							<img src="img/sections/team/1.jpg" alt="user" width="60" data-v-comment-avatar loading="lazy" data-v-if="comment.avatar">
+							<div class="empty" data-v-if-not="comment.avatar"></div>
+						</figure>
+
+						<div class="comment-author">
+
+							<div class="comment-author">
+								<a rel="external nofollow ugc" href="#" data-v-if="comment.url">
+									<span data-v-comment-author>Maria Williams</span>
+								</a>
+								<span data-v-comment-author data-v-if-not="comment.url">Maria Williams</span>
+							</div>
+
+							<div class="comment-meta text-small text-muted">
+								<span data-v-comment-created_at data-filter-friendly_date>Jan 29, 2018</span>
+							</div>
+
+						</div>
+
+					</div>
+
+	
+					<div data-v-comment-content>
+						<p>Consectetur adipiscing elit. Praesent vel tortor facilisis, volutpat nulla placerat, tincidunt mi. Nullam vel orci dui. Su spendisse sit amet laoreet neque. Fusce sagittis suscipit sem a consequat. Proin nec interdum sem. Quisque in porttitor magna, a imperdiet est. Donec accumsan justo nulla, sit amet varius urna laoreet vitae. Maecenas feugiat fringilla metus. </p>
+					</div>
+
+					<div class="alert alert-light my-2 small" data-v-if="comment.status = 0">
+						<div>Your comment is awaiting moderation.</div>
+						<div>This is a preview, your comment will be visible after it has been approved.</div>
+					</div>
+
+					<div class="reply">
+						<a href="#comment-form" class="reply-btn" data-comment_id="{$comment.comment_id}" data-comment_author="{$comment.author}" data-v-vvveb-action="replyTo">Reply <i class="la la-reply"></i></a>
+					</div>
+
+			</li>
+			<li class="comment mb-4 level-2" data-v-comment>
+
+					<div class="comment-wrap d-flex ">
+
+						<figure class="author-avatar me-2">
+							<img src="http://place-hold.it/60x60" alt="user" width="60" height="60" data-v-comment-avatar loading="lazy" data-v-if="comment.avatar">
+						</figure>
+
+						<div class="comment-author">
+
+							<div class="comment-author">
+								<span data-v-comment-author data-v-if-not="comment.url">John doe</span>
+							</div>
+
+							<div class="comment-meta text-small text-muted">
+								<span data-v-comment-created_at data-filter-friendly_date>Jan 29, 2018</span>
+							</div>
+
+						</div>
+
+					</div>
+
+	
+					<div data-v-comment-content>
+						<p>This is a reply comment.</p>
+					</div>
+
+					<div class="alert alert-light my-2 small" data-v-if="comment.status = 0">
+						<div>Your comment is awaiting moderation.</div>
+						<div>This is a preview, your comment will be visible after it has been approved.</div>
+					</div>
+
+					<div class="reply">
+						<a href="#comment-form" class="reply-btn" data-comment_id="{$comment.comment_id}" data-comment_author="{$comment.author}" data-v-vvveb-action="replyTo">Reply <i class="la la-reply"></i></a>
+					</div>
+
+			</li>
+			<li class="comment mb-4" data-v-comment>
+
+					<div class="comment-wrap d-flex ">
+
+						<figure class="author-avatar me-2">
+							<img src="img/sections/team/1.jpg" alt="user" width="60" height="60" data-v-comment-avatar loading="lazy" data-v-if="comment.avatar">
+						</figure>
+
+						<div class="comment-author">
+
+							<div class="comment-author">
+								<a rel="external nofollow ugc" href="#" data-v-if="comment.url"><span data-v-comment-author>Maria Williams</span></a>
+								<span data-v-comment-author data-v-if-not="comment.url">Maria Williams</span>
+							</div>
+
+							<div class="comment-meta text-small text-muted">
+								<span data-v-comment-created_at data-filter-friendly_date>Jan 29, 2018</span>
+							</div>
+
+						</div>
+
+					</div>
+
+					<div data-v-comment-content>
+						<p>Consectetur adipiscing elit. Praesent vel tortor facilisis, volutpat nulla placerat, tincidunt mi. Nullam vel orci dui. Su spendisse sit amet laoreet neque. Fusce sagittis suscipit sem a consequat. Proin nec interdum sem. Quisque in porttitor magna, a imperdiet est. Donec accumsan justo nulla, sit amet varius urna laoreet vitae. Maecenas feugiat fringilla metus. </p>
+					</div>
+
+					<div class="alert alert-light my-2 small" data-v-if="comment.status = 0">
+						<div>Your comment is awaiting moderation.</div>
+						<div>This is a preview, your comment will be visible after it has been approved.</div>
+					</div>
+
+					<div class="reply">
+						<a href="#comment-form" class="reply-btn" data-comment_id="{$comment.comment_id}" data-comment_author="{$comment.author}" data-v-vvveb-action="replyTo">Reply <i class="la la-reply"></i></a>
+					</div>
+
+			</li>
+		</ol>
+	
+   <div class="comments-form">
+
+	@@include('notifications.html')
+
+		<h5>Leave a reply</h5>
+		<div class="replyto" style="display:none"><h3>Reply to <b data-comment-author>author</b></h3>
+			<a href="#comment-form" class="reply-btn d-inline-block" data-comment_id="0" data-v-vvveb-action="replyTo">
+			Cancel reply 
+			<i class="la la-window-close"></i></a>
+		</div>
+		
+		
+		<div class="loggedin mb-3" data-v-if="this.global.user_id">
+			<!--
+			<a href="#comment-form" class="reply-btn d-inline-block" data-comment_id="0" data-v-vvveb-action="replyTo">
+			Log out
+			<i class="la la-window-close"></i></a>
+			-->
+			
+			<form action method="post" enctype="multipart/form-data" data-v-url="user/login" data-selector=".post-comments">
+
+				<span>Logged in as <b data-v-global-user.display_name>author</b></span>
+
+				<input type="hidden" name="logout">
+			
+				<button type="submit" value="logout" class="btn link-primary">
+					
+					<span class="loading d-none">
+						<span class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true">
+						</span>
+						<span>Loading ...</span>...
+					</span>
+
+					<span class="button-text">
+						Logout <i class="la la-sign-out-alt"></i>
+					</span>
+				
+				</button>	
+			</form>
+			
+		</div>
+
+		<form id="comment-form" method="post" action="#" data-v-vvveb-action="addComment" data-v-vvveb-on="submit">
+			
+			<input type="hidden" name="post_id" data-v-post-post_id>
+			<input type="hidden" name="slug" data-v-post-slug>
+			<input type="hidden" name="parent_id" value="0">
+			<input type="hidden" name="csrf" data-v-csrf>
+			
+			   <!-- antibot do not fill -->	
+			  <input type="hidden" class="form-control" placeholder="First name" name="firstname-empty">	
+			
+			
+			  <div data-v-if-not="this.global.user_id">	
+				  <div class="mb-3">
+					<label for="author" class="form-label">Name</label>
+					<input type="text" placeholder="Name" name="author" class="form-control" required>
+				  </div>
+				  <div class="mb-3">
+					<label for="email" class="form-label">Email address</label>
+					<input type="email" placeholder="Email" name="email" class="form-control" required>
+				  </div>
+			  </div>
+
+			  <div class="mb-3">
+				<textarea name="content" rows="5" cols="4" placeholder="Comment" class="form-control" required></textarea>
+			  </div>
+
+			<!-- if these hidden inputs are filled then ignore robots -->
+			 <input type="text" class="form-control d-none" placeholder="Subject" name="subject-empty" >	
+			 
+			 <input type="text" class="form-control visually-hidden" placeholder="Last name" name="lastname-empty" tabindex="-1">				  
+			  
+			  <button type="submit" value="comment" class="btn btn-primary btn-submit">
+			  <span class="loading d-none">
+					<span class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"> </span>
+                        <span>Posting</span>...
+                    </span>
+
+                    <span class="button-text">
+                        <span>Post comment</span><i class="la la-long-arrow-alt-right ms-1"></i>
+                    </span>
+			  </button>
+			
+		</form>
+	</div>
+</div>

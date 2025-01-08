@@ -1,0 +1,59 @@
+<div class="notifications" data-v-notifications>
+
+	<div class="alert alert-danger d-flex alert-dismissable" role="alert" data-v-notification-error @@if (typeof type !== "undefined"){ data-v-type="@@type" }>
+
+		<div class="icon align-middle me-2">
+			<i class="align-middle la la-2x lh-1 la-exclamation-triangle"></i>
+		</div>
+
+		<div class="flex-grow-1 align-self-center text-small" >
+			<div>
+				<div data-v-notification-text>
+					This is a placeholder for a notification message.
+				</div>
+			</div>
+		</div>
+
+
+		<button type="button" class="btn-close align-middle" data-bs-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true">
+				<!-- <i class="la la-times"></i> -->
+			</span>
+		</button>
+	</div>
+
+	<div class="alert alert-success d-flex  alert-dismissable d-flex" role="alert" data-v-notification-success @@if (typeof type !== "undefined"){ data-v-type="@@type" }>
+
+		<div class="icon align-middle me-2">
+			<i class="align-middle la la-2x lh-1 la-check-circle"></i>
+		</div>
+
+		<div class="flex-grow-1 align-self-center align-middle" data-v-notification-text>
+			This is a placeholder for a success message.
+		</div>
+
+		<button type="button" class="btn-close align-middle" data-bs-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true">
+				<!-- <i class="la la-times"></i> -->
+			</span>
+		</button>
+	</div>
+	
+	<div class="alert alert-primary d-flex alert-dismissable d-flex" role="alert" data-v-notification-info @@if (typeof type !== "undefined"){ data-v-type="@@type" }>
+
+		<div class="icon align-middle me-2">
+			<i class="align-middle la la-2x lh-1  la-info-circle"></i>
+		</div>
+
+		<div class="flex-grow-1 align-self-center" data-v-notification-text>
+			This is a placeholder for a info message.
+		</div>
+
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+			<span aria-hidden="true">
+				<!-- <i class="la la-times"></i> -->
+			</span>
+		</button>
+	</div>
+
+</div>

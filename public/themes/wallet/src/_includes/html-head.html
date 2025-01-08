@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+   <meta charset="utf-8">
+	
+	<base href="@@path">
+    
+    <title>@@title</title>
+
+	@@if (typeof meta !== "undefined"){ 
+		@@include('@@meta')
+	}
+	@@if (typeof meta === "undefined"){ 
+		@@include('meta/default.html')
+	}
+
+	<link id="landing-css" href="css/style.bundle.css" rel="stylesheet" media="screen">
+	<link id="vvvebjs-css" href="css/custom.css" rel="stylesheet" media="screen">
+	
+	@@if (typeof css !== "undefined")  {
+		@@for (var i = 0; i < css.length; i++) {
+			<link id="style-css" href="`+css[i]+`" rel="stylesheet">
+		}
+	}
+	
+    @@if (typeof link !== "undefined"){ @@link } 
+	@@if (typeof style !== "undefined"){ 
+    <style>
+		@@style
+    </style>
+	}
+
+    @@if (typeof google_fonts !== "undefined" && google_fonts){ 
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=@@google_fonts&display=swap" rel="stylesheet">     
+	}
+
+	<link rel="alternate" type="application/rss+xml" title="Feed" href="/feed/posts" />
+	<link rel="alternate" type="application/rss+xml" title="Comments Feed" href="/feed/comments" />
+
+	<link rel="icon" type="image/x-icon" href="../../media/favicon.ico" data-v-global-site.favicon>
+	
+	<link rel="manifest" href="/manifest.webmanifest">
+	
+	<link rel="alternate" hreflang="" href=""/>
+</head>

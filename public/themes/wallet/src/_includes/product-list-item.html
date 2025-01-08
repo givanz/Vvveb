@@ -1,0 +1,51 @@
+<article class="single-product-wrapper">
+    <!-- Product Image -->
+    <a href="product/product.html" data-v-product-url> </a>
+    <div class="product-image">
+        <a href="product/product.html" data-v-product-url>
+
+            <img src="img/demo/product.jpg" loading="lazy" data-v-product-alt alt="" data-v-size="thumb" loading="lazy" data-v-product-image/>
+
+            <!-- Hover Thumb -->
+            <img class="hover-img" src="img/demo/product-2.jpg" loading="lazy" data-v-product-alt alt="" loading="lazy" data-v-size="thumb" data-v-product-image-1/>
+        </a>
+
+        <!-- Favourite -->
+        <div class="product-favourite">
+			<a href="product/product.html" class="la la-heart" data-v-vvveb-action="addToWishlist" data-v-product-add_wishlist_url><span></span></a>
+		</div>
+
+        <!-- Compare -->
+        <div class="product-compare">
+			<a href="product/product.html" class="la la-random" data-v-vvveb-action="addToCompare" data-v-product-add_compare_url><span></span></a>
+		</div>
+    </div>
+
+    <!-- Product Description -->
+    <div class="product-content">
+        
+        <a href="product/product.html" class="text-body" data-v-product-url>
+            <span data-v-product-name>Product 8</span>
+        </a>
+        
+        <p class="product-price" data-v-if="_product.price > 0" data-v-product-price_tax_formatted>100.0000</p>
+
+        <!-- Hover Content -->
+        <div class="hover-content" data-v-if="_product.price > 0">
+            <!-- Add to Cart -->
+            <div class="add-to-cart-btn">
+                <input type="hidden" name="product_id" value="" data-v-product-product_id />
+                <a href="" class="btn btn-primary w-100" data-v-product-add_cart_url data-v-vvveb-action="addToCart" data-product_id="1">
+                    <span class="loading d-none">
+                        <span class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"> </span>
+                        <span>Add to cart</span>...
+                    </span>
+
+                    <span class="button-text">
+                        Add to cart
+                    </span>
+                </a>
+            </div>
+        </div>
+    </div>
+</article>

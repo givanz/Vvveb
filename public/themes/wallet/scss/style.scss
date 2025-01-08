@@ -1,0 +1,33 @@
+// Color Variables
+$primary_color:#51B56D;
+$secondary_color:#917AEB;
+$tertiary_color:#FBFBFB;
+$quaternary_color:#5AB0FF;
+$body_color:#fff;
+$text_color:#888888;
+$text_color_dark:#040404;
+$text_color_light:#555555;
+$border_color:#ACB9C4;
+$black:#000;
+$dark:#233242;
+$white:#fff;
+$light:#EAEAEA;
+
+// Font Variables
+$primary_font:'Rubik', sans-serif;
+$secondary_font:sans-serif;
+$icon_font:"Font Awesome 5 Free";
+
+@import 'bootstrap/bootstrap';
+
+@import 'mixins';
+
+@import 'typography';
+
+@import 'buttons';
+
+@import 'common';
+
+@import 'templates/navigation.scss';
+
+@import 'templates/main.scss';

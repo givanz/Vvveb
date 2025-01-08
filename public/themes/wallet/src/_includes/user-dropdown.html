@@ -1,0 +1,16 @@
+<div class="dropdown user-box nav-item">
+		<a class="dropdown-toggle nav-link " href role="button" id="user-dropdown" data-bs-toggle="dropdown" aria-expanded="false" data-v-url="user/index">
+			<i class="la la-lg la-user"></i><span class="visually-hidden">User</span>
+		</a>
+
+		<div class="dropdown-menu dropdown-menu-end login-box p-4" aria-labelledby="user-dropdown">
+			
+			<div data-v-component-user>			
+				
+				@@include('../_includes/notifications.html', {type:"login"})
+			
+				@@include('login-form.html', {"btnClass": "w-100"})
+
+		</div>
+	</div>
+</div>
