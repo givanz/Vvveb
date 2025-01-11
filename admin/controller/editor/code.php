@@ -27,6 +27,8 @@ use Vvveb\Controller\Base;
 use function Vvveb\sanitizeFileName;
 
 class Code extends Base {
+	protected $saveDenyExtensions = ['php', 'tpl'];
+
 	function dirForType($type) {
 		switch ($type) {
 			case 'public':
@@ -93,11 +95,18 @@ class Code extends Base {
 
 		$message = ['success' => false, 'message' => sprintf(__('Error saving: %s!'), $file)];
 
-		if (! is_writable($file)) {
-			$message = ['success' => false, 'message' => sprintf(__('File not writable: %s Check if file has write permission.'), $file)];
+		$extension = strtolower(substr($file, strrpos($file, '.') + 1));
+
+		if (in_array($extension, $this->saveDenyExtensions)) {
+			$message = ['success' => false, 'message' => sprintf(__('Saving not allowed for file type %s!'), trim($extension, '.'))];
+			$success = false;
 		} else {
-			if (file_put_contents($file, $content)) {
-				$message = ['success' => true, 'message' => __('File saved!')];
+			if (! is_writable($file)) {
+				$message = ['success' => false, 'message' => sprintf(__('File not writable: %s Check if file has write permission.'), $file)];
+			} else {
+				if (file_put_contents($file, $content)) {
+					$message = ['success' => true, 'message' => __('File saved!')];
+				}
 			}
 		}
 
