@@ -25,12 +25,18 @@ namespace Vvveb\Controller\User;
 use \Vvveb\System\Functions\Str;
 use function Vvveb\__;
 use function Vvveb\setLanguage;
+use Vvveb\Sql\Admin_Failed_LoginSQL;
 use Vvveb\System\Event;
 use Vvveb\System\User\Admin;
 use Vvveb\System\Validator;
 
 #[\AllowDynamicProperties]
 class Login {
+	//failed attemps per minute Y-m-d H:i:00
+	protected $failedTimeInterval = 'Y-m-d H:00:00'; //failed attemps per hour
+
+	protected $failedCount = 10; //the number of failures before account is locked
+
 	protected function redirect($url = '/', $parameters = []) {
 		$redirect = \Vvveb\url($url, $parameters);
 
@@ -109,7 +115,19 @@ class Login {
 			if (strpos($user, '@')) {
 				$loginData['email'] = $user;
 			} else {
-				$loginData['user'] = $user;
+				$loginData['username'] = $user;
+			}
+
+			$failedLogin   = new Admin_Failed_LoginSQL();
+			$date          = date($this->failedTimeInterval);
+			$lastIp        = $_SERVER['REMOTE_ADDR'] ?? '';
+			$failedAttemps = $failedLogin->get(['updated_at' => $date, 'status' => 1] + $loginData);
+
+			if ($failedAttemps && ($failedAttemps['count'] > $this->failedCount)) {
+				$this->view->errors = [__('Too many login attempts, try again in one hour!')];
+				$failedLogin->logFailed(['last_ip' => $lastIp, 'updated_at' => $date] + $loginData);
+
+				return;
 			}
 
 			$loginData['password'] = $this->request->post['password'];
@@ -135,6 +153,8 @@ class Login {
 					//user not found or wrong password
 					$this->view->errors = [__('Authentication failed, wrong email or password!')];
 					$this->session->set('csrf', Str::random());
+					//increment failed attempts
+					$failedLogin->logFailed(['last_ip' => $lastIp, 'updated_at' => $date] + $loginData);
 				}
 			}
 		} else {
