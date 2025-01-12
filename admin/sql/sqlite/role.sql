@@ -1,17 +1,14 @@
--- Account
-
-
+	-- Roles
+	
 	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
-        IN status INT,
-		IN search CHAR,
-		IN post_id ARRAY,
 		
 		-- return array of roles for roles query
 		OUT fetch_all,
 		-- return roles count for count query
-		OUT fetch_one,	)
+		OUT fetch_one
+	)
 	BEGIN
         
         SELECT * FROM role WHERE 1 = 1 
@@ -31,10 +28,10 @@
         
     END
 
-	-- check user information
+	-- get role data
 
 	CREATE PROCEDURE get(
-        IN role_id INT,
+		IN role_id INT,
 		OUT fetch_row,
 	)
 	BEGIN
@@ -44,8 +41,6 @@
 		LIMIT 1
         
     END
-    
-    
 
 	-- Add new role
 
@@ -84,32 +79,14 @@
 		WHERE role_id = :role_id 			
 	END
 
--- Add new role
+	-- delete role
 
-	CREATE PROCEDURE setRole(
-        IN role_id INT,
-        IN role CHAR,
-        IN role_id INT
-        OUT insert_id
+	PROCEDURE delete(
+		IN role_id ARRAY,
+		OUT affected_rows
 	)
 	BEGIN
-		
 	
-		UPDATE role 
-			
-			SET  
-            
-            @IF isset(:role_id)
-			THEN 
-				role_id = :role_id 
-        	END @IF		
-
-
-            @IF isset(:role)
-			THEN 
-				role_id = (SELECT role_id FROM roles WHERE name = :role)
-        	END @IF		
-
-			
-		WHERE role_id = :role_id 
-    END
+		DELETE FROM role WHERE role_id IN (:role_id);
+	
+	END
