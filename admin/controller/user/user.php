@@ -45,6 +45,10 @@ class User extends Base {
 			$users      = new $sqlModel();
 			$user       = $users->get($options);
 
+			if (! $user) {
+				return $this->notFound(true, __('Page not found!'));
+			}
+
 			if (isset($user['password'])) {
 				//don't show password hash
 				unset($user['password']);
