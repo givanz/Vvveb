@@ -119,6 +119,12 @@ class Editor extends Base {
 	/*
 		Load theme sections, components and inputs
 	 */
+	private function loadEditorAssets() {
+	}
+
+	/*
+		Load theme sections, components and inputs
+	 */
 	private function loadThemeAssets() {
 		$themeFolder = $this->getThemeFolder();
 		$view        = &$this->view;
@@ -169,14 +175,14 @@ class Editor extends Base {
 		$posts   = [];
 
 		foreach ($results['post'] as $post) {
-			$slug = $post['slug'];
+			$slug = htmlspecialchars($post['slug']);
 			$url  = url('content/page/index',['slug' => $slug, 'post_id' => $post['post_id']]);
 
-			$posts[$slug] = [
-				'name'      => $slug,
+			$posts["$slug-page"] = [
+				'name'      => "$slug-page",
 				'file'      => $post['template'] ? $post['template'] : 'content/page.html',
 				'url'       => $url . ($theme ? '?theme=' . $theme : ''),
-				'title'     => $post['name'],
+				'title'     => htmlspecialchars($post['name']),
 				'post_id'   => $post['post_id'],
 				'folder'    => '',
 				'className' => 'page',
@@ -197,18 +203,75 @@ class Editor extends Base {
 			$className    = 'url';
 			$current_page = [];
 
+			//check if url and template is relative
+			if (strpos($url, '//') !== false && strpos($template, '..') !== false) {
+				$this->notFound();
+
+				exit();
+			}
+
+			//check if the url has extension and is a html file and exists in the theme folder
+			if (strpos($url, '.') !== false) {
+				if (substr_compare($url, '.html', -5 ,5) === 0) {
+					if (! file_exists(DIR_THEMES . $theme . DS . $url)) {
+						$this->notFound();
+
+						exit();
+					}
+				} else {
+					$this->notFound();
+
+					exit();
+				}
+			}
+
+			//check if template belongs to theme and is a html file
+			if (substr_compare($template, '.html', -5 ,5) === 0) {
+				if (! file_exists(DIR_THEMES . $theme . DS . $template)) {
+					$this->notFound();
+
+					exit();
+				}
+			} else {
+				$this->notFound();
+
+				exit();
+			}
+
 			if ($route && isset($route['module'])) {
 				switch ($route['module']) {
 					case 'product/product/index':
 						$className                  = 'product';
-						$current_page['product_id'] = $route['product_id'];
+
+						if (isset($route['product_id'])) {
+							$current_page['product_id'] = $route['product_id'];
+						} else {
+							if (isset($this->request->get['product_id'])) {
+								$current_page['product_id'] = $this->request->get['product_id'];
+							} else {
+								if (isset($route['slug'])) {
+									$current_page['slug'] = htmlspecialchars($route['slug']);
+								}
+							}
+						}
 
 					break;
 
 					case 'content/post/index':
 					case 'content/page/index':
 						$className               = 'page';
-						$current_page['post_id'] = $route['post_id'];
+
+						if (isset($route['post_id'])) {
+							$current_page['post_id'] = $route['post_id'];
+						} else {
+							if (isset($this->request->get['post_id'])) {
+								$current_page['post_id'] = $this->request->get['post_id'];
+							} else {
+								if (isset($route['slug'])) {
+									$current_page['slug'] = htmlspecialchars($route['slug']);
+								}
+							}
+						}
 
 					break;
 				}
@@ -561,14 +624,15 @@ class Editor extends Base {
 							'template'     => $file,
 							'type'         => $type,
 							'image'        => 'posts/2.jpg', //'placeholder.svg'
-							'post_content' => [[
-								'slug'        => $slug,
-								'name'        => $name,
-								'content'     => $content,
-								'language_id' => $this->global['language_id'],
-							]],
 						] + $this->global,
-						'site_id' => [$this->global['site_id']], ] + $this->global);
+						'post_content' => [[
+							'slug'        => $slug,
+							'name'        => $name,
+							'content'     => $content,
+							'language_id' => $this->global['language_id'],
+						]],
+						'site_id' => [$this->global['site_id']],
+					] + $this->global);
 
 					if ($result['post']) {
 						$post_id    = $result['post'];
@@ -591,14 +655,14 @@ class Editor extends Base {
 							'status'          => 1, //active
 							'template'        => $file,
 							'price'           => $price,
-							'product_content' => [[
-								'slug'        => $slug,
-								'name'        => $name,
-								'name'        => $name,
-								'content'     => $content,
-								'language_id' => $this->global['language_id'],
-							]],
 						] + $this->global,
+						'product_content' => [[
+							'slug'        => $slug,
+							'name'        => $name,
+							'name'        => $name,
+							'content'     => $content,
+							'language_id' => $this->global['language_id'],
+						]],
 						'site_id' => [$this->global['site_id']], ] + $this->global);
 
 					if ($result['product']) {

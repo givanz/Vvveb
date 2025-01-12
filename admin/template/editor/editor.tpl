@@ -40,7 +40,7 @@ if(isset($this->themeBlocks) && is_array($this->themeBlocks))
 	foreach ($this->themeBlocks as $id => $file) {?>
 	
 	[data-v-theme-blocks]|src = $file
-	[data-v-theme-blocks]|id = <?php echo "theme-$id";?>
+	[data-v-theme-blocks]|id = <?php echo 'theme-' . htmlspecialchars($id);?>
 
 	[data-v-theme-blocks]|after = <?php 
 	} 
@@ -55,7 +55,7 @@ if(isset($this->themeSections) && is_array($this->themeSections))
 	foreach ($this->themeSections as $id => $file) {?>
 	
 	[data-v-theme-sections]|src = $file
-	[data-v-theme-sections]|id = <?php echo "theme-$id";?>
+	[data-v-theme-sections]|id = <?php echo 'theme-' . htmlspecialchars($id);?>
 
 	[data-v-theme-sections]|after = <?php 
 	} 
@@ -70,7 +70,7 @@ if(isset($this->themeJs) && is_array($this->themeJs))
 	foreach ($this->themeJs as $id => $file) {?>
 	
 	[data-v-theme-js]|src = $file
-	[data-v-theme-js]|id = <?php echo "theme-$id";?>"
+	[data-v-theme-js]|id = <?php echo 'theme-' . htmlspecialchars($id);?>
 
 	[data-v-theme-js]|after = <?php 
 	} 
@@ -89,11 +89,11 @@ if (isset($this->$name)) {
 	
 		if (isset($option['folder']) && ($optgroup != $option['folder'])) {
 			$optgroup = $option['folder'];
-			echo '<optgroup label="' . ucfirst($optgroup) . '">';
+			echo '<optgroup label="' . ucfirst(htmlspecialchars($optgroup)) . '">';
 		}
 ?>
 
-	@templates-select-option|value = echo $option['file'];
+	@templates-select-option|value = echo htmlspecialchars($option['file']);
 	@templates-select-option = <?php echo htmlspecialchars(ucfirst($option['title']));?>
 	@templates-select-option|addNewAttribute = <?php if ($option['file'] == 'blank.html') echo 'selected';?>
 	
@@ -121,14 +121,14 @@ form[data-vvveb-url]|action = $this->saveUrl
 foreach ($this->languagesList as $language) {
 	//$content = $this->{{type}}['{{type}}_content'][$language['language_id']] ?? [];
 ?>
-	[data-v-languages] [data-v-language-id]|id = <?php echo 'lang-' . $language['code'] . '-' . $_lang_instance;?>
+	[data-v-languages] [data-v-language-id]|id = <?php echo 'lang-' . htmlspecialchars($language['code']) . '-' . $_lang_instance;?>
 	[data-v-languages]  [data-v-language-id]|addClass = <?php if ($_i == 0) echo 'show active';?>
 
 	@language [data-v-language-name] = $language['name']
 	@language [data-v-language-code]|name = $language['code']
 	@language [data-v-language-img]|title = $language['name']
-	@language [data-v-language-img]|src = <?php echo 'language/' . $language['code'] . '/' . $language['code'] . '.png';?>
-	@language [data-v-language-link]|href = <?php echo '#lang-' . $language['code'] . '-' . $_lang_instance?>
+	@language [data-v-language-img]|src = <?php echo 'language/' . htmlspecialchars($language['code']) . '/' . htmlspecialchars($language['code']) . '.png';?>
+	@language [data-v-language-link]|href = <?php echo '#lang-' . htmlspecialchars($language['code']) . '-' . $_lang_instance?>
 	@language [data-v-language-link]|addClass = <?php if ($_i == 0) echo 'active';?>
 
 @language|after = <?php 
