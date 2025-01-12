@@ -28,6 +28,7 @@ use Vvveb\Controller\Base;
 use function Vvveb\email;
 use function Vvveb\setConfig;
 use Vvveb\System\Config;
+use Vvveb\System\Event;
 use Vvveb\System\Validator;
 
 class Email extends Base {
@@ -81,6 +82,11 @@ class Email extends Base {
 
 	function index() {
 		$settings          = config('mail', []);
+
+		$drivers          = ['mail' => 'Mail', 'smtp' => 'Smtp'];
+		list($drivers) 	  = Event::trigger(__CLASS__, __FUNCTION__, $drivers);
+
 		$this->view->email = $settings;
+		$this->view->drivers = $drivers;
 	}
 }
