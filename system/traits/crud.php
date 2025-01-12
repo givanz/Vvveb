@@ -25,24 +25,29 @@ namespace Vvveb\System\Traits;
 use function Vvveb\__;
 use function Vvveb\humanReadable;
 use function Vvveb\model;
+use function Vvveb\sanitizeHTML;
 use Vvveb\System\Images;
 
 trait Crud {
-	protected $module = '';
+	protected $module;
 
-	protected $type = '';
+	protected $type;
 
-	protected $controller = '';
+	protected $controller;
 
 	protected $redirect = true;
 
-	protected $data_id = false;
+	protected $data_id;
 
 	protected $type_id;
+
+	protected $model;
 
 	protected $options = [];
 
 	protected $data = [];
+
+	//protected $fullPost;
 
 	function delete() {
 		$type    = $this->type;
@@ -83,9 +88,15 @@ trait Crud {
 		$type_id     = "{$type}_id";
 		$module      = $this->module;
 		$controller  = $this->controller ?? $type;
+		$result      = [];
 
 		$this->data_id = $this->request->get[$type_id] ?? false;
-		$this->data    = $this->request->post[$type] ?? false;
+
+		if (isset($this->fullPost) && $this->fullPost) {
+			$this->data = $this->request->post ?? [];
+		} else {
+			$this->data = $this->request->post[$type] ?? [];
+		}
 
 		if ($this->data) {
 			if (! isset($this->modelName)) {
@@ -98,7 +109,18 @@ trait Crud {
 				$this->data['created_at'] = $this->data['created_at'] ?? date('Y-m-d H:i:s');
 			}
 			$this->data['updated_at'] = $this->data['updated_at'] ?? date('Y-m-d H:i:s');
-			$options                  = [$type => $this->data] + $this->global;
+
+			if (isset($this->fullPost) && $this->fullPost) {
+				$options = $this->data + $this->global;
+			} else {
+				$options = [$type => $this->data] + $this->global;
+			}
+
+			foreach (['content', 'name', 'excerpt'] as $field) {
+				if (isset($this->data[$field])) {
+					$this->data[$field] = sanitizeHTML($this->data[$field]);
+				}
+			}
 
 			if ($this->data_id) {
 				$options[$type_id] = $this->data_id;
@@ -126,24 +148,33 @@ trait Crud {
 		if ($this->redirect) {
 			return $this->index();
 		}
+
+		return $result;
 	}
 
-	protected function get() {
+	protected function index() {
 		$type             = $this->type;
 		$type_id          = $this->type_id ?? "{$type}_id";
 		$this->data_id    = $this->request->get[$type_id] ?? false;
+		$this->slug    	  = $this->request->get['slug'] ?? false;
 		$this->data       = [];
 
-		if ($this->data_id) {
+		if ($this->data_id || $this->slug) {
 			if (! isset($this->modelName)) {
 				$this->modelName = $type;
 			}
 
 			$this->model = model($this->modelName);
 
-			$this->options += [
-				$type_id         => $this->data_id,
-			] + $this->global;
+			if ($this->data_id) {
+				$this->options[$type_id] = $this->data_id;
+			}
+
+			if ($this->slug) {
+				$this->options['slug'] = $this->slug;
+			}
+
+			$this->options += $this->global + $this->request->get;
 			unset($this->options['user_id']);
 
 			$result = $this->model->get($this->options);

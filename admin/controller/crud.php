@@ -26,7 +26,9 @@ use function Vvveb\__;
 use Vvveb\System\Traits\Crud as CrudTrait;
 
 class Crud extends Base {
-	use CrudTrait;
+	use CrudTrait {
+		CrudTrait::index as get;
+	}
 
 	function index() {
 		$result = $this->get();

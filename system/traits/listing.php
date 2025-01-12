@@ -38,6 +38,10 @@ trait Listing {
 
 	protected $data_id;
 
+	protected $model;
+
+	protected $modelName;
+
 	protected $options = [];
 
 	function init() {
@@ -60,10 +64,10 @@ trait Listing {
 			}
 
 			if (! isset($this->modelName)) {
-				$modelName = $type;
+				$this->modelName = $type;
 			}
 
-			$model               = model($modelName);
+			$model               = model($this->modelName);
 			$options             = [$type_id => $data_id] + $this->global;
 			$result              = $model->delete($options);
 			$name                = ucfirst(__($type));
@@ -82,7 +86,7 @@ trait Listing {
 		return $this->index();
 	}
 
-	function get() {
+	function index() {
 		$type           = $this->type;
 		$controller  	  = $this->controller ?? $type;
 		$listController = $this->listController ?? $type;
@@ -92,12 +96,11 @@ trait Listing {
 		$module         = $this->module;
 		$this->filter   = $this->request->get['filter'] ?? [];
 
-		if (isset($this->modelName)) {
-			$modelName = $this->modelName;
-		} else {
-			$modelName = $type;
+		if (! isset($this->modelName)) {
+			$this->modelName = $type;
 		}
-		$model               = model($modelName);
+
+		$model = model($this->modelName);
 
 		$page   = max($this->request->get['page'] ?? 1, 1);
 		$limit  = (int)($this->request->get['limit'] ?? 10);
@@ -107,7 +110,7 @@ trait Listing {
 			'start' => $start,
 			'limit' => $limit,
 			//'type'        => $this->type,
-		] + $this->global + $this->filter;
+		] + $this->global + $this->filter + $this->request->get;
 		unset($options['user_id']);
 
 		if ($this->data_id && ($id = $this->request->get[$this->data_id] ?? false)) {
@@ -129,14 +132,9 @@ trait Listing {
 						$row['image'] = Images::image($row['image'], $type);
 					}
 				}
-
-				$params            = ['module' => "$module/$controller", $type_id => $row[$type_id]];
-				$paramsList        = ['module' => "$module/$listController", $type_id => $row[$type_id]];
-				$row['url']        = \Vvveb\url($params);
-				$row['edit-url']   = \Vvveb\url($params);
-				$row['delete-url'] = \Vvveb\url($paramsList + ['action' => 'delete', $type_id . '[]' => $row[$type_id]]);
 			}
 		}
+		$results[$type] = array_values($results[$type] ?? []);
 
 		$options['page'] = $page;
 
