@@ -34,15 +34,33 @@ list($top)  = Vvveb\System\Event::trigger('admin-bar', 'top', []);
 $template    = Vvveb\getCurrentTemplate();
 $url         = Vvveb\getCurrentUrl();
 $admin_path  = Vvveb\adminPath() . 'index.php';
-$params		    = ['module' => 'editor/editor', 'template' => $template, 'url' => $url];
-$name 		     = $_GET['name'] ?? $_GET['slug'] ?? '';
+$params      = ['module' => 'editor/editor', 'template' => $template, 'url' => $url];
+$request     = Vvveb\System\Core\Request::getInstance();
+$name        = $request->get['name'] ?? $request->get['slug'] ?? '';
+$urlData     = Vvveb\System\Routes::getUrlData($url);
+$edit_url    = isset($urlData['edit']) ? $admin_path . $urlData['edit'] : '';
 
 if ($name) {
 	$params['name'] = urlencode($name);
 }
+
+if (isset($request->get['post_id'])) {
+	$params['post_id'] = $request->get['post_id'];
+
+	if ($edit_url) {
+		$edit_url .= '&post_id=' . $params['post_id'];
+	}
+}
+
+if (isset($request->get['product_id'])) {
+	$params['product_id'] = $request->get['product_id'];
+
+	if ($edit_url) {
+		$edit_url .= '&product_id=' . $params['product_id'];
+	}
+}
+
 $design_url  = $admin_path . Vvveb\url($params, false, false);
-$urlData     = Vvveb\System\Routes::getUrlData($url);
-$edit_url    = isset($urlData['edit']) ? $admin_path . $urlData['edit'] : '';
 $admin       = \Vvveb\System\User\Admin :: current();
 $profile_url = $admin_path . Vvveb\url(['module' => 'admin/user', 'admin_id' => $admin['admin_id']], false, false);
 
