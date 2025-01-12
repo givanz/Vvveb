@@ -34,6 +34,11 @@ function url($parameters, $mergeParameters = false, $useCurrentUrl = true) {
 		if (isset($mergeParameters['host'])) {
 			$result .= '//' . \Vvveb\System\Sites::url($mergeParameters['host']);
 			unset($mergeParameters['host']);
+
+			if (isset($mergeParameters['scheme'])) {
+				$result = $mergeParameters['scheme'] . ":$result";
+				unset($mergeParameters['scheme']);
+			}
 		}
 
 		$url = System\Routes::url($parameters, $mergeParameters);
@@ -71,6 +76,11 @@ function url($parameters, $mergeParameters = false, $useCurrentUrl = true) {
 		if (isset($parameters['host'])) {
 			$result .= '//' . \Vvveb\System\Sites::url($parameters['host']);
 			unset($parameters['host']);
+
+			if (isset($parameters['scheme'])) {
+				$result = $parameters['scheme'] . ":$result";
+				unset($parameters['scheme']);
+			}
 		} else {
 			if (! $useCurrentUrl) {
 				$result .= (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
@@ -1015,10 +1025,30 @@ function formatBytes($bytes) {
 	return round($bytes, 2) . ' ' . $units[$i] . 'B';
 }
 
+function isController($name, $app = APP) {
+	$file   = DIR_ROOT . $app . DS . 'controller' . DS . strtolower($name) . '.php';
+	$exists = file_exists($file);
+
+	return $exists;
+}
+
+function isModel($name, $app = APP) {
+	$file   = DIR_ROOT . $app . DS . 'sql' . DS . DB_ENGINE . DS . $name;
+	$exists = file_exists($file);
+
+	return $exists;
+}
+
 function model($model) {
 	$modelClass = 'Vvveb\Sql\\' . ucwords($model) . 'SQL';
 
 	return new $modelClass();
+}
+
+function controller($name) {
+	$controllerClass = 'Vvveb\Controller\\' . ucwords($name);
+
+	return new $controllerClass();
 }
 
 function d(...$variables) {
