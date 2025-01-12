@@ -8,7 +8,6 @@
 		IN site_id INT,
 		IN post_id INT,
 		IN user_id INT,
-		IN language_id INT,
 		IN status INT,
 		IN post_title INT,
 

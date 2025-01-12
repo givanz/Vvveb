@@ -58,7 +58,6 @@
 
 	PROCEDURE add(
 		IN country ARRAY,
-		IN language_id INT,
 		OUT insert_id
 	)
 	BEGIN
