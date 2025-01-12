@@ -40,10 +40,13 @@ use Vvveb\System\Images;
 use Vvveb\System\PageCache;
 use Vvveb\System\Session;
 use Vvveb\System\Sites;
+use Vvveb\System\Traits\Permission;
 use Vvveb\System\User\Admin;
 
 #[\AllowDynamicProperties]
 class Base {
+	use Permission;
+
 	public $view;
 
 	public $request;
@@ -218,75 +221,6 @@ class Base {
 		return $products_menu;
 	}
 
-	/*
-	 * Permission check for each module/action
-	 */
-	protected function permissions() {
-		$module     = strtolower(FrontController::getModuleName());
-		$action     = strtolower(FrontController::getActionName());
-		$action     = ($action && $action != 'index') ? '/' . $action : '';
-		$permission = $module . $action;
-
-		//if current module/action does not have permission then show permission denied page
-		if (! Admin::hasPermission($permission)) {
-			$message              = __('Your role does not have permission to access this action!');
-			$this->view->errors[] = $message;
-
-			die($this->notFound(true, $message, 403));
-		}
-
-		//get current controller methods to check for permission
-		$methods = get_class_methods($this);
-		//$methods = array_map(fn ($value) => "$module/$value", $methods);
-		$methods = array_map(function ($value) use ($module) {return ($value == 'index') ? $module : "$module/$value"; }, $methods);
-
-		//check if controller requires additional permission check
-		if (isset($this->additionalPermissionCheck)) {
-			$methods = array_merge($methods, $this->additionalPermissionCheck);
-		}
-
-		$permissions = Admin::hasPermission($methods);
-
-		//set a permission array only with action keys for easier permission check in html
-		$this->modulePermissions = $permissions;
-
-		foreach ($permissions as $permission => &$value) {
-			$key                     = str_replace("$module/", '', $permission);
-			$actionPermissions[$key] = $value;
-		}
-		$this->actionPermissions = $actionPermissions;
-	}
-
-	protected function getPermissionsFromUrl(&$array, &$permissions) {
-		foreach ($array as $k => $v) {
-			if (is_array($v)) {
-				if (isset($v['url'])) {
-					if (isset($v['module'])) {
-						$permissions[$v['url']] = ($v['module'] ?? '') . ((isset($v['action']) && $v['action'] != 'index') ? '/' . $v['action'] : '');
-					} else {
-						$permissions[$v['url']] = \Vvveb\pregMatch('/module=([^&$]+)/', $v['url'], 1);
-					}
-				}
-				$this->getPermissionsFromUrl($v, $permissions);
-			}
-		}
-	}
-
-	protected function setPermissionsFromUrl(&$array, &$permissions) {
-		foreach ($array as $k => &$v) {
-			if (is_array($v)) {
-				if (isset($v['url'])) {
-					$url = $v['url'];
-
-					if (isset($permissions[$url])) {
-						$v['permission'] = $permissions[$url];
-					}
-				}
-				$this->setPermissionsFromUrl($v, $permissions);
-			}
-		}
-	}
-
 	protected function language($defaultLanguage = false, $defaultLanguageId = false, $defaultLocale = false) {
 		$languages = availableLanguages();
 
@@ -353,10 +287,13 @@ class Base {
 		//if no default language configured then set first language as current language
 		if (! isset($languages[$language])) {
 			$default_language    = key($languages);
-			$lang                = $languages[$default_language];
-			$default_language_id = $lang['language_id'] ?? $defaultLanguageId;
-			$default_locale      = $lang['locale'] ?? $defaultLocale;
-			$default_rtl         = $lang['rtl'] ?? false;
+			$lang                = $languages[$default_language] ?? [];
+
+			if ($lang) {
+				$default_language_id = $lang['language_id'] ?? $defaultLanguageId;
+				$default_locale      = $lang['locale'] ?? $defaultLocale;
+				$default_rtl         = $lang['rtl'] ?? false;
+			}
 		}
 
 		//if no language configured then set default language as current language
@@ -474,6 +411,7 @@ class Base {
 
 		$this->language();
 		$this->currency();
+		$adminPath = \Vvveb\adminPath();
 
 		//change site status (live, under maintenance etc)
 		if ($state = ($this->request->post['state'] ?? false)) {
@@ -483,8 +421,9 @@ class Base {
 					PageCache::getInstance()->purge();
 				}
 			} else {
-				$message              = __('Your role does not have permission to access this action!');
-				$this->view->errors[] = $message;
+				$message               = __('Your role does not have permission to access this action!');
+				$this->view->errors[]  = $message;
+				$this->view->adminPath = $adminPath;
 			}
 		}
 
@@ -504,7 +443,8 @@ class Base {
 		$className = get_class($this);
 
 		if ($className != 'Vvveb\Controller\Error403') {
-			$this->permissions();
+			$this->permission();
+			$this->setPermissions();
 		}
 
 		//load plugins for active site if safe mode is not selected
@@ -530,18 +470,11 @@ class Base {
 			$this->session->delete('success');
 		}
 
-		$menu             = \Vvveb\config('admin-menu', []);
-
 		//don't initialize menu items for CLI
 		if (defined('CLI')) {
 			return;
 		}
-
-		$this->view->global = $this->global;
-
-		//send to view for button visibillity check
-		$this->view->actionPermissions = $this->actionPermissions ?? [];
-		$this->view->modulePermissions = $this->modulePermissions ?? [];
+		$menu             = \Vvveb\config('admin-menu', []);
 
 		//custom posts -- add to menu
 		$this->taxonomies = $this->getTaxonomies();
@@ -561,9 +494,13 @@ class Base {
 		$urls        = array_map(function ($value) use ($permissions) { return $value ? ($permissions[$value] ?? false) : false; }, $urls);
 		$this->setPermissionsFromUrl($menu, $urls);
 
-		$view->menu       = $menu;
+		$view->menu         = $menu;
+		$view->global       = $this->global;
 
-		$adminPath        = \Vvveb\adminPath();
+		//send to view for button visibillity check
+		$this->view->actionPermissions = $this->actionPermissions ?? [];
+		$this->view->modulePermissions = $this->modulePermissions ?? [];
+
 		$view->adminPath  = $adminPath;
 		$view->mediaPath  = PUBLIC_PATH . 'media';
 		$view->publicPath = PUBLIC_PATH . 'media';
@@ -600,7 +537,9 @@ class Base {
 		$this->view->action    = "{$admin_path}index.php?module=user/login";
 		$this->view->template('user/login.html');
 
-		die($this->view->render());
+		$this->view->render();
+
+		die(0);
 	}
 
 	/**
@@ -611,7 +550,7 @@ class Base {
 	 * @param mixed $service
 	 * @param mixed $message
 	 */
-	protected function notFound($service = false, $message = false, $statusCode = 404) {
+	protected function notFound($message = false, $statusCode = 404, $service = false) {
 		return FrontController::notFound($service, $message, $statusCode);
 	}
 
@@ -650,7 +589,5 @@ class Base {
 		$url = $this->getDocUrlForPage();
 
 		return header("Location: $url");
-
-		die($url);
 	}
 }
