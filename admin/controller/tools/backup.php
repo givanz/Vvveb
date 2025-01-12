@@ -317,6 +317,8 @@ class Backup extends Base {
 				header('Content-Disposition: attachment; filename="' . $filename . '"');
 
 				fpassthru($fp);
+
+				exit(0);
 			} else {
 				$this->view->errors[] = __('Backup does not exist!');
 			}
