@@ -85,11 +85,11 @@ class Autocomplete extends Base {
 
 		$manufacturers = new \Vvveb\Sql\ManufacturerSQL();
 
-		$results = $manufacturers->getManufacturers($options);
+		$results = $manufacturers->getAll($options);
 
 		$search = [];
 
-		foreach ($results['manufacturers'] as $manufacturer) {
+		foreach ($results['manufacturer'] as $manufacturer) {
 			$search[$manufacturer['manufacturer_id']] = $manufacturer['name'];
 		}
 
