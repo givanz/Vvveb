@@ -184,13 +184,13 @@ class Update {
 	}
 
 	function copyCore() {
-		$skipFolders = ['plugins', 'public', 'storage', 'system', 'app', 'admin', 'install', 'config', 'env.php'];
+		$skipFolders = ['plugins', 'public', 'storage', 'system', 'app', 'admin', 'install', 'config', 'vendor', 'env.php'];
 
 		return $this->copyFolder($this->workDir, DIR_ROOT, $skipFolders);
 	}
 
 	function copyConfig() {
-		$skip = ['plugins.php', 'mail.php', 'sites.php', 'app.php', 'admin.php', 'routes.php', 'env.php'];
+		$skip = ['plugins.php', 'mail.php', 'sites.php', 'app.php', 'admin.php', 'app-routes.php'];
 
 		return $this->copyFolder($this->workDir . DS . 'config', DIR_ROOT . DS . 'config', $skip);
 	}
@@ -214,6 +214,41 @@ class Update {
 		return $this->copyFolder($this->workDir . DS . 'public' . DS . 'media', DIR_PUBLIC . DS . 'media', $skipFolders);
 	}
 
+	function createNewTables() {
+		$db         = \Vvveb\System\Db::getInstance();
+		$tableNames = $db->getTableNames();
+
+		$driver  = DB_ENGINE;
+		$sqlPath = DIR_ROOT . "install/sql/$driver/";
+		$files   = \Vvveb\globBrace($sqlPath, ['', '*/*/'], '*.sql');
+
+		$diff = [];
+		//if the number of tables is less than in the install dir
+		if (count($tableNames) < count($files)) {
+			$tableSql = [];
+			//get table names from sql files
+			foreach ($files as $filename) {
+				$tableSql[] = basename($filename, '.sql');
+			}
+			//get the names of missing tables
+			$diff = array_diff($tableSql, $tableNames);
+		}
+
+		$sqlFiles = [];
+		//get files for missing tables
+		foreach ($diff as $key => $tableName) {
+			$sqlFiles[] = $files[$key];
+		}
+
+		//create missing tables
+		if ($sqlFiles) {
+			$sqlImport = new \Vvveb\System\Import\Sql();
+			$sqlImport->createTables($sqlFiles);
+		}
+
+		return true;
+	}
+
 	function clearCache() {
 		return CacheManager::delete();
 	}
@@ -235,7 +270,7 @@ class Update {
 		//$dest        = substr(DIR_ROOT,0, -1); //remove trailing slash
 		rrmdir($this->workDir);
 		//plugins and themes are updated individually
-		$skipFolders = ['plugins', 'public' . DS . 'themes', 'storage'];
+		$skipFolders = ['plugins', 'public' . DS . 'themes', 'storage', 'vendor'];
 
 		rcopy($this->workDir, DIR_ROOT, $skipFolders);
 		rrmdir($this->workDir);

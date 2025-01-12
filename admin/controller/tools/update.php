@@ -31,7 +31,7 @@ use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
 class Update extends Base {
-	private $steps = ['checkPermissions', 'download', 'unzip', /*'backup',*/ 'copySystem', /* 'copyAdmin',*/ 'copyApp', 'copyInstall', 'copyCore',  'copyConfig', 'copyPublic', 'copyPublicAdmin', 'copyPublicMedia', 'setPermissions', 'cleanUp', 'clearCache', 'complete'];
+	private $steps = ['checkPermissions', 'download', 'unzip', 'copyInstall', /*'backup',*/ 'copySystem', /* 'copyAdmin',*/ , 'createNewTables', 'copyApp', 'copyCore', 'copyConfig', 'copyPublic', 'copyPublicAdmin', 'copyPublicMedia', 'setFilePermissions', 'cleanUp', 'clearCache', 'complete'];
 
 	function __construct() {
 		$this->update = new UpdateSys();
@@ -187,6 +187,22 @@ class Update extends Base {
 		return $result;
 	}
 
+	function createNewTables() {
+		$result = false;
+
+		try {
+			$result = $this->update->createNewTables();
+		} catch (\Exception $e) {
+			$this->view->errors[] = $e->getMessage();
+		}
+
+		if ($result) {
+			$this->view->info[] = __('Create new tables successful!');
+		}
+
+		return $result;
+	}
+
 	function unzip() {
 		$errorInstallMsg  = __('Error unzipping update!');
 		$result           = true;
@@ -273,7 +289,7 @@ class Update extends Base {
 		return $this->copy('PublicMedia');
 	}
 
-	function setPermissions() {
+	function setFilePermissions() {
 		$errorInstallMsg = __('Error setting permissions');
 		$result          = false;
 

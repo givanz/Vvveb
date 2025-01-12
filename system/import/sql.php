@@ -149,14 +149,20 @@ class Sql {
 					}
 				}
 
-				return $result;
+				$return = $this->db->insert_id ?: $this->db->affected_rows ?: $result;
+
+				if (! $return && ! $this->db->errorCode()) {
+					$return = true;
+				}
+
+				return $return;
 			}
 		}
 
 		return true;
 	}
 
-	function createTables() {
+	function createTables($files = []) {
 		if (DB_ENGINE == 'sqlite') {
 			//try to speed up install
 			$query       = 'pragma journal_mode = WAL;pragma synchronous = normal;pragma temp_store = memory;pragma mmap_size = 30000000000;PRAGMA writable_schema = 1;';
@@ -185,7 +191,9 @@ class Sql {
 		$glob   = ['', '*/*/', '*/'];
 
 		//$files = glob($name, GLOB_BRACE);
-		$files = globBrace($this->sqlPath, ['', '**/'], '*.sql');
+		if (!$files) {
+			$files = globBrace($this->sqlPath, ['', '**/', '*/*/'], '*.sql');
+		}
 
 		foreach ($files as $filename) {
 			$sql      = file_get_contents($filename);
@@ -246,7 +254,7 @@ class Sql {
 		$glob   = ['', '*/*/', '*/'];
 
 		//$files = glob($name, GLOB_BRACE);
-		$files = globBrace($this->sqlPath, ['', '**/'], '*.sql');
+		$files = globBrace($this->sqlPath, ['', '**/', '*/*/'], '*.sql');
 
 		foreach ($files as $filename) {
 			$name = basename($filename);
