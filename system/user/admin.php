@@ -22,10 +22,9 @@
 
 namespace Vvveb\System\User;
 
+use function Vvveb\session as sess;
 use Vvveb\Sql\AdminSQL;
 use Vvveb\System\PageCache;
-use function Vvveb\session as sess;
-
 
 class Admin extends Auth {
 	private static $namespace = 'admin';
@@ -61,9 +60,9 @@ class Admin extends Auth {
 		return $admin->add([self :: $namespace => $data]);
 	}
 
-	public static function hasCapability($capability) {
+	public static function hasCapability($capability, $app = APP) {
 		$admin        = sess(self :: $namespace, false);
-		$capabilities = $admin['permissions']['capabilities'] ?? [];
+		$capabilities = $admin['permissions'][$app]['capabilities'] ?? $admin['permissions']['capabilities'] ?? [];
 
 		return in_array($capability, $capabilities);
 	}
@@ -81,9 +80,14 @@ class Admin extends Auth {
 		return in_array($site_id, $site_access);
 	}
 
-	public static function hasPermission($permission) {
+	public static function hasPermission($permission, $app = APP) {
 		$admin       = sess(self :: $namespace, false);
-		$permissions = $admin['permissions'] ?: [];
+
+		if (! $admin) {
+			return false;
+		}
+
+		$permissions = ($admin['permissions'][$app] ?? $admin['permissions']) ?: [];
 		$allow       = $permissions['allow'] ?? [];
 		$deny        = $permissions['deny'] ?? [];
 

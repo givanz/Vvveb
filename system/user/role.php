@@ -25,6 +25,7 @@ namespace Vvveb\System\User;
 use function Vvveb\pregMatch;
 use function Vvveb\pregMatchAll;
 use Vvveb\System\Event;
+use Vvveb\System\Sqlp\Sqlp;
 
 class Role {
 	static private $data = null;
@@ -68,7 +69,6 @@ class Role {
 			$hasPermission = $allow && ! $deny;
 			$result[$perm] = $hasPermission;
 		}*/
-
 		$list      = implode("\n", $permissions);
 		$allowList = [];
 
@@ -105,7 +105,7 @@ class Role {
 		}
 	}
 
-	public static function mkmap($dir, &$path = []) {
+	public static function mkmap($dir, &$path = [], $app = 'admin') {
 		if ($dir[0] == '.') {
 			return;
 		}
@@ -123,56 +123,77 @@ class Role {
 					if (is_dir($dir . '/' . $file)) {
 						self::mkmap($dir . '/' . $file, $path[$name]);
 					} else {
-						$path[$name][$filename] = self::getActions($dir . '/' . $file);
+						if (! in_array($filename, ['base', 'crud', 'listing', 'error404', 'error403', 'error500'])) {
+							//$path[$name][$filename] = self::getActions2($dir . '/' . $file);
+							$class = str_replace(DIR_ROOT . $app . DS . 'controller' . DS, '', $dir . DS . $filename);
+							$class = str_replace('/', '\\', $class);
+							//echo $class;
+							$actions = self::getActions($class, $filename);
+
+							if ($actions) {
+								$path[$name][$filename] = $actions;
+							}
+						}
 					}
 				}
 				closedir($dh);
 			}
 		}
 
-		return;
+		return [];
+	}
+
+	public static function controllers($app = 'admin') {
+		$tree = [];
+		self::mkmap(DIR_ROOT . $app . DS . 'controller', $tree);
+
+		return $tree['controller'] ?? [];
 	}
 
 	public static function getActions($file) {
-		$permission = substr($file, strpos($file, '/controller/') + 12);
-		//remove extension
-		$permission = substr($permission, 0, strrpos($permission, '.'));
+		//echo $file;
+
+		$permission = str_replace('\\', '/', $file);
+		$class      = '\\Vvveb\\Controller\\' . $file;
 		//if plugin add namespace
 		if (strpos($file, 'plugins/')) {
 			$pluginName = pregMatch('@/plugins/(.+?)/@', $file, 1);
 			$permission = "plugins/$pluginName$permission";
 		}
 
-		$data = [];
-		//$data[$permission] = $permission;
+		if (class_exists($class)) {
+			$methods = get_class_methods($class);
 
-		$controllerCode = file_get_contents($file);
-		//get all public methods
-		$methods = pregMatchAll('/(?<!private|protected)\s+function.+?(\w+)\(/', $controllerCode, 1);
+			$data = [];
+			//add index by default
+			$data['index'] = $permission;
 
-		if ($methods) {
-			foreach ($methods as $method) {
-				//ignore constructor
-				if ($method[0] != '_') {
-					if ($method == 'index') {
-						$data[$method] = $permission;
-					} else {
-						$data[$method] = "$permission/$method";
+			if ($methods) {
+				foreach ($methods as $method) {
+					//ignore constructor
+					if ($method[0] != '_' && $method != 'init' && $method != 'goToHelp') {
+						if ($method == 'index') {
+							$data[$method] = $permission;
+						} else {
+							$data[$method] = "$permission/$method";
+						}
 					}
 				}
 			}
+
+			return $data;
 		}
 
-		return $data;
+		return [];
 	}
 
-	public static function getControllerList() {
+	public static function getControllerList($app = 'admin') {
 		if (self :: $data) {
 			return self :: $data;
 		}
 
 		$files = [];
-		$path  = [DIR_APP . '/controller/*', DIR_PLUGINS . '*/admin/controller/'];
+		$path  = [DIR_APP . '/controller/*', DIR_PLUGINS . '*/' . $app . '/controller/'];
 
 		while (count($path) > 0) {
 			$next = array_shift($path);
@@ -183,7 +204,9 @@ class Role {
 				}
 
 				if (is_file($file)) {
-					$files[] = $file;
+					if (! in_array(basename($file, '.php'), ['base', 'crud', 'listing', 'error404', 'error403', 'error500'])) {
+						$files[] = $file;
+					}
 				}
 			}
 		}
@@ -210,6 +233,9 @@ class Role {
 			//get all public methods
 			$methods = pregMatchAll('/(?<!private)\s+function.+?(\w+)\(/', $controllerCode, 1);
 
+			//add index by default
+			$data['permissions'][] = $permission;
+
 			if ($methods) {
 				foreach ($methods as $method) {
 					//ignore constructor
@@ -229,10 +255,79 @@ class Role {
 		return $data;
 	}
 
-	public static function getCapabilitiesList() {
+	public static function getCapabilitiesList($app = 'admin') {
 		$capabilities       =  include DIR_SYSTEM . 'data' . DS . 'capabilities.php';
 		list($capabilities) = Event :: trigger(__CLASS__,__FUNCTION__, $capabilities);
 
 		return $capabilities;
+	}
+
+	public static function routes($app = 'app') {
+		$routes       = \Vvveb\config("$app-routes");
+		$routeSchemas = [];
+
+		foreach ($routes as $route => $options) {
+			//rest
+
+			//$path = $options['module'];//str_replace('/rest/', '/', $route);
+			$path = str_replace('/rest/', '', $route);
+
+			if (! $path) {
+				$path = 'index';
+			}
+
+			if (isset($options['schema'])) {
+				//$path = $options['schema'];
+			}
+
+			if (strpos($path, '/')) {
+				$slash = explode('/', $path);
+
+				if ($slash) {
+					$current = &$routeSchemas;
+
+					foreach ($slash as $name) {
+						if (! isset($current[$name])) {
+							$current[$name] = [];
+						}
+						$current = &$current[$name];
+					}
+				}
+			} else {
+				$current = &$routeSchemas[$path];
+			}
+
+			if (isset($options['methods'])) {
+				foreach ($options['methods'] as $method) {
+					$current[$method] = $path . '/' . $method;
+				}
+			} else {
+				//$routeSchemas[$options['module']] = $options['module'];
+			}
+		}
+
+		return $routeSchemas;
+	}
+
+	public static function models($app = 'admin') {
+		$dirSQL = DIR_ROOT . 'admin' . DS . 'sql' . DS . DB_ENGINE . DS;
+		$sqlp   = new Sqlp();
+		$models = [];
+
+		$files = glob("$dirSQL*.sql");
+		//var_dump($files);
+
+		foreach ($files as $file) {
+			$sqlp->parseSqlPfile($file);
+			$tree  = $sqlp->getModel();
+			$model = basename($file, '.sql');
+
+			foreach ($tree as $method => $options) {
+				$methodName              = $model . '/' . $method;
+				$models[$model][$method] = $methodName;
+			}
+		}
+
+		return $models;
 	}
 }

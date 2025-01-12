@@ -22,24 +22,16 @@
 
 namespace Vvveb\Controller\Admin;
 
-use Vvveb\Controller\Base;
+use Vvveb\Controller\Listing;
 
-class Roles extends Base {
-	private function save() {
-	}
+class Roles extends Listing {
+	protected $type = 'role';
 
-	function index() {
-		$view     = $this->view;
-		$roles    = new \Vvveb\Sql\RoleSQL();
+	protected $controller = 'role';
 
-		$options    =  [
-			'type'         => 'admin', //$this->type,
-		] + $this->global;
+	protected $listController = 'roles';
 
-		$results = $roles->getAll($options);
+	protected $list = 'role';
 
-		$view->roles    = $results['role'];
-		$view->count    = $results['count'];
-		$view->limit    = $options['limit'];
-	}
+	protected $module = 'admin';
 }

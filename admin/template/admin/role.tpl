@@ -85,13 +85,24 @@ if ($tree) {
 		foreach($parent as $id => $permission) {
 			$uniq        = Vvveb\System\Functions\Str::random(5);
 			$hasChildren = is_array($permission) && count($permission);
+			$rule        = $path . ($path && $id != 'index' ? '/' : '') . ($id != 'index' ? $id : '') . ($hasChildren ? '/*' : '');
 		?>		
 			//catch all data attributes
 			@permission [data-v-permission-*] = $permission['@@__data-v-permission-(*)__@@']
 			@permission [data-v-name] = $id
-			@permission input[type="hidden"] = <?php echo  ($path ? $path  . '/' : $path) . $id;?>
+			@permission [data-v-rule] = $rule
+			@permission [data-v-name]|addClass = <?php 
+				if ($this->app == 'rest' && !$hasChildren) {
+					if ($id == 'get') echo 'badge bg-success';
+					if ($id == 'post') echo 'badge bg-primary';
+					if ($id == 'put') echo 'badge bg-warning';
+					if ($id == 'patch') echo 'badge bg-info';
+					if ($id == 'delete') echo 'badge bg-danger';
+				}
+			?>
+			@permission input[type="hidden"] = <?php echo $rule;?>
 			@permission input[type="checkbox"]|id = $uniq
-			@permission|class = <?php if ($hasChildren) echo 'folder'; else 'file';?>
+			@permission|class = <?php if ($hasChildren) echo 'folder'; else echo 'file';?>
 			
 					
 		@permission|append = <?php 
@@ -125,5 +136,24 @@ if(isset($this->capabilities) && is_array($this->capabilities)) {
 	?>
 
 	@capability|after = <?php 
+	} 
+}?>
+
+
+@app = [data-v-apps] [data-v-app]
+@app|deleteAllButFirstChild
+
+@app|before = <?php
+if(isset($this->apps) && is_array($this->apps)) {
+	foreach ($this->apps as $app => $options) {?>
+    
+	
+	@app [data-v-app-url]|innerText = $app
+	@app a[data-v-app-url]|href = <?php echo Vvveb\url('', ['app' => $app]);?>
+	@app [data-v-app-url]|addClass = <?php 
+		if ($this->app == $app) echo 'active';
+	?>
+
+	@app|after = <?php 
 	} 
 }?>
