@@ -182,15 +182,17 @@ class Edit extends Base {
 		if (isset($post[$this->object . '_content'])) {
 			foreach ($post[$this->object . '_content'] as &$content) {
 				if (! isset($post['url'])) {
-					$post['url'] = \Vvveb\url($route, ['slug'=> $content['slug'], 'post_id'=> $post_id] + $url);
+					$post['url'] = \Vvveb\url($route, ['slug'=> $content['slug'], $this->object . '_id' => $post_id] + $url);
 
-					if (! $post['url']) {
-						$post['url'] = \Vvveb\url($altRoute, ['slug'=> $content['slug'], 'post_id'=> $post_id] + $url);
+					if (! $post['url'] || $post['url'] == '//' . $this->global['site_url']) {
+						$post['url'] = \Vvveb\url($altRoute, ['slug'=> $content['slug'], $this->object . '_id' => $post_id] + $url);
 					}
 				}
 				$language = [];
 
 				if ($content['language_id'] != $this->global['default_language_id']) {
+					$code = 'en_US';
+
 					foreach ($this->view->languagesList as $code => $lang) {
 						if ($lang['language_id'] == $content['language_id']) {
 							break;
@@ -204,7 +206,7 @@ class Edit extends Base {
 				$content['url']             = \Vvveb\url($route, $content + $language + $url);
 				$content['revision_count']  = 0;
 
-				if (! $content['url']) {
+				if (! $content['url'] || $content['url'] == '//' . $this->global['site_url']) {
 					$content['url']         = \Vvveb\url($altRoute, $content + $language + $url);
 				}
 
@@ -213,8 +215,8 @@ class Edit extends Base {
 
 					if ($revision) {
 						foreach ($revision[$this->object . '_content_revision'] as &$rev) {
-							$rev['preview-url'] = $content['url'] . '?revision=preview&created_at=' . $rev['created_at'];
-							$rev['compare-url'] = $revisionsUrl . '&created_at=' . $rev['created_at'];
+							$rev['preview-url'] = $content['url'] . '?revision=preview&created_at=' . $rev['created_at'] . '&language_id=' . $content['language_id'];
+							$rev['compare-url'] = $revisionsUrl . '&created_at=' . $rev['created_at'] . '&language_id=' . $content['language_id'];
 						}
 
 						$content['revision_count'] = $revision['count'];
@@ -265,7 +267,7 @@ class Edit extends Base {
 
 		$object          = $this->object;
 		$view->$object   = $post;
-		$view->status    = ['publish' => 'Publish', 'draft' => 'Draft', 'pending' => 'Pending', 'private' => 'Private', 'password' => 'Password'];
+		$view->status    = ['publish' => 'Publish', 'draft' => 'Draft', 'pending' => 'Pending', 'private' => 'Private', 'password' => 'Password', 'future' => 'Future'];
 
 		$view->templates = Cache::getInstance()->cache(APP,'template-list.' . $this->global['site_id'],function () {
 			return \Vvveb\getTemplateList(false, ['email']);
@@ -341,12 +343,12 @@ class Edit extends Base {
 					foreach ($tags as $tagId => $tag) {
 						//existing tag add to post taxonomy_item list
 						if (is_numeric($tagId)) {
-							//$post['taxonomy_item'][] = $tagId;
+							//$post['taxonomy_item_id'][] = $tagId;
 						} else {
 							//add new taxonomy_item
 							$tagId = $this->addCategory($listId, $tag);
 						}
-						$post['taxonomy_item'][] = $tagId;
+						$post['taxonomy_item_id'][] = $tagId;
 					}
 				}
 			}
@@ -372,7 +374,15 @@ class Edit extends Base {
 				*/
 
 				$post[$this->object . '_id'] = (int)$post_id;
-				$result                      = $posts->edit([$this->object => $post, $this->object . '_id' => $post_id, 'site_id' => $site_id] + $this->global);
+				$data                        = [
+					$this->object              => $post,
+					$this->object . '_id'      => $post_id,
+					$this->object . '_content' => $post[$this->object . '_content'],
+					'taxonomy_item_id'         => $post['taxonomy_item_id'] ?? [],
+					'site_id'                  => $site_id,
+				] + $this->global;
+
+				$result = $posts->edit($data);
 
 				if ($result >= 0) {
 					$this->view->success['get'] = ucfirst($this->type) . ' ' . __('saved') . '!';
@@ -405,7 +415,14 @@ class Edit extends Base {
 					unset($post['updated_at'], $post[$this->object . '_id']);
 				}
 
-				$return = $posts->add([$this->object => $post, 'site_id' => $site_id] + $this->global);
+				$add = [
+					$this->object              => $post,
+					$this->object . '_content' => $post[$this->object . '_content'],
+					'taxonomy_item_id'         => $post['taxonomy_item_id'] ?? [],
+					'site_id'                  => $site_id,
+				] + $this->global;
+
+				$return = $posts->add($add);
 				$id     = $return[$this->object] ?? false;
 
 				if (! $id) {

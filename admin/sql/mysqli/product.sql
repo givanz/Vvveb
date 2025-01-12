@@ -14,21 +14,21 @@
 		IN rating INT,
 		IN reviews INT,
 		
-		OUT fetch_row, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all 
+		OUT fetch_row, -- product
+		OUT fetch_all, -- product_content
+		OUT fetch_all, -- product_image
+		OUT fetch_all, -- product_related
+		OUT fetch_all, -- product_variant
+		OUT fetch_all, -- product_subscription
+		OUT fetch_all, -- product_attribute
+		OUT fetch_all, -- digital_asset
+		OUT fetch_all, -- product_discount
+		OUT fetch_all, -- product_promotion
+		OUT fetch_all, -- product_points
+		OUT fetch_all, -- product_option
+		OUT fetch_all, -- product_option_value
+		OUT fetch_all, -- option_value_content
+		OUT fetch_all  -- product_to_site
 	)
 	BEGIN
 		-- product
@@ -398,17 +398,21 @@
 
 	PROCEDURE edit(
 		IN product ARRAY,
+		IN product_content ARRAY,
+		IN taxonomy_item_id ARRAY,
 		IN product_id INT,
 		IN site_id ARRAY,
 		OUT insert_id,
 		OUT affected_rows,
+		OUT insert_id,
 		OUT affected_rows,
-		OUT insert_id
+		OUT insert_id,
+		OUT affected_rows
 	)
 	BEGIN
-		:product.product_content  = @FILTER(:product.product_content, product_content, false)
+		:product_content  = @FILTER(:product_content, product_content, false)
 		
-		@EACH(:product.product_content) 
+		@EACH(:product_content) 
 			INSERT INTO product_content 
 		
 				( @KEYS(:each), product_id)
@@ -418,12 +422,12 @@
 			ON DUPLICATE KEY UPDATE @LIST(:each);
 
 
-		@IF isset(:product.taxonomy_item) 
+		@IF isset(:taxonomy_item_id) 
 		THEN
 			DELETE FROM product_to_taxonomy_item WHERE product_id = :product_id
 		END @IF;
 
-		@EACH(:product.taxonomy_item) 
+		@EACH(:taxonomy_item_id) 
 			INSERT INTO product_to_taxonomy_item 
 		
 				( taxonomy_item_id, product_id)
@@ -486,6 +490,8 @@
 
 	CREATE PROCEDURE add(
 		IN product ARRAY,
+		IN product_content ARRAY,
+		IN taxonomy_item_id ARRAY,
 		IN site_id ARRAY,
 		OUT insert_id,
 		OUT insert_id,
@@ -504,7 +510,8 @@
 		VALUES ( :product_data );
 			
 
-		:product_content = @FILTER(:product.product_content, product_content, false, true)
+		:product_content = @FILTER(:product_content, product_content, false, true)
+
 
 		@EACH(:product_content) 
 			INSERT INTO product_content 
@@ -513,12 +520,12 @@
 			
 			VALUES ( :each, @result.product );
 		
-		@EACH(:product_data.taxonomy_item) 
+		@EACH(:taxonomy_item_id) 
 			INSERT INTO product_to_taxonomy_item 
 		
 				( taxonomy_item_id, product_id)
 			
-			VALUES ( :each, @result.product_data)
+			VALUES ( :each, @result.product)
 			ON DUPLICATE KEY UPDATE taxonomy_item_id = :each;
 
 		@EACH(:site_id) 
@@ -1083,6 +1090,7 @@
 				AND pt.taxonomy_item_id = :taxonomy_item_id
 				
 			END @IF		
+			
 		
 			@IF isset(:slug) && count(:slug) > 0
 			THEN 

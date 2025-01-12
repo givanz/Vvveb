@@ -14,21 +14,21 @@
 		IN rating INT,
 		IN reviews INT,
 		
-		OUT fetch_row, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all, 
-		OUT fetch_all 
+		OUT fetch_row, -- product
+		OUT fetch_all, -- product_content
+		OUT fetch_all, -- product_image
+		OUT fetch_all, -- product_related
+		OUT fetch_all, -- product_variant
+		OUT fetch_all, -- product_subscription
+		OUT fetch_all, -- product_attribute
+		OUT fetch_all, -- digital_asset
+		OUT fetch_all, -- product_discount
+		OUT fetch_all, -- product_promotion
+		OUT fetch_all, -- product_points
+		OUT fetch_all, -- product_option
+		OUT fetch_all, -- product_option_value
+		OUT fetch_all, -- option_value_content
+		OUT fetch_all  -- product_to_site
 	)
 	BEGIN
 		-- product
@@ -398,32 +398,36 @@
 
 	PROCEDURE edit(
 		IN product ARRAY,
+		IN product_content ARRAY,
+		IN taxonomy_item_id ARRAY,
 		IN product_id INT,
 		IN site_id ARRAY,
 		OUT insert_id,
 		OUT affected_rows,
+		OUT insert_id,
 		OUT affected_rows,
-		OUT insert_id
+		OUT insert_id,
+		OUT affected_rows
 	)
 	BEGIN
-		:product.product_content  = @FILTER(:product.product_content, product_content, false)
+		:product_content  = @FILTER(:product_content, product_content, false)
 		
-		@EACH(:product.product_content) 
-			INSERT INTO product_content 
-		
-				( @KEYS(:each), product_id)
+		@EACH(:product_content) 
+				INSERT INTO product_content 
 			
-			VALUES ( :each, :product_id)
+					( @KEYS(:each), product_id)
+				
+				VALUES ( :each, :product_id)
 
-			ON CONFLICT("product_id", "language_id") DO UPDATE SET @LIST(:each);
+				ON CONFLICT("product_id", "language_id") DO UPDATE SET @LIST(:each);
 
 
-		@IF isset(:product.taxonomy_item) 
+		@IF isset(:taxonomy_item_id) 
 		THEN
 			DELETE FROM product_to_taxonomy_item WHERE product_id = :product_id
 		END @IF;
 
-		@EACH(:product.taxonomy_item) 
+		@EACH(:taxonomy_item_id) 
 			INSERT INTO product_to_taxonomy_item 
 		
 				( taxonomy_item_id, product_id)
@@ -486,6 +490,8 @@
 
 	CREATE PROCEDURE add(
 		IN product ARRAY,
+		IN product_content ARRAY,
+		IN taxonomy_item_id ARRAY,
 		IN site_id ARRAY,
 		OUT insert_id,
 		OUT insert_id,
@@ -504,7 +510,8 @@
 		VALUES ( :product_data );
 			
 
-		:product_content = @FILTER(:product.product_content, product_content, false, true)
+		:product_content = @FILTER(:product_content, product_content, false, true)
+
 
 		@EACH(:product_content) 
 			INSERT INTO product_content 
@@ -513,7 +520,7 @@
 			
 			VALUES ( :each, @result.product );
 		
-		@EACH(:product_data.taxonomy_item) 
+		@EACH(:taxonomy_item_id) 
 			INSERT INTO product_to_taxonomy_item 
 		
 				( taxonomy_item_id, product_id)
@@ -745,6 +752,7 @@
 		IN taxonomy_item_id INT,
 		IN manufacturer_id ARRAY,
 		IN vendor_id ARRAY,
+		IN option_value_id ARRAY,
 		IN related INT,
 		IN variant INT,
 		IN status INT,
@@ -944,6 +952,15 @@
 				INNER JOIN product_variant pv ON (pv.product_variant_id = product.product_id)
 			END @IF		
 			
+			@IF !empty(:option_value_id) 
+			THEN 
+				INNER JOIN product_option_value pov ON (pov.product_id = product.product_id)
+			END @IF		
+
+			@IF !empty(:product_attribute) AND !empty(:product_attribute_id) 
+			THEN 
+				INNER JOIN product_attribute pa ON (pa.product_id = product.product_id)
+			END @IF	
 			
 			@IF isset(:search)
 			THEN 
@@ -1070,6 +1087,23 @@
 			
 				AND pd.slug IN (:slug)
 				
+			END @IF			
+
+			@IF !empty(:option_value_id) 
+			THEN 
+				AND pov.option_value_id IN (:option_value_id)
+			END @IF		
+
+
+			@IF !empty(:product_attribute_id) 
+			THEN 
+				pa.product_attribute_id IN (:product_attribute_id)
+			END @IF		
+
+
+			@IF !empty(:product_attribute)
+			THEN 
+				pa.text IN (:product_attribute)
 			END @IF			
 
 		

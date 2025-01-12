@@ -3,33 +3,33 @@
 	-- get all post 
 
 	CREATE PROCEDURE getAll(
-		IN start INT,
-		IN limit INT,
-		IN search CHAR,
-		IN like CHAR,
-		IN username CHAR,
-		IN status CHAR,
-		IN taxonomy_item_slug CHAR,
-		IN post_id ARRAY,
-		IN taxonomy_item_id INT,
+		IN start INT,               -- start offset
+		IN limit INT,               -- number of posts
+		IN search CHAR,             -- filter posts by search string
+		IN like CHAR,               -- filter posts by search string using LIKE for partial search, slower
+		IN username CHAR,           -- filter by author username
+		IN status CHAR,             -- filter by author username
+		IN taxonomy_item_slug CHAR, -- filter by taxonomy item slug
+		IN post_id ARRAY,           -- include only posts with post_id
+		IN taxonomy_item_id INT,    -- filter by taxonomy item id
 		-- global	
-		IN type CHAR,
-		IN site_id INT,
-		IN admin_id INT,
-		IN language_id INT,
+		IN type CHAR,               -- post type, default 'post'
+		IN site_id INT,             -- filter by site_id
+		IN admin_id INT,            -- filter by admin_id
+		IN language_id INT,         -- filter by site_id
 		-- comment
-		IN comment_count INT,
-		IN comment_status INT,
+		IN comment_count INT,       -- flag to include comment count
+		IN comment_status INT,      -- flag to include comment status
 		-- archive
-		IN year INT,
-		IN month INT,
+		IN year INT,                -- filter by year
+		IN month INT,               -- filter by month
 		-- taxonomy
-		IN categories INT,
-		IN tags INT,
-		IN taxonomy CHAR,
+		IN categories INT,          -- flag to include post categories
+		IN tags INT,                -- flag to include post tags
+		IN taxonomy CHAR,           -- flag to include post taxonomy 
 
-		IN order_by CHAR,
-		IN direction CHAR,
+		IN order_by CHAR,           -- sort by column
+		IN direction CHAR,          -- sort order, asc/desc
 
 		-- return array of posts for posts query
 		OUT fetch_all,
@@ -277,10 +277,11 @@
 		IN admin_id INT,
 		IN type CHAR,
 		
-		OUT fetch_row,
-		OUT fetch_row,
-		OUT fetch_all,
-		OUT fetch_all,
+		OUT fetch_row, -- post
+		OUT fetch_all, -- content
+		OUT fetch_all, -- meta
+		OUT fetch_all, -- post_to_site
+		OUT fetch_all, -- post_to_taxonomy_item
 	)
 	BEGIN
 
@@ -363,6 +364,8 @@
 
 	CREATE PROCEDURE add(
 		IN post ARRAY,
+		IN post_content ARRAY,
+		IN taxonomy_item_id ARRAY,
 		IN site_id ARRAY,
 		OUT insert_id,
 		OUT insert_id,
@@ -381,17 +384,17 @@
 			
 	  	VALUES ( :post_data );
 
-		:post.post_content  = @FILTER(:post.post_content, post_content, false, true)
+		:post_content  = @FILTER(:post_content, post_content, false, true)
 
 
-		@EACH(:post.post_content) 
+		@EACH(:post_content) 
 			INSERT INTO post_content 
 		
 				( @KEYS(:each), post_id)
 			
 			VALUES ( :each, @result.post);
 
-		@EACH(:post.taxonomy_item) 
+		@EACH(:taxonomy_item_id) 
 			INSERT INTO post_to_taxonomy_item 
 		
 				( taxonomy_item_id, post_id)
@@ -412,15 +415,22 @@
 
 	CREATE PROCEDURE edit(
 		IN post ARRAY,
+		IN post_content ARRAY,
+		IN taxonomy_item_id ARRAY,
 		IN post_id INT,
 		IN site_id ARRAY,
+		OUT insert_id,
+		OUT affected_rows,
+		OUT insert_id,
+		OUT affected_rows,
+		OUT insert_id,
 		OUT affected_rows
 	)
 	BEGIN
 	
-		:post.post_content  = @FILTER(:post.post_content, post_content, false, true)
+		:post_content  = @FILTER(:post_content, post_content, false, true)
 		
-		@EACH(:post.post_content) 
+		@EACH(:post_content) 
 			INSERT INTO post_content 
 		
 				( @KEYS(:each), post_id)
@@ -429,12 +439,12 @@
 			ON DUPLICATE KEY UPDATE @LIST(:each);
 
 
-		@IF isset(:post.taxonomy_item)
+		@IF isset(:taxonomy_item_id)
 		THEN
 			DELETE FROM post_to_taxonomy_item WHERE post_id = :post_id
 		END @IF;
 
-		@EACH(:post.taxonomy_item) 
+		@EACH(:taxonomy_item_id) 
 			INSERT INTO post_to_taxonomy_item 
 		
 				( taxonomy_item_id, post_id)
@@ -468,7 +478,6 @@
 		END @IF;
 		
 
-
 	END
 	
 	-- Edit post content
@@ -495,7 +504,6 @@
 
 	CREATE PROCEDURE delete(
 		IN  post_id ARRAY,
-		IN  site_id INT,
 		OUT affected_rows,
 		OUT affected_rows,
 		OUT affected_rows,

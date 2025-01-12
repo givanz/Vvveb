@@ -198,10 +198,11 @@
 		IN admin_id INT,
 		IN type CHAR,
 		
-		OUT fetch_row,
-		OUT fetch_row,
-		OUT fetch_all,
-		OUT fetch_all,
+		OUT fetch_row, -- post
+		OUT fetch_all, -- content
+		OUT fetch_all, -- meta
+		OUT fetch_all, -- post_to_site
+		OUT fetch_all, -- post_to_taxonomy_item
 	)
 	BEGIN
 
@@ -284,6 +285,8 @@
 
 	CREATE PROCEDURE add(
 		IN post ARRAY,
+		IN post_content ARRAY,
+		IN taxonomy_item_id ARRAY,
 		IN site_id ARRAY,
 		OUT insert_id,
 		OUT insert_id,
@@ -302,17 +305,17 @@
 			
 	  	VALUES ( :post_data );
 
-		:post.post_content  = @FILTER(:post.post_content, post_content, false, true)
+		:post_content  = @FILTER(:post_content, post_content, false, true)
 
 
-		@EACH(:post.post_content) 
+		@EACH(:post_content) 
 			INSERT INTO post_content 
 		
 				( @KEYS(:each), post_id)
 			
 			VALUES ( :each, @result.post);
 
-		@EACH(:post.taxonomy_item) 
+		@EACH(:taxonomy_item_id) 
 			INSERT INTO post_to_taxonomy_item 
 		
 				( `taxonomy_item_id`, post_id)
@@ -333,15 +336,22 @@
 
 	CREATE PROCEDURE edit(
 		IN post ARRAY,
+		IN post_content ARRAY,
+		IN taxonomy_item_id ARRAY,
 		IN post_id INT,
 		IN site_id ARRAY,
+		OUT insert_id,
+		OUT affected_rows,
+		OUT insert_id,
+		OUT affected_rows,
+		OUT insert_id,
 		OUT affected_rows
 	)
 	BEGIN
-		BEGIN TRANSACTION;
-		:post.post_content  = @FILTER(:post.post_content, post_content, false, true)
+	
+		:post_content  = @FILTER(:post_content, post_content, false, true)
 		
-		@EACH(:post.post_content) 
+		@EACH(:post_content) 
 			INSERT INTO post_content 
 		
 				( @KEYS(:each), post_id)
@@ -350,12 +360,13 @@
 
 			ON CONFLICT(post_id, language_id) DO UPDATE SET @LIST(:each);
 
-		@IF isset(:post.taxonomy_item)
+
+		@IF isset(:taxonomy_item_id)
 		THEN
 			DELETE FROM post_to_taxonomy_item WHERE post_id = :post_id
 		END @IF;
 
-			@EACH(:post.taxonomy_item) 
+		@EACH(:taxonomy_item_id) 
 				INSERT INTO post_to_taxonomy_item 
 			
 					(taxonomy_item_id, post_id)
@@ -387,9 +398,8 @@
 				
 			WHERE post_id = :post_id
 		END @IF;
-		
 
-		COMMIT;
+
 	END
 	
 	-- Edit post content
@@ -416,7 +426,6 @@
 
 	CREATE PROCEDURE delete(
 		IN  post_id ARRAY,
-		IN  site_id INT,
 		OUT affected_rows,
 		OUT affected_rows,
 		OUT affected_rows,

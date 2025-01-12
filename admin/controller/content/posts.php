@@ -75,11 +75,10 @@ class Posts extends Base {
 
 			if ($data) {
 				$result = $this->posts->add([
-					'post' => [
-						'post_content'  => $data['post_content'],
-						'taxonomy_item' => $taxonomy_item ?? [],
-					] + $data,
-					'site_id' => $site_id,
+					'post'          => $data,
+					'post_content'  => $data['post_content'],
+					'taxonomy_item' => $taxonomy_item ?? [],
+					'site_id'       => $site_id,
 				]);
 
 				if ($result && isset($result['post'])) {
@@ -232,7 +231,7 @@ class Posts extends Base {
 				}
 
 				$url                   = ['module' => 'content/post', 'post_id' => $post['post_id'], 'type' => $post['type']];
-				$admin_path            = \Vvveb\adminPath();
+				$adminPath             = \Vvveb\adminPath();
 				$template              = $post['template'] ? $post['template'] : $defaultTemplate;
 				$post['url']           = url($url);
 				$post['edit-url']      = $post['url'];
@@ -240,7 +239,8 @@ class Posts extends Base {
 				$post['delete-url']    = url(['module' => 'content/posts', 'action' => 'delete'] + $url + ['post_id[]' => $post['post_id']]);
 				$post['duplicate-url'] = url(['module' => 'content/posts', 'action' => 'duplicate'] + $url + ['post_id' => $post['post_id']]);
 				$post['view-url']      = url("content/{$this->type}/index", $post + $url + ['host' => $this->global['site_url']]);
-				$post['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($post['name'] ?? ''), 'url' => $post['view-url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
+				$relativeUrl           = url("content/{$this->type}/index", $post + $url);
+				$post['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($post['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template, 'host' => $this->global['site_url'] . $adminPath], false, false);
 			}
 		}
 
