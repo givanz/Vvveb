@@ -71,7 +71,7 @@
 	)
 	BEGIN
         
-        SELECT _.*, role.permissions FROM admin AS _ 
+        SELECT _.*, role.name as role,role.permissions FROM admin AS _ 
 			LEFT JOIN role ON (_.role_id = role.role_id)
 		
 		WHERE 1 = 1
@@ -79,7 +79,7 @@
 		@IF isset(:username)
 		THEN 
 			AND _.username = :username 
-	       	END @IF	
+		END @IF	
 
 		@IF isset(:email)
 		THEN 
@@ -89,22 +89,22 @@
 		@IF isset(:admin_id)
 		THEN 
 			AND _.admin_id = :admin_id 
-	       	END @IF			
+		END @IF			
 
 		@IF isset(:status)
 		THEN 
 			AND _.status = :status 
-	       	END @IF	            
+		END @IF	            
 			
 		@IF isset(:token)
 		THEN 
 			AND _.token = :token 
-	       	END @IF	
+		END @IF	
 				
 	       	@IF isset(:role_id)
 		THEN 
 			AND _.role_id = :role_id 
-	       	END @IF	
+		END @IF	
 				
 		LIMIT 1;
         

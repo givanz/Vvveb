@@ -71,7 +71,7 @@
 	)
 	BEGIN
         
-        SELECT _.*, role.permissions FROM admin AS _ 
+        SELECT _.*, role.name as role,role.permissions FROM admin AS _ 
 			LEFT JOIN role ON (_.role_id = role.role_id)
 		
 		WHERE 1 = 1
