@@ -23,27 +23,40 @@
 namespace Vvveb\Controller\User;
 
 use function Vvveb\__;
-use function Vvveb\url;
 use function Vvveb\email;
 use function Vvveb\siteSettings;
 use Vvveb\System\Event;
+use Vvveb\System\Sites;
+use Vvveb\System\Traits\Spam;
 use Vvveb\System\User\User;
 use Vvveb\System\Validator;
-use Vvveb\System\Sites;
+use function Vvveb\url;
 
 class Signup extends \Vvveb\Controller\Base {
+	use Spam;
+
 	function addUser() {
 		//$this->checkAlreadyLoggedIn();
 		$validator = new Validator(['signup']);
 
 		if ($this->request->post &&
 			($this->view->errors['login'] = $validator->validate($this->request->post)) === true) {
+			$isSpam = $this->isSpam($this->request->post);
+
 			//allow only fields that are in the validator list and remove the rest
 			$userInfo                 = $validator->filter($this->request->post);
 			$userInfo['display_name'] = $userInfo['first_name'] . ' ' . $userInfo['last_name'];
 			$userInfo['username']     = $userInfo['first_name'] . $userInfo['last_name'];
+			$userInfo['spam']     	   = $isSpam;
 
 			list($userInfo) = Event :: trigger(__CLASS__, __FUNCTION__ , $userInfo);
+
+			//plugins can also be used to detect spam and set the flag
+			if ($userInfo['spam']) {
+				$this->view->errors['login'] = __('Spam');
+
+				return;
+			}
 
 			if ($userInfo) {
 				$result                   = User::add($userInfo);
@@ -51,7 +64,7 @@ class Signup extends \Vvveb\Controller\Base {
 				$this->view->errors['login'] = [];
 
 				if ($result) {
-					if (is_array($result)) {
+					if (isset($result['user'])) {
 						$message = __('User created!');
 						$this->session->set('success',  ['login' => $message]);
 						$this->view->success['login'][]     = $message;
@@ -86,7 +99,7 @@ class Signup extends \Vvveb\Controller\Base {
 						$this->view->errors['login'] = __('This email is already in use. Please use another one.');
 					}
 				} else {
-					$this->view->errors['login'] = __('Error creating user!');
+					$this->view->errors['login'] = __('Error creating account!');
 				}
 			}
 		}
