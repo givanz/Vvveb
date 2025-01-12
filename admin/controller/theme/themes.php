@@ -41,7 +41,7 @@ class Themes extends Base {
 
 		$srcDir      = DIR_THEMES . $theme;
 		$destDir     = DIR_THEMES . $newSlug;
-		$skipFolders = ['backup', 'src', 'node_modules', '.git'];
+		$skipFolders = [/*'backup', */'src', 'node_modules', '.git'];
 
 		if ($dest) {
 			if (file_exists($destDir)) {
@@ -128,7 +128,7 @@ class Themes extends Base {
 	}
 
 	function index() {
-		$themes             =  ThemesList :: getList();
+		$themes             =  ThemesList :: getList($this->global['site_id']);
 
 		$this->view->themes = $themes;
 		//$this->view->count  = count($themes);
@@ -179,7 +179,7 @@ class Themes extends Base {
 	function activate() {
 		$theme = $this->request->get['theme'];
 
-		if (Sites::setTheme($this->global['site_id'], $theme)) {
+		if (Sites::setTheme($this->global['site_id'], $theme, 'index.html')) {
 			$themeName               = \Vvveb\humanReadable($theme);
 			$this->themeActivateUrl  = \Vvveb\url(['module' => 'theme/themes', 'action'=> 'import', 'theme' => $theme]);
 			$successMessage          = sprintf(__('Theme <b>%s</b> was activated!'), $themeName, $this->themeActivateUrl);

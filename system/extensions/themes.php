@@ -48,8 +48,8 @@ class Themes extends Extensions {
 		return $params;
 	}
 
-	static function getList($path = '') {
-		$activeTheme = Sites::getTheme() ?? 'default';
+	static function getList($site_id = false) {
+		$activeTheme = Sites::getTheme($site_id) ?? 'default';
 		$list        = glob(DIR_ROOT . '/public/themes/*/index.html');
 
 		$themes = [];
