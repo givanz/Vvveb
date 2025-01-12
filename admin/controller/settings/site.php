@@ -133,6 +133,12 @@ class Site extends Base {
 
 			$site['key'] = strtolower(Sites::siteKey($site['host']));
 
+			foreach ($settings['description'] as &$lang) {
+				foreach ($lang as $field => &$value) {
+					$value = \Vvveb\sanitizeHTML($value);
+				}
+			}
+
 			if (isset($this->request->get['site_id']) && ($site_id = $this->request->get['site_id'])) {
 				$data['site_id']  = (int)$site_id;
 				$site['settings'] = json_encode($settings);
@@ -194,9 +200,14 @@ class Site extends Base {
 
 		if ($site_id) {
 			$site = $siteSql->get(['site_id' => $site_id]);
+			$data = Sites::getSiteById($site_id);
 
-			if (! $site) {
+			if (! $site || ! $data) {
 				return $this->notFound();
+			}
+
+			if ($data) {
+				$site = $data + $site;
 			}
 		}
 
