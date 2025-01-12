@@ -29,4 +29,4 @@ foreach ($this->info as $category => $info) {
 
 [data-v-info]|after = <?php } ?>
 
-[data-v-phpinfo] = $this->phpinfo
+[data-v-phpinfo] = <?php echo $this->phpinfo ?? '';?>
