@@ -122,7 +122,7 @@
 		IN product_id INT,
 		IN namespace CHAR,
 		IN key ARRAY,
-		IN language_id
+		IN language_id INT
 	)
 	BEGIN
 

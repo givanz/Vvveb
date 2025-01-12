@@ -103,7 +103,7 @@
 	END
     
 	CREATE PROCEDURE delete(
-		IN site_id,
+		IN site_id INT,
 		IN namespace CHAR,
 		IN key ARRAY,
 		OUT affected_rows

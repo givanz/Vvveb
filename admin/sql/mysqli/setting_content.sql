@@ -121,7 +121,7 @@
 	END
     
 	CREATE PROCEDURE delete(
-		IN site_id,
+		IN site_id INT,
 		IN namespace CHAR,
 		IN key ARRAY,
 		IN language_id INT,
