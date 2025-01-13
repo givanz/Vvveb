@@ -8,7 +8,7 @@
 	CREATE PROCEDURE getContent(
 		IN product_id INT,
 		IN status INT,
-        IN slug CHAR,
+		IN slug CHAR,
 		OUT fetch_all,
 	)
 	BEGIN
