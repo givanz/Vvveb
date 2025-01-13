@@ -30,7 +30,7 @@ services:
     volumes:
       - ./:/var/www/html/
     links:
-      - db:mysql
+      - db
     depends_on:
       - db
     networks:
