@@ -18,7 +18,7 @@
         
         SELECT * FROM user_failed_login WHERE 1 = 1 
 
-            @IF isset(:user_id) AND !empty(:user_id)
+        	@IF isset(:user_id) AND !empty(:user_id)
 			THEN 
 				AND user_failed_login.user_id = :user_id 
         	END @IF	
@@ -185,11 +185,8 @@
 	-- Update user_failed_login 
 	
 	CREATE PROCEDURE edit(
-		IN user CHAR,
-		IN email CHAR,
-       	IN user_id INT,
+		IN user_id INT,
 		IN user_failed_login ARRAY,
-		IN role_id INT,
 		OUT affected_rows
 	)
 	BEGIN
@@ -200,28 +197,14 @@
 			
 			SET @LIST(:user_failed_login) 
 			
-		WHERE 
+		WHERE user_id = :user_id;
 
-        @IF isset(:email)
-		THEN 
-			email = :email 
-        END @IF			
-
-        @IF isset(:user_failed_login_id)
-		THEN 
-			user_failed_login_id = :user_failed_login_id 
-        END @IF					
-
-		@IF isset(:username)
-		THEN 
-			username = :username 
-       	 END @IF
 	END
 
 	-- delete user_failed_login
 
 	PROCEDURE delete(
-		IN user_id INT,
+		IN user_id ARRAY,
 		IN updated_at CHAR,
 		IN count INT,
 
@@ -229,36 +212,28 @@
 	)
 	BEGIN
 
-		DELETE FROM user_failed_login WHERE user_failed_login_id IN (:user_failed_login_id);
+		DELETE user_failed_login FROM user_failed_login 
+			INNER JOIN user.user_id	ON user = user_failed_login.user_id
+		WHERE 
+
+		@IF isset(:user_id) AND !empty(:user_id)
+		THEN 
+			AND user_failed_login.user_id = :user_id 
+		END @IF	
+
+		@IF isset(:username)
+		THEN 
+			AND user.username = :username 
+		END @IF	
+
+		@IF isset(:email)
+		THEN 
+			AND user.email = :email 
+		END @IF			
+
+		@IF isset(:user_id)
+		THEN 
+			AND user.user_id IN (:user_id) 
+		END @IF	
 		
 	END	
-	
-	-- set role
-
-	CREATE PROCEDURE setRole(
-        IN user_failed_login_id INT,
-        IN role CHAR,
-        IN role_id INT
-        OUT insert_id
-	)
-	BEGIN
-		
-	
-		UPDATE user_failed_login 
-			
-			SET  
-            
-            @IF isset(:role_id)
-			THEN 
-				role_id = :role_id 
-        	END @IF		
-
-
-            @IF isset(:role)
-			THEN 
-				role_id = (SELECT role_id FROM roles WHERE name = :role)
-        	END @IF		
-
-			
-		WHERE user_failed_login_id = :user_failed_login_id 
-    END

@@ -5,7 +5,7 @@
 	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
-		IN user_id INT,
+		IN admin_id INT,
 		IN count INT,
 		IN updated_at CHAR,
 		
@@ -18,9 +18,9 @@
         
         SELECT * FROM admin_failed_login WHERE 1 = 1 
 
-            @IF isset(:user_id) AND !empty(:user_id)
+        	@IF isset(:admin_id) AND !empty(:admin_id)
 			THEN 
-				AND admin_failed_login.user_id = :user_id 
+				AND admin_failed_login.admin_id = :admin_id 
         	END @IF	
 
 			@IF isset(:count) AND !empty(:count)
@@ -44,13 +44,13 @@
 		-- SELECT FOUND_ROWS() as count;
 		SELECT count(*) FROM (
 			
-			@SQL_COUNT(admin_failed_login.user_id, user) -- this takes previous query removes limit and replaces select columns with parameter user_id
+			@SQL_COUNT(admin_failed_login.admin_id, admin) -- this takes previous query removes limit and replaces select columns with parameter admin_id
 			
 		) as count;				
         
     END
 
-	-- get user information
+	-- get admin information
 
 	CREATE PROCEDURE get(
 		IN admin_id INT,
@@ -157,7 +157,7 @@
 			
 			VALUES ( @result.admin, :updated_at, :last_ip )	 
 		
-			DUPLICATE KEY UPDATE count = count + 1, last_ip = :last_ip
+			ON DUPLICATE KEY UPDATE count = count + 1, last_ip = :last_ip
 		
 		END @IF;			
 	END   	
@@ -184,11 +184,8 @@
 	-- Update admin_failed_login 
 	
 	CREATE PROCEDURE edit(
-		IN user CHAR,
-		IN email CHAR,
-       	IN admin_id INT,
+		IN admin_id INT,
 		IN admin_failed_login ARRAY,
-		IN role_id INT,
 		OUT affected_rows
 	)
 	BEGIN
@@ -199,28 +196,14 @@
 			
 			SET @LIST(:admin_failed_login) 
 			
-		WHERE 
+		WHERE admin_id = :admin_id;
 
-        @IF isset(:email)
-		THEN 
-			email = :email 
-        END @IF			
-
-        @IF isset(:admin_failed_login_id)
-		THEN 
-			admin_failed_login_id = :admin_failed_login_id 
-        END @IF					
-
-		@IF isset(:username)
-		THEN 
-			username = :username 
-       	 END @IF
 	END
 
 	-- delete admin_failed_login
 
 	PROCEDURE delete(
-		IN user_id INT,
+		IN admin_id ARRAY,
 		IN updated_at CHAR,
 		IN count INT,
 
@@ -228,36 +211,28 @@
 	)
 	BEGIN
 
-		DELETE FROM admin_failed_login WHERE admin_failed_login_id IN (:admin_failed_login_id);
+		DELETE admin_failed_login FROM admin_failed_login 
+			INNER JOIN admin.admin_id	ON admin = admin_failed_login.admin_id
+		WHERE 
+
+		@IF isset(:admin_id) AND !empty(:admin_id)
+		THEN 
+			AND admin_failed_login.admin_id = :admin_id 
+		END @IF	
+
+		@IF isset(:username)
+		THEN 
+			AND admin.username = :username 
+		END @IF	
+
+		@IF isset(:email)
+		THEN 
+			AND admin.email = :email 
+		END @IF			
+
+		@IF isset(:admin_id)
+		THEN 
+			AND admin.admin_id IN (:admin_id)
+		END @IF	
 		
 	END	
-	
-	-- set role
-
-	CREATE PROCEDURE setRole(
-        IN admin_failed_login_id INT,
-        IN role CHAR,
-        IN role_id INT
-        OUT insert_id
-	)
-	BEGIN
-		
-	
-		UPDATE admin_failed_login 
-			
-			SET  
-            
-            @IF isset(:role_id)
-			THEN 
-				role_id = :role_id 
-        	END @IF		
-
-
-            @IF isset(:role)
-			THEN 
-				role_id = (SELECT role_id FROM roles WHERE name = :role)
-        	END @IF		
-
-			
-		WHERE admin_failed_login_id = :admin_failed_login_id 
-    END
