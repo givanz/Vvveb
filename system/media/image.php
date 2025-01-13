@@ -20,8 +20,8 @@
  *
  */
 
-if ((extension_loaded('gd') && $extension = 'gd') ||
-	(extension_loaded('imagick') && $extension = 'imagick') ||
+if ((extension_loaded('imagick') && $extension = 'imagick') ||
+	(extension_loaded('gd') && $extension = 'gd') ||
 	($extension = 'mockup')) {
 	include "$extension.php";
 }
