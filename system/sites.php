@@ -108,7 +108,11 @@ class Sites {
 		return 'default';
 	}
 
-	public static function setTheme($site, $theme) {
+	public static function setTheme($site, $theme, $template = '') {
+		if ($template) {
+			self :: setSiteData($site, 'template', $template);
+		}
+
 		return self :: setSiteData($site, 'theme', $theme);
 	}
 
