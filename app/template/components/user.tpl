@@ -17,6 +17,11 @@
 	}
 ?>	
 
+[data-v-component-user] input[data-v-user-email]|value = <?php
+	$email = $user['email'] ?? $_POST['email'] ?? '';
+	echo htmlspecialchars($email);
+?>	
+
 [data-v-component-user]|append = <?php 
 	$component = $previous_component;
 ?>
