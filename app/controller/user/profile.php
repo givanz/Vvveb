@@ -25,22 +25,29 @@ namespace Vvveb\Controller\User;
 use function Vvveb\__;
 use Vvveb\Sql\UserSQL;
 use Vvveb\System\User\User;
+use Vvveb\System\Validator;
 
 class Profile extends Base {
 	function save() {
+		$validator    = new Validator(['user']);
+
 		if (isset($this->request->post['user'])) {
-			$user            = $this->request->post['user'];
-			$user['user_id'] = $this->global['user_id'];
-			unset($user['status'], $user['user'], $user['token'], $user['created_at']);
+			if (($errors = $validator->validate($this->request->post['user'])) === true) {
+				$user            = $this->request->post['user'];
+				$user['user_id'] = $this->global['user_id'];
+				unset($user['username'], $user['status'], $user['user'], $user['token'], $user['created_at']);
 
-			$result = User::update($user, ['user_id' => $this->global['user_id']]);
+				$result = User::update($user, ['user_id' => $this->global['user_id']]);
 
-			if (! $result) {
-				$userModel          = new UserSQL();
-				$this->view->errors = [$userModel->error];
+				if (! $result) {
+					$userModel          = new UserSQL();
+					$this->view->errors = [$userModel->error];
+				} else {
+					$message               =  __('Profile saved!');
+					$this->view->success[] = $message;
+				}
 			} else {
-				$message               =  __('Profile saved!');
-				$this->view->success[] = $message;
+				$this->view->errors = $errors;
 			}
 		}
 
