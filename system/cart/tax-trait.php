@@ -38,7 +38,7 @@ trait TaxTrait {
 		$products = $this->products + $this->taxes;
 
 		foreach ($products as $product) {
-			if ($product['tax_type_id']) {
+			if (isset($product['tax_type_id']) && $product['tax_type_id']) {
 				$tax_rates = $this->tax->getRates($product['price'], $product['tax_type_id']);
 
 				foreach ($tax_rates as $tax_rate) {

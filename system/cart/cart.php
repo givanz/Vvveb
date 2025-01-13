@@ -120,7 +120,7 @@ class Cart {
 					}
 				}
 
-				if (isset($product['subscription_plan_id'])) {
+				if (isset($product['subscription_plan_id']) && $product['subscription_plan_id']) {
 					$productSubscriptions[$productId] = $product['subscription_plan_id'];
 				}
 			}
@@ -214,7 +214,7 @@ class Cart {
 				}
 
 				//add subscription data
-				if (isset($prod['subscription_plan_id'])) {
+				if (isset($prod['subscription_plan_id']) && $prod['subscription_plan_id']) {
 					$prod['subscription']      = $subscriptionResults[$prod['subscription_plan_id']] ?? [];
 					$prod['subscription_name'] = $prod['subscription']['name'];
 				}
@@ -289,8 +289,8 @@ class Cart {
 			$this->products[$key]['quantity'] += $quantity;
 		} else {
 			$this->products[$key] = [
-				'product_id'           => $productId,
-				'quantity'             => $quantity,
+				'product_id'           => (int) $productId,
+				'quantity'             => (int)$quantity,
 				'option'               => $option,
 				'subscription_plan_id' => $subscriptionPlanId,
 			];
