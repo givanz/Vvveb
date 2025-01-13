@@ -210,6 +210,16 @@ class Lexer {
 				},
 				$macro);
 
+				//@result
+				//replace result variables
+				$macro =
+					preg_replace_callback(
+						'/@result\.([\w\.]+)/',
+						function ($matches) {
+							return \Vvveb\dotToArrayKey('$results.' . $matches[1]);
+						},
+					$macro);
+
 				//replace macro template placeholders %placeholder
 				$macro = preg_replace_callback(
 				'@\%(\w+)@',
