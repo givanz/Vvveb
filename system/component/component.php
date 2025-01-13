@@ -282,9 +282,9 @@ class Component {
 				if (isset($view->_component[$component])) {
 					$comp      = &$view->_component[$component];
 					$results   = &$comp[$index];
-					$object    = $results['_instance'];
+					$object    = $results['_instance'] ?? false;
 
-					if (method_exists($object, 'request')) {
+					if ($object && method_exists($object, 'request')) {
 						$object->request($results, $index);
 					}
 				}
