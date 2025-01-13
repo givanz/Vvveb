@@ -162,7 +162,7 @@ class Plugins extends Base {
 		}
 
 		if ($active) {
-			$refreshUrl = \Vvveb\url(['module' => 'plugin/plugins', 'cache' => false, 'category' => $this->category], false) . '&r=' . time();
+			$refreshUrl = \Vvveb\url(['module' => 'plugin/plugins', 'cache' => false, 'category' => $this->category], false) . '&t=' . time();
 			$success    =  sprintf(__('Plugin `%s` activated!'), \Vvveb\humanReadable($this->plugin));
 
 			ignore_user_abort(1);
