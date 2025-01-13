@@ -105,7 +105,7 @@ class Posts extends ComponentBase {
 		}
 
 		if (isset($this->options['order_by']) &&
-				! in_array($this->options['order_by'], ['post_id', 'admin_id', 'sort_order', 'parent', 'type', 'created_at', 'updated_at'])) {
+				! in_array($this->options['order_by'], ['post_id', 'admin_id', 'sort_order', 'parent', 'type', 'created_at', 'updated_at', 'slug', 'name'])) {
 			unset($this->options['order_by']);
 		}
 
