@@ -91,7 +91,7 @@ class Compare extends Base {
 	}
 
 	private function action($action) {
-		$productId = (int)($this->request->request['product_id'] ?? false);
+		$productId = (int)($this->request->get['product_id'] ?? $this->request->post['product_id'] ?? false);
 
 		if ($productId) {
 			$compare = sess('compare');

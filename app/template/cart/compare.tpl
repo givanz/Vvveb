@@ -8,7 +8,7 @@ import(common.tpl)
 
 @compare-product|before = <?php
 
-$products  = $this->products['products'] ?? [];
+$products  = $this->products['product'] ?? [];
 $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['product_id' => 1, 'product_id' => 1, 'image' => '#']] : false;
 $products = empty($products) ? $_default : $products;
 
