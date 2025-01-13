@@ -67,7 +67,7 @@ document.addEventListener("click", (event) => {
 	}, 1000);
   }
 });
-
+/*
 document.addEventListener("click", (event) => {
   let target = event.target.closest('.page-link');
   if (target) {
@@ -82,3 +82,4 @@ document.addEventListener("click", (event) => {
 	event.preventDefault();
   }
 });
+*/

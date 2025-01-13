@@ -64,21 +64,25 @@ VvvebTheme.Ajax = {
 		.then(data => {
 			if (selector) {
 				let response = new DOMParser().parseFromString(data, "text/html");
-				if (Array.isArray (selector) ) {
-					for (k in selector) {
-						let elementSelector = selector[k];
-						let currentElement = document.querySelector(elementSelector);
-						let newElement = response.querySelector(elementSelector);
-						if (currentElement && newElement) {
-							currentElement.replaceWith(newElement);
-						}
-					}
-				} else {
-					let currentElement = document.querySelector(selector);
-					let newElement = response.querySelector(selector);
-					if (currentElement && newElement) {
-						currentElement.replaceWith(newElement);
-					}
+				if (!Array.isArray (selector) ) {
+					selector = [selector];
+				}
+				
+				for (k in selector) {
+					let elementSelector = selector[k];
+					let currentElements = document.querySelectorAll(elementSelector);
+					let newElements = response.querySelectorAll(elementSelector);
+					
+					if (currentElements && newElements) {
+						currentElements.forEach( (e, i) => {e.replaceWith(newElements[i])});
+					} /*if (currentElements) {
+						currentElements.forEach(e => e.remove());
+					} else if (newElements) {
+						//new elements don't  have corresponding elements on the page, reload hole page
+						response = new DOMParser().parseFromString(data, "text/html")
+						document.querySelector("body").replaceWith(response.querySelector("body"));
+						break;
+					}*/
 				}
 			}
 
@@ -410,7 +414,7 @@ VvvebTheme.Gui = {
 			}
 		}
 
-		VvvebTheme.Cart.add(id, options, this, '.mini-cart', function() {
+		VvvebTheme.Cart.add(id, options, this, ['.mini-cart', '[data-v-notifications]'], function() {
 			let src = img.getAttribute("src");
 			VvvebTheme.Alert.show(`
 			<div class="clearfix">
@@ -458,7 +462,7 @@ VvvebTheme.Gui = {
 			}
 		}
 		
-		VvvebTheme.Cart.remove(id, this, '.mini-cart', function() {
+		VvvebTheme.Cart.remove(id, this, ['.mini-cart', '[data-v-notifications]'], function() {
 			VvvebTheme.Alert.show('<img height=50 src="' + img + '"> &ensp; <strong>' +  name +'</strong> was removed from cart');
 			product.remove();
 		});
@@ -649,13 +653,15 @@ let delay = (function(){
   };
 })();
 
+function isEditor () {
+	return document.getElementById("vvvebjs-styles") || window.location.href.includes('r=');
+}
 
 let urlCache = {};
 
 function preloadUrl(e) {
 		delay(() => loadUrl(e, true), 200);
 }
-
 		
 //ajax url
 function loadAjax(url, selector, callback = null, params = {}, method = "get") {
@@ -668,27 +674,38 @@ function loadAjax(url, selector, callback = null, params = {}, method = "get") {
 	
 	fetch(url, options).
 	then((response) => {
-		if (!response.ok) { throw new Error(response) }
+		//if (!response.ok) { throw new Error(response) }
 		return response.text()
-	}).then(function (data) {
+	}).
+	then(function (data) {
 		if (selector) {
 			let response = new DOMParser().parseFromString(data, "text/html");
 
-			if (Array.isArray (selector) ) {
-				for (k in selector) {
-					let elementSelector = selector[k];
-					let currentElement = document.querySelector(elementSelector);
-					let newElement = response.querySelector(elementSelector);
-					if (currentElement && newElement) {
-						currentElement.replaceWith(newElement);
+			if (!Array.isArray (selector) ) {
+				selector = [selector];
+			}
+			
+			for (k in selector) {
+				let elementSelector = selector[k];
+				let currentElements = document.querySelectorAll(elementSelector);
+				let newElements = response.querySelectorAll(elementSelector);
+				
+				if (currentElements && newElements) {
+					if (currentElements.length != newElements.length) {
+						//new elements does not match corresponding elements on the page, reload hole page
+						response = new DOMParser().parseFromString(data, "text/html")
+						document.querySelector("body").replaceWith(response.querySelector("body"));
+						break;
 					}
-				}
-			} else {
-				let currentElement = document.querySelector(selector);
-				let newElement = response.querySelector(selector);
-
-				if (currentElement && newElement) {
-					currentElement.replaceWith(newElement);
+				
+					currentElements.forEach( (e, i) => {e.replaceWith(newElements[i])});
+				} if (currentElements) {
+					currentElements.forEach(e => e.remove());
+				} else if (newElements) {
+					//new elements don't  have corresponding elements on the page, reload hole page
+					response = new DOMParser().parseFromString(data, "text/html")
+					document.querySelector("body").replaceWith(response.querySelector("body"));
+					break;
 				}
 			}
 			
@@ -701,25 +718,38 @@ function loadAjax(url, selector, callback = null, params = {}, method = "get") {
 	});
 }
 
-document.addEventListener("click", function (e) {
-	let element = e.target.closest("a[data-url]");
-	if (element) {
-		let selector = element.dataset.selector ?? "";
-		let url = element.getAttribute("href") ?? "";
-		
-		if (!url) return;
-		
-		loadAjax(url, selector, () => { 
-			if (element.dataset.scroll) {
-				let target = document.querySelector(selector);
-				target.scrollIntoView({behavior: "smooth", block: element.dataset.scroll ?? "center", inline: "center"});
-			}
-			window.history.pushState({url, selector}, null, url); 
-		});
-		
-		e.preventDefault();
-	}
-});
+
+VvvebTheme.ajax = {
+	selector:"a[data-url], a[data-page-url], a[data-v-menu-item-url], a[data-v-post-url], a[data-v-product-url], a[data-v-cat-url], a[data-v-archive-url], a[data-v-admin-url], a[data-v-post-author-url], a[data-v-breadcrumb-item-url], a[data-v-categories-cat-url]",
+	siteContainer:["#site-content", "body > section"],
+	scrollContainer:"body",
+	skipUrl:[]
+}
+
+if (!isEditor()) {
+	document.addEventListener("click", function (e) {
+		let element = e.target.closest(VvvebTheme.ajax.selector);
+		if (element) {
+			let url = element.getAttribute("href") ?? "";
+			if (!url || (url.indexOf("//") != -1) //external url
+				|| (VvvebTheme.ajax.skipUrl.length && (VvvebTheme.ajax.skipUrl.includes(url) || VvvebTheme.ajax.skipUrl.includes(window.location.pathname)))
+			) return;
+			
+			let selector = element.dataset.selector ?? VvvebTheme.ajax.siteContainer;
+
+			loadAjax(url, selector, () => { 
+				//if (element.dataset.scroll) {
+					let target          = document.querySelector(VvvebTheme.ajax.scrollContainer);
+					let scrollTo        = element.dataset.scroll ?? (selector == VvvebTheme.ajax.siteContainer ? "start" : "center");
+					target.scrollIntoView({behavior: "smooth", block: scrollTo, inline: scrollTo});
+				//}
+				window.history.pushState({url, selector}, null, url); 
+			});
+			
+			e.preventDefault();
+		}
+	});
+}
 
 addEventListener("popstate", checkState);
 
