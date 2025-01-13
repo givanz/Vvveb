@@ -107,10 +107,13 @@ class Base {
 		//if no default language configured then set first language as current language
 		if (! isset($languages[$language])) {
 			$default_language    = key($languages);
-			$lang                = $languages[$default_language];
-			$default_language_id = $lang['language_id'] ?? $defaultLanguageId;
-			$default_locale      = $lang['locale'] ?? $defaultLocale;
-			$default_rtl         = $lang['rtl'] ?? false;
+			$lang                = $languages[$default_language] ?? [];
+
+			if ($lang) {
+				$default_language_id = $lang['language_id'] ?? $defaultLanguageId;
+				$default_locale      = $lang['locale'] ?? $defaultLocale;
+				$default_rtl         = $lang['rtl'] ?? false;
+			}
 		}
 
 		//if no language configured then set default language as current language
