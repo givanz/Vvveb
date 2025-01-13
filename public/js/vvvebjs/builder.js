@@ -78,7 +78,7 @@ function buildParams( prefix, obj,  add ) {
 
 				// Item is non-scalar (array or object), encode its numeric index.
 				buildParams(
-					prefix + "[" + ( typeof v === "object" && v != null ? i : "" ) + "]",
+					prefix + "[" + ( typeof v === "object" && v != null ? key : "" ) + "]",
 					v,
 					add
 				);
@@ -1482,7 +1482,10 @@ Vvveb.Builder = {
 					let parent = self.highlightEl;
 
 					if (self.dragType == "section") {
-						parent = parent.closest("section, header, footer");
+						let closest = parent.closest("section, header, footer, body");
+						if (closest) {
+							parent = closest;
+						}
 						noChildren.section = true;
 					}
 
@@ -3432,11 +3435,10 @@ Vvveb.SectionList = {
 				
 				let node = selectedNode;
 				
-				self.dragMoveMutation = {type: 'move', 
+				Vvveb.Undo.addMutation({type: 'move', 
 									target: node,
 									oldParent: node.parentNode,
-									oldNextSibling: node.nextSibling};
-												
+									oldNextSibling: node.nextSibling});
 			}
 
 			selected = null;
@@ -3703,11 +3705,10 @@ Vvveb.FileManager = {
 						displayToast(bg, "Delete", data.message ?? data);
 				})
 				.catch(error => {
-					console.log(error);
 					let message = error.statusText ?? "Error deleting page!";
 					displayToast("bg-danger", "Error", message);
 
-					err.text().then( errorMessage => {
+					error.text().then( errorMessage => {
 						let message = errorMessage.substr(0, 200);
 						displayToast("bg-danger", "Error", message);
 					})					
@@ -3790,7 +3791,6 @@ Vvveb.FileManager = {
 						}
 				})
 				.catch(error => {
-					console.log(error);
 					let message = error.statusText ?? "Error renaming page!";
 					displayToast("bg-danger", "Error", message);
 
@@ -3820,7 +3820,7 @@ Vvveb.FileManager = {
 		let folder = this.tree;
 		if (data.folder) {
 			if ((data.folder && data.folder != "/") && !(folder = folder.querySelector('li[data-folder="' + data.folder + '"]')))  {
-				data.folderTitle = data.folder[0].toUpperCase() + data.folder.slice(1);
+				data.folderTitle = friendlyName(data.folder);//data.folder[0].toUpperCase() + data.folder.slice(1);
 				folder = generateElements(tmpl("vvveb-filemanager-folder", data))[0];
 				this.tree.append(folder);
 			}
@@ -4210,7 +4210,7 @@ Vvveb.ColorPalette = {
 }
 
 function friendlyName(name) {
-	name = name.replaceAll("--bs-","").replaceAll("-", " ").trim();  
+	name = name.replaceAll("--bs-","").replace(/[-_]/g, " ").trim();  
 	return name = name[0].toUpperCase() + name.slice(1);
 }
 
