@@ -100,9 +100,9 @@ class Pgsql extends DBDriver {
 	/*
 	 * Get all columns for a table used for sanitizing input
 	 */
-	function getColumnsMeta($tableName) {
+	function getColumnsMeta($tableName, $comment = false) {
 		$sql =
-		"SELECT data_type as t, column_name as name, column_default as d, is_nullable as n FROM information_schema.columns WHERE table_name ='$tableName'";
+		"SELECT data_type as t, column_name as name, column_default as d, is_nullable as n, character_maximum_length as l FROM information_schema.columns WHERE table_name ='$tableName'";
 
 		if ($result = $this->query($sql)) {
 			//$columns = $result->fetch_all(MYSQLI_ASSOC);

@@ -163,10 +163,11 @@ class Mysqli extends DBDriver {
 	/*
 	 * Get all columns for a table used for sanitizing input
 	 */
-	function getColumnsMeta($tableName) {
+	function getColumnsMeta($tableName, $comment = false) {
 		$sql =
-		'SELECT COLUMN_NAME as name, COLUMN_DEFAULT as d, IS_NULLABLE  as n, DATA_TYPE as t, EXTRA as e
-		FROM `INFORMATION_SCHEMA`.`COLUMNS` 
+		'SELECT COLUMN_NAME as name, COLUMN_DEFAULT as d, IS_NULLABLE  as n, DATA_TYPE as t, EXTRA as e, CHARACTER_MAXIMUM_LENGTH as l'
+		. ($comment ? ', COLUMN_COMMENT as c' : '') .
+		' FROM `INFORMATION_SCHEMA`.`COLUMNS` 
 		WHERE `TABLE_SCHEMA`= "' . DB_NAME . '" 
 			AND `TABLE_NAME`="' . $tableName . '"';
 
