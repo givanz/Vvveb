@@ -84,8 +84,8 @@ return [
 	'/vendor/{slug}/#page#'                 => ['module' => 'product/vendor/index'],
 	'/vendor'                               => ['module' => 'product/vendor/index'],
 	'/vendor/#page#'                        => ['module' => 'product/vendor/index'],
-	//'/product/{slug}'                       => ['module' => 'product/product/index', 'edit'=>'?module=product/product&slug={slug}'],
-	'/product/{slug}-#product_id#'          => ['module' => 'product/product/index', 'edit'=>'?module=product/product&product_id={product_id}'],
+	'/product/{slug}'                       => ['module' => 'product/product/index', 'edit'=>'?module=product/product&slug={slug}'],
+	//'/product/{slug}-#product_id#'          => ['module' => 'product/product/index', 'edit'=>'?module=product/product&product_id={product_id}'],
 
 	//compare
 	'/cart/compare'                     => ['module' => 'cart/compare/index'],
@@ -101,7 +101,8 @@ return [
 	'/{language{2,5}}/manufacturer/{slug}'                  => ['module' => 'product/manufacturer/index'],
 	'/{language{2,5}}/vendor/{slug}'                        => ['module' => 'product/vendor/index'],
 	'/{language{2,5}}/vendor/{slug}/#page#'                 => ['module' => 'product/vendor/index'],
-	'/{language{2,5}}/product/{slug}-#product_id#'          => ['module' => 'product/product/index', 'edit'=>'?module=product/product&product_id={product_id}'],
+	//'/{language{2,5}}/product/{slug}-#product_id#'          => ['module' => 'product/product/index', 'edit'=>'?module=product/product&product_id={product_id}'],
+	'/{language{2,5}}/product/{slug}'          => ['module' => 'product/product/index', 'edit'=>'?module=product/product&product_id={slug}'],
 
 	//checkout
 	'/cart'                         => ['module' => 'cart/cart/index'],
@@ -141,12 +142,12 @@ return [
 
 	//post
 	//'/#year{4,4}#-#month{1,2}#-#day#/{slug}'        => ['module' => 'content/post/index', 'edit'=>'?module=content/post&slug={slug}'],
-	//'/{slug}'        => ['module' => 'content/post/index', 'edit'=>'?module=content/post&slug={slug}&type=post'],
-	'/{slug}-#post_id#' => ['module' => 'content/post/index', 'edit'=>'?module=content/post&post_id={post_id}&type=post'],
+	'/{slug}'        => ['module' => 'content/post/index', 'edit'=>'?module=content/post&slug={slug}&type=post'],
+	//'/{slug}-#post_id#' => ['module' => 'content/post/index', 'edit'=>'?module=content/post&post_id={post_id}&type=post'],
 	//page
 	//'/{slug}'   	 => ['module' => 'content/page/index', 'edit'=>'?module=content/post&slug={slug}'],
-	//'/page/{slug}'   => ['module' => 'content/page/index', 'edit'=>'?module=content/post&slug={slug}&type=page'],
-	'/page/{slug}-#post_id#'   => ['module' => 'content/page/index', 'edit'=>'?module=content/post&post_id={post_id}&type=page'],
+	'/page/{slug}'   => ['module' => 'content/page/index', 'edit'=>'?module=content/post&slug={slug}&type=page'],
+	//'/page/{slug}-#post_id#'   => ['module' => 'content/page/index', 'edit'=>'?module=content/post&post_id={post_id}&type=page'],
 
 	//multi language content - language code must be at least 2 characters
 	'/{language{2,5}}/'           => ['module' => 'index/index'],
@@ -156,8 +157,10 @@ return [
 	'/{language{2,5}}/blog'                   => ['module' => 'content'],
 	'/{language{2,5}}/cat/{slug}'             => ['module' => 'content/category/language'],
 	'/{language{2,5}}/tag/{slug}'             => ['module' => 'content/tag/index'],
-	'/{language{2,5}}/{slug}-#post_id#'       => ['module' => 'content/post/index', 'edit'=>'?module=content/post&post_id={post_id}'],
-	'/{language{2,5}}/page/{slug}-#post_id#'  => ['module' => 'content/page/index', 'edit'=>'?module=content/post&post_id={post_id}'],
+	//'/{language{2,5}}/{slug}-#post_id#'       => ['module' => 'content/post/index', 'edit'=>'?module=content/post&post_id={post_id}'],
+	'/{language{2,5}}/{slug}'       => ['module' => 'content/post/index', 'edit'=>'?module=content/post&post_id={slug}'],
+	//'/{language{2,5}}/page/{slug}-#post_id#'  => ['module' => 'content/page/index', 'edit'=>'?module=content/post&post_id={post_id}'],
+	'/{language{2,5}}/page/{slug}'  => ['module' => 'content/page/index', 'edit'=>'?module=content/post&slug={slug}'],
 
 	'/{language{2,5}}/tag/{slug}'            => ['module' => 'content/tag/index'],
 	'/{language{2,5}}/tag/{slug}/#page#'     => ['module' => 'content/tag/index'],
