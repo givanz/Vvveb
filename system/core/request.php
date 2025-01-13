@@ -60,7 +60,12 @@ class Request {
 		$this->request = $this->filter($this->request);
 		$this->cookie  = $this->filter($this->cookie);
 		$this->files   = $this->filter($this->files);
-		$this->method  = strtolower($_SERVER['REQUEST_METHOD'] ?? 'GET');
+		$this->method  = strtolower($_SERVER['REQUEST_METHOD'] ?? 'get');
+
+		if ($this->method == 'put' || $this->method == 'patch') {
+			parse_str(file_get_contents('php://input'), $post);
+			$this->post = $this->filter($post, false);
+		}
 
 		$this->request = array_merge($this->request, $this->get, $this->post);
 	}
