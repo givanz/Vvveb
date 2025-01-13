@@ -7,7 +7,7 @@ CREATE SEQUENCE post_seq;
 
 CREATE TABLE post (
   "post_id" int check ("post_id" > 0) NOT NULL DEFAULT NEXTVAL ('post_seq'),
-  "admin_id" int check ("admin_id" > 0) NOT NULL DEFAULT 0,
+  "admin_id" int check ("admin_id" > 0) NOT NULL,
   "status" varchar(20) NOT NULL DEFAULT 'publish',
   "image" varchar(191) NOT NULL DEFAULT '',
   "comment_status" varchar(20) NOT NULL DEFAULT 'open',

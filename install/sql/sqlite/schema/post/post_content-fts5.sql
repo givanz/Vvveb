@@ -3,10 +3,10 @@ DROP TABLE IF EXISTS `post_content`;
 CREATE TABLE `post_content` (
 `post_id` INT NOT NULL,
 `language_id` INT NOT NULL,
-`name` TEXT NOT NULL DEFAULT "",
-`slug` TEXT NOT NULL DEFAULT "",
-`content` TEXT,
-`excerpt` text,
+`name` TEXT NOT NULL,
+`slug` TEXT NOT NULL,
+`content` TEXT NOT NULL,
+`excerpt` text DEFAULT "",
 `meta_keywords` text NOT NULL DEFAULT "",
 `meta_description` text NOT NULL DEFAULT "",
 PRIMARY KEY (`post_id`,`language_id`)

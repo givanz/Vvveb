@@ -2,7 +2,7 @@ DROP TABLE IF EXISTS `post`;
 
 CREATE TABLE `post` (
 `post_id` INTEGER PRIMARY KEY AUTOINCREMENT,
-`admin_id` INT NOT NULL DEFAULT '0',
+`admin_id` INT NOT NULL,
 `status` TEXT NOT NULL DEFAULT 'publish',
 `image` TEXT NOT NULL DEFAULT '',
 `comment_status` TEXT NOT NULL DEFAULT 'open',
