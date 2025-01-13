@@ -34,7 +34,7 @@ if ($_categories) {
 		$type = '@@__data-type__@@';
 		if ($menu['type'] == $type) {
 			$langtext = reset($menu['languages']); 
-			echo $langtext['name'] ?? '';
+			echo htmlspecialchars($langtext['name'] ?? '');
 		} else echo ' ';
 	?>
 	
@@ -93,7 +93,7 @@ foreach ($languages as $key => $language) {
 	[data-v-languages] input[data-v-language_id]|value = <?php echo $language_id;?>
 	[data-v-languages] input[data-v-language_id]|name  = <?php echo "menu_item_content[$language_id][language_id]";?>
 	
-	@language [data-v-language-lang-name]|innerText = <?php echo ucfirst($language['name']);?>
+	@language [data-v-language-lang-name]|innerText = <?php echo ucfirst(htmlspecialchars($language['name']));?>
 	@language [data-v-language-*]|innerText         = $menu['languages'][$language_id]['@@__data-v-language-(*)__@@']
 	@language [data-v-language-*]|name              = <?php echo "menu_item_content[$language_id][@@__data-v-language-(*)__@@]";?>
 	@language input[data-v-language-*]|value        = $menu['languages'][$language_id]['@@__data-v-language-(*)__@@']
