@@ -125,6 +125,9 @@ class Product extends ComponentBase {
 		$product_content = [];
 		$publicPath      = \Vvveb\publicUrlPath() . 'media/';
 
+		$product         = [];
+		$product_content = [];
+
 		foreach ($fields as $field) {
 			$name  = $field['name'];
 			$value = $field['value'];
@@ -132,20 +135,29 @@ class Product extends ComponentBase {
 			if ($name == 'name') {
 				$product_content[$name] = strip_tags($value);
 			} else {
-				if ($name == 'content' || $name == 'excerpt') {
-					$product_content[$name] = sanitizeHTML($value);
+				if ($name == 'images') {
 				} else {
-					if ($name == 'image') {
-						$value = str_replace($publicPath,'', $value);
+					if ($name == 'content' || $name == 'excerpt') {
+						$product_content[$name] = sanitizeHTML($value);
+					} else {
+						if ($name == 'image') {
+							$value = str_replace($publicPath,'', $value);
+						}
+						$product[$name] = $value;
 					}
-					$product[$name] = $value;
 				}
 			}
 		}
 
-		$product_content['language_id']   = 1;
-		$product['product_content'][]     = $product_content;
-		$product['product_id']            = $id;
-		$result                           = $products->edit(['product' => $product, 'product_id' => $id]);
+		if ($product) {
+			//$product['product_id']            = $id;
+			$result = $products->edit(['product' => $product, 'product_id' => $id]);
+		}
+
+		if ($product_content) {
+			$product_content['language_id'] = self :: $global['language_id'];
+			//$product['product_content']['post_id'] = $id;
+			$result = $products->editContent(['product_content' => $product_content, 'product_id' => $id, 'language_id' => self :: $global['language_id']]);
+		}
 	}
 }
