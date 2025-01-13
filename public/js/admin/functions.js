@@ -96,7 +96,7 @@ function removeTab(element, elementName) {
 
 	if (elementName) {
 		let form = element.closest("form");
-		form.append(generateElements('<input type="hidden" name="delete[' + elementName + '][]" value="' + link.id + '">')[0]);
+		form.append(generateElements('<input type="hidden" name="delete[' + elementName + '][]" value="' + link.dataset.id + '">')[0]);
 	}
 
 	const bsTab = bootstrap.Tab.getOrCreateInstance(nav.querySelector(".nav-item:not(.d-none) a"));
@@ -208,6 +208,26 @@ let datepicker = function (e) {
 }
 
 document.addEventListener('focusin', datepicker);
+
+// Date range
+let daterangepicker = function (e) {
+	let element = e.target.closest('input.daterange');
+	if (element && !element.daterangepicker) {	
+		element.daterangepicker =
+		new DateRangePicker(element, { 
+			singleDatePicker: false,
+			autoApply: true,
+			//autoUpdateInput: false,
+			locale: {
+				format: 'YYYY-MM-DD'
+			}
+		}/*, function (start, end) {
+			this.element.value = start.format('YYYY-MM-DD') + " - " + end.format('YYYY-MM-DD');
+		}*/);
+	}
+}
+
+document.addEventListener('focusin', daterangepicker);
 
 // Time
 let timepicker = function (e) {
