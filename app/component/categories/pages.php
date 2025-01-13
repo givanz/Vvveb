@@ -28,11 +28,11 @@ use Vvveb\System\Event;
 class Pages extends ComponentBase {
 	public static $defaultOptions = [
 		'start'                    => 0,
+		'limit'                    => 7,
 		'count'                    => ['url', 100],
-		'id_manufacturer'          => NULL,
+		'site_id'         		       => NULL,
 		'order'                    => ['url', 'price asc'],
 		'taxonomy_item_id'         => NULL,
-		'limit'                    => 7,
 		'page'                     => 1,
 		'parents_only'             => false,
 		'parents_children_only'    => false,

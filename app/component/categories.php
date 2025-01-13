@@ -29,7 +29,7 @@ class Categories extends ComponentBase {
 	public static $defaultOptions = [
 		'start'                    => 0,
 		'count'                    => ['url', 100],
-		'post_id'                  => NULL,
+		'site_id'                  => NULL,
 		'order'                    => ['url', 'price asc'],
 		'taxonomy_item_id'         => NULL,
 		'limit'                    => 7,
