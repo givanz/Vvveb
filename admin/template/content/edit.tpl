@@ -88,27 +88,49 @@ $_i++;
 
 [data-v-{{type}}] input[data-v-{{type}}-content-*]|value = <?php
 	$desc = '@@__data-v-{{type}}-content-(*)__@@';
-	if (isset($content[$desc])) 
-		echo $content[$desc];
+	if (isset($content[$desc])) {
+		if ($desc == 'content') {
+			echo $content[$desc];
+		} else {
+			echo htmlspecialchars($content[$desc]);
+		}
+	}
 ?>
 
 [data-v-{{type}}] [data-v-{{type}}-content-*]|innerText = <?php
 	$desc = '@@__data-v-{{type}}-content-(*)__@@';
-	if (isset($content[$desc])) 
-		echo $content[$desc];
+	if (isset($content[$desc])) {
+		if ($desc == 'content') {
+			echo $content[$desc];
+		} else {
+			echo htmlspecialchars($content[$desc]);
+		}
+	}
 ?>
 
 [data-v-{{type}}] a[data-v-{{type}}-content-*]|href = <?php
 	$desc = '@@__data-v-{{type}}-content-(*)__@@';
-	if (isset($content[$desc])) 
-		echo $content[$desc];
+	if (isset($content[$desc])) {
+		if ($desc == 'content') {
+			echo $content[$desc];
+		} else {
+			echo htmlspecialchars($content[$desc]);
+		}
+	}
 ?>
+
 
 [data-v-{{type}}] textarea[data-v-{{type}}-content-*] = <?php
 	$desc = '@@__data-v-{{type}}-content-(*)__@@';
-	if (isset($content[$desc])) 
-		echo $content[$desc];
+	if (isset($content[$desc])) {
+		if ($desc == 'content') {
+			echo $content[$desc];
+		} else {
+			echo htmlspecialchars($content[$desc]);
+		}
+	}
 ?>
+
 
 [data-v-{{type}}] input[data-v-{{type}}-content-language_id]|value = <?php echo $language['language_id']; ?>
 
@@ -136,7 +158,7 @@ foreach ($revisions as $revision) {
 	}
 ?>
 
-[data-v-{{type}}] [data-v-revisions_url]|href = $this->revisions_url
+[data-v-{{type}}] [data-v-revisions_url]|href = <?php echo $this->revisions_url . '&language_id=' . $language['language_id'];?>
 
 
 @site = [data-v-sites] [data-v-site]
