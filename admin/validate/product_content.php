@@ -23,7 +23,7 @@
 return [
 	'name' => [
 		'notEmpty'  => '',
-		'maxLength' => 100, 'name' => 'Name',
+		'maxLength' => 250, 'name' => 'Name',
 	],
 
 	'content' => [

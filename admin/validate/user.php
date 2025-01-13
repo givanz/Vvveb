@@ -25,18 +25,27 @@ return [
 		'notEmpty' => ''/*,
 			 'message' => '%s must not be empty'*/,
 
-		'maxLength' => 100 /*,
+		'maxLength' => 60 /*,
 			 'message' => __('%s must not be greater than %d')*/,
 	],
 	'display_name' => [
 		'notEmpty' => ''/*,
 			 'message' => '%s must not be empty'*/,
 
-		'maxLength' => 255 /*,
+		'maxLength' => 250 /*,
 			 'message' => __('%s must not be greater than %d')*/,
 	],
+	'first_name' => [
+		'notEmpty'  => '',
+		'maxLength' => 32,
+	],
+	'last_name' => [
+		'notEmpty'  => '',
+		'maxLength' => 32,
+	],
 	'email' => [
-		'email' => '',
+		'email'     => '',
+		'maxLength' => 100,
 	],
 	/*	
 	'captcha' => [
