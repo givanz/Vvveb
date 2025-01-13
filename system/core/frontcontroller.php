@@ -122,7 +122,13 @@ class FrontController {
 
 		//$view = View :: getInstance();
 		$response = Response::getInstance();
-		$view     = new View();
+
+		if ($service) {
+			$view = View::getInstance();
+		} else {
+			$view = new View();
+		}
+
 		$view->setTheme();
 
 		if (is_string($message)) {
@@ -343,6 +349,10 @@ class FrontController {
 		return $_GET['route'] ?? '';
 	}
 
+	static public function getModule() {
+		return $_GET['module'] ?? '';
+	}
+
 	static public function dispatch() {
 		$module   = $_GET['module'] ?? $_POST['module'] ?? null;
 		$action   = $_GET['action'] ?? $_POST['action'] ?? null;
@@ -361,21 +371,23 @@ class FrontController {
 		if (V_SUBDIR_INSTALL) {
 			$uri = str_replace(V_SUBDIR_INSTALL, '', $uri);
 		}
-		$uri = preg_replace('/\?.*$/', '', $uri);
 
-		if (! $module && (APP != 'admin' && APP != 'install' && (Routes::init(APP) && $parameters = Routes::match($uri)))) {
-			$_GET = array_merge($parameters, $_GET);
+		$uri   = preg_replace('/\?.*$/', '', $uri);
+		$route = false;
+
+		if (! $module && (APP != 'admin' && APP != 'install' && (Routes::init(APP) && $route = Routes::match($uri)))) {
+			$_GET = array_merge($route, $_GET);
 		} else {
-			$module         = $module ?? ((APP == 'app') ? 'error404' : 'index');
+			$module         = $module ?? ((APP == 'install' || APP == 'admin') ? 'index' : 'error404');
 			self :: $status = 404;
 		}
 
-		if (isset($_GET['route'])) {
-			if (preg_match('@(^.+?)/(\w+$)@', $_GET['route'], $routeMatch)) {
+		if ($route) {
+			if (preg_match('@(^.+?)/(\w+$)@', $_GET['module'], $routeMatch)) {
 				$module = $routeMatch[1];
 				$action = $action ?? $routeMatch[2];
 			} else {
-				$module = trim($_GET['route'], '/');
+				$module = trim($_GET['module'], '/');
 			}
 		}
 

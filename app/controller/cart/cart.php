@@ -25,6 +25,7 @@ namespace Vvveb\Controller\Cart;
 use Vvveb\Controller\Base;
 use Vvveb\System\Cart\Cart as ShoppingCart;
 use Vvveb\System\Core\View;
+use Vvveb\System\Event;
 use Vvveb\System\Payment;
 use Vvveb\System\Shipping;
 
@@ -50,7 +51,7 @@ class Cart extends Base {
 		$this->view->shipping = $shipping->getMethods([]);
 
 		if (isset($this->request->post['product_id']) &&
-			(isset($this->request->get['route']) && $this->request->get['route'] == 'cart/cart/add')) {
+			(isset($this->request->get['module']) && $this->request->get['module'] == 'cart/cart/add')) {
 			$this->cart->add($this->request->post['product_id']);
 		}
 
@@ -76,6 +77,9 @@ class Cart extends Base {
 		$quantity           = $this->request->request['quantity'] ?? $quantity;
 		$option             = $this->request->request['option'] ?? [];
 		$subscriptionPlanId = $this->request->request['subscription_plan_id'] ?? false;
+
+		list($action, $productId, $key, $quantity, $option, $subscriptionPlanId) =
+		Event :: trigger(__CLASS__,__FUNCTION__, $action, $productId, $key, $quantity, $option, $subscriptionPlanId);
 
 		if ($key || $productId) {
 			//$this->view->success = false;

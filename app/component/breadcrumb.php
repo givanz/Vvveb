@@ -42,14 +42,14 @@ class Breadcrumb extends ComponentBase {
 	}
 
 	function results() {
-		$request    = Request::getInstance();
-		$route      = $request->get['route'] ?? '';
-		$slug       = $request->get['slug'] ?? '';
-		$name       = $request->get['name'] ?? '';
-		$homeText   = __('Home');
-		$shopText   = __('Shop');
-		$blogText   = __('Blog');
-		$urlOptions = [];
+		$request     = Request::getInstance();
+		$module      = $request->get['module'] ?? '';
+		$slug        = $request->get['slug'] ?? '';
+		$name        = $request->get['name'] ?? '';
+		$homeText    = __('Home');
+		$shopText    = __('Shop');
+		$blogText    = __('Blog');
+		$urlOptions  = [];
 
 		if ($this->options['absoluteURL']) {
 			$urlOptions= ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http'];
@@ -59,7 +59,7 @@ class Breadcrumb extends ComponentBase {
 			['text' => $homeText, 'url' => url('index/index', $urlOptions)],
 		];
 
-		switch ($route) {
+		switch ($module) {
 			//product page
 			case 'product/product/index':
 				$product_id = $request->get['product_id'] ?? false;

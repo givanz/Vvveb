@@ -61,6 +61,7 @@ class Routes {
 			return $b['count'] <=> $a['count'];
 		});
 
+		$route = $url;
 		//escape / for regex
 		$url = str_replace('/', '\/', $url);
 		//numeric limit
@@ -74,7 +75,9 @@ class Routes {
 		//wildcard
 		$url = preg_replace('/' . self :: wildcardRegex . '/', '.*?', $url);
 
-		self :: $urls[$url] = $module;
+		self :: $urls[$route] = [$url, $module];
+
+		return $url;
 	}
 
 	public static function addRoute($url, $data) {
@@ -119,15 +122,18 @@ class Routes {
 		if (! self :: $init) {
 			self :: init();
 		}
-
 		//remove get parameters
-		$url = preg_replace('/\?.+$/', '', $url);
+		$url = preg_replace('/\?.*$/', '', str_replace('//', '/', $url));
 
-		foreach (self :: $urls as $pattern => $route) {
+		foreach (self :: $urls as $route => $data) {
+			list($pattern, $module) = $data;
+
 			if ($url == $pattern || preg_match('/^' . $pattern . '$/', $url, $matches)) {
 				$parameters = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
 
-				$parameters['route'] = $route;
+				$parameters['route']   = $route;
+				$parameters['module']  = $module;
+				$parameters['pattern'] = $pattern;
 
 				return $parameters;
 			}
@@ -171,10 +177,11 @@ class Routes {
 		}
 
 		$parameters = self :: match($url);
+		$route      = stripslashes($parameters['route'] ?? '');
 
 		if ($parameters) {
-			$parameters['pattern'] = self :: $modules[$parameters['route']][0]['url'];
-			$parameters            = $parameters + self :: $routes[$parameters['pattern']];
+			//$parameters['pattern'] = self :: $modules[$parameters['route']][0]['url'];
+			$parameters            = $parameters + self :: $routes[$route];
 
 			if (isset($parameters['edit'])) {
 				$parameters['edit'] = self :: varReplace($parameters['edit'], $parameters);

@@ -109,7 +109,7 @@ class Language extends ComponentBase {
 				//$url = getCurrentUrl();
 				if (true/* && $options['default'] != $code*/) {
 					$params               = $lang + $content + $get + ['host' => $_SERVER['HTTP_HOST'] ?? '', 'scheme' => $scheme];
-					$url                  = url($request->get['route'] ?? '', $params, false); //"/$shortcode" . getCurrentUrl();
+					$url                  = url($request->get['module'] ?? '', $params, false); //"/$shortcode" . getCurrentUrl();
 					$hreflang[$shortcode] = $url;
 				}
 
