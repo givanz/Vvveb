@@ -3,7 +3,7 @@
 @error|before = <?php 
 if (isset($this->errors) && is_array($this->errors)) foreach($this->errors as $message) {?>
 	
-	@error [data-v-notification-text] = $message
+	@error [data-v-notification-text] = <?php echo $message;?>
 		
 @error|after = <?php 
 	}
@@ -13,7 +13,7 @@ if (isset($this->errors) && is_array($this->errors)) foreach($this->errors as $m
 @success|before = <?php 
 if (isset($this->success) && is_array($this->success)) foreach($this->success as $message) {?>
 	
-	@success [data-v-notification-text] = $message
+	@success [data-v-notification-text] = <?php echo $message;?>
 	
 @success|after = <?php 
 	}
@@ -23,7 +23,7 @@ if (isset($this->success) && is_array($this->success)) foreach($this->success as
 @warning|before = <?php 
 if (isset($this->warning) && is_array($this->warning)) foreach($this->warning as $message) {?>
 	
-	@warning [data-v-notification-text] = $message
+	@warning [data-v-notification-text] = <?php echo $message;?>
 	
 @warning|after = <?php 
 	}
@@ -33,7 +33,7 @@ if (isset($this->warning) && is_array($this->warning)) foreach($this->warning as
 @info|before = <?php 
 if (isset($this->info) && is_array($this->info)) foreach($this->info as $message) {?>
 	
-	@info [data-v-notification-text] = $message
+	@info [data-v-notification-text] = <?php echo $message;?>
 	
 @info|after = <?php 
 	}
@@ -43,7 +43,7 @@ if (isset($this->info) && is_array($this->info)) foreach($this->info as $message
 @message|before = <?php 
 if (isset($this->message) && is_array($this->message)) foreach($this->message as $message) {?>
 	
-	@message [data-v-notification-text] = $message
+	@message [data-v-notification-text] = <?php echo $message;?>
 	
 @message|after = <?php 
 	}
