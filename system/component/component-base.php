@@ -51,8 +51,10 @@ class ComponentBase {
 			self :: $global['site_id']             = sess('site_id') ?? (defined('SITE_ID') ? SITE_ID : 0);
 			self :: $global['user_id']             = $user['user_id'] ?? null;
 			self :: $global['user_group_id']       = $user['user_group_id'] ?? 1;
-			self :: $global['language_id']         = $request->request['language_id'] ?? sess('language_id') ?? 1;
-			self :: $global['language']            = $request->request['language'] ?? sess('language') ?? 'en_US';
+			self :: $global['language_id']         = (isset($request->request['language_id']) && is_numeric($request->request['language_id'])) ?
+								$request->request['language_id'] : sess('language_id') ?? 1;
+			self :: $global['language']            = (isset($request->request['language']) && is_numeric($request->request['language'])) ?
+								$request->request['language'] : sess('language') ?? 'en_US';
 			self :: $global['default_language']    = sess('default_language') ?? 'en_US';
 			self :: $global['default_language_id'] = sess('default_language_id') ?? 1;
 			self :: $global['currency_id']         = sess('currency_id') ?? 1;
