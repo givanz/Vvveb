@@ -94,7 +94,7 @@ class AttributeGroup extends Crud {
 
 		if ($attribute_group_id) {
 			$attributeGroup  = new AttributeSQL();
-			$attributes	     = $attributeGroup->getAll(['attribute_group_id' => $attribute_group_id] + $this->global)['attribute'] ?? [];
+			$attributes	     = $attributeGroup->getAll(['attribute_group_id' => $attribute_group_id, 'limit' => 1000] + $this->global)['attribute'] ?? [];
 		}
 
 		$this->view->attributes         = $attributes;

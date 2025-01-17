@@ -99,7 +99,7 @@ class Option extends Crud {
 
 		if ($option_id) {
 			$option_valueGroup  = new Option_ValueSQL();
-			$option_values	     = $option_valueGroup->getAll(['option_id' => $option_id] + $this->global)['option_value'] ?? [];
+			$option_values	     = $option_valueGroup->getAll(['option_id' => $option_id, 'limit' => 1000] + $this->global)['option_value'] ?? [];
 
 			foreach ($option_values as &$value) {
 				$value['image_url'] = Images::image($value['image'], 'product', 'thumb');
