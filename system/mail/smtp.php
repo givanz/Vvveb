@@ -28,6 +28,7 @@ namespace Vvveb\System\Mail;
 
 class Smtp {
 	protected $socketOptions = [
+		/*
 		'ssl' => [
 			'allow_self_signed' => true,
 			'verify_peer'       => false,
@@ -36,6 +37,7 @@ class Smtp {
 			//'crypto_method' => STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT,
 			//'crypto_type' => STREAM_CRYPTO_METHOD_TLS_CLIENT,
 		],
+		 */
 	];
 
 	protected $option = [
