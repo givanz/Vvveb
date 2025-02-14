@@ -140,7 +140,7 @@ class DigitalAsset extends Crud {
 							$files[] = [
 								'name'  => $f,
 								'type'  => 'folder',
-								'path'  => str_replace($scandir, '', $dir) . DS . $f,
+								'path'  => str_replace([$scandir, '\\'], ['', '/'], $dir) . '/' . $f,
 								'items' => $scan($dir . DS . $f), // Recursively get the contents of the folder
 							];
 						} else {
@@ -149,7 +149,7 @@ class DigitalAsset extends Crud {
 							$files[] = [
 								'name' => $f,
 								'type' => 'file',
-								'path' => str_replace($scandir, '', $dir) . DS . $f,
+								'path' => str_replace([$scandir, '\\'], ['', '/'], $dir) . '/' . $f,
 								'size' => filesize($dir . DS . $f), // Gets the size of this file
 							];
 						}
