@@ -31,6 +31,8 @@ if($shippings && is_array($shippings['shipping'])) {
 		
 		@shipping img[data-v-shipping-*]|src = $shipping['@@__data-v-shipping-(*)__@@']
 		
+		@shipping [data-v-shipping-render] = <?php echo $shipping['render'] ?? '';?>
+
 		@shipping [data-v-shipping-*]|innerText = $shipping['@@__data-v-shipping-(*)__@@']
 
 		@shipping input[data-v-shipping-key] = $key

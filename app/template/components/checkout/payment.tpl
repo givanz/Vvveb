@@ -31,7 +31,7 @@ if($payments && is_array($payments['payment'])) {
 		
 		@payment img[data-v-payment-*]|src = $payment['@@__data-v-payment-(*)__@@']
 		
-		@payment [data-v-payment-render]|innerText = $payment['@@__data-v-payment-(*)__@@']
+		@payment [data-v-payment-render] = <?php echo $payment['render'] ?? '';?>
 		
 		@payment [data-v-payment-*]|innerText = $payment['@@__data-v-payment-(*)__@@']
 		
