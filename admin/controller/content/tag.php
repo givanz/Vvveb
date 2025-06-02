@@ -46,9 +46,6 @@ class Tag extends Base {
 						'taxonomy_item'         => ['taxonomy_item_id' => $taxonomy_item_id, 'taxonomy_id' => $taxonomy_id] + $tag,
 					]);
 			} else {
-				var_dump(['taxonomy_item_content' => [$tag + $this->global],
-					'taxonomy_item'                  => ['taxonomy_id' => $taxonomy_id] + $tag,
-				]);
 				$result = $tags->addCategory(
 					['taxonomy_item_content' => $tag + $this->global,
 						'taxonomy_item'         => ['taxonomy_id' => $taxonomy_id] + $tag,
