@@ -25,6 +25,7 @@ namespace Vvveb\System\User;
 use function Vvveb\session as sess;
 use Vvveb\Sql\AdminSQL;
 use Vvveb\System\PageCache;
+use Vvveb\System\Session;
 
 class Admin extends Auth {
 	private static $namespace = 'admin';
@@ -48,12 +49,22 @@ class Admin extends Auth {
 	public static function add($data) {
 		$admin = new AdminSQL();
 
-		//check if email is already registerd
-		if ($adminInfo = $admin->get(['email'=> $data['email']])) {
-			return true;
+		if (! isset($data['username']) || ! $data['username']) {
+			return false;
 		}
 
-		$data['status']   = 0;
+		//check if email or username is already registered
+		$check = ['email'=> $data['email']];
+
+		if (isset($data['username'])) {
+			$check['username'] = $data['username'];
+		}
+
+		if ($adminInfo = $admin->get($check)) {
+			return $adminInfo;
+		}
+
+		$data['status'] = 1; //0
 
 		self::setUserData($data);
 
@@ -164,8 +175,10 @@ class Admin extends Auth {
 			return false;
 		}
 
+		$session = Session :: getInstance();
+		$session->regenerateId(true);
 		unset($adminInfo['password']);
-		sess([self :: $namespace => $adminInfo + $additionalInfo]);
+		$session->set(self :: $namespace, $adminInfo + $additionalInfo);
 
 		PageCache::disable('user');
 
@@ -179,7 +192,15 @@ class Admin extends Auth {
 	}
 
 	public static function current() {
-		return sess(self :: $namespace, []);
+		$current = sess(self :: $namespace, []);
+
+		if ($current) {
+			PageCache::disable('admin');
+		} else {
+			PageCache::enable('admin');
+		}
+
+		return $current;
 	}
 
 	/**

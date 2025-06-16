@@ -93,6 +93,10 @@ class Php {
 		return session_id($id);
 	}
 
+	public function regenerateId($deleteOldSession = false) {
+		return session_regenerate_id($deleteOldSession);
+	}
+
 	public function gc() {
 		//handled by php
 		return true;

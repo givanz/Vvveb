@@ -71,4 +71,8 @@ class Session {
 	public function sessionId($id = null) {
 		return $this->driver ? $this->driver->sessionId($id) : null;
 	}
+
+	public function regenerateId($deleteOldSession = false) {
+		return $this->driver ? $this->driver->regenerateId($deleteOldSession) : null;
+	}
 }

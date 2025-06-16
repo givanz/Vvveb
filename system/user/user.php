@@ -25,6 +25,7 @@ namespace Vvveb\System\User;
 use function Vvveb\session as sess;
 use Vvveb\Sql\UserSQL;
 use Vvveb\System\PageCache;
+use Vvveb\System\Session;
 
 class User extends Auth {
 	private static $namespace = 'user';
@@ -32,9 +33,19 @@ class User extends Auth {
 	public static function add($data) {
 		$user = new UserSQL();
 
-		//check if email is already registerd
-		if ($userInfo = $user->get(['email'=> $data['email']])) {
-			return true;
+		if (! isset($data['username']) || ! $data['username']) {
+			return false;
+		}
+
+		//check if email or username is already registered
+		$check = ['email'=> $data['email']];
+
+		if (isset($data['username'])) {
+			$check['username'] = $data['username'];
+		}
+
+		if ($userInfo = $user->get($check)) {
+			return $userInfo;
 		}
 
 		if (empty($data['password'])) {
@@ -43,7 +54,7 @@ class User extends Auth {
 			$data['password'] = self :: password($data['password']);
 		}
 
-		$data['status']   = 1; //0
+		$data['status'] = 1; //0
 
 		return $user->add([self :: $namespace => $data]);
 	}
@@ -112,8 +123,10 @@ class User extends Auth {
 			return false;
 		}
 
+		$session = Session :: getInstance();
+		$session->regenerateId(true);
 		unset($userInfo['password']);
-		sess([self :: $namespace => $userInfo]);
+		$session->set(self :: $namespace, $userInfo);
 
 		PageCache::disable(self :: $namespace);
 
@@ -158,7 +171,15 @@ class User extends Auth {
 	 * @return mixed 
 	 */
 	public static function current() {
-		return sess(self :: $namespace, []);
+		$current = sess(self :: $namespace, []);
+
+		if ($current) {
+			PageCache::disable('user');
+		} else {
+			PageCache::enable('user');
+		}
+
+		return $current;
 	}
 
 	/**
