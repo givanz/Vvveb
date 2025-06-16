@@ -46,9 +46,6 @@ class Tag extends Base {
 						'taxonomy_item'         => ['taxonomy_item_id' => $taxonomy_item_id, 'taxonomy_id' => $taxonomy_id] + $tag,
 					]);
 			} else {
-				var_dump(['taxonomy_item_content' => [$tag + $this->global],
-					'taxonomy_item'                  => ['taxonomy_id' => $taxonomy_id] + $tag,
-				]);
 				$result = $tags->addCategory(
 					['taxonomy_item_content' => $tag + $this->global,
 						'taxonomy_item'         => ['taxonomy_id' => $taxonomy_id] + $tag,
@@ -57,8 +54,8 @@ class Tag extends Base {
 			}
 
 			if ($result && isset($result['taxonomy_item_content'])) {
-				$message               = __('Tag saved!');
-				$this->view->success[] = $message;
+				$message                    = __('Tag saved!');
+				$this->view->success['get'] = $message;
 
 				if (! $taxonomy_item_id) {
 					$this->redirect(['module'=> 'content/tag', 'taxonomy_item_id' => $result['taxonomy_item'], 'taxonomy_id' => $taxonomy_id, 'type' => $post_type, 'success' => $message], [], false);
