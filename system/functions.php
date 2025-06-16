@@ -1003,14 +1003,12 @@ function sanitizeFileName($file) {
 	if (! $file) {
 		return $file;
 	}
+	$file = explode(DIRECTORY_SEPARATOR, $file);
+	$filename = end($file);
+	$filename = preg_replace("/[^\p{L}\p{N}\s\-_'’.]/u", '', trim(html_entity_decode($filename, ENT_QUOTES, 'UTF-8')));
+	$file[array_key_last($file)] = $filename;
 
-	//sanitize, remove double dot .. and remove get parameters if any
-	$file = preg_replace('@\?.*$|\.{2,}|[^\/\\a-zA-Z0-9\-\._]@' , '', $file);
-	$file = preg_replace('@[^\/\w\s\d\.\-_~,;:\[\]\(\)\\]|[\.]{2,}@', '', $file);
-	//replace directory separators with OS specific separator
-	$file = str_replace(['\\', '/'], DS, $file);
-
-	return $file;
+	return implode(DIRECTORY_SEPARATOR, $file);
 }
 
 function formatBytes($bytes) {
