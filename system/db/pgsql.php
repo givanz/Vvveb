@@ -109,7 +109,7 @@ class Pgsql extends DBDriver {
 			$columns = [];
 
 			while ($row = pg_fetch_assoc($result)) {
-				$columns[] = $row;
+				$columns[$row['name']] = $row;
 			}
 
 			/* free result set */
@@ -144,6 +144,18 @@ class Pgsql extends DBDriver {
 	public function escape($string) {
 		if (is_string($string)) {
 			return pg_escape_string(self :: $link, $string);
+		}
+
+		if (is_null($string)) {
+			return 'null';
+		}
+
+		return $string;
+	}
+
+	public function escapeLiteral($string) {
+		if (is_string($string)) {
+			return pg_escape_literal(self :: $link, $string);
 		}
 
 		if (is_null($string)) {
@@ -190,9 +202,17 @@ class Pgsql extends DBDriver {
 
 		try {
 			if ($parameters) {
-				$this->last_res = @pg_query_params(self :: $link, $sql, $parameters);
+				if (LOG_SQL_QUERIES) {
+					error_log($this->debugSql($sql, $parameters));
+				}
+
+				$this->last_res = $result = @pg_query_params(self :: $link, $sql, $parameters);
 			} else {
-				$this->last_res = @pg_query(self :: $link, $sql);
+				if (LOG_SQL_QUERIES) {
+					error_log($sql);
+				}
+
+				$this->last_res = $result = @pg_query(self :: $link, $sql);
 			}
 
 			if ($this->last_res == false) {
@@ -289,7 +309,7 @@ class Pgsql extends DBDriver {
 
 		list($parameters, $types) = $this->paramsToQmark($sql, $params, $paramTypes, '$');
 
-		if (DEBUG) {
+		if (LOG_SQL_QUERIES) {
 			error_log($this->debugSql($origSql, $params, $paramTypes));
 		}
 
@@ -306,8 +326,11 @@ class Pgsql extends DBDriver {
 		}
 
 		if ($this->last_res == false) {
-			error_log('pgsql error: ' . pg_result_error($this->last_res) . pg_last_error(self :: $link));
-			error_log($this->debugSql($origSql, $params, $paramTypes));
+			$errorMessage = pg_last_error(self :: $link);
+			//error_log('pgsql error: ' . pg_last_error(self :: $link));
+			$errorMessage .= $this->debugSql($origSql, $params, $paramTypes);
+
+			throw new \Exception($errorMessage);
 		}
 
 		return $this->last_res;

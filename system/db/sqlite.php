@@ -102,7 +102,7 @@ class Sqlite extends DBDriver {
 			$columns = [];
 
 			while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-				$columns[] = $row;
+				$columns[$row['name']] = $row;
 			}
 
 			/* free result set */
@@ -149,6 +149,10 @@ class Sqlite extends DBDriver {
 		return $string;
 	}
 
+	public function escapeLiteral($string) {
+		return $this->escape($string);
+	}
+
 	public function sqlLimit($start, $limit) {
 		return "LIMIT $start, $limit";
 	}
@@ -191,6 +195,10 @@ class Sqlite extends DBDriver {
 		try {
 			$result = self :: $link->query($sql);
 
+			if (LOG_SQL_QUERIES) {
+				error_log($sql);
+			}
+
 			if ($result) {
 				$this->affected_rows = self :: $link->changes();
 				$this->insert_id     = self :: $link->lastInsertRowID();
@@ -209,15 +217,40 @@ class Sqlite extends DBDriver {
 	}
 
 	public function multi_query($sql) {
-		$result = self :: $link->query($sql);
+		$results = [];
 
-		if ($result) {
-			$this->affected_rows = self :: $link->changes();
-			$this->insert_id     = self :: $link->lastInsertRowID();
-			$this->num_rows      = $result->numColumns() && $result->columnType(0) != SQLITE3_NULL;
+		$queries = preg_split('/;\n/', $sql);
+
+		foreach ($queries as $query) {
+			if (empty(trim($query))) {
+				continue;
+			}
+
+			if (LOG_SQL_QUERIES) {
+				error_log($sql);
+			}
+
+			try {
+				$result = self :: $link->query("$query;");
+
+				if ($result) {
+					$this->affected_rows = self :: $link->changes();
+					$this->insert_id     = self :: $link->lastInsertRowID();
+					$this->num_rows      = $result->numColumns() && $result->columnType(0) != SQLITE3_NULL;
+				//$result->finalize();
+				} else {
+					throw new \Exception($this->error(), $this->errorCode());
+				}
+
+				$results[] = $result;
+			} catch (\Exception $e) {
+				$message = $e->getMessage() . "\n$query\n";
+
+				throw new \Exception($message, $e->getCode());
+			}
 		}
 
-		return $result;
+		return $results;
 	}
 
 	public function close() {

@@ -176,7 +176,7 @@ class Mysqli extends DBDriver {
 			$columns = [];
 
 			while ($row = $result->fetch_assoc()) {
-				$columns[] = $row;
+				$columns[$row['name']] = $row;
 			}
 
 			/* free result set */
@@ -217,6 +217,10 @@ class Mysqli extends DBDriver {
 	}
 
 	public function query($sql) {
+		if (LOG_SQL_QUERIES) {
+			error_log($sql);
+		}
+
 		$result = self :: $link->query($sql);
 
 		if ($result) {
@@ -250,28 +254,52 @@ class Mysqli extends DBDriver {
 		return $string;
 	}
 
+	public function escapeLiteral($string) {
+		return $this->escape($string);
+	}
+
 	public function sqlLimit($start, $limit) {
 		return "LIMIT $start, $limit";
 	}
 
 	public function fetchArray($stmt) {
-		$result = $stmt->get_result();
+		$data      = [];
+		$statement = (get_class($stmt) === 'mysqli_stmt');
 
-		if ($result) {
-			return $result->fetch_array(MYSQLI_ASSOC);
+		if ($statement) {
+			$this->store_result();
+			$result = $stmt->get_result();
+		} else {
+			$result = $stmt;
 		}
 
-		return [];
+		if ($result) {
+			$data = $result->fetch_array(MYSQLI_ASSOC);
+
+			if ($statement && $stmt->more_results()) {
+				$stmt->next_result();
+			}
+		}
+
+		return $data;
 	}
 
 	public function fetchAll($stmt) {
-		$result = $stmt->get_result();
+		$data      = [];
+		$statement = (get_class($stmt) === 'mysqli_stmt');
 
-		if ($result) {
-			return $result->fetch_all(MYSQLI_ASSOC);
+		if ($statement) {
+			$this->store_result();
+			$result = $stmt->get_result();
+		} else {
+			$result = $stmt;
 		}
 
-		return [];
+		if ($result) {
+			$data = $result->fetch_all(MYSQLI_ASSOC);
+		}
+
+		return $data;
 	}
 
 	public function store_result() {
