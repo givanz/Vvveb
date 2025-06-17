@@ -70,14 +70,24 @@ class Revisions extends Base {
 	}
 
 	function load() {
-		$file = $this->request->post['file'] ?? false;
+		$file  = $this->request->post['file'] ?? false;
+		$theme = $this->getThemeFolder();
 
 		if ($file) {
 			$file = $this->backupFolder() . $this->sanitizeBackupFileName($file) . '.html';
 
 			if (file_exists($file)) {
 				$this->response->setType('text');
-				$this->response->output(file_get_contents($file));
+				$html = file_get_contents($file);
+				$base = "/themes/$theme/";
+
+				if (strpos($html, '<base') !== false) {
+					$html = preg_replace('/<base(.*)href=["\'](.*?)["\'](.*?)>/', '<base$1href="' . $base . '"$3>', $html);
+				} else {
+					$html = str_replace('<head>', "<head>\n<base href=\"$base\">\n", $html);
+				}
+
+				$this->response->output($html);
 			}
 		} else {
 			die(__('Invalid request!'));
