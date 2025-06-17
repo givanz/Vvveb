@@ -22,6 +22,7 @@
 
 namespace Vvveb\Component;
 
+use \Vvveb\Sql\Product_VariantSQL;
 use function Vvveb\getCurrency;
 use function Vvveb\model;
 use function Vvveb\sanitizeHTML;
@@ -37,16 +38,23 @@ use function Vvveb\url;
 
 class Product extends ComponentBase {
 	public static $defaultOptions = [
-		'product_id'    => 'url',
-		'slug'          => 'url',
-		'status'        => 1,
-		'language_id'   => null,
-		'site_id'       => null,
-		'user_id'       => null,
-		'user_group_id' => null,
-		'reviews'       => true,
-		'rating'        => true,
-		'promotion'     => true,
+		'product_id'          => 'url',
+		'slug'                => 'url',
+		'status'              => 1,
+		'language_id'         => null,
+		'site_id'             => null,
+		'user_id'             => null,
+		'user_group_id'       => null,
+		'product_variant_id'  => null,
+		'variant'             => null, //[true, false] include variants
+		'promotion'           => null, //[true, false] include promotional price
+		'points'              => null, //[true, false] include points
+		'stock_status'        => null, //[true, false] include stock status info
+		'weight_type'         => null, //[true, false] include weight type info
+		'length_type'         => null, //[true, false] include length type info
+		'rating'              => null, //[true, false] include rating average
+		'reviews'             => null, //[true, false] include reviews count
+
 		'image_size'    => '',
 	];
 
@@ -72,14 +80,54 @@ class Product extends ComponentBase {
 		$results['manufacturer_url'] = url('product/manufacturer/index', ['slug' => $results['manufacturer_slug']]);
 		$results['vendor_url']       = url('product/vendor/index', ['slug' => $results['vendor_slug']]);
 
-		$tax                            = Tax::getInstance();
-		$currency                       = Currency::getInstance();
-		$results['price_currency']      = getCurrency();
-		$results['price_tax']           = $tax->addTaxes($results['price'], $results['tax_type_id']);
-		$results['price_tax_formatted'] = $currency->format($results['price_tax']);
-		$results['price_formatted']     = $currency->format($results['price']);
+		$variantSql = new Product_VariantSQL();
+		$voptions   = ['product_id' => $this->options['product_id'], 'start' => 0, 'limit' => 1];
 
-		if ($results['promotion']) {
+		if ($this->options['product_variant_id']) {
+			$voptions['product_variant_id'] = [$this->options['product_variant_id']];
+		}
+
+		$variants   = $variantSql->getAll($voptions);
+
+		$defaultVariant   = [];
+		$defaultVariantId = null;
+		$defaultOptions   = [];
+
+		if ($variants && isset($variants['product_variant'])) {
+			$defaultVariant = current($variants['product_variant']);
+
+			//if product has variants set default variant price
+			if ($defaultVariant) {
+				$results['price'] = $defaultVariant['price'];
+				$defaultVariantId = $defaultVariant['product_variant_id'];
+			}
+		}
+
+		$results['product_variant_id']  = $defaultVariantId;
+
+		$this->tax             = Tax::getInstance($this->options);
+		$this->currency        = Currency::getInstance($this->options);
+		$this->currentCurrency = getCurrency();
+
+		foreach (['price', 'old_price', 'min_price', 'max_price'] as $price) {
+			$amount = 0;
+
+			if (isset($results[$price]) && $results[$price]) {
+				$amount = $results[$price];
+			}
+			$results["{$price}_tax"]            = $amount ? $this->tax->addTaxes($amount, $results['tax_type_id']) : 0;
+			$results["{$price}_formatted"]      = $this->currency->format($amount);
+			$results["{$price}_tax_formatted"]  = $this->currency->format($results["{$price}_tax"]);
+			$results["{$price}_price_currency"] = $this->currentCurrency;
+		}
+
+		$results['has_variants'] = false;
+
+		if (isset($results['min_price']) || isset($results['max_price'])) {
+			$results['has_variants'] = true;
+		}
+
+		if (isset($results['promotion']) && $results['promotion']) {
 			$results['promotion_tax']           = $tax->addTaxes($results['promotion'], $results['tax_type_id']);
 			$results['promotion_tax_formatted'] = $currency->format($results['promotion_tax']);
 			$results['promotion_formatted']     = $currency->format($results['promotion']);
@@ -149,15 +197,15 @@ class Product extends ComponentBase {
 			}
 		}
 
-		if ($product) {
-			//$product['product_id']            = $id;
-			$result = $products->edit(['product' => $product, 'product_id' => $id]);
-		}
-
 		if ($product_content) {
 			$product_content['language_id'] = self :: $global['language_id'];
-			//$product['product_content']['post_id'] = $id;
+			//$product['product_id']['post_id'] = $id;
 			$result = $products->editContent(['product_content' => $product_content, 'product_id' => $id, 'language_id' => self :: $global['language_id']]);
+		}
+
+		if ($product) {
+			$product['product_id'] = $id;
+			$result                = $products->edit(['product' => $product, /*'product_content' => [$product_content],*/ 'product_id' => $id]);
 		}
 	}
 }
