@@ -43,6 +43,8 @@ class Vtpl {
 
 	private $htmlPath;
 
+	private $relativePath;
+
 	private $htmlSourceFile;
 
 	private $document;
@@ -162,6 +164,10 @@ class Vtpl {
 		return $this->documentType;
 	}
 
+	function getDocument() {
+		return $this->document;
+	}
+
 	function addCommand($selector, $command = false) {
 		if ($selector) {
 			$this->template .= "\n $selector";
@@ -176,6 +182,10 @@ class Vtpl {
 
 	function setHtmlPath($path) {
 		$this->htmlPath = $path;
+	}
+
+	function setRelativePath($path) {
+		$this->relativePath = $path;
 	}
 
 	function addTemplatePath($path) {
@@ -349,7 +359,7 @@ class Vtpl {
 				foreach ($this->templatePath as $path) {
 					$import = $imports[1][$i];
 
-					if (substr_compare($import,'/plugins/', 0, 9) === 0) {
+					if (strncmp($import,'/plugins/', 9) === 0) {
 						$importFile = DIR_PLUGINS . substr($import, 9);
 					} else {
 						if ($import[0] == '/') {
@@ -865,7 +875,7 @@ class Vtpl {
 				if (strpos($name, 'data-filter') !== false) {
 					$name           = str_replace('data-filter-', '', $name);
 					$filters[$name] = $item->value;
-					$node->removeAttribute($item->name);
+					//$node->removeAttribute($item->name);
 				}
 			}
 		}
@@ -1201,7 +1211,7 @@ class Vtpl {
 					if ($this->documentType == 'html') {
 						return $doc->saveHTML();
 					} else {
-						return $doc->saveXML();
+						return Vvveb\xmlStripVersionDeclr($doc->saveXML());
 					}
 				} else {
 					if ($html == '') {
@@ -1271,7 +1281,7 @@ class Vtpl {
 				if ($this->documentType == 'html') {
 					return $doc->saveHTML();
 				} else {
-					return $doc->saveXML();
+					return Vvveb\xmlStripVersionDeclr($doc->saveXML());
 				}
 			} else {
 //				$this->removeChildren($node);
@@ -1642,14 +1652,14 @@ class Vtpl {
 
 	private function delete(&$nodeList) {
 		if ($nodeList) {
-		foreach ($nodeList as $node) {
-			$this->removeChildren($node);
+			foreach ($nodeList as $node) {
+				$this->removeChildren($node);
 
-			if ($node->parentNode) {
-				$node->parentNode->removeChild($node);
+				if ($node->parentNode) {
+					$node->parentNode->removeChild($node);
+				}
 			}
 		}
-	}
 	}
 
 	private function setNodeAttribute($node, $attribute, $val) {
@@ -1704,8 +1714,8 @@ class Vtpl {
 	}
 
 	public function addNodeNewAttribute(&$node, $val) {
-				$this->newAttributes[++$this->newAttributesIndex] = $this->processAttributeConstants($val, $node);
-				$node->setAttribute("__VTPL__NEW_ATTRIBUTE_PLACEHOLDER__{$this->newAttributesIndex}",'');
+		$this->newAttributes[++$this->newAttributesIndex] = $this->processAttributeConstants($val, $node);
+		$node->setAttribute("__VTPL__NEW_ATTRIBUTE_PLACEHOLDER__{$this->newAttributesIndex}",'');
 	}
 
 	public function addNewAttribute(&$nodeList, $val) {
@@ -1742,10 +1752,10 @@ class Vtpl {
 		$filename = $this->processAttributeConstants($filename, $node);
 		$selector = $this->processAttributeConstants($selector, $node);
 
-		if (substr_compare($filename,'/plugins/', 0, 9) === 0) {
+		if (strncmp($filename,'/plugins/', 9) === 0) {
 			$filename = DIR_ROOT . $filename;
 		} else {
-			if (substr_compare($filename,'/public/', 0, 8) === 0) {
+			if (strncmp($filename,'/public/', 8) === 0) {
 				$filename = DIR_ROOT . $filename;
 			} else {
 				if ($filename[0] !== '/') {
@@ -1831,7 +1841,7 @@ class Vtpl {
 				$xml  = Vvveb\array2xml($json);
 				$html = $xml;
 			}
-			@$this->document->loadXML($html, LIBXML_NOERROR);
+			@$this->document->loadXML($html, LIBXML_NOERROR | LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NONET);
 		}
 
 		$errors = libxml_get_errors();
@@ -1839,6 +1849,10 @@ class Vtpl {
 		//original document used to extract selectors
 		//$this->originalDocument = clone($this->document);
 		$this->xpath = new DOMXpath($this->document);
+
+		if ($rootNamespace = $this->document->lookupNamespaceUri($this->document->namespaceURI)) {
+			$this->xpath->registerNamespace('x', $rootNamespace);
+		}
 
 		if ($this->componentContent) {
 			//replace component content from page with the one provided
@@ -1881,6 +1895,8 @@ class Vtpl {
 				$base->setAttribute('href','');
 				$head->item(0)->insertBefore($base, $head->item(0)->firstChild);
 			}
+		} else {
+			$base[0]->setAttribute('href', '');
 		}
 
 		return $errors;
@@ -1932,6 +1948,23 @@ class Vtpl {
 					$value = $attrNode->nodeValue;
 					$name  = $attrNode->nodeName;
 
+					//set relative media to theme folder
+					if (($name == 'src' || $name == 'href') && $this->relativePath) {
+						if ($value && $value[0] != '#' && $value[0] != '@' && (strncmp($value, 'http', 4) != 0)) {
+							if ($value[0] == '/') {
+								if (strncmp($value, '/public/', 8) == 0) {
+									$value = substr($value, 8);
+								} else {
+									$value = substr($value, 1);
+								}
+
+								$this->setNodeAttribute($node, $name, PUBLIC_PATH . $value);
+							} else {
+								$this->setNodeAttribute($node, $name, $this->relativePath . $value);
+							}
+						}
+					}
+
 					if ($this->removeVattrs && substr($name, 0, 7) === 'data-v-') {
 						$node->removeAttribute($name);
 
@@ -1953,6 +1986,12 @@ class Vtpl {
 
 							$this->setNodeAttribute($node, $name, $value);
 						}
+					}
+
+					if (($name == 'placeholder' || $name == 'title'/* || $name == 'alt'*/) && ($value && $value[0] != '@' && $value[0] != '<')) {
+						$trimmed = trim($value);
+						$php     = '<_script language="php"><![CDATA[ echo ' . $this->translationFunction . '(\'' . addcslashes($trimmed, "'") . '\');]]></_script>';
+						$this->setNodeAttribute($node, $name, $php);
 					}
 					/*
 					if (strpos($name, 'data-v-') === 0) {
@@ -1978,8 +2017,8 @@ class Vtpl {
 
 				//skip untranslatable text
 				if (strlen($trimmed) < 2 || //too small
-					(substr_compare($trimmed, '{$', 0, 2) == 0) || //starts with variable
-					(substr_compare($trimmed, 'http', 0, 4) == 0) || //is url
+					(strncmp($trimmed, '{$', 2) == 0) || //starts with variable
+					(strncmp($trimmed, 'http', 4) == 0) || //is url
 					(strpos($trimmed, '{$') !== false) || //string has variable
 					(strpos($trimmed, '<?php') !== false) || //string has php code
 					(is_numeric($trimmed[0]))
@@ -2135,31 +2174,47 @@ class Vtpl {
 					  }, $html);
 
 		/*
-		 Moustache variables used in javascript code in html template, it replaces {variable} with $variable, if $variable is array then the output is json
+		 Moustache variables used in javascript code in html template, it replaces {$variable} with $variable, if $variable is array then the output is json
+		 Modifier support with {$variable|function_name} ex: {$var|htmlspecialchars} multiple modifiers {$var|htmlspecialchars|trim}
 		 */
-		$html = preg_replace_callback('/{\s*(\$[\w\-\>\.]+)\|?([\w\.]+)?\s*}/',
+		$html = preg_replace_callback('/{\s*(\$[\w\-\>\.]+)\|?([\w\.\|]+)?\s*}/',
 					  function ($matches) use ($self) {
 					  	$modifier = false;
 
-					  	if (isset($matches[2])) {
-					  		$modifier = $matches[2];
-					  	}
 					  	$variable = str_replace('$this.', '$this->', $matches[1]);
 					  	$variable = Vvveb\dotToArrayKey($variable);
-					  	$template =
-						"<?php if (isset($variable)) {
-                                if (is_array($variable)) {
-                                    if ('$modifier') {
-                                        \$modified = $modifier($variable);
-                                        echo json_encode(\$modified);
-                                    } else {
-                                        echo json_encode($variable);
-                                    }
-                                } else {
-                                    echo $variable;
-                                }
-                            }
-                        ?>";
+
+					  	if (isset($matches[2]) && $matches[2]) {
+					  		$modifier = $variable;
+					  		$modifiers = explode('|', $matches[2]);
+
+					  		foreach ($modifiers as $mod) {
+					  			$modifier = "$mod($modifier)";
+					  		}
+					  	}
+
+					  	if ($modifier) {
+					  		$template =
+							"<?php if (isset($variable)) {
+									\$modified = $modifier;
+									if (is_array($variable)) {
+										echo json_encode(\$modified);
+									} else {
+										echo \$modified;
+									}
+								}
+							?>";
+					  	} else {
+					  		$template =
+							"<?php if (isset($variable)) {
+									if (is_array($variable)) {
+										echo json_encode($variable);
+									} else {
+										echo $variable;
+									}
+								}
+							?>";
+					  	}
 
 					  	return $template;
 					  }, $html);
@@ -2182,6 +2237,14 @@ class Vtpl {
 
 			if ($componentNode) {
 				$tmpDom = new DOMDocument();
+				$tmpDom->preserveWhiteSpace  = false;
+				$tmpDom->recover             = true;
+				$tmpDom->strictErrorChecking = false;
+				$tmpDom->substituteEntities  = false;
+				$tmpDom->formatOutput        = false;
+				$tmpDom->resolveExternals    = false;
+				$tmpDom->validateOnParse     = false;
+				$tmpDom->xmlStandalone       = true;
 
 				//add before php code if available
 				$currentNode = $componentNode;
@@ -2202,7 +2265,7 @@ class Vtpl {
 				if ($this->documentType == 'html') {
 					$html = $tmpDom->saveHTML();
 				} else {
-					$html = $tmpDom->saveXML();
+					$html = Vvveb\xmlStripVersionDeclr($tmpDom->saveXML());
 				}
 
 				$html = trim($html);
@@ -2210,14 +2273,14 @@ class Vtpl {
 				if ($this->documentType == 'html') {
 					$html = $this->document->saveHTML();
 				} else {
-					$html = $this->document->saveXML();
+					$html = Vvveb\xmlStripVersionDeclr($this->document->saveXML());
 				}
 			}
 		} else {
 			if ($this->documentType == 'html') {
 				$html = $this->document->saveHTML();
 			} else {
-				$html = $this->document->saveXML();
+				$html = Vvveb\xmlStripVersionDeclr($this->document->saveXML());
 			}
 		}
 
@@ -2241,7 +2304,7 @@ class Vtpl {
 
 			try {
 				token_get_all($html, TOKEN_PARSE);
-			} catch (\ParseError $e) {
+			} catch (\ParseError | \Error $e) {
 				//return \Vvveb\System\Core\exceptionHandler($e);
 				$data = \Vvveb\System\Core\exceptionToArray($e, $compiledFile);
 
