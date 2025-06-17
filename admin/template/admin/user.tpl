@@ -5,8 +5,8 @@ import(common.tpl)
 /* input elements */
 [data-v-user] input[data-v-user-*]|value = 
 <?php
-	 if (isset($_POST['@@__data-v-user-(*)__@@'])) 
-		echo htmlspecialchars($_POST['@@__data-v-user-(*)__@@']); 
+	 if (isset($_POST['admin']['@@__data-v-user-(*)__@@'])) 
+		echo htmlspecialchars($_POST['admin']['@@__data-v-user-(*)__@@']); 
 	 else if (isset($this->user['@@__data-v-user-(*)__@@'])) 
 		echo htmlspecialchars($this->user['@@__data-v-user-(*)__@@']);
 ?>
@@ -15,8 +15,8 @@ import(common.tpl)
 /* textarea elements */
 [data-v-user] textarea[data-v-user-*] = 
 <?php
-	 if (isset($_POST['@@__data-v-user-(*)__@@'])) 
-		echo htmlspecialchars($_POST['@@__data-v-user-(*)__@@']); 
+	 if (isset($_POST['admin']['@@__data-v-user-(*)__@@'])) 
+		echo htmlspecialchars($_POST['admin']['@@__data-v-user-(*)__@@']); 
 	 else if (isset($this->user['@@__data-v-user-(*)__@@'])) 
 		echo htmlspecialchars($this->user['@@__data-v-user-(*)__@@']);
 ?>/* textarea elements */
@@ -47,7 +47,7 @@ import(common.tpl)
 /* Avatar */
 [data-v-user] [data-v-avatar]|data-v-avatar = $this->user['avatar_url']
 [data-v-user] input[data-v-avatar]|value = $this->user['avatar']
-[data-v-user] img[data-v-avatar]|src = <?php echo (isset($this->user['avatar_url']) && $this->user['avatar_url']) ? $this->user['avatar_url'] : 'img/placeholder.svg';?>
+[data-v-user] img[data-v-avatar]|src = <?php echo (isset($this->user['avatar_url']) && $this->user['avatar_url']) ? $this->user['avatar_url'] : PUBLIC_PATH . 'media/placeholder.svg';?>
 
 /* Site access */
 
