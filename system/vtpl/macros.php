@@ -68,6 +68,7 @@ function vtplKeyValue($vtpl, $node, $selector, $keyAttribute, $valueAttribute) {
  variable = variable ex product.price = price this will result in $product['price'] == $price
  variable = 'string' ex this.stock = 'available' this will result in $this->price == $price
  */
+ /*
 function ifCondition($string = '') {
 	$logic      = ['&&', '\|\|', 'AND', 'OR'];
 	$regex      = '/\s+(' . implode(')\s+|\s+(', $logic) . ')\s+/i';
@@ -102,11 +103,11 @@ function ifCondition($string = '') {
 				$compare = str_replace('this.', 'this->', $compare);
 			}
 
-			if (($compare && $compare[0] != "'") && ! is_numeric($compare)) {
+			if (($compare && $compare[0] != "'") && ! is_numeric($compare) && $compare !== 'null') {
 				$compare = '$' . $compare;
 			}
 
-			if (($value && $value[0] != "'") && ! is_numeric($value)) {
+			if (($value && $value[0] != "'") && ! is_numeric($value) && $value !== 'null') {
 				$value = '$' . $value;
 			}
 
@@ -123,6 +124,53 @@ function ifCondition($string = '') {
 	$return .= ' )';
 
 	return $return;
+}
+*/
+
+function ifCondition($condition = '') {
+	//remove php functions
+	$condition = preg_replace('/[a-zA-Z_][\w\\]*\([^\)]*\)/', '', $condition);
+
+	//transform variables to php variables
+	$array_keys = '';
+	$condition  = preg_replace_callback('/[\'"]?[a-zA-Z_][\w\.-]*[\'"]?/',
+	function ($matches) use (&$array_keys) {
+		$value = $matches[0];
+		$len = strlen($value) - 1;
+
+		if ($value == 'null' || $value == 'NULL'
+			|| $value[0] == '\'' || $value[$len] == '\''
+			|| $value[0] == '"' || $value[$len] == '"') {
+			return $value;
+		}
+
+		if (strpos($value, 'this') === 0) {
+			$value = str_replace('this.', 'this->', $value);
+		}
+
+		if (strpos($value, '.') !== 0) {
+			$value = Vvveb\dotToArrayKey($value);
+			$value = '$' . $value;
+
+			if ($array_keys) {
+				$array_keys .= ' && ';
+			}
+			$array_keys .= "isset($value)";
+		} else {
+			$value = '$' . $value;
+		}
+
+		return $value;
+	}, $condition);
+
+	//double ==
+	$condition = preg_replace('/(?<![<>\!])=+/', ' == ', $condition);
+
+	if ($array_keys) {
+		$array_keys = "($array_keys) && ";
+	}
+
+	return $array_keys . "($condition)";
 }
 
 function vtplIfCondition($vtpl, $node, $string = '') {
