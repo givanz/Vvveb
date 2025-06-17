@@ -2,12 +2,13 @@
 	
 	-- get menu 
 
-	CREATE PROCEDURE getMenu(
+	CREATE PROCEDURE get(
 
 		-- variables
 		IN  language_id INT,
 		IN  menu_id INT,
 		IN  site_id INT,
+		IN  slug CHAR,
 			
 		-- return menus count for count query
 		OUT fetch_row
@@ -16,11 +17,27 @@
 
 		SELECT *			
 			FROM menu AS _
+		
+		WHERE 1 = 1
+
+		@IF isset(:slug)
+		THEN 
+		
+			AND slug = :slug
 			
-		WHERE _.menu_id = :menu_id LIMIT 1;
+		END @IF	
+		
+		@IF isset(:menu_id)
+		THEN 
+		
+			AND menu_id = :menu_id
+			
+		END @IF	
+			
+		LIMIT 1;
 
 
-	END -- get menu
+	END 
 	
 	-- edit menu 
 
@@ -137,7 +154,7 @@
 	
 	-- get menu 
 
-	CREATE PROCEDURE get(
+	CREATE PROCEDURE getMenuItems(
 
 		-- variables
 		IN  language_id INT,
@@ -157,34 +174,31 @@
 	)
 	BEGIN
 
-		SELECT td.*,menu.url, menu.sort_order, menu.parent_id, menu.type, menu.item_id, menu.menu_item_id as array_key
+		SELECT menu_item.url, menu_item.sort_order, menu_item.parent_id, menu_item.type, menu_item.item_id, td.*, menu_item.menu_item_id as menu_item_id, menu_item.menu_item_id as array_key 
 			
 		
-			FROM menu_item AS menu
+			FROM menu_item
 		
 			-- INNER JOIN menu_to_site c2s ON (menu.menu_id = c2s.menu_id AND c2s.site_id = :site_id) 
-			INNER JOIN menu_item_content td ON (menu.menu_item_id = td.menu_item_id AND td.language_id = :language_id)  
+			LEFT JOIN menu_item_content td ON (menu_item.menu_item_id = td.menu_item_id AND td.language_id = :language_id)  
 			
-			WHERE 
-			
-				td.language_id = :language_id -- AND c2s.site_id = :site_id
-	
+			WHERE 1 = 1
 			
 			@IF isset(:menu_id)
 			THEN 
 			
-				AND menu.menu_id = :menu_id
+				AND menu_item.menu_id = :menu_id
 				
 			END @IF			
 			
 			@IF isset(:slug)
 			THEN 
 			
-				AND menu.menu_id = (SELECT menu_id FROM menu WHERE slug = :slug LIMIT 1)
+				AND menu_item.menu_id = (SELECT menu_id FROM menu WHERE slug = :slug LIMIT 1)
 				
 			END @IF			
 
-		ORDER BY menu.parent_id, menu.sort_order, menu.menu_id
+		ORDER BY menu_item.parent_id, menu_item.sort_order, menu_item.menu_id
 
 		@IF isset(:limit)
 		THEN 
@@ -352,7 +366,7 @@
 	-- Delete menu item recursive
 
 	CREATE PROCEDURE deleteMenuItemRecursive(
-		IN menu_item_id INT,
+		IN menu_item_id ARRAY,
 		OUT affected_rows,
 		OUT affected_rows,
 	)
@@ -364,7 +378,7 @@
 				   SELECT menu_item_id, 
 					  parent_id
 				   FROM menu_item
-				   WHERE menu_item_id = :menu_item_id
+				   WHERE menu_item_id IN (:menu_item_id)
 
 				   UNION ALL 
 
@@ -381,7 +395,7 @@
 				   SELECT menu_item_id, 
 					  parent_id
 				   FROM menu_item
-				   WHERE menu_item_id = :menu_item_id
+				   WHERE menu_item_id IN (:menu_item_id)
 
 				   UNION ALL 
 
@@ -397,7 +411,7 @@
 	-- Delete menu item
 
 	CREATE PROCEDURE deleteMenuItem(
-		IN menu_item_id INT,
+		IN menu_item_id ARRAY,
 		OUT affected_rows,
 		OUT affected_rows
 	)
@@ -405,9 +419,9 @@
 	
 		-- non CTE for older mysql versions, does not delete grand child menu items
 		DELETE FROM menu_item_content WHERE menu_item_id IN (SELECT menu_item_id FROM menu_item WHERE parent_id = :menu_item_id);
-		DELETE FROM menu_item_content WHERE menu_item_id = :menu_item_id;
+		DELETE FROM menu_item_content WHERE menu_item_id IN (:menu_item_id);
 
-		DELETE FROM menu_item WHERE menu_item_id IN (SELECT menu_item_id FROM menu_item WHERE parent_id = :menu_item_id);
-		DELETE FROM menu_item WHERE menu_item_id = :menu_item_id;
+		DELETE FROM menu_item WHERE menu_item_id IN (SELECT menu_item_id FROM (SELECT menu_item_id FROM menu_item) as mi WHERE parent_id = :menu_item_id);
+		DELETE FROM menu_item WHERE menu_item_id IN (:menu_item_id);
 		
 	END

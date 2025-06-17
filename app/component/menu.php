@@ -22,6 +22,7 @@
 
 namespace Vvveb\Component;
 
+use function Vvveb\__;
 use function Vvveb\getCurrentUrl;
 use function Vvveb\sanitizeHTML;
 use Vvveb\Sql\menuSQL;
@@ -34,10 +35,11 @@ use function Vvveb\url;
 
 class Menu extends ComponentBase {
 	public static $defaultOptions = [
-		'start'   => 0, //defaut, override from html
-		'limit'   => 10000,
-		'menu_id' => null, //unset, set from html
-		'slug'    => null, //unset, set from html
+		'start'       => 0, //defaut, override from html
+		'limit'       => 10000,
+		'menu_id'     => null, //unset, set from html
+		'language_id' => null, //unset, set from html
+		'slug'        => null, //unset, set from html
 	];
 
 	function results() {
@@ -49,14 +51,23 @@ class Menu extends ComponentBase {
 		}
 
 		$menuSql               = new menuSQL();
-		$results               = $menuSql->get($options);
+		$results               = $menuSql->getMenuItems($options);
+		$noTranslationText     = '[' . __('No translation') . ']';
+
+		$defaultLanguage = true;
+		$languageOption  = [];
+
+		if ($options['default_language'] != $options['language']) {
+			$languageOption  = ['language'=> $options['language']];
+			$defaultLanguage = false;
+		}
 
 		//count the number of child menus (subcategories) for each category
-		if (isset($results['menu'])) {
+		if (isset($results['menu_item'])) {
 			$productIds = [];
 			$postIds    = [];
 
-			foreach ($results['menu'] as $taxonomy_item_id => &$category) {
+			foreach ($results['menu_item'] as $taxonomy_item_id => &$category) {
 				$parent_id = $category['parent_id'] ?? false;
 				$type      = $category['type'] ?? 'link';
 
@@ -65,7 +76,7 @@ class Menu extends ComponentBase {
 				}
 
 				if ($parent_id > 0) {
-					$parent = &$results['menu'][$parent_id];
+					$parent = &$results['menu_item'][$parent_id];
 
 					if (isset($parent['children'])) {
 						$parent['children']++;
@@ -74,7 +85,8 @@ class Menu extends ComponentBase {
 					}
 
 					if ($type == 'text') {
-						$parent['has-text'] = true;
+						$parent['has-text']    = true;
+						$category['content']   = $category['content'] ?? (! $defaultLanguage ? $noTranslationText : null);
 					}
 				}
 
@@ -88,9 +100,27 @@ class Menu extends ComponentBase {
 					$taxonomyPosts[$category['item_id']][] = $taxonomy_item_id;
 				}
 
-				if ($type == 'link') {
-					$category['url'] = Sites::url($category['url'] ?? '');
+				if ($type == 'home') {
+					$category['url']  = url('index/index', $languageOption);
+					$category['name'] = $category['name'] ?: __('Home');
 				}
+
+				if ($type == 'blog') {
+					$category['url']  = url('content', $languageOption);
+					$category['name'] = $category['name'] ?: __('Blog');
+				}
+
+				if ($type == 'shop') {
+					$category['url']  = url('product/index', $languageOption);
+					$category['name'] = $category['name'] ?: __('Shop');
+				}
+
+				if ($type == 'link' && isset($category['url']) && (strncmp($category['url'], 'http', 4) !== 0)) {
+					$category['url'] = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . Sites::url($category['url'] ?? '');
+				}
+
+				$category['name']          = $category['name'] ?? (! $defaultLanguage ? $noTranslationText : null);
+				$category['language_id']   = $category['language_id'] ?? $options['language_id'];
 			}
 
 			//get product items
@@ -107,11 +137,12 @@ class Menu extends ComponentBase {
 				if (isset($products['products']) && $products['products']) {
 					foreach ($products['products'] as $product) {
 						foreach ($taxonomyPosts[$product['product_id']] as $taxonomy_item_id) {
-							$taxonomy_item_id   = $productTaxonomy[$product['product_id']];
-							$category           = &$results['menu'][$taxonomy_item_id];
-							$route              = "product/{$category['type']}/index";
-							$category['url']    = url($route, ['slug'=> $product['slug'], 'product_id'=> $product['product_id']]);
-							$category['name']   = $product['name'];
+							$taxonomy_item_id          = $productTaxonomy[$product['product_id']];
+							$category                  = &$results['menu_item'][$taxonomy_item_id];
+							$route                     = "product/{$category['type']}/index";
+							$category['url']           = url($route, ['slug'=> $product['slug'], 'product_id'=> $product['product_id']] + $languageOption);
+							$category['name']          = $product['name'] ?? (! $defaultLanguage ? $noTranslationText : null);
+							$category['language_id']   = $product['language_id'] ?: $options['language_id'];
 						}
 					}
 				}
@@ -131,17 +162,19 @@ class Menu extends ComponentBase {
 				if (isset($posts['post']) && $posts['post']) {
 					foreach ($posts['post'] as $post) {
 						foreach ($taxonomyPosts[$post['post_id']] as $taxonomy_item_id) {
-							$category         = &$results['menu'][$taxonomy_item_id];
-							$route            = "content/{$category['type']}/index";
-							$url              = url($route, ['slug'=> $post['slug'], 'post_id'=> $post['post_id']]);
-							$category['url']  = $url;
-							$category['name'] = $post['name'];
+							$category                  = &$results['menu_item'][$taxonomy_item_id];
+							$route                     = "content/{$category['type']}/index";
+							$url                       = $post['slug'] ? url($route, ['slug'=> $post['slug'], 'post_id'=> $post['post_id']] + $languageOption) : '/';
+							$category['url']           = $url;
+							$category['name']          = $post['name'] ?? (! $defaultLanguage ? $noTranslationText : null);
+							$category['language_id']   = $post['language_id'] ?? $options['language_id'];
 						}
 					}
 				}
 			}
 		}
-
+		//var_dump($results);
+		//die();
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 
 		return $results;
@@ -151,8 +184,8 @@ class Menu extends ComponentBase {
 	function request(&$results, $index = 0) {
 		$currentUrl            = getCurrentUrl();
 
-		if (isset($results['menu'])) {
-			foreach ($results['menu'] as $taxonomy_item_id => &$category) {
+		if (isset($results['menu_item'])) {
+			foreach ($results['menu_item'] as $taxonomy_item_id => &$category) {
 				$category['active'] = isset($category['url']) && ($category['url'] === $currentUrl);
 			}
 		}
@@ -171,7 +204,7 @@ class Menu extends ComponentBase {
 			$value = $field['value'];
 
 			if ($name == 'name') {
-				$menu_item_content[$name] = strip_tags($value);
+				$menu_item_content[$name] = sanitizeHTML($value);
 			} else {
 				if ($name == 'content') {
 					$menu_item_content[$name] = sanitizeHTML($value);
@@ -181,7 +214,7 @@ class Menu extends ComponentBase {
 			}
 		}
 		//$menu_item['menu_item_content']['post_id'] = $id;
-		$menu_item_content['language_id']      = 1;
+		$menu_item_content['language_id']      = self :: $global['language_id'];
 		$menu_item_content['content']          = $menu_item_content['content'] ?? '';
 		$menu_item['menu_item_content'][]      = $menu_item_content;
 		$menu_item['menu_item_id']             = $id;
