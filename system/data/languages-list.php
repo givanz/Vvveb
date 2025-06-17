@@ -197,6 +197,7 @@ return
 		'code'    => 'ar',
 		'rtl'     => true,
 		'emoji'   => '🇦🇷',
+		'pack'	   => true,
 	],
 	'hy_AM' => [
 		'name'    => 'Armenian (Armenia)',
@@ -476,6 +477,7 @@ return
 		'charset'  => 'UTF-8',
 		'code'     => 'zh-cn',
 		'emoji'    => '🇨🇳',
+		'pack'	    => true,
 	],
 	'zh_TW' => [
 		'name'     => '繁體中文 (Chinese)',
@@ -893,6 +895,7 @@ return
 		'charset' => 'UTF-8',
 		'code'    => 'fr-fr',
 		'emoji'   => '🇫🇷',
+		'pack'	   => true,
 	],
 	'fr_GA' => [
 		'name'    => 'French (Gabon)',
@@ -1055,6 +1058,7 @@ return
 		'charset' => 'ISO-8859-1',
 		'code'    => 'de-de',
 		'emoji'   => '🇩🇪',
+		'pack'	   => true,
 	],
 	'de_LI' => [
 		'name'    => 'German (Liechtenstein)',
@@ -1748,10 +1752,11 @@ return
 		'emoji'   => '🇵🇱',
 	],
 	'pt_BR' => [
-		'name'    => 'Portuguese (Brazil)',
-		'charset' => 'ISO-8859-1',
-		'code'    => 'pt-br',
-		'emoji'   => '🇵🇹',
+		'name'     => 'Portuguese (Brazil)',
+		'charset'  => 'ISO-8859-1',
+		'code'     => 'pt-br',
+		'emoji'    => '🇵🇹',
+		'pack'     => true,
 	],
 	'pt_GW' => [
 		'name'    => 'Portuguese (Guinea-Bissau)',
@@ -1818,6 +1823,7 @@ return
 		'charset' => 'UTF-8',
 		'code'    => 'ro-ro',
 		'emoji'   => '🇷🇴',
+		'pack'	   => true,
 	],
 	'ro' => [
 		'name'    => 'Romanian',
@@ -1856,6 +1862,7 @@ return
 		'charset' => 'UTF-8',
 		'code'    => 'ru-ru',
 		'emoji'   => '🇷🇺',
+		'pack'	   => true,
 	],
 	'ru_UA' => [
 		'name'    => 'Russian (Ukraine)',
@@ -2176,6 +2183,7 @@ return
 		'charset' => 'UTF-8',
 		'code'    => 'es-es',
 		'emoji'   => '🇪🇸',
+		'pack'	   => true,
 	],
 	'es_US' => [
 		'name'    => 'Spanish (United States)',
@@ -2381,6 +2389,7 @@ return
 		'charset' => 'ISO-8859-9',
 		'code'    => 'tr-tr',
 		'emoji'   => '🇹🇷',
+		'pack'	   => true,
 	],
 	'tr' => [
 		'name'    => 'Turkish',
