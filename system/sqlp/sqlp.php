@@ -71,37 +71,6 @@ class Sqlp {
 	}
 
 	/*
-	 * Get all columns for a table used for sanitizing input
-	 */
-	function getColumnsMeta($tableName) {
-		$db = '\Vvveb\System\Db\\' . DB_ENGINE;
-		$db = new $db();
-
-		$sql =
-		'SELECT COLUMN_NAME as name, COLUMN_DEFAULT as d, IS_NULLABLE  as n, DATA_TYPE as t, EXTRA as e
-		FROM `INFORMATION_SCHEMA`.`COLUMNS` 
-		WHERE `TABLE_SCHEMA`= "' . DB_NAME . '" 
-			AND `TABLE_NAME`="' . $tableName . '"';
-
-		if ($result = $db->query($sql)) {
-			//$columns = $result->fetch_all(MYSQLI_ASSOC);
-			$columns = [];
-
-			while ($row = $result->fetch_assoc()) {
-				$columns[] = $row;
-			}
-
-			/* free result set */
-			$result->close();
-
-			return $columns;
-		} else {
-		}
-
-		return false;
-	}
-
-	/*
 	 * Convert array dot notation to php notation 
 	 * Ex: my.array.key to ['my']['array']['key']
 	 */
@@ -520,7 +489,7 @@ class Sqlp {
 		$sql = $this->processImports($sql);
 
 		//remove comments
-		$sql = preg_replace('@(--.*)\s+@', '', $sql);
+		$sql        = preg_replace('@(--.*)\s+@', '', $sql);
 		$this->tree = [];
 
 		if (preg_match_all($this->config['functionRegex'], $sql, $matches, PREG_SET_ORDER)) {
@@ -572,7 +541,7 @@ class Sqlp {
 					if (empty($query)) {
 						continue;
 					}
-					$hasEach = (0 === substr_compare($query, '@EACH', 0, 5));
+					$hasEach = (0 === strncmp($query, '@EACH', 5));
 
 					$template = /*$hasEach?$this->config['eachQuery']:*/$this->model['query'];
 
