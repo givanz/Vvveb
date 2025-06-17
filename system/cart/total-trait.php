@@ -59,7 +59,7 @@ trait TotalTrait {
 
 		if ($this->totals) {
 			foreach ($this->totals as $total) {
-				$sum += $total['value'] ?? 0;
+				$sum += (float)($total['value'] ?? 0);
 			}
 		}
 

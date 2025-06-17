@@ -26,8 +26,6 @@ use function Vvveb\availableCurrencies;
 use function Vvveb\session as sess;
 
 class Currency {
-	private $driver;
-
 	private $currencies;
 
 	private $options;

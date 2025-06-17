@@ -34,25 +34,33 @@ trait TaxTrait {
 	}
 
 	public function getTaxes() {
-		$taxes    = [];
-		$products = $this->products + $this->taxes;
+		$taxes           = [];
+		$this->total_tax = 0;
+		$products        = $this->products + $this->taxes;
 
 		foreach ($products as $product) {
 			if (isset($product['tax_type_id']) && $product['tax_type_id']) {
 				$tax_rates = $this->tax->getRates($product['price'], $product['tax_type_id']);
 
 				foreach ($tax_rates as $tax_rate) {
-					if (! isset($taxes[$tax_rate['tax_rate_id']])) {
-						$taxes[$tax_rate['tax_rate_id']]          = $tax_rate;
-						$taxes[$tax_rate['tax_rate_id']]['value'] = 0;
+					$rateId = $tax_rate['tax_rate_id'] ?? false;
+
+					if (! isset($taxes[$rateId])) {
+						$taxes[$rateId]          = $tax_rate;
+						$taxes[$rateId]['value'] = 0;
 					}
 
-					$taxes[$tax_rate['tax_rate_id']]['value'] += ($tax_rate['amount'] * ($product['quantity'] ?? 1));
+					$taxes[$rateId]['value'] += ($tax_rate['amount'] * ($product['quantity'] ?? 1));
+					$this->total_tax = $taxes[$rateId]['value'];
 				}
 			}
 		}
 
 		return $taxes;
+	}
+
+	public function getTaxTotal() {
+		return $this->total_tax;
 	}
 
 	function addTaxTotal() {

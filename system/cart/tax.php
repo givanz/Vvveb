@@ -26,8 +26,6 @@ use Vvveb\Sql\Tax_typeSQL;
 use Vvveb\System\Cache;
 
 class Tax {
-	private $driver;
-
 	private $taxRates = [];
 
 	public static function getInstance($options = []) {
@@ -69,10 +67,12 @@ class Tax {
 
 		if (isset($this->taxRates[$taxTypeId])) {
 			foreach ($this->taxRates[$taxTypeId] as $taxRate) {
+				$rate = (float)$taxRate['rate'];
+
 				if ($taxRate['type'] == 'f') {//fixed
-					$amount += $taxRate['rate'];
+					$amount += $rate;
 				} elseif ($taxRate['type'] == 'p') {//percent
-					$amount += ($value / 100 * $taxRate['rate']);
+					$amount += (($value / 100) * $rate);
 				}
 			}
 		}
@@ -94,11 +94,13 @@ class Tax {
 				} else {
 					$amount = 0;
 				}
+				$rate  = (float)$taxRate['rate'];
+				$value = (float)$value;
 
 				if ($taxRate['type'] == 'f') {
-					$amount += $taxRate['rate'];
+					$amount += $rate;
 				} elseif ($taxRate['type'] == 'p') {
-					$amount += ($value / 100 * $taxRate['rate']);
+					$amount += (($value / 100) * $rate);
 				}
 
 				$taxRate_data[$taxRate['tax_rate_id']] = [
