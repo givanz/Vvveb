@@ -31,13 +31,11 @@ if($products) {
 	//@cart-product [data-v-product-content] = $product['content']
 
 	//catch all data attributes
-	@cart-product [data-v-cart-product-*]|innerText = $product['@@__data-v-cart-product-(*)__@@']
-	@cart-product a[data-v-cart-product-*]|href = $product['@@__data-v-cart-product-(*)__@@']
-	@cart-product a[data-v-cart-product-url]|href = $product['url']
+	@cart-product [data-v-cart-product-*]|innerText  = $product['@@__data-v-cart-product-(*)__@@']
+	@cart-product a[data-v-cart-product-*]|href      = $product['@@__data-v-cart-product-(*)__@@']
+	@cart-product img[data-v-cart-product-*]|src     = $product['@@__data-v-cart-product-(*)__@@']
+	@cart-product input[data-v-cart-product-*]|value = $product['@@__data-v-cart-product-(*)__@@']	@cart-product|data-product_id = $product['product_id']
 
-	@cart-product [data-v-cart-product-remove-url]|href = 
-		<?php echo htmlspecialchars(Vvveb\url(['module' => 'cart', 'action' => 'remove', 'product_id' => $product['product_id']]));?>
-		
 	@cart-product|data-product_id = $product['product_id']		
 	@cart-product|data-key = $key	
 
@@ -81,8 +79,8 @@ if(is_array($totals)) foreach ($totals as $index => $total) {
 ?>
 
 	//catch all data attributes
-	@total [data-v-cart-total-*]|innerText =  $total['@@__data-v-cart-total-(*)__@@']
-	@total a[data-v-cart-total-*]|href = $total['@@__data-v-cart-total-(*)__@@']
+	@total [data-v-cart-total-*]|innerText  = $total['@@__data-v-cart-total-(*)__@@']
+	@total a[data-v-cart-total-*]|href      = $total['@@__data-v-cart-total-(*)__@@']
 	@total input[data-v-cart-total-*]|value = $total['@@__data-v-cart-total-(*)__@@']
 
 @total|after = <?php }?>
