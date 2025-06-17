@@ -58,7 +58,7 @@ class Base {
 				$this->session->set('locale', $languages[$language]['locale']);
 				$this->session->set('rtl', $languages[$language]['rtl'] ?? false);
 				$default_language = false; //recheck default language
-				clearLanguageCache($language);
+				//clearLanguageCache($language);
 			}
 		}
 
@@ -239,6 +239,7 @@ class Base {
 		$this->global['user_group_id'] = $user['user_group_id'] ?? 1;
 		$this->global['site']          = &$site;
 		$this->global['user']          = $user ?? [];
+		$this->global['year']          = date('Y');
 
 		$this->language($site['language'] ?? false, $site['language_id'] ?? false);
 		$this->currency($site['currency'] ?? false, $site['currency_id'] ?? false);
@@ -280,6 +281,8 @@ class Base {
 			$this->view->info[]    = 'This is a dummy info message!';
 			$this->view->message[] = 'This is a dummy message!';
 		}
+
+		list($this->global) = Event::trigger(__CLASS__, __FUNCTION__ . ':after', $this->global);
 	}
 
 	protected function redirect($url = '/', $parameters = []) {
@@ -296,7 +299,9 @@ class Base {
 		FrontController::closeConnections();
 		PageCache::getInstance()->cleanUp();
 
-		die(header("Location: $url"));
+		header("Location: $url");
+
+		die();
 	}
 
 	/**
