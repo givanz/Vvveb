@@ -27,6 +27,7 @@ use function Vvveb\session as sess;
 use Vvveb\Sql\CommentSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use Vvveb\System\Images;
 use function Vvveb\url;
 
 class Comments extends ComponentBase {
@@ -106,14 +107,19 @@ class Comments extends ComponentBase {
 					}
 				}
 
+				if (isset($comment['avatar'])) {
+					$comment['avatar_url'] = Images::image($comment['avatar'], 'user');
+				}
+
 				//rfc
 				if (isset($comment['slug']) && $comment['slug']) {
 					$comment['pubDate'] = date('r', strtotime($comment['created_at']));
 
 					$anchor                = '#comment-' . $comment[$this->type . '_id'];
-					$comment['url']   	    =  url($this->route, $comment) . $anchor;
+					$comment['url']        =  url($this->route, $comment) . $anchor;
 					$comment['full-url']   =  url($this->route, $comment + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http']) . $anchor;
 				}
+
 				$comment['level']      =  $level;
 			}
 		}
