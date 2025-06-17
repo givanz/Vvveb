@@ -26,6 +26,7 @@ use function Vvveb\siteSettings;
 use Vvveb\Sql\SiteSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use function Vvveb\url;
 
 class Site extends ComponentBase {
 	public static $defaultOptions = [
@@ -54,8 +55,18 @@ class Site extends ComponentBase {
 			}
 		}
 
-		$results['url'] = SITE_URL;
-		list($results)  = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		$urlOptions = [];
+
+		if ($this->options['default_language'] != $this->options['language']) {
+			$urlOptions = ['language' => $this->options['language']];
+		} else {
+		}
+
+		$results['url']      = url('index/index');
+		$results['full-url'] = SITE_URL; //url('index/index', $urlOptions + ['host' => '*.*.*']);
+
+		$results['site_id'] = $this->options['site_id'];
+		list($results)      = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 
 		return $results;
 	}
@@ -64,23 +75,29 @@ class Site extends ComponentBase {
 	//this method is called from admin app
 	static function editorSave($id, $fields, $type = 'site') {
 		$sites      = new SiteSQL();
-		$publicPath = \Vvveb\publicUrlPath() . 'media/';
-		$settings   = [];
+		$result     = [];
+		$site       = $sites->get(['site_id' => $id]);
 
-		foreach ($fields as $field) {
-			$name  = $field['name'];
-			$value = $field['value'];
+		if ($site) {
+			$settings = json_decode($site['settings'], true);
 
-			if ($name == 'favicon' || strpos($name, 'logo') !== false) {
-				$value = str_replace($publicPath,'', $value);
+			$publicPath = \Vvveb\publicUrlPath() . 'media/';
+
+			foreach ($fields as $field) {
+				$name  = $field['name'];
+				$value = $field['value'];
+
+				if ($name == 'favicon' || $name == 'webbanner' || strpos($name, 'logo') !== false) {
+					$value = str_replace($publicPath,'', $value);
+				}
+				$settings[$name] = $value;
 			}
-			$settings[$name] = $value;
-		}
 
-		$site             = [];
-		$data['site_id']  = $id;
-		$site['settings'] = json_encode($settings);
-		$data['site']     = $site;
-		$result           = $sites->edit($data);
+			$site             = [];
+			$data['site_id']  = $id;
+			$site['settings'] = json_encode($settings);
+			$data['site']     = $site;
+			$result           = $sites->edit($data);
+		}
 	}
 }
