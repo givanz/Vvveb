@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	
+	xmlns:georss="http://www.georss.org/georss"
+	xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"
+>
+
+<channel data-v-component-posts="feed" data-v-limit="50" data-v-type="page" data-v-direction="desc" data-v-order_by="updated_at">
+	<title>News Vvveb</title>
+	<link>https://vvveb.com/feed/posts</link>
+	<description>The latest news about Vvveb</description>
+	<language>en-US</language>
+	<sy:updatePeriod>hourly</sy:updatePeriod>
+	<sy:updateFrequency>1</sy:updateFrequency>
+	<generator>https://vvveb.com</generator>
+
+	<image>
+		<url>/favicon.ico</url>
+		<title>Vvveb News</title>
+		<link>https://www.vvveb.com/feed/posts</link>
+		<width>32</width>
+		<height>32</height>
+	</image> 
+
+		<item data-v-post="post">
+			<title data-v-post-name="name">What's new in 0.1</title>
+			<link data-v-post-full-url="name"></link>
+			<dc:creator data-v-post-display_name="name"><![CDATA[Admin]]></dc:creator>
+			<pubDate data-v-post-pubDate="date">Tue, 29 Aug 2023 14:43:11 +0000</pubDate>
+			<category data-v-post-category-name="category" data-filter-cdata=""><![CDATA[Category]]></category>
+			<description data-v-post-excerpt="excerpt" data-filter-cdata=""><![CDATA[Excerpt]]></description>
+			<content:encoded data-v-post-content="content" data-filter-cdata=""><![CDATA[Content]]></content:encoded>		
+		</item>
+		<item data-v-post="post">
+			<title data-v-post-name="name">New features planned for the next version</title>
+			<link data-v-post-url-text="name"></link>
+			<dc:creator data-v-post-display_name="name"><![CDATA[Admin]]></dc:creator>
+			<pubDate data-v-post-pubDate="date">Tue, 29 Aug 2023 14:43:11 +0000</pubDate>
+			<category data-v-post-category-name="category" data-filter-cdata=""><![CDATA[Category]]></category>
+			<description data-v-post-excerpt="excerpt" data-filter-cdata=""><![CDATA[Excerpt]]></description>
+			<content:encoded data-v-post-content="content" data-filter-cdata=""><![CDATA[Content]]></content:encoded>		
+		</item>
+		<item data-v-post="post">
+			<title data-v-post-name="name">Introducing the new multi site feature</title>
+			<link data-v-post-url-text="name"></link>
+			<dc:creator data-v-post-display_name="name"><![CDATA[Admin]]></dc:creator>
+			<pubDate data-v-post-pubDate="date">Tue, 29 Aug 2023 14:43:11 +0000</pubDate>
+			<category data-v-post-category-name="category" data-filter-cdata=""><![CDATA[Category]]></category>
+			<description data-v-post-excerpt="excerpt" data-filter-cdata=""><![CDATA[Excerpt]]></description>
+			<content:encoded data-v-post-content="content" data-filter-cdata=""><![CDATA[Content]]></content:encoded>		
+		</item>
+		<item data-v-post="post">
+			<title data-v-post-name="name">How to use media library</title>
+			<link data-v-post-url-text="name"></link>
+			<dc:creator data-v-post-display_name="name"><![CDATA[Admin]]></dc:creator>
+			<pubDate data-v-post-pubDate="date">Tue, 29 Aug 2023 14:43:11 +0000</pubDate>
+			<category data-v-post-category-name="category" data-filter-cdata=""><![CDATA[Category]]></category>
+			<description data-v-post-excerpt="excerpt" data-filter-cdata=""><![CDATA[Excerpt]]></description>
+			<content:encoded data-v-post-content="content" data-filter-cdata=""><![CDATA[Content]]></content:encoded>		
+		</item>
+		<item data-v-post="post">
+			<title data-v-post-name="name">Vvveb Beta 1 version released</title>
+			<link data-v-post-url-text="name"></link>
+			<dc:creator data-v-post-display_name="name"><![CDATA[Admin]]></dc:creator>
+			<pubDate data-v-post-pubDate="date">Tue, 29 Aug 2023 14:43:11 +0000</pubDate>
+			<category data-v-post-category-name="category" data-filter-cdata=""><![CDATA[Category]]></category>
+			<description data-v-post-excerpt="excerpt" data-filter-cdata=""><![CDATA[Excerpt]]></description>
+			<content:encoded data-v-post-content="content" data-filter-cdata=""><![CDATA[Content]]></content:encoded>		
+		</item>
+	</channel>
+</rss>

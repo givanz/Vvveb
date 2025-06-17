@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:georss="http://www.georss.org/georss"
+	xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#"
+>
+
+<channel  data-v-component-comments="recent-comments" data-v-limit="50" data-v-order="desc">
+	<title>Vvveb Comments</title>
+	<link>https://vvveb.com/feed/comment</link>
+	<description>The latest comments on Vvveb</description>
+	<language>en-US</language>
+	<sy:updatePeriod>hourly</sy:updatePeriod>
+	<sy:updateFrequency>1</sy:updateFrequency>
+	<generator>https://vvveb.com</generator>
+
+	<image>
+		<url>/favicon.ico</url>
+		<title>Vvveb News</title>
+		<link>https://www.vvveb.com/feed/comments</link>
+		<width>32</width>
+		<height>32</height>
+	</image> 
+
+		<item data-v-comment="comment">
+			<title data-v-comment-name="name">What's new in 0.1</title>
+			<link data-v-comment-url-text="name"></link>
+			<dc:creator data-v-comment-author="name"><![CDATA[Admin]]></dc:creator>
+			<pubDate data-v-comment-pubDate="date">Tue, 29 Aug 2023 14:43:11 +0000</pubDate>
+			<description data-v-comment-content="description" data-filter-cdata=""><![CDATA[Excerpt]]></description>
+			<content:encoded data-v-comment-content="content" data-filter-cdata=""><![CDATA[Content]]></content:encoded>		
+		</item>
+		<item data-v-comment="post">
+			<title data-v-comment-name="name">New features planned for the next version</title>
+			<link data-v-comment-url-text="name"></link>
+			<dc:creator data-v-comment-author="name"><![CDATA[Admin]]></dc:creator>
+			<pubDate data-v-comment-pubDate="date">Tue, 29 Aug 2023 14:43:11 +0000</pubDate>
+			<description data-v-comment-content="description" data-filter-cdata=""><![CDATA[Excerpt]]></description>
+			<content:encoded data-v-comment-content="content" data-filter-cdata=""><![CDATA[Content]]></content:encoded>		
+		</item>
+		<item data-v-comment="post">
+			<title data-v-comment-name="name">Introducing the new multi site feature</title>
+			<link data-v-comment-url-text="name"></link>
+			<dc:creator data-v-comment-author="name"><![CDATA[Admin]]></dc:creator>
+			<pubDate data-v-comment-pubDate="date">Tue, 29 Aug 2023 14:43:11 +0000</pubDate>
+			<description data-v-comment-content="description" data-filter-cdata=""><![CDATA[Excerpt]]></description>
+			<content:encoded data-v-comment-content="content" data-filter-cdata=""><![CDATA[Content]]></content:encoded>		
+		</item>
+		<item data-v-comment="post">
+			<title data-v-comment-name="name">How to use media library</title>
+			<link data-v-comment-url-text="name"></link>
+			<dc:creator data-v-comment-author="name"><![CDATA[Admin]]></dc:creator>
+			<pubDate data-v-comment-pubDate="date">Tue, 29 Aug 2023 14:43:11 +0000</pubDate>
+			<description data-v-comment-content="description" data-filter-cdata=""><![CDATA[Excerpt]]></description>
+			<content:encoded data-v-comment-content="content" data-filter-cdata=""><![CDATA[Content]]></content:encoded>		
+		</item>
+		<item data-v-comment="post">
+			<title data-v-comment-name="name">Vvveb Beta 1 version released</title>
+			<link data-v-comment-url-text="name"></link>
+			<dc:creator data-v-comment-author="name"><![CDATA[Admin]]></dc:creator>
+			<pubDate data-v-comment-pubDate="date">Tue, 29 Aug 2023 14:43:11 +0000</pubDate>
+			<description data-v-comment-content="description" data-filter-cdata=""><![CDATA[Excerpt]]></description>
+			<content:encoded data-v-comment-content="content" data-filter-cdata=""><![CDATA[Content]]></content:encoded>		
+		</item>
+	</channel>
+</rss>
