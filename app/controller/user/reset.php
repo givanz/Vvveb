@@ -34,25 +34,33 @@ use function Vvveb\url;
 #[\AllowDynamicProperties]
 class Reset extends Base {
 	function reset() {
-		$token    = $this->request->get['token'] ?? false;
-		$user     = $this->request->get['user'] ?? false;
-		$password = $this->request->post['password'] ?? false;
-		$admin    = [];
+		$token           = $this->request->get['token'] ?? false;
+		$user            = $this->request->get['user'] ?? false;
+		$password        = $this->request->post['password'] ?? false;
+		$confirmPassword = $this->request->post['confirm_password'] ?? false;
+		$admin           = [];
 
 		if ($user && $token) {
 			$admin = User::get(['user' => $user, 'token' => $token]);
 
-			if ($password && $admin) {
-				if (User::update(['token' => '', 'password' => $password], ['username' => $user, 'token' => $token])) {
-					$success                      = __('Password was reset!');
-					$this->view->success['login'] = $success;
-					$this->session->set('success', ['login' => $success]);
-					$this->redirect('/user/login');
-				//header('Location: ' . url(['module' => 'user/login', 'success' => $success]));
+			if ($password) {
+				if ($confirmPassword && ($password === $confirmPassword)) {
+					if ($admin) {
+						if (User::update(['token' => '', 'password' => $password], ['username' => $user, 'token' => $token])) {
+							$success                      = __('Password was reset!');
+							$this->view->success['login'] = $success;
+							$this->session->set('success', ['login' => $success]);
+							$this->redirect('/user/login');
+						//header('Location: ' . url(['module' => 'user/login', 'success' => $success]));
+						} else {
+							$errors                      =  __('Update failed!');
+							$this->view->errors['login'] = $errors;
+							$this->session->set('errors', ['login' => $errors]);
+						}
+					}
 				} else {
-					$errors                      =  __('Update failed!');
+					$errors                      =  __('Passwords don\'t match!');
 					$this->view->errors['login'] = $errors;
-					$this->session->set('errors', ['login' => $errors]);
 				}
 			}
 		}
