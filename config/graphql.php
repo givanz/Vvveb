@@ -25,17 +25,13 @@
  		'mode' => 'http',
  	],
  	'session' => [
- 		'driver' => 'request',,//stateless, handle session externally if needed. Change to php for session management if php session cookie can be sent with the request.
+ 		'driver' => 'request',
  	],
  	'email' => [
  		'driver' => 'mail',
  	],
  	'cache' => [
  		'driver'  => 'file',
- 		'servers' => [
- 		],
- 		'options' => [
- 		],
  	],
- 	'key' => 'Q8qJ6CVpUW4msSM8pHmdGwyXIkSvT6Lo',
+ 	'key' => 'Q8qJ6CVpUW4msSM8pHmdGwyXIkSvT6Lo'
  ];

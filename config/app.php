@@ -29,11 +29,7 @@
  	],
  	'cache' => [
  		'driver'  => 'file',
- 		'servers' => [
- 		],
- 		'options' => [
- 		],
  	],
  	'cronkey' => 'oqTSet93cWukC74PBmP9x8XCuYWbw6Nk',
- 	'key'     => 'I0JedM5c2tOVAZ6qYgkJAyjTcANAlkLW',
+ 	'key'     => 'I0JedM5c2tOVAZ6qYgkJAyjTcANAlkLW'
  ];

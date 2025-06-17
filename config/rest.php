@@ -32,10 +32,6 @@
  	],
  	'cache' => [
  		'driver'  => 'file',
- 		'servers' => [
- 		],
- 		'options' => [
- 		],
  	],
- 	'key' => 'Q8qJ6CVpUW4msSM8pHmdGwyXIkSvT6Lo',
+ 	'key' => 'Q8qJ6CVpUW4msSM8pHmdGwyXIkSvT6Lo'
  ];
