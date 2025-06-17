@@ -45,6 +45,7 @@ foreach ($this->product['product_option'] as $product_option_id => $poption) {
 		@value [data-v-option-value-*]|name = <?php echo "product_option[$product_option_id][product_option_value][$product_option_value_id][@@__data-v-option-value-(*)__@@]";?>
 		[data-v-poption] .template [data-v-option-value-*]|name = <?php echo "product_option[$product_option_id][product_option_value][#][@@__data-v-option-value-(*)__@@]";?>
 		@value [data-v-option-value-*]|innerText = $poption_value['@@__data-v-option-value-(*)__@@']
+		@value input[data-v-option-value-price_operator] = <?php  echo '@@__title__@@';?>
 		
 		@value|after = <?php
 			}	
