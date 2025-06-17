@@ -28,8 +28,10 @@ use Vvveb\System\Core\View;
 use Vvveb\System\Event;
 use Vvveb\System\Payment;
 use Vvveb\System\Shipping;
+//use Vvveb\Trait\Cart as CartTrait;
 
 class Cart extends Base {
+//	use CartTrait;
 	use CouponTrait;
 
 	private $cart;
@@ -40,7 +42,17 @@ class Cart extends Base {
 		$options = array_intersect_key($this->global['site'],
 		array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
 
+		$cart_id = false;
+
+		if (isset($this->request->get['cart_id'])) {
+			$cart_id = $options['cart_id'] = $this->request->get['cart_id'];
+		}
+
 		$this->cart = ShoppingCart::getInstance($this->global + $options);
+
+		if ($cart_id) {
+			$this->cart->loadCart($cart_id);
+		}
 	}
 
 	function index() {
@@ -50,42 +62,46 @@ class Cart extends Base {
 		$this->view->payment  = $payment->getMethods([]);
 		$this->view->shipping = $shipping->getMethods([]);
 
-		if (isset($this->request->post['product_id']) &&
-			(isset($this->request->get['module']) && $this->request->get['module'] == 'cart/cart/add')) {
-			$this->cart->add($this->request->post['product_id']);
+		$product_id = $this->request->post['product_id'] ?? $this->request->get['product_id'] ?? false;
+		$module     = $this->request->get['module'] ?? $this->request->post['module'] ?? '';
+
+		if ($product_id && ($module == 'cart/cart/add' || $module == 'cart/cart')) {
+			$this->action('add', $product_id);
 		}
 
 		$cart = [
-			'products'        => $this->cart->getAll(),
-			'totals'          => $this->cart->getTotals(),
-			'total_items'     => $this->cart->getNoProducts(),
-			'total_weight'    => $this->cart->getWeight(),
-			'total_price'     => $this->cart->getNoProducts(),
-			'total'           => $this->cart->getGrandTotal(),
-			'coupons'         => $this->cart->getCoupons(),
-			'total_formatted' => $this->cart->getGrandTotalFormatted(),
-			'weight_unit'     => $this->global['site']['weight_type'],
-			'length_unit'     => $this->global['site']['length_type'],
+			'products'          => $this->cart->getAll(),
+			'totals'            => $this->cart->getTotals(),
+			'total_items'       => $this->cart->getNoProducts(),
+			'total_weight'      => $this->cart->getWeight(),
+			'total_price'       => $this->cart->getNoProducts(),
+			'total'             => $this->cart->getGrandTotal(),
+			'coupons'           => $this->cart->getCoupons(),
+			'total_formatted'   => $this->cart->getGrandTotalFormatted(),
+			'cart_id'           => ($cardId = $this->cart->getId()),
+			'encrypted_cart_id' => $cardId ? $this->cart->getId() : '',
+			'weight_unit'       => $this->global['site']['weight_type'],
+			'length_unit'       => $this->global['site']['length_type'],
 		];
 
 		$this->view->cart = $cart;
 	}
 
 	private function action($action, $productId = null, $quantity = 1) {
-		$productId          = $this->request->request['product_id'] ?? false;
+		$productId          = $this->request->request['product_id'] ?? $productId ?? false;
 		$key                = $this->request->request['key'] ?? false;
 		$quantity           = $this->request->request['quantity'] ?? $quantity;
 		$option             = $this->request->request['option'] ?? [];
 		$subscriptionPlanId = $this->request->request['subscription_plan_id'] ?? false;
+		$productVariantId   = $this->request->request['product_variant_id'] ?? false;
 
 		list($action, $productId, $key, $quantity, $option, $subscriptionPlanId) =
 		Event :: trigger(__CLASS__,__FUNCTION__, $action, $productId, $key, $quantity, $option, $subscriptionPlanId);
 
 		if ($key || $productId) {
-			//$this->view->success = false;
 			switch ($action) {
 				case 'add':
-					$this->cart->add($productId, $quantity, $option, $subscriptionPlanId);
+					$this->cart->add($productId, $quantity, $option, $productVariantId, $subscriptionPlanId);
 
 				break;
 
@@ -103,19 +119,21 @@ class Cart extends Base {
 		}
 
 		$this->view->noJson = true;
+	}
+
+	function remove() {
+		$this->action('remove');
 
 		return $this->index();
 	}
 
-	function remove() {
-		return $this->action('remove');
-	}
-
 	function update() {
-		return $this->action('update');
+		$this->action('update');
+
+		return $this->index();
 	}
 
 	function add() {
-		return $this->action('add');
+		return $this->index();
 	}
 }

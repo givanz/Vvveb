@@ -33,6 +33,7 @@ $_pagination_limit = isset($product['limit']) ? $product['limit'] : 5;
 
 @product button[data-v-product-*]|formaction = $product['@@__data-v-product-(*)__@@']
 @product a[data-v-product-*]|href = $product['@@__data-v-product-(*)__@@']
+@product [name="product_variant_id"] = $product['product_variant_id']
 
 
 @product img[data-v-product-main-image]|src = $product['image']
@@ -47,7 +48,7 @@ $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['produ
 $_images = empty($_images) ? $_default : $_images;
 
 if($_images) {
-	$i = 1;
+	$i = 0;
 	foreach ($_images as $index => $_image) { ?>
 
 		@images [data-bs-slide-to]|data-bs-slide-to = <?php echo $i ?? 1;?>

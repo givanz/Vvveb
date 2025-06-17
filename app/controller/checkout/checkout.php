@@ -46,6 +46,8 @@ use function Vvveb\url;
 class Checkout extends Base {
 	use LoginTrait, CouponTrait;
 
+	private $cart;
+
 	/*
 	use LoginTrait {
 		login as protected loginBase;
@@ -58,6 +60,25 @@ class Checkout extends Base {
 		return $this->index();
 	}
 	*/
+
+	function init() {
+		parent::init();
+
+		$options = array_intersect_key($this->global['site'],
+		array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
+
+		$cart_id = false;
+
+		if (isset($this->request->get['cart_id'])) {
+			$cart_id = $options['cart_id'] = $this->request->get['cart_id'];
+		}
+
+		$this->cart = Cart::getInstance($this->global + $options);
+
+		if ($cart_id) {
+			$this->cart->loadCart($cart_id);
+		}
+	}
 
 	function regions() {
 		$country_id   = $this->request->get['country_id'] ?? false;
@@ -101,20 +122,17 @@ class Checkout extends Base {
 	}
 
 	function index() {
-		$options = array_intersect_key($this->global['site'],
-		array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
-		$cart = Cart :: getInstance($this->global + $options);
-
 		//buy now product
 		if (isset($this->request->get['product_id'])) {
 			$productId          = $this->request->get['product_id'];
 			$quantity           = $this->request->post['quantity'] ?? 1;
 			$option             = $this->request->post['option'] ?? [];
 			$subscriptionPlanId = $this->request->post['subscription_plan_id'] ?? false;
-			$cart->add($productId, $quantity, $option, $subscriptionPlanId);
+			$productVariantId   = $this->request->post['product_variant_id'] ?? false;
+			$this->cart->add($productId, $quantity, $option, $productVariantId, $subscriptionPlanId);
 		}
 
-		if (! $cart->hasProducts()) {
+		if (! $this->cart->hasProducts()) {
 			return $this->redirect('cart/cart/index');
 		}
 
@@ -125,8 +143,8 @@ class Checkout extends Base {
 		$order    = Order::getInstance();
 
 		$checkoutInfo            = $this->session->get('checkout') ?? [];
-		$grandTotal              = $cart->getGrandTotal();
-		$hasShipping             = $cart->hasShipping();
+		$grandTotal              = $this->cart->getGrandTotal();
+		$hasShipping             = $this->cart->hasShipping();
 		$hasPayment              = ($grandTotal > 0);
 		$this->view->hasShipping = $hasShipping;
 		$this->view->hasPayment  = $hasPayment;
@@ -249,9 +267,9 @@ class Checkout extends Base {
 				$this->session->set('checkout', $checkoutInfo);
 
 				if (($errors = $validator->validate($this->request->post)) === true) {
-					$checkoutInfo['products']        = $cart->getAll();
-					$checkoutInfo['product_options'] = $cart->getProductOptions();
-					$checkoutInfo['totals']          = $cart->getTotals();
+					$checkoutInfo['products']        = $this->cart->getAll();
+					$checkoutInfo['product_options'] = $this->cart->getProductOptions();
+					$checkoutInfo['totals']          = $this->cart->getTotals();
 					$checkoutInfo['total']           = $grandTotal;
 					$checkoutInfo += prefixArrayKeys('shipping_', $checkoutInfo['shipping_address']);
 					$checkoutInfo += prefixArrayKeys('billing_', $checkoutInfo['billing_address']);
@@ -264,8 +282,9 @@ class Checkout extends Base {
 						foreach (['first_name', 'last_name', 'email', 'phone_number', 'password'] as $field) {
 							$userInfo[$field] = $checkoutInfo[$field] ?? NULL;
 						}
+
 						$userInfo['display_name'] = $userInfo['first_name'] . ' ' . $userInfo['last_name'];
-						$userInfo['username']     = str_replace(' ', '', $userInfo['first_name'] . $userInfo['last_name']);
+						$userInfo['username']     = strtolower(str_replace(' ', '', $userInfo['first_name'] . $userInfo['last_name'])) . '-' . rand();
 
 						$result = User::add($userInfo);
 
@@ -346,7 +365,6 @@ class Checkout extends Base {
 
 						$this->view->messages[] = __('Order placed!');
 						$this->session->set('order', $checkoutInfo);
-						$cart->empty();
 						$site = siteSettings();
 
 						$shippingData = $checkoutInfo['shipping_data'];
@@ -372,8 +390,9 @@ class Checkout extends Base {
 
 						try {
 							$error =  __('Error sending order confirmation mail!');
+							$title = sprintf(__('Order confirmation #%s'), $customer_order_id);
 
-							if (! email([$checkoutInfo['email'], $site['admin-email']], sprintf(__('Order confirmation #%s'), $customer_order_id), 'order/new', $checkoutInfo)) {
+							if (! email([$checkoutInfo['email'], $site['admin-email']], $title, 'order/new', $checkoutInfo + ['title' => $title])) {
 								$this->session->set('errors', $error);
 								$this->view->errors[] = $error;
 							}
@@ -384,6 +403,8 @@ class Checkout extends Base {
 							$this->session->set('errors', $error);
 							$this->view->errors[] = $error;
 						}
+
+						$this->cart->empty();
 
 						// clear notifications cache
 						CacheManager :: clearObjectCache('component', 'notifications');
