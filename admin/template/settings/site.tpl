@@ -150,6 +150,28 @@ $setting = '@@__name:\[(.*)\]__@@';
 
 [data-v-resize] option|after = <?php 
 } ?>
+
+select[data-v-formats]|before = 
+<?php
+	 $name = 'formats';
+	 $selected = '';	
+	 if (isset($this->setting['image_format'])) 
+	 $selected = $this->setting['image_format'];
+?>
+
+[data-v-formats] [data-v-option]|deleteAllButFirstChild
+[data-v-formats] [data-v-option]|before = <?php 
+	if (isset($this->$name))
+	foreach ($this->$name as $value => $text) {
+	?>
+
+	[data-v-formats] [data-v-option]|value = $text
+	[data-v-formats] [data-v-option]|addNewAttribute = <?php if ($text == $selected) echo 'selected';?>
+	[data-v-formats] [data-v-option] = $text
+
+[data-v-formats] [data-v-option]|after = <?php 
+} ?>
+
 /*
 
 select[data-v-setting]|before = 
