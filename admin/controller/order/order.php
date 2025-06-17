@@ -74,7 +74,7 @@ class Order extends Base {
 
 				if (isset($results['products'])) {
 					foreach ($results['products'] as $id => &$product) {
-						$product['url'] = htmlentities(\Vvveb\url('product/product/index', $product));
+						$product['url'] = htmlspecialchars(\Vvveb\url('product/product/index', $product));
 
 						if (isset($product['images'])) {
 							$product['images'] = json_decode($product['images'], true);
@@ -130,7 +130,9 @@ class Order extends Base {
 				$view->printShippingUrl = \Vvveb\url(['action' => 'printShipping'] + $url);
 				$view->printInvoiceUrl  = \Vvveb\url(['action' => 'printInvoice'] + $url);
 			} else {
-				return $this->notFound(true, __('Order not found!'));
+				$this->notFound(__('Order not found!'));
+
+				exit();
 			}
 		} else {
 			//new order
@@ -168,7 +170,7 @@ class Order extends Base {
 			unset($options['admin_id']);
 
 			$order = new OrderCart($order_id, $options);
-			$order->add($product_id, false, $quantity, []);
+			$order->addOrderProduct($product_id, false, $quantity, []);
 			$order->updateCart();
 			$order->write();
 		}
@@ -176,11 +178,11 @@ class Order extends Base {
 		$this->index();
 	}
 
-	private function sendNotification($order_id, $email, $message) {
+	private function sendNotification($order_id, $customer_order_id, $email, $message) {
 		try {
 			$error =  __('Error sending order confirmation mail!');
-
-			if (! email([$email], sprintf(__('Order update #%s'), $order_id), 'order/update', ['message' => $message])) {
+			$title = sprintf(__('Order update #%s'), $customer_order_id);
+			if (! email([$email], $title, 'order/update', ['message' => $message, 'title' => $title], [], 'app')) {
 				$this->session->set('errors', $error);
 				$this->view->errors[] = $error;
 			}
@@ -192,14 +194,15 @@ class Order extends Base {
 			$this->view->errors[] = $error;
 		}
 	}
-	
+
 	function saveLog() {
-		$order_id  = $this->request->get['order_id'] ?? false;
+		$order_id          = $this->request->get['order_id'] ?? false;
+		$customer_order_id = $this->request->post['customer_order_id'] ?? false;
 		$log       = $this->request->post['log'] ?? [];
 		$notify    = $log['notify'] ?? false;
 		$public    = $log['public'] ?? false;
 		$view      = $this->view;
-		
+
 		$this->index();
 
 		if ($order_id && $log) {
@@ -213,18 +216,18 @@ class Order extends Base {
 
 				if (isset($result['order_log']) && $result['order_log']) {
 					$view->success = [__('Order status saved!')];
-					
+
 					$this->view->log[] = $log;
-					
+
 					if ($notify) {
 						$message = '';
 
-						if ($public) { 
+						if ($public) {
 							$message = $log['note'];
 						}
-						
+
 						$email = $this->view->order['email'];
-						$this->sendNotification($order_id, $email, $message);
+						$this->sendNotification($order_id, $customer_order_id, $email, $message);
 					}
 				} else {
 					$view->errors[] = $orderLog->error;
@@ -265,13 +268,14 @@ class Order extends Base {
 					$view->errors = [$orders->error];
 				}
 			} else {
-				$systemOrder      = SystemOrder::getInstance();
-				$order_id         = $systemOrder->add($order + $this->global);
-				//$result = $orders->add(['order' => $order + $this->global]);
+				$systemOrder = SystemOrder::getInstance();
+				$order       = $systemOrder->add($order + $this->global);
+				$order_id    = $order['order_id'];
 
 				if (isset($order_id)) {
-					$view->success = __('Order saved!');
-					$url           = ['module' => 'order/order', 'order_id' => $order_id];
+					$message                    = __('Order saved!');
+					$this->view->success['get'] = $message;
+					$url                        = ['module' => 'order/order', 'order_id' => $order_id, 'success' => $message];
 					$this->redirect($url);
 				} else {
 					$view->errors = [$orders->error];
