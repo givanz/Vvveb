@@ -115,26 +115,26 @@ function autoload($class) {
 	}
 
 	$relativeClass = substr($class, $len);
-
+	$isPlugin      = (strncmp($relativeClass, 'Plugins\\', 7) === 0);
 	// replace the namespace prefix with the base directory, replace namespace
 	// separators with directory separators in the relative class name, append
 	// with .inc
 	$root = DIR_APP;
 
 	//if namespace is Vvveb\System or Vvveb\Plugins load from root dir above app dir
-	if ((substr_compare($relativeClass, 'System\\', 0, 7) == 0) ||
-		(substr_compare($relativeClass, 'Plugins\\', 0, 7) == 0) ||
-		(substr_compare($relativeClass, 'Sql\Plugins\\', 0, 11) == 0)) {
+	if ((strncmp($relativeClass, 'System\\', 7) === 0) ||
+		$isPlugin ||
+		(strncmp($relativeClass, 'Sql\Plugins\\', 11) === 0)) {
 		$root = DIR_ROOT;
 	}
 
 	//if namespace is App change to app dir
-	if ((substr_compare($relativeClass, 'App\\', 0, 4) == 0)) {
+	if ((strncmp($relativeClass, 'App\\', 4) === 0)) {
 		$root = DIR_ROOT . 'app' . DS;
 	}
 
 	//if namespace is Admin change to admin dir
-	if ((substr_compare($relativeClass, 'Admin\\', 0, 6) == 0)) {
+	if ((strncmp($relativeClass, 'Admin\\', 6) === 0)) {
 		$root = DIR_ROOT . 'admin' . DS;
 	}
 
@@ -205,6 +205,11 @@ function autoload($class) {
 		}
 	} else {
 		$file       = $root . str_replace('\\', '/', camelToUnderscore($relativeClass)) . '.php';
+
+		if ($isPlugin && ($isController = strpos($relativeClass, 'Controller\\'))) {
+			$file= str_replace('/controller/', '/' . APP . '/controller/', $file);
+		}
+
 		$fileExists = file_exists($file);
 
 		if ($fileExists) {
@@ -228,12 +233,13 @@ function exceptionToArray($exception, $file = false) {
 	$file   = $exception->getFile() ? $exception->getFile() : $file;
 	$lineNo = $exception->getLine() - 1;
 	//$code = $exception->getCode();
-	$class = get_class($exception);
-	$lines = [];
-	$line  = $lineNo;
-	$code  = '';
+	$class     = get_class($exception);
+	$lines     = [];
+	$codeLines = [];
+	$line      = $lineNo;
+	$code      = '';
 
-	if ($file && ($codeLines = file($file)) && isset($codeLines[$lineNo])) {
+	if ($file && file_exists($file) && ($codeLines = file($file)) && isset($codeLines[$lineNo])) {
 		$codeLines[$lineNo] = preg_replace("/\n$/","\t // <==\n", $codeLines[$lineNo]);
 		$lines              = array_slice($codeLines, $lineNo - 7, 14);
 		$line               = implode("\n", array_slice($codeLines, $lineNo, 1));
@@ -330,13 +336,13 @@ function fatalErrorHandler() {
 	}
 }
 
-spl_autoload_register('Vvveb\System\core\autoload');
-spl_autoload_register('Vvveb\System\core\autoload_vendor');
+spl_autoload_register('Vvveb\System\Core\autoload');
+//spl_autoload_register('Vvveb\System\Core\autoload_vendor');
 set_exception_handler('Vvveb\System\Core\exceptionHandler');
-//set_error_handler('Vvveb\System\Core\vErrorHandler');
-//register_shutdown_function('\Vvveb\System\fatalErrorHandler');
+set_error_handler('Vvveb\System\Core\vErrorHandler');
+register_shutdown_function('Vvveb\System\Core\fatalErrorHandler');
 
-//require DIR_ROOT . '/vendor/autoload.php';
+require DIR_ROOT . '/vendor/autoload.php';
 
 $dbDefault  = \Vvveb\config('db.default', 'default');
 $connection = \Vvveb\config('db.connections.' . $dbDefault,  []);
@@ -374,7 +380,7 @@ function start() {
 		define('SITE_ID', $site['id'] ?? 1);
 
 		//load plugins first for APP
-		if (APP == 'app') {
+		if (APP != 'admin') {
 			Plugins :: loadPlugins(SITE_ID);
 		}
 
