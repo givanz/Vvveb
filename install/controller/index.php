@@ -34,6 +34,7 @@ use Vvveb\System\Core\View;
 use Vvveb\System\Extensions\Plugins;
 use Vvveb\System\Extensions\Themes as ThemesList;
 use Vvveb\System\Functions\Str;
+use Vvveb\System\Media\Image;
 use Vvveb\System\User\Admin;
 use function Vvveb\userPreferedLanguage;
 
@@ -161,13 +162,13 @@ class Index extends Base {
 			$import->createTables();
 
 			if ($noimport) {
-				$filter = ['taxonomy.sql', 'admin.sql', 'role.sql', 'country.sql', 'region.sql', 'site.sql', 'menu.sql', 'length_type.sql'];
+				$exclude = ['post*', 'product*', 'vendor*', 'manufacturer*', 'taxonomy_*', 'attribute*', 'option*', 'user.sql', 'comment*', 'digital_asset*'];
 			} else {
-				$filter = [];
+				$exclude = [];
 			}
 
 			$import->setPath(DIR_ROOT . 'install/sql/insert/');
-			$import->insertData($filter);
+			$import->insertData([], $exclude);
 			//$import->db->close();
 			$this->writeConfig($data);
 
@@ -258,14 +259,6 @@ class Index extends Base {
 			$sites          = new SiteSQL();
 			//$result         = \Vvveb\setMultiSetting('site',$settings);
 
-			$site             = [];
-			$site['site_id']  = 1;
-			$site['settings'] = json_encode($settings);
-
-			if ($theme) {
-				$site['theme']  = $theme;
-			}
-
 			if ($noecommerce) {
 				Plugins::activate('hide-ecommerce', 1);
 			}
@@ -284,9 +277,14 @@ class Index extends Base {
 			$settings['admin-email']   = $user['email'];
 			$settings['contact-email'] = $user['email'];
 
+			if (Image::formats('webp')) {
+				$settings['image_format'] = 'webp';
+			}
+
 			$site = [
 				'host'     => $hostname ?? '*.*.*', //$_SERVER['HTTP_HOST']
 				'site_id'  => 1,
+				'id'       => 1,
 				'name'     => 'Default',
 				'theme'    => $theme,
 				'settings' => json_encode($settings),
@@ -359,8 +357,14 @@ class Index extends Base {
 			@\Vvveb\setConfig('app.key', Str::random(32));
 
 			//set APCu memory cache if available instead of default file cache
-			if (function_exists('apcu_cache_info') && ini_get('apc.enabled')) {
-				@\Vvveb\setConfig('app.cache.driver', 'APCu');
+			$cacheDriver = (function_exists('apcu_cache_info') && ini_get('apc.enabled')) ? 'APCu' : null;
+
+			foreach (['app', 'admin', 'graphql', 'rest'] as $app) {
+				if ($cacheDriver) {
+					@\Vvveb\setConfig($app . '.cache.driver', $cacheDriver);
+				}
+				@\Vvveb\setConfig($app . '.cronkey', Str::random(32));
+				@\Vvveb\setConfig($app . '.key', Str::random(32));
 			}
 
 			if (V_SUBDIR_INSTALL) {

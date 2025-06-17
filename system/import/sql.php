@@ -191,7 +191,7 @@ class Sql {
 		$glob   = ['', '*/*/', '*/'];
 
 		//$files = glob($name, GLOB_BRACE);
-		if (!$files) {
+		if (! $files) {
 			$files = globBrace($this->sqlPath, ['', '**/', '*/*/'], '*.sql');
 		}
 
@@ -225,7 +225,7 @@ class Sql {
 					foreach ($queries as $query) {
 						$query = trim($query);
 
-						if (empty($query) || substr_compare($query, '-- ', 0, 3) === 0) {
+						if (empty($query) || strncmp($query, '-- ', 3) === 0) {
 							continue;
 						}
 						$this->multiQuery($query . ';', $filename);
@@ -250,16 +250,47 @@ class Sql {
 		return $sql;
 	}
 
-	function insertData($filter = []) {
+	function insertData($include = [], $exclude = []) {
 		$glob   = ['', '*/*/', '*/'];
 
 		//$files = glob($name, GLOB_BRACE);
 		$files = globBrace($this->sqlPath, ['', '**/', '*/*/'], '*.sql');
 
+		//expand * and transform to regex
+		$includeRegex = '';
+
+		if ($include) {
+			foreach ($include as $filter) {
+				if ($includeRegex) {
+					$includeRegex .= '|';
+				}
+				$includeRegex .= str_replace('*', '.*', addslashes($filter));
+			}
+
+			$includeRegex = '/' . $includeRegex . '/';
+		}
+
+		$excludeRegex = '';
+
+		if ($exclude) {
+			foreach ($exclude as $filter) {
+				if ($excludeRegex) {
+					$excludeRegex .= '|';
+				}
+				$excludeRegex .= str_replace('*', '.*', addslashes($filter));
+			}
+
+			$excludeRegex = '/' . $excludeRegex . '/';
+		}
+
 		foreach ($files as $filename) {
 			$name = basename($filename);
 
-			if ($filter && ! in_array($name, $filter)) {
+			if ($excludeRegex && preg_match($excludeRegex, $name)) {
+				continue;
+			}
+
+			if ($includeRegex && ! preg_match($includeRegex, $name)) {
 				continue;
 			}
 
