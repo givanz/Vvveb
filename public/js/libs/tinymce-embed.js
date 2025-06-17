@@ -1,4 +1,4 @@
-window.addEventListener("vvveb.tinymce.options", function (e) { 
+window.addEventListener("tinymce.options", function (e) { 
 	let tinyMceOptions = e.detail;
 	
 	tinyMceOptions.quickbars_insert_toolbar += '| Embed';
@@ -7,7 +7,7 @@ window.addEventListener("vvveb.tinymce.options", function (e) {
 	return tinyMceOptions;
 });
 
-window.addEventListener("vvveb.tinymce.setup", function (e) { 
+window.addEventListener("tinymce.setup", function (e) { 
 	let editor = e.detail;
 	
 	editor.ui.registry.addButton('Embed', {
