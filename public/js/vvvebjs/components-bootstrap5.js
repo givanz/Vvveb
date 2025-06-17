@@ -1,20 +1,23 @@
-/*
-Copyright 2017 Ziadin Givan
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-https://github.com/givanz/Vvvebjs
-*/
+/**
+ * Vvveb
+ *
+ * Copyright (C) 2021  Ziadin Givan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * https://github.com/givanz/Vvveb
+ */
 
 Vvveb.ComponentsGroup['Bootstrap 5'] =
 ["html/container", "html/gridrow", "html/btn", "html/btn-link", "html/buttongroup", "html/buttontoolbar", "html/alert", "html/card", "html/listgroup", "html/badge", "html/progress", "html/navbar", "html/breadcrumbs", "html/pagination"];
@@ -1001,22 +1004,23 @@ Vvveb.Components.extend("_base", "html/gridrow", {
             }],
         },
 	},{
-        name: "Column",
-        key: "column1",
-        inputtype: GridInput
+		name: "Column",
+		key: "column1",
+		inputtype: GridInput
 	},{
-        name: "Column",
-        key: "column1",
-        inline:true,
-        col:12,
-        inputtype: GridInput
+		name: "Column",
+		key: "column1",
+		inline:true,
+		col:12,
+		inputtype: GridInput
 	},{
-        name: "",
-        key: "addChild",
-        inputtype: ButtonInput,
-        data: {text:"Add column", icon:"la la-plus"},
-        onChange: function(node)
-        {
+		name: "",
+		key: "addChild",
+		inline:true,
+		inputtype: ButtonInput,
+		data: {text:"Add column", icon:"la la-plus", className:"btn-secondary"},
+		onChange: function(node)
+		{
 			 node.append(generateElements('<div class="col-3"><h3>Col-3</h3></div>')[0]);
 			 
 			 //render component properties again to include the new column inputs
