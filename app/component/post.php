@@ -136,15 +136,15 @@ class Post  extends ComponentBase {
 			}
 		}
 
-		if ($post) {
-			//$post['post_id'] = $id;
-			$result = $posts->edit(['post' => $post, 'post_id' => $id]);
-		}
-
 		if ($post_content) {
 			$post_content['language_id'] = self :: $global['language_id'];
 			//$post['post_content']['post_id'] = $id;
 			$result = $posts->editContent(['post_content' => $post_content, 'post_id' => $id, 'language_id' => self :: $global['language_id']]);
+		}
+
+		if ($post || $post_content) {
+			$post['post_id'] = $id;
+			$result          = $posts->edit(['post' => $post, /* 'post_content' => [$post_content],*/ 'post_id' => $id]);
 		}
 	}
 }
