@@ -29,7 +29,6 @@
 @post|before = <?php 
 //if no posts available and page is loaded in editor then set an empty post to show post content for the editor
 $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : [];
-$_default = [0 => []];
 $_posts = empty($posts['post']) ? $_default : $posts['post'];
 //$pagination = $this->posts[$_posts_idx]['pagination'];
 $count = 0;
@@ -57,6 +56,7 @@ foreach ($_posts as $index => $post) {?>
 	
 	@post [data-v-post-url-text]	= $post['url']	
 	@post a[data-v-post-*]|href   	= $post['@@__data-v-post-(*)__@@']	
+	@post a[data-v-post-url]|href	= $post['url']	
 	@post [data-v-post-url]|title	= $post['name']	
 	
 	@post [data-v-post-content] = <?php if (isset($post['content'])) echo($post['content']);?>
