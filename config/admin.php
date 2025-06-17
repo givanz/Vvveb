@@ -21,6 +21,15 @@
  */
 
 return [
+ 	'session' => [
+ 		'driver' => 'php',
+ 	],
+ 	'email' => [
+ 		'driver' => 'mail',
+ 	],
+ 	'cache' => [
+ 		'driver'  => 'file',
+ 	], 
 	'theme' => 'default',
 	'path'  => 'admin',
 ];
