@@ -67,4 +67,8 @@ class Image {
 	public function crop($topX, $topY, $bottomX, $bottomY) {
 		return false;
 	}
+
+	public static function formats($format = false) {
+		return [];
+	}
 }

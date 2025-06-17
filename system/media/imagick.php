@@ -158,4 +158,11 @@ class Image {
 
 		$this->image->cropImage($width, $height, $crop_x, $crop_y);
 	}
+
+	public static function formats($format = false) {
+		$formats = \Imagick::queryformats() ?? [];
+
+		//return array_map(fn($value) => strtolower($value), $info);
+		return array_map('strtolower', $formats);
+	}
 }

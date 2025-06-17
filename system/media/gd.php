@@ -199,4 +199,29 @@ class Image {
 			}
 		}
 	}
+
+	public static function formats($format = false) {
+		$formats = [];
+		$info    = gd_info();
+
+		foreach ([
+			'JPEG Support' => 'jpg',
+			'PNG Support' => 'png',
+			'WebP Support' => 'webp',
+			'AVIF Support' => 'avif',
+			'WBMP Support' => 'wbmp',
+			'GIF Create Support' => 'gif',
+			'XBM Support"' => 'xbm',
+		] as $name => $extension) {
+			if (isset($info[$name]) && $info[$name]) {
+				$formats[] = $extension;
+			}
+		}
+
+		if ($format) {
+			return in_array($format, $formats);
+		}
+
+		return $formats;
+	}
 }
