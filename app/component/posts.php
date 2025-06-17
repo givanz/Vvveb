@@ -22,18 +22,18 @@
 
 namespace Vvveb\Component;
 
-use function Vvveb\__;
 use function Vvveb\availableLanguages;
 use function Vvveb\get;
 use Vvveb\Sql\PostSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
-use Vvveb\System\Images;
-use function Vvveb\url;
+use Vvveb\System\Traits\Post;
 
 class Posts extends ComponentBase {
+	use Post;
+
 	public static $defaultOptions = [
-		'page'               => ['url', 1],
+		'page'               => ['url'],
 		'post_id'            => 'url',
 		'language_id'        => null,
 		'source'             => 'autocomplete',
@@ -90,14 +90,18 @@ class Posts extends ComponentBase {
 	function results() {
 		$posts = new PostSQL();
 
-		if ($page = $this->options['page']) {
-			$this->options['start'] = ($page - 1) * $this->options['limit'];
+		if (! $this->options['page'] && ! $this->options['start']) {
+			$this->options['page'] = 1;
 		}
 
+		if ($page = $this->options['page']) {
+			$this->options['start'] = ($page - 1) * ((int) ($this->options['limit'] ?? 4));
+		}
+		/*
 		if ($this->options['limit'] && ! $page) {
 			$this->options['start'] = 0;
 		}
-
+		*/
 		if (isset($this->options['post_id']) && is_array($this->options['post_id']) && $this->options['source'] == 'autocomplete') {
 			$this->options['post_id'] = array_keys($this->options['post_id']);
 		} else {
@@ -118,79 +122,17 @@ class Posts extends ComponentBase {
 			$this->options['search'] .= '*';
 		}
 
+		//if only one taxonomy_item_id is provided then add it to array
+		if (isset($this->options['taxonomy_item_id']) && ! is_array($this->options['taxonomy_item_id'])) {
+			$this->options['taxonomy_item_id'] = [$this->options['taxonomy_item_id']];
+		}
+
 		$results = $posts->getAll($this->options);
 		//$languages = availableLanguages();
-		$type = $this->options['type'] ?: 'post';
+		$this->options['type'] = $this->options['type'] ?: 'post';
 
 		if ($results && isset($results['post'])) {
-			foreach ($results['post'] as $id => &$post) {
-				if (isset($post['images'])) {
-					$post['images'] = json_decode($post['images'], 1);
-
-					foreach ($post['images'] as &$image) {
-						$image = Images::image($image, 'post', $this->options['image_size']);
-					}
-				}
-
-				foreach (['categories' => 'category', 'tags' => 'tag', 'taxonomy' => $this->options['taxonomy'] ?? ''] as $taxonomy => $route) {
-					if (isset($post[$taxonomy])) {
-						$post[$taxonomy] = json_decode($post[$taxonomy], 1);
-						$count           = $this->options[$taxonomy];
-
-						if (! $post[$taxonomy]) {
-							continue;
-						}
-
-						if (is_numeric($count) && is_array($post[$taxonomy])) {
-							$post[$taxonomy] = array_slice($post[$taxonomy], 0, $count);
-						}
-
-						foreach ($post[$taxonomy] as &$cat) {
-							$cat['url'] = url("content/$route/index", $cat);
-						}
-					}
-				}
-
-				if (isset($post['image'])) {
-					$post['image'] = $post['images'][] = Images::image($post['image'], 'post', $this->options['image_size']);
-				}
-
-				if (isset($post['avatar'])) {
-					$post['avatar'] = $post['avatar'] = Images::image($post['avatar'], 'admin');
-				}
-
-				if (empty($post['excerpt']) && ! empty($post['content'])) {
-					$post['excerpt'] = substr(strip_tags($post['content']), 0, $this->options['excerpt_limit']);
-				}
-
-				//comments translations
-				$post['comment_text'] = sprintf(__('%d comment', '%d comments', (int)$post['comment_count']), $post['comment_count']);
-
-				//date formatting that can be used for url parameters
-				$date = date_parse($post['created_at']);
-
-				foreach (['year', 'day', 'month', 'hour', 'minute'] as $key) {
-					$post[$key] = $date[$key] ?? '';
-				}
-
-				$language = [];
-
-				if ($post['language_id'] != $this->options['default_language_id']) {
-					$language = ['language' => $this->options['language']];
-				}
-
-				//rfc
-				$post['pubDate'] = date('r', strtotime($post['created_at']));
-				$post['modDate'] = date('r', strtotime($post['updated_at']));
-				$post['lastMod'] = date('Y-m-d\TH:i:sP', strtotime($post['updated_at']));
-
-				//url
-				$url                  =  ['slug' => $post['slug'], 'post_id' => $post['post_id']] + $language;
-				$post['url']          = url("content/$type/index", $url);
-				$post['full-url']     = url("content/$type/index", $url + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http']);
-				$post['author-url']   = url('content/user/index', $post);
-				$post['comments-url'] = $post['url'] . '#comments';
-			}
+			$this->posts($results['post'], $this->options);
 		}
 
 		//if archive then pass year and month
