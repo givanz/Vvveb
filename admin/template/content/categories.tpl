@@ -36,6 +36,7 @@ if ($_categories) {
 
 		//catch all data attributes
 		@taxonomy_item [data-v-taxonomy_item-*] = $taxonomy_item['@@__data-v-taxonomy_item-(*)__@@']
+		@taxonomy_item [data-v-taxonomy_item_id] = $taxonomy_item['taxonomy_item_id']
 		
 		@taxonomy_item [data-v-taxonomy_item-url]|href = <?php echo htmlspecialchars(Vvveb\url('post/taxonomy_item/index', $taxonomy_item));?>
 		@taxonomy_item [data-v-taxonomy_item-img]|src = $taxonomy_item['images'][0]

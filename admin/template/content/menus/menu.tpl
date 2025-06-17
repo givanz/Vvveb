@@ -8,7 +8,7 @@ import(common.tpl)
 @menu|deleteAllButFirstChild
 
 
-[data-v-taxonomy_id] = <?php echo (int)$this->menu_data['menu_id'];?>
+[data-v-taxonomy_id] = <?php echo (int)($this->menu_data['menu_id'] ?? false);?>
 [data-v-name]        = <?php echo htmlspecialchars($this->menu_data['name'] ?? '');?>
 [data-v-slug]        = <?php echo htmlspecialchars($this->menu_data['slug'] ?? '');?>
 
@@ -55,6 +55,7 @@ if ($_categories) {
 
 		//catch all data attributes
 		@menu [data-v-taxonomy_item-*] = $menu['@@__data-v-taxonomy_item-(*)__@@']
+		@menu [data-v-taxonomy_item_id] = $menu['menu_item_id']
 		
 		
 		@menu [data-v-taxonomy_item-url]|href = <?php echo htmlspecialchars(Vvveb\url('post/menu/index', $menu));?>
