@@ -24,9 +24,11 @@ namespace Vvveb\Controller\User;
 
 use \Vvveb\System\Functions\Str;
 use function Vvveb\__;
+use function Vvveb\pregMatch;
 use function Vvveb\setLanguage;
 use Vvveb\Sql\Admin_Failed_LoginSQL;
 use Vvveb\System\Event;
+use Vvveb\System\Extensions\Plugins;
 use Vvveb\System\User\Admin;
 use Vvveb\System\Validator;
 
@@ -38,45 +40,59 @@ class Login {
 	protected $failedCount = 10; //the number of failures before account is locked
 
 	protected function redirect($url = '/', $parameters = []) {
-		$redirect = \Vvveb\url($url, $parameters);
+		header("Location: $url");
 
-		if ($redirect) {
-			$url = $redirect;
-		}
-
-		//$this->session->close();
-
-		return header("Location: $url");
+		exit();
 	}
 
 	function index() {
+		$view            = $this->view;
+		$adminPath       = \Vvveb\adminPath();
+		$view->adminPath = $adminPath;
+
 		if (isset($this->request->post['logout'])) {
 			return Admin::logout();
 		}
 
 		//$this->checkAlreadyLoggedIn();
-		$view       = $this->view;
 		$admin      = Admin::current();
-		$admin_path = \Vvveb\adminPath();
 
 		if ($admin) {
-			return $this->redirect($admin_path);
+			return $this->redirect($adminPath);
 		}
 
-		$this->view->adminPath = $admin_path;
-		$this->view->action    = $admin_path . 'index.php?module=user/login';
-		$this->view->modal     = $this->request->get['modal'] ?? false;
+		//don't load plugins at all if safemode get parameter
+		if (! isset($this->request->get['safemode'])) {
+			$failedPlugins = [];
+
+			try {
+				Plugins :: loadPlugins();
+			} catch (\Throwable $e) {
+				$file            = $e->getFile();
+				$plugin          = pregMatch('@.*[\/]plugins[\/]([^\/]+)[$\/]@', $file, 1) ?: $file;
+				$failedPlugins[] = $plugin;
+				$view->errors[]  = sprintf(__('Plugin `%s` failed to load!'), $plugin);
+			}
+
+			if ($failedPlugins) {
+				$view->warning[] = __('Some plugins throw errors when loading, enable safe mode to disable them!');
+				$view->safemode  = true;
+			}
+		}
+
+		$view->action    = $adminPath . 'index.php?module=user/login';
+		$view->modal     = $this->request->get['modal'] ?? false;
 
 		//$this->session = Session::getInstance();
 		$language = $this->session->get('language') ?? 'en_US';
 		setLanguage($language);
 
 		if (isset($this->request->get['success'])) {
-			$view->success['get'] = htmlentities($this->request->get['success']);
+			$view->success['get'] = htmlspecialchars($this->request->get['success']);
 		}
 
 		if (isset($this->request->get['errors'])) {
-			$view->errors['get'] = htmlentities($this->request->get['errors']);
+			$view->errors['get'] = htmlspecialchars($this->request->get['errors']);
 		}
 
 		if ($errors = $this->session->get('errors')) {
@@ -100,13 +116,13 @@ class Login {
 		$validator = new Validator(['login']);
 
 		if (isset($this->request->get['module']) && $this->request->get['module'] != 'user/login') {
-			$this->view->redir = $this->request->get['module'];
+			$view->redir = $this->request->get['module'];
 		}
 
 		$method = $this->request->getMethod();
 
 		if (($method == 'post') &&
-			($this->view->errors = $validator->validate($this->request->post)) === true) {
+			($view->errors = $validator->validate($this->request->post)) === true) {
 			$user	    = $this->request->post['user'];
 
 			$safemode = $this->request->post['safemode'] ?? false;
@@ -124,7 +140,7 @@ class Login {
 			$failedAttemps = $failedLogin->get(['updated_at' => $date, 'status' => 1] + $loginData);
 
 			if ($failedAttemps && ($failedAttemps['count'] > $this->failedCount)) {
-				$this->view->errors = [__('Too many login attempts, try again in one hour!')];
+				$view->errors = [__('Too many login attempts, try again in one hour!')];
 				$failedLogin->logFailed(['last_ip' => $lastIp, 'updated_at' => $date] + $loginData);
 
 				return;
@@ -140,25 +156,26 @@ class Login {
 
 			if ($loginData) {
 				if ($userInfo = Admin::login($loginData, $flags)) {
-					$this->view->success[] = __('Login successful!');
+					$view->success[] = __('Login successful!');
 
 					if (isset($this->request->post['redir']) && $this->request->post['redir'] && $_SERVER['REQUEST_URI'] != $this->request->post['redir']) {
 						$url = parse_url($this->request->post['redir']);
 						$this->redirect($url['path'] . '?' . ($url['query'] ?? '') . '#' . ($url['fragment'] ?? ''));
 					//$this->redirect($this->request->post['redirect']);
 					} else {
-						$this->redirect($admin_path);
+						$this->redirect($adminPath);
 					}
 				} else {
 					//user not found or wrong password
-					$this->view->errors = [__('Authentication failed, wrong email or password!')];
+					$view->errors   = [__('Authentication failed, wrong email or password!')];
+					$view->safemode = $safemode;
 					$this->session->set('csrf', Str::random());
 					//increment failed attempts
 					$failedLogin->logFailed(['last_ip' => $lastIp, 'updated_at' => $date] + $loginData);
 				}
 			}
 		} else {
-			//return $this->redirect($admin_path);
+			//return $this->redirect($adminPath);
 			$this->session->set('csrf', Str::random());
 		}
 	}
