@@ -30,6 +30,7 @@ return [
 	//admin
 	'admin',
 	'admin_password_resets',
+	'admin_failed_login',
 	'admin_permissions',
 	'admin_roles',
 	'roles',
@@ -40,6 +41,7 @@ return [
 	'user_group_content',
 	'user_points',
 	'user_wishlist',
+	'user_failed_login',
 
 	//taxonomy
 	'taxonomy_item',
@@ -89,6 +91,7 @@ return [
 	'product_option_value',
 	'product_recurring',
 	'product_related',
+	'product_variant',
 	'product_review',
 	'product_points',
 	'product_promotion',
@@ -152,4 +155,5 @@ return [
 	'weight_type_content',
 	'region',
 	'region_to_region_group',
+	'cart',
 ];
