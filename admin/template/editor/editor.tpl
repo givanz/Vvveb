@@ -93,7 +93,7 @@ if (isset($this->$name)) {
 		}
 ?>
 
-	@templates-select-option|value = echo htmlspecialchars($option['file']);
+	@templates-select-option|value = <?php echo htmlspecialchars($option['file']);?>
 	@templates-select-option = <?php echo htmlspecialchars(ucfirst($option['title']));?>
 	@templates-select-option|addNewAttribute = <?php if ($option['file'] == 'blank.html') echo 'selected';?>
 	
