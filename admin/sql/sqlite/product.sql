@@ -5,14 +5,17 @@
 	PROCEDURE get(
 		IN product_id INT,
 		IN slug CHAR,
+		IN type CHAR,
 		IN language_id INT,
-		IN promotion INT,
-		IN points INT,
-		IN stock_status INT,
-		IN weight_type INT,
-		IN length_type INT,
-		IN rating INT,
-		IN reviews INT,
+		IN promotion INT,     -- include promotional price
+		IN variant INT,       -- include variants
+		IN variant_price INT, -- include variants min max prices
+		IN points INT,        -- include points
+		IN stock_status INT,  -- include stock_status
+		IN weight_type INT,   -- include weight type
+		IN length_type INT,   -- include length type
+		IN rating INT,        -- include rating average
+		IN reviews INT,       -- include reviews count
 		
 		OUT fetch_row, -- product
 		OUT fetch_all, -- product_content
@@ -49,6 +52,20 @@
 				ORDER BY pp.priority ASC, pp.price ASC 
 				LIMIT 1
 			) AS promotion				
+			END @IF
+
+			-- include variant price 	
+			@IF !empty(:variant_price)
+			THEN 
+				,(SELECT MIN(pvmin.price) FROM product_variant pvmin 
+					WHERE pvmin.product_id = _.product_id
+					LIMIT 1
+				) AS min_price		
+				
+				,(SELECT MAX(pvmax.price) FROM product_variant pvmax 
+					WHERE pvmax.product_id = _.product_id
+					LIMIT 1
+				) AS max_price				
 			END @IF
 
 			-- include points 	
@@ -145,14 +162,19 @@
 		WHERE  1 = 1
 
             @IF isset(:slug) && !(isset(:product_id) && :product_id) 
-			THEN 
-				AND pc.slug = :slug 
-        	END @IF			
+            THEN 
+                AND pc.slug = :slug 
+            END @IF			
 
             @IF isset(:product_id) && :product_id > 0
-			THEN 
+            THEN 
                 AND _.product_id = :product_id
-        	END @IF		
+            END @IF	           
+			
+            @IF isset(:type) && !empty(:type)
+            THEN 
+                AND _.type = :type
+            END @IF		
         
         LIMIT 1;
 
@@ -181,18 +203,9 @@
 		WHERE product_related.product_id = @result.product_id;
 
 		-- variant
-		SELECT product_variant.product_variant_id,product_variant.product_id, pc.name,pc.slug, product_variant_id as id -- , product_image_id as product_variant_id -- product_image_id will be used as key
+		SELECT *, options as array_key
 			FROM product_variant
-			LEFT JOIN product_content pc ON (
-				product_variant.product_variant_id = pc.product_id
-		
-				@IF isset(:language_id)
-				THEN
-					AND pc.language_id = :language_id
-				END @IF
-			)	
-			
-		WHERE product_variant.product_id = @result.product_id;
+		WHERE product_variant.product_id = @result.product_id;		
 
 		-- subscription
 		SELECT product_subscription.*
@@ -456,12 +469,14 @@
 		-- allow only table fields and set defaults for missing values
 		:product_update  = @FILTER(:product, product, false)
 
-		
-		UPDATE product 
-			
-			SET @LIST(:product_update) 
-			
-		WHERE product_id = :product_id
+		@IF :product_update
+		THEN
+			UPDATE product 
+				
+				SET @LIST(:product_update) 
+				
+			WHERE product_id = :product_id
+		END @IF;
 		
 	END	
 
@@ -749,7 +764,7 @@
 		IN site_id INT,
 		IN admin_id INT,
 		IN product_id ARRAY,
-		IN taxonomy_item_id INT,
+		IN taxonomy_item_id ARRAY,
 		IN manufacturer_id ARRAY,
 		IN vendor_id ARRAY,
 		IN option_value_id ARRAY,
@@ -764,6 +779,7 @@
 		IN ean CHAR,
 		IN isbn CHAR,
 		IN slug ARRAY,
+		IN taxonomy CHAR,
 		
 		-- pagination
 		IN start INT,
@@ -773,12 +789,19 @@
 		IN direction CHAR,
 		
 		-- columns options (local variables used for conditional sql)
-		LOCAL manufacturer INT,
-		LOCAL discount INT,
-		LOCAL special INT,
-		LOCAL points INT,
-		LOCAL stock_status INT,
-		LOCAL product_image INT,
+		LOCAL manufacturer INT,  -- include manufacturer
+		LOCAL discount INT,      -- include discounts
+		LOCAL promotion INT,     -- include promotional price
+		LOCAL points INT,        -- include points
+		LOCAL stock_status INT,  -- include stock_status
+		LOCAL product_image INT, -- include image gallery
+		LOCAL variant INT,       -- include variants
+		LOCAL variant_price INT, -- include variants min max prices
+		LOCAL weight_type INT,   -- include weight type
+		LOCAL length_type INT,   -- include length type
+		LOCAL rating INT,        -- include rating average
+		LOCAL reviews INT,       -- include reviews count
+
 			
 		-- return array of products for products query
 		OUT fetch_all,
@@ -822,24 +845,34 @@
 				   
 			END @IF
 			
-			-- include special price 	
+			-- include promotional price 	
 			@IF !empty(:promotion) && !empty(:user_group_id) 
 			THEN 
-			
-			  ,(SELECT price
-			   FROM product_promotion ps
-			   WHERE ps.product_id = product.product_id
-				 AND ps.user_group_id = :user_group_id
-				 AND ((ps.from_date = NULL
-					   OR ps.from_date < date('now'))
-					  AND (ps.to_date = NULL
-						   OR ps.to_date > date('now')))
-			   ORDER BY ps.priority ASC, ps.price ASC
-			   LIMIT 1) AS special
-			   
+				,(SELECT pp.price FROM product_promotion pp 
+					WHERE pp.product_id = product.product_id AND pp.user_group_id = :user_group_id 
+						AND (
+							(pp.from_date = NULL OR pp.from_date < NOW()) 
+							AND (pp.to_date = NULL OR pp.to_date > NOW())
+						) 
+					ORDER BY pp.priority ASC, pp.price ASC 
+					LIMIT 1
+				) AS promotion				
+			END @IF		
+
+			-- include variant price 	
+			@IF !empty(:variant_price)
+			THEN 
+				,(SELECT MIN(pvmin.price) FROM product_variant pvmin 
+					WHERE pvmin.product_id = product.product_id
+					LIMIT 1
+				) AS min_price		
+				
+				,(SELECT MAX(pvmax.price) FROM product_variant pvmax 
+					WHERE pvmax.product_id = product.product_id
+					LIMIT 1
+				) AS max_price				
 			END @IF
-
-
+			
 			-- include points 	
 			@IF !empty(:points) && !empty(:user_group_id) 
 			THEN 
@@ -939,7 +972,13 @@
 			
 			@IF !empty(:taxonomy_item_id) 
 			THEN 
-				INNER JOIN product_to_taxonomy_item pt ON (product.product_id = pt.product_id AND pt.taxonomy_item_id = :taxonomy_item_id)
+				INNER JOIN product_to_taxonomy_item pt ON (product.product_id = pt.product_id AND pt.taxonomy_item_id IN (:taxonomy_item_id))
+			END @IF				
+
+			@IF isset(:taxonomy) && :taxonomy !== ""
+			THEN 
+				INNER JOIN product_to_taxonomy_item pt ON (product.product_id = pt.product_id)
+				INNER JOIN taxonomy_item_content pic ON (pic.taxonomy_item_id = pt.taxonomy_item_id AND pic.slug = :taxonomy)
 			END @IF		
 
 			@IF !empty(:related) 
