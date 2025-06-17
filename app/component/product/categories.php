@@ -24,26 +24,89 @@ namespace Vvveb\Component\Product;
 
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use function Vvveb\url;
 
 class Categories extends ComponentBase {
 	public static $defaultOptions = [
-		'start'       => 0,
-		'limit'       => 7,
-		'site_id'     => NULL,
-		'language_id' => NULL,
-		'taxonomy_id' => NULL,
-		'product_id'  => 'url',
-		'parent_id'   => NULL,
-		'search'      => NULL,
-		'type'        => 'categories',
-		'post_type'   => 'post',
+		'start'                    => 0,
+		'limit'                    => 7,
+		'site_id'                  => NULL,
+		'order'                    => ['url', 'price asc'],
+		'taxonomy_id'              => NULL,
+		'product_id'               => NULL,
+		'parent_id'                => NULL,
+		'search'                   => NULL,
+		'type'                     => 'categories',
+		'post_type'                => 'product',
+		'parents_only'             => false,
+		'parents_children_only'    => false,
+		'parents_without_children' => false,
 	];
 
 	function results() {
 		$category = new \Vvveb\Sql\CategorySQL();
 		$results  = $category->getCategories($this->options);
 
+		//count the number of child categories (subcategories) for each category
+		if (isset($results['categories'])) {
+			foreach ($results['categories'] as $taxonomy_item_id => &$category) {
+				$parent_id          = $category['parent_id'] ?? false;
+				$category['active'] = false;
+
+				if (! isset($category['children'])) {
+					$category['children'] = 0;
+				}
+
+				$category['url'] = url('product/category/index', $category);
+
+				if ($parent_id > 0 && isset($results['categories'][$parent_id])) {
+					$parent = &$results['categories'][$parent_id];
+
+					if (isset($parent['children'])) {
+						$parent['children']++;
+					} else {
+						$parent['children'] = 1;
+					}
+				}
+			}
+		}
+
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+
+		return $results;
+	}
+
+	//called on each request
+	function request(&$results, $index = 0) {
+		$module     = \Vvveb\getModuleName();
+		$categoryId = false;
+
+		switch ($module) {
+			case 'product/category':
+				$categoryId = $this->request->get['category_id'] ?? '';
+
+			break;
+		}
+
+		if (isset($results['categories']) && $categoryId) {
+			$categories = &$results['categories'];
+			//traverse array in reverse to also set parents as active
+			$category = end($categories);
+
+			while ($category !== false) {
+				if ($categoryId == $category['taxonomy_item_id']) {
+					$key                        = key($categories);
+					$categories[$key]['active'] = true;
+					//$category['active'] = true;
+					$categoryId = $category['parent_id'];
+
+					if (! $categoryId) {
+						break;
+					}
+				}
+				$category = prev($categories);
+			}
+		}
 
 		return $results;
 	}

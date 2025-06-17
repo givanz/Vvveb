@@ -25,6 +25,7 @@ namespace Vvveb\Component\Content;
 use Vvveb\Sql\CategorySQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use function Vvveb\url;
 
 class Categories extends ComponentBase {
 	public static $defaultOptions = [
@@ -33,7 +34,7 @@ class Categories extends ComponentBase {
 		'site_id'     => NULL,
 		'language_id' => NULL,
 		'taxonomy_id' => NULL,
-		'post_id'     => 'url',
+		'post_id'     => NULL,
 		'parent_id'   => NULL,
 		'search'      => NULL,
 		'type'        => 'categories',
@@ -44,6 +45,29 @@ class Categories extends ComponentBase {
 		$category = new CategorySQL();
 
 		$results  = $category->getCategories($this->options);
+
+		//count the number of child categories (subcategories) for each category
+		if (isset($results['categories'])) {
+			foreach ($results['categories'] as $taxonomy_item_id => &$category) {
+				$parent_id = $category['parent_id'] ?? false;
+
+				if (! isset($category['children'])) {
+					$category['children'] = 0;
+				}
+
+				$category['url'] = url('content/category/index', $category);
+
+				if ($parent_id > 0 && isset($results['categories'][$parent_id])) {
+					$parent = &$results['categories'][$parent_id];
+
+					if (isset($parent['children'])) {
+						$parent['children']++;
+					} else {
+						$parent['children'] = 1;
+					}
+				}
+			}
+		}
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 
