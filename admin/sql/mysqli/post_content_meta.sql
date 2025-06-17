@@ -50,13 +50,13 @@
 	)
 	BEGIN
 
-        INSERT INTO post_content_meta
-            (post_id, namespace, `key`, value, language_id)
+		INSERT INTO post_content_meta
+		(post_id, language_id, namespace, `key`, value )
         
-        VALUES (:post_id, :namespace, :key, :language_id, :value )
+		VALUES (:post_id, :language_id, :namespace, :key , :value )
         
-        ON DUPLICATE KEY 
-            UPDATE value = values(value);
+		ON DUPLICATE KEY 
+		UPDATE value = values(value);
 		
 	END
 
@@ -115,7 +115,7 @@
 			
 			VALUES ( :each, :post_id )   
 			ON DUPLICATE KEY 
-            UPDATE value = VALUES(value);
+			UPDATE value = VALUES(value);
 		
 	END
     

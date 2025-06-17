@@ -55,7 +55,7 @@
         
         VALUES (:product_id, :namespace, :key, :value, :language_id )
         
-		ON CONFLICT(`product_id`, `language_id`,`namespace`, `key`) DO UPDATE SET `value` = :each;
+		ON CONFLICT(`product_id`, `language_id`,`namespace`, `key`) DO UPDATE SET `value` = :value;
 		
 	END
 
@@ -114,7 +114,7 @@
 			
 			VALUES ( :each, :product_id )   
 			
-			ON CONFLICT(`product_id`, `language_id`,`namespace`, `key`) DO UPDATE SET `value` = :each;
+			ON CONFLICT(`product_id`, `language_id`,`namespace`, `key`) DO UPDATE SET value = :each.value;
 		
 	END
     

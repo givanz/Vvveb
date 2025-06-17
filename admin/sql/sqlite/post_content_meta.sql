@@ -50,13 +50,12 @@
 	)
 	BEGIN
 
-        INSERT INTO post_content_meta
-            (post_id, namespace, `key`, language_id, value )
+		INSERT INTO post_content_meta
+		(post_id, language_id, namespace, `key`, value )
         
-        VALUES (:post_id, :namespace, :key, :language_id, :value )
-        
+		VALUES (:post_id, :language_id, :namespace, :key , :value )
 		
-		ON CONFLICT(`post_id`, `language_id`,`namespace`, `key`) DO UPDATE SET `value` = :each;
+		ON CONFLICT(`post_id`, `language_id`,`namespace`, `key`) DO UPDATE SET `value` = :value;
 		
 	END
 
