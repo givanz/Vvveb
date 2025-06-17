@@ -72,7 +72,7 @@ trait LoginTrait {
 						$this->session->close();
 						$this->view->success['login']         = $success;
 						$this->view->global['user_id']        = $user['user_id'];
-						$this->redirect($this->redirectUrl ?? '/user');
+						$this->redirect($this->redirectUrl ?? 'user/index');
 					} else {
 						//user not found or wrong password
 						$this->view->errors['login'] = __('Authentication failed, wrong email or password!');
