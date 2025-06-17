@@ -1,3 +1,24 @@
+/**
+ * Vvveb
+ *
+ * Copyright (C) 2021  Ziadin Givan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * https://github.com/givanz/Vvveb
+ */
+
 let bgVideoTemplate = '<video playsinline loop muted autoplay src="../../media/demo/sample.webm" poster="../../media/demo/sample.webp"><video>';
 let bgImageTemplate = '<img src="../../media/demo/sample.webp">';
 let defaultSeparatorSvg = '<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 41" width="100%" height="300" fill="var(--bs-body-bg)" preserveAspectRatio="none"><defs><style>.cls-1{fill:inherit}</style></defs><title>rough-edges-bottom</title><path class="cls-1" d="M0,185l125-26,33,17,58-12s54,19,55,19,50-11,50-11l56,6,60-8,63,15v15H0Z" transform="translate(0 -159)"/></svg>';
@@ -145,17 +166,17 @@ let SectionBackground = [{
 			}
 
 
-			return element;
+			return node;
 		}, 
 		init: function(node) {
 			let selected = "none";
-			let img = node.querySelector(":scope > .background-container img");
-			let video = node.querySelector(":scope > .background-container video");
+			let img   = node.querySelector(":scope > .background-container > img");
+			let video = node.querySelector(":scope > .background-container > video");
 			
-			if (img?.offsetParent) {
+			if (img && (img.offsetParent || img.offsetHeight)) {
 				selected = "bg-image";
 			}
-			if (video?.offsetParent) {
+			if (video && (img.offsetParent || video.offsetHeight)) {
 				selected = "bg-video";
 			}
 			
@@ -190,7 +211,20 @@ let SectionBackground = [{
 		group:"bg-video",
 		inline:true,
         inputtype: ImageInput
-     }   
+     }, {   
+        name: "Parallax",
+        key: "parallax",
+        sort: section_sort++,
+        child:":scope > .background-container",
+        htmlAttr: "class",
+        validValues: ["", "parallax"],
+        inputtype: ToggleInput,
+        data: {
+            className: "",
+            on: 'parallax',
+            off: ''
+        },	 
+     },	 
 ];
 
 
@@ -210,7 +244,7 @@ let SectionOverlay = [{
         //validValues: ["", "active"],
         inputtype: ToggleInput,
         data: {
-			className: "form-switch-lg",
+            className: "",
             on: 'true',
             off: 'false'
         },
@@ -286,7 +320,7 @@ function sectionSeparatorProperties(name, title) {
         inline: true,
         inputtype: ToggleInput,
         data: {
-			className: "form-switch-lg",
+            className: "",
             on: 'true',
             off: 'false'
         },
@@ -406,7 +440,7 @@ function sectionSeparatorProperties(name, title) {
         name: "Fill Color",
         key: "fill",
         sort: section_sort++,
-        col:4,
+        col:12,
         inline:true,
         //section: style_section,
 		group:`${name}_separator`,
@@ -417,7 +451,7 @@ function sectionSeparatorProperties(name, title) {
         name: "Color",
         key: "color",
         sort: section_sort++,
-        col:4,
+        col:12,
         inline:true,
         //section: style_section,
 	group:`${name}_separator`,
@@ -428,7 +462,7 @@ function sectionSeparatorProperties(name, title) {
         name: "Stroke",
         key: "stroke",
         sort: section_sort++,
-        col:4,
+        col:12,
         inline:true,
         //section: style_section,
 		group:`${name}_separator`,
@@ -455,7 +489,7 @@ let SectionBottomSeparator = [{
         validValues: ["", "active"],
         inputtype: ToggleInput,
         data: {
-			className: "form-switch-lg",
+            className: "",
             on: "active",
             off: ""
         }
@@ -591,13 +625,12 @@ function componentsInit(node) {
 		let separatorBottom = node.querySelector(":scope > .separator.bottom");
 		let bg = "";
 		
-		if (img && img.offsetParent) {
+		if (img && (img.offsetParent || img.offsetHeight)) {
 			bg = "bg-image";
 		}
-		
-		if (video && video.offsetParent) {
+		if (video && (img.offsetParent || video.offsetHeight)) {
 			bg = "bg-video";
-		}
+		}		
 		
 		let showSection = function (section) {
 			document.querySelectorAll('.mb-3[data-group="' + section + '"]').forEach(e => e.classList.remove("d-none"));
@@ -624,7 +657,7 @@ function componentsInit(node) {
 Vvveb.Components.extend("_base", "elements/section", {
     nodes: ["section"],
     name: "Section",
-    image: "icons/stream-solid.svg",
+    image: "icons/section.svg",
     html: `<section>
 				<div class="container">
 					<h1>Section</h1>
@@ -642,7 +675,7 @@ Vvveb.Components.extend("_base", "elements/section", {
 Vvveb.Components.extend("_base", "elements/header", {
     nodes: ["header"],
     name: "Header",
-    image: "icons/stream-solid.svg",
+    image: "icons/section.svg",
     html: `<header>
 				<div class="container">
 					<h1>Section</h1>
@@ -660,7 +693,7 @@ Vvveb.Components.extend("_base", "elements/header", {
 Vvveb.Components.extend("_base", "elements/footer", {
     nodes: ["footer"],
     name: "Footer",
-    image: "icons/stream-solid.svg",
+    image: "icons/section.svg",
     html: `<footer>
 				<div class="container">
 					<h1>Section</h1>
