@@ -11,6 +11,7 @@ $previous_component = isset($current_component)?$current_component:null;
 $current_component = $this->_component['currency'][$_currency_idx] ?? [];
 $currencies = $current_component['currency'] ?? []; 
 $active     = $current_component['active'] ?? [];
+$current    = $current_component['current'] ?? [];
 
 $_pagination_count = $currencies['count'] ?? 0;
 $_pagination_limit = isset($currencies['limit']) ? $currencies['limit'] : 5;
@@ -23,11 +24,13 @@ $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : f
 $currencies = empty($currencies) ? $_default : $currencies;
 
 if($currencies)  {
-	foreach ( $currencies as $index => $currency) { ?>
+	foreach ( $currencies as $index => $currency) { 
+		$code = $currency['code'] ?? '';
+?>
 	
 	@currency [data-v-currency-*]|innerText = $currency['@@__data-v-currency-(*)__@@']
-	@currency button[data-v-currency-code]|value = $currency['code']
-	@currency .dropdown-item|addClass = <?php if (($currency['code'] == $current_component['current']) && !$vvveb_is_page_edit) echo 'active'?>
+	@currency button[data-v-currency-code]|value = $code
+	@currency .dropdown-item|addClass = <?php if (($code == $current) && !$vvveb_is_page_edit) echo 'active'?>
 	
     @currency [data-v-currency-url] = <?php 
         echo Vvveb\url(['module' => 'currency/currency', 'currency_id' => $currency['currency_id']]);
