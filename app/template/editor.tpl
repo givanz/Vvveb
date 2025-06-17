@@ -18,7 +18,7 @@ if ($is_admin && $vvveb_is_page_edit) {
 
 
 body|prepend = <?php
-if (isset($is_admin) && $is_admin && !$vvveb_is_page_edit) {
+if (isset($is_admin) && $is_admin && !$vvveb_is_page_edit && APP == 'app') {
 		include_once(DIR_ROOT . '/admin/admin-bar.php');
 }
 ?>
