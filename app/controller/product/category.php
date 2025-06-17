@@ -37,7 +37,7 @@ class Category extends Base {
 			$category    = $categorySql->getCategoryBySlug($options);
 
 			if ($category) {
-				$this->request->request['category_id'] = $this->request->request['taxonomy_item_id'] = $category['taxonomy_item_id'];
+				$this->request->get['category_id']     = $this->request->request['taxonomy_item_id']     = $category['taxonomy_item_id'];
 				$this->view->category                  = $category;
 				$this->view->category_name             = $category['name'];
 			} else {
