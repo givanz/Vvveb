@@ -27,6 +27,8 @@ use Vvveb\Controller\Base;
 use Vvveb\Sql\CategorySQL;
 
 class Category extends Base {
+	protected $type = 'category';
+
 	function index() {
 		$category_name             = $this->request->get['slug'] ?? '';
 		$this->view->category_name = $category_name;
@@ -40,7 +42,7 @@ class Category extends Base {
 				$this->request->get['taxonomy_item_id'] = $category['taxonomy_item_id'];
 				$this->view->category_name              = $category['name'];
 			} else {
-				$message = __('Category not found!');
+				$message = sprintf(__('%s not found!'), ucfirst(__($this->type)));
 				$this->notFound(true, ['message' => $message, 'title' => $message]);
 			}
 		}

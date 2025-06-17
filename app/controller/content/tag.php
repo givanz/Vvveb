@@ -22,14 +22,6 @@
 
 namespace Vvveb\Controller\Content;
 
-use Vvveb\Controller\Base;
-
-class Tag extends Base {
-	function index() {
-		//$post = Components::get('post');
-
-		//if (! $post) {
-			//$this->notFound();
-		//}
-	}
+class Tag extends Category {
+	protected $type = 'tag';
 }
