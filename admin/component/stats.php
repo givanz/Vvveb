@@ -48,7 +48,7 @@ class Stats extends ComponentBase {
 		}
 
 		if ($this->options['start_date'] == 'NOW()') {
-			$this->options['end_date'] = date('Y-m-d');
+			$this->options['start_date'] = date('Y-m-d');
 		}
 
 		$results = $stats->getStats($this->options);
