@@ -1,11 +1,9 @@
 DROP TABLE IF EXISTS `order_meta`;
 
 CREATE TABLE `order_meta` (
-  `meta_id` INT unsigned NOT NULL AUTO_INCREMENT,
-  `order_id` INT unsigned NOT NULL DEFAULT '0',
-  `key` varchar(191) DEFAULT NULL,
+  `order_id` INT unsigned NOT NULL,
+  `namespace` varchar(32) NOT NULL DEFAULT '',
+  `key` varchar(191) NOT NULL,
   `value` longtext,
-  PRIMARY KEY (`meta_id`),
-  KEY `order_id` (`order_id`),
-  KEY `key` (`key`(191))
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+   PRIMARY KEY (`order_id`,`namespace`,`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

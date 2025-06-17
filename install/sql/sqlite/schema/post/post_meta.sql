@@ -1,10 +1,11 @@
 DROP TABLE IF EXISTS `post_meta`;
 
 CREATE TABLE `post_meta` (
-`meta_id` INT,
-`post_id` INT NOT NULL DEFAULT '0',
-`namespace` TEXT DEFAULT NULL,
-`key` TEXT DEFAULT NULL,
-`value` TEXT,
-PRIMARY KEY (`post_id`,`namespace`,`key`)
+  `post_id` INT NOT NULL,
+  `namespace` TEXT NOT NULL DEFAULT '',
+  `key` TEXT NOT NULL,
+  `value` TEXT
+  -- PRIMARY KEY (`post_id`, `namespace`, `key`)
 );
+
+CREATE UNIQUE INDEX `post_meta_post_id` ON `post_meta` (`post_id`, `namespace`, `key`);
