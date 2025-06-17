@@ -99,7 +99,7 @@ class Smtp {
 		if (empty($this->option['html'])) {
 			$message .= 'Content-Type: text/plain; charset="utf-8"' . EOL;
 			$message .= 'Content-Transfer-Encoding: base64' . EOL . EOL;
-			$message .= chunk_split(base64_encode($this->option['text']), 950) . EOL;
+			$message .= chunk_split(base64_encode($this->option['text'])) . EOL;
 		} else {
 			$message .= 'Content-Type: multipart/alternative; boundary="' . $boundary . '_alt"' . EOL . EOL;
 			$message .= '--' . $boundary . '_alt' . EOL;
@@ -107,15 +107,15 @@ class Smtp {
 			$message .= 'Content-Transfer-Encoding: base64' . EOL . EOL;
 
 			if ($this->option['text']) {
-				$message .= chunk_split(base64_encode($this->option['text']), 950) . EOL;
+				$message .= chunk_split(base64_encode($this->option['text'])) . EOL;
 			} else {
-				$message .= chunk_split(base64_encode(strip_tags($this->option['html']), 950), '<a>') . EOL;
+				$message .= chunk_split(base64_encode(strip_tags($this->option['html'])), '<a>') . EOL;
 			}
 
 			$message .= '--' . $boundary . '_alt' . EOL;
 			$message .= 'Content-Type: text/html; charset="utf-8"' . EOL;
 			$message .= 'Content-Transfer-Encoding: base64' . EOL . EOL;
-			$message .= chunk_split(base64_encode($this->option['html']), 950) . EOL;
+			$message .= chunk_split(base64_encode($this->option['html'])) . EOL;
 			$message .= '--' . $boundary . '_alt--' . EOL;
 		}
 
@@ -265,8 +265,10 @@ class Smtp {
 
 			fputs($handle, '.' . EOL);
 			$this->handleReply($handle, 250, 'DATA not accepted from server!' . $reply);
+			/*
 			fputs($handle, 'QUIT' . EOL);
 			$this->handleReply($handle, 221, 'QUIT not accepted from server!');
+			*/
 			fclose($handle);
 
 			return true;
