@@ -165,16 +165,31 @@ function getMultiPostContentMeta($post_id, $namespace, $key = null, $default = n
 	return System\Meta\PostContentMeta::getInstance()->getMulti($post_id, $namespace, $key, $default, $language_id);
 }
 
+function getMultiProductContentMeta($product_id, $namespace, $key = null, $default = null, $language_id = false) {
+	return System\Meta\ProductContentMeta::getInstance()->getMulti($product_id, $namespace, $key, $default, $language_id);
+}
+
 function setPostContentMeta($post_id, $namespace, $key = null, $value = null, $language_id = false) {
 	return System\Meta\PostContentMeta::getInstance()->set($post_id, $namespace, $key, $value, $language_id);
+}
+function setProductContentMeta($product_id, $namespace, $key = null, $value = null, $language_id = false) {
+	return System\Meta\ProductContentMeta::getInstance()->set($product_id, $namespace, $key, $value, $language_id);
 }
 
 function deletePostContentMeta($post_id, $namespace, $key = null, $language_id = false) {
 	return System\Meta\PostContentMeta::getInstance()->delete($post_id, $namespace, $key, $language_id);
 }
 
+function deleteProductContentMeta($product_id, $namespace, $key = null, $language_id = false) {
+	return System\Meta\ProductContentMeta::getInstance()->delete($product_id, $namespace, $key, $language_id);
+}
+
 function setMultiPostContentMeta($post_id, $meta) {
 	return System\Meta\PostContentMeta::getInstance()->setMulti($post_id, $meta);
+}
+
+function setMultiProductContentMeta($product_id, $meta) {
+	return System\Meta\ProductContentMeta::getInstance()->setMulti($product_id, $meta);
 }
 
 function getCurrentTemplate() {
@@ -342,7 +357,7 @@ function session($data, $default = null) {
 	} else {
 		$value = $session->get($data);
 
-		if ($default && ! $value) {
+		if ($default && $value === null) {
 			return $default;
 		}
 
@@ -663,6 +678,23 @@ function cssToXpath($selector) {
 
 function dashesToCamelCase($string, $dash = '-') {
 	return str_replace($dash, '', ucwords($string, $dash));
+}
+
+function arrayKeysToCamelCase(&$array) {
+	foreach ($array as $key => &$value) {
+		if (is_array($value)) {
+			$value = arrayKeysToCamelCase($value);
+		}
+
+		$newKey = lcfirst(dashesToCamelCase($key, '_'));
+
+		if ($newKey != $key) {
+			$array[$newKey] = $value;
+			unset($array[$key]);
+		}
+	}
+
+	return $array;
 }
 
 /**
@@ -1025,6 +1057,27 @@ function formatBytes($bytes) {
 	return round($bytes, 2) . ' ' . $units[$i] . 'B';
 }
 
+function parseQuantity($string) {
+	if (function_exists('\ini_parse_quantity')) {
+		return \ini_parse_quantity($string);
+	}
+	
+	$string     = trim($string);
+	$multiplier = lcfirst($string[strlen($string) - 1]);
+	$number     = intval($string);
+	
+	switch ($multiplier) {
+		case 'k':
+			return $number * 1024;		
+		case 'm':
+			return $number * 1048576;		
+		case 'g':
+			return $number * 1073741824;
+	}
+	
+	return $number;
+}
+
 function isController($name, $app = APP) {
 	$file   = DIR_ROOT . $app . DS . 'controller' . DS . strtolower($name) . '.php';
 	$exists = file_exists($file);
@@ -1033,7 +1086,7 @@ function isController($name, $app = APP) {
 }
 
 function isModel($name, $app = APP) {
-	$file   = DIR_ROOT . $app . DS . 'sql' . DS . DB_ENGINE . DS . $name;
+	$file   = DIR_ROOT . $app . DS . 'sql' . DS . DB_ENGINE . DS . $name . '.sql';
 	$exists = file_exists($file);
 
 	return $exists;
@@ -1065,15 +1118,15 @@ function dd(...$variables) {
 	die(0);
 }
 
-function encrypt($key, $value, $cipher = 'aes-256-gcm', $digest = 'sha256') {
+function encrypt($key, $value, $cipher = 'aes256', $digest = 'sha256', $tag = null, $aad = '', $tag_length = 16) {
 	$key       = openssl_digest($key, $digest, true);
 	$iv_length = openssl_cipher_iv_length($cipher);
 	$iv        = openssl_random_pseudo_bytes($iv_length);
 
-	return base64_encode($iv . openssl_encrypt($value, $cipher, $key, OPENSSL_RAW_DATA, $iv));
+	return base64_encode($iv . openssl_encrypt($value, $cipher, $key, OPENSSL_RAW_DATA, $iv, $tag, $aad, $tag_length));
 }
 
-function decrypt($key, $value, $cipher = 'aes-256-gcm', $digest = 'sha256') {
+function decrypt($key, $value, $cipher = 'aes256', $digest = 'sha256', $tag = null, $aad = '') {
 	$result    = false;
 
 	$key       = openssl_digest($key, $digest, true);
@@ -1083,7 +1136,7 @@ function decrypt($key, $value, $cipher = 'aes-256-gcm', $digest = 'sha256') {
 	$value     = substr($value, $iv_length);
 
 	if (strlen($iv) == $iv_length) {
-		$result = openssl_decrypt($value, $cipher, $key, OPENSSL_RAW_DATA, $iv);
+		$result = openssl_decrypt($value, $cipher, $key, OPENSSL_RAW_DATA, $iv, $tag, $aad);
 	}
 
 	return $result;
@@ -1092,6 +1145,23 @@ function decrypt($key, $value, $cipher = 'aes-256-gcm', $digest = 'sha256') {
 function camelToUnderscore($string, $us = '-') {
 	return strtolower(preg_replace(
 	'/(?<=\d)(?=[A-Za-z])|(?<=[A-Za-z])(?=\d)|(?<=[a-z])(?=[A-Z])/', $us, $string));
+}
+
+function arrayKeysToUnderscore(&$array, $us = '-') {
+	foreach ($array as $key => &$value) {
+		if (is_array($value)) {
+			$value = arrayKeysToUnderscore($value, $us);
+		}
+
+		$newKey = camelToUnderscore($key, $us);
+
+		if ($newKey != $key) {
+			$array[$newKey] = $value;
+			unset($array[$key]);
+		}
+	}
+
+	return $array;
 }
 
 function stripTags($string, $tags = ['script', 'iframe', 'applet']) {
@@ -1320,7 +1390,7 @@ function siteSettings($site_id = SITE_ID, $language_id = false) {
 			$settings = json_decode($site['settings'], true);
 			$siteData = $siteSql->getSiteData(['site' => $settings]);
 
-			foreach (['favicon', 'logo', 'logo-sticky', 'logo-dark', 'logo-dark-sticky'] as $img) {
+			foreach (['favicon', 'logo', 'logo-sticky', 'logo-dark', 'logo-dark-sticky', 'webbanner'] as $img) {
 				if (isset($settings[$img])) {
 					$settings["$img-src"] = $settings[$img];
 					$settings[$img] = System\Images::image($settings[$img], '');
@@ -1371,16 +1441,17 @@ function truncateWords($text, $limit) {
  * @param string $subject
  * @param array $data
  * @param mixed $config
+ * @param null|mixed $app
  * @return bool 
  */
-function email($to, $subject, $template, $data = [], $config = []) {
+function email($to, $subject, $template, $data = [], $config = [], $app = null) {
 	$email = System\Email::getInstance();
 
 	if (is_array($template)) {
 		$html = $template['html'] ?? '';
 		$txt  = $template['txt'] ?? '';
 	} else {
-		$htmlView  = new System\Core\View();
+		$htmlView  = new System\Core\View($app);
 		$htmlView->setTheme();
 		$htmlView->set($data);
 		//get email html template
@@ -1388,7 +1459,7 @@ function email($to, $subject, $template, $data = [], $config = []) {
 		$html = $htmlView->render(true, false, true);
 
 		//get email text template
-		$txtView  = new System\Core\View();
+		$txtView  = new System\Core\View($app);
 		$txtView->setTheme();
 		$txtView->set($data);
 		$txtView->template("email/$template.txt.html");
@@ -1806,6 +1877,14 @@ function invoiceFormat($format, $data) {
 	}, $format);
 }
 
+
+/*
+remove <?xml declaration to avoid issues with php short start tag
+*/
+function xmlStripVersionDeclr($xmlString) {
+	return preg_replace('/<\?xml\s+version[^\?]+\?>\s*/', '', $xmlString ?? '');
+}
+
 function array2xml($array, $xml = false) {
 	if ($xml === false) {
 		$xml = new \SimpleXMLElement('<root/>');
@@ -1847,19 +1926,19 @@ function array2xml($array, $xml = false) {
 
 			if ($attributes) {
 				foreach ($attributes as $key => $val) {
-					$node->addAttribute($key, htmlentities($val));
+					$node->addAttribute($key, htmlspecialchars($val));
 				}
 			}
 			array2xml($value, $node);
 		} else {
 			if (substr_compare($key, '--xmlattr', -9, 9) === 0) {
 				$key = substr($key, 0, -9);
-				$xml->addAttribute($key, htmlentities($value));
+				$xml->addAttribute($key, htmlspecialchars($value));
 			} else {
 				$processAttr($value);
 
 				if ($value && is_string($value)) {
-					$value = htmlentities($value);
+					$value = htmlspecialchars($value);
 				}
 				$node = $xml->addChild($key, $value);
 
@@ -1872,7 +1951,9 @@ function array2xml($array, $xml = false) {
 		}
 	}
 
-	return $xml->asXML();
+	$xmlString = $xml->asXML();
+
+	return xmlStripVersionDeclr($xmlString);
 }
 
 function removeJsonComments($json) {
