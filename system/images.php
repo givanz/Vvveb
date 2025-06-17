@@ -34,7 +34,7 @@ use function Vvveb\siteSettings;
 use Vvveb\System\Media\Image;
 
 class Images {
-	static public function resize($src, $dest, $width, $height, $method) {
+	static public function resize($src, $dest, $width, $height, $method, $quality = 80, $format = '') {
 		$destDir = dirname($dest);
 
 		if (! file_exists($destDir)) {
@@ -43,10 +43,10 @@ class Images {
 		$img    = new Image($src);
 		$result = $img->resize($width,$height, $method);
 
-		return $img->save($dest);
+		return $img->save($dest, $quality, $format);
 	}
 
-	static public function image($image, $type = '', $size = '', $method = 'cs') {
+	static public function image($image, $type = '', $size = '', $method = 'cs', $format = '', $quality = 80) {
 		$publicPath = \Vvveb\publicUrlPath();
 
 		list($publicPath, $type, $image, $size) =
@@ -75,15 +75,21 @@ class Images {
 					$width       = $site["{$type}_{$size}_width"] ?? 0;
 					$height      = $site["{$type}_{$size}_height"] ?? 0;
 					$method      = $site["{$type}_{$size}_method"] ?? 'cs';
+					$format      = $site['image_format'] ?? '';
+					$quality     = $site['image_quality'] ?? 80;
 				}
 
 				$image = self::size($image,"{$width}x{$height}_$method");
+
+				if ($format) {
+					$image = self::extension($image, $format);
+				}
 
 				if ($width || $height) {
 					if (file_exists(DIR_PUBLIC . $cacheFolder . $image)) {
 						$mediaFolder = $cacheFolder;
 					} else {
-						if (self :: resize(DIR_PUBLIC . $mediaFolder . $src, DIR_PUBLIC . $cacheFolder . $image, $width, $height, $method)) {
+						if (self :: resize(DIR_PUBLIC . $mediaFolder . $src, DIR_PUBLIC . $cacheFolder . $image, $width, $height, $method, $quality, $format)) {
 							$mediaFolder = $cacheFolder;
 						} else {
 							$image = $src;
@@ -110,6 +116,16 @@ class Images {
 
 		if ($pos) {
 			$image = substr_replace($image, "-$size", $pos, 0);
+		}
+
+		return $image;
+	}
+
+	static public function extension($image, $extension) {
+		$dot = strrpos($image , '.');
+
+		if ($dot) {
+			return substr_replace($image , $extension, $dot + 1);
 		}
 
 		return $image;
