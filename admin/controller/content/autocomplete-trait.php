@@ -30,10 +30,12 @@ trait AutocompleteTrait {
 	function categoriesAutocomplete() {
 		$categories = new CategorySQL();
 		$text       = trim($this->request->get['text'] ?? '');
+		$type       = trim($this->request->get['type'] ?? '');
 		$post_type  = $this->request->get['post_type'] ?? '';
 
 		$results = $categories->getCategories([
 			'post_type' => $post_type,
+			'type'      => $type,
 			'search'    => '%' . $text . '%',
 		] + $this->global);
 
@@ -98,6 +100,7 @@ trait AutocompleteTrait {
 	function urlAutocomplete() {
 		$products   = new \Vvveb\Sql\ProductSQL();
 		$text       = trim($this->request->get['text'] ?? '');
+		$type       = $this->request->get['type'] ?? 'card'; //'key-value'
 
 		$options = [
 			'limit' => 5,
@@ -112,12 +115,18 @@ trait AutocompleteTrait {
 		if (isset($results['product'])) {
 			foreach ($results['product'] as $product) {
 				$product['image'] = Images::image($product['image'], 'product', 'thumb');
-				$search[]         = [
-					'type' => 'cardimage',
-					'src'  => $product['image'],
-					'text' => $product['name'],
-					'value'=> '<a href="' . url('product/product/index', ['slug'=> $product['slug'], 'product_id' => $post['product_id']]) . '">' . $product['name'] . '</a>',
-				];
+				$url              = url('product/product/index', ['slug'=> $product['slug'], 'product_id' => $product['product_id']]);
+
+				if ($type == 'card') {
+					$search[]         = [
+						'type' => 'cardimage',
+						'src'  => $product['image'],
+						'text' => $product['name'],
+						'value'=> '<a href="' . $url . '">' . $product['name'] . '</a>',
+					];
+				} else {
+					$search[$url] = '<img width="32" height="32" src="' . $product['image'] . '"> ' . $product['name'];
+				}
 			}
 		}
 
@@ -128,12 +137,18 @@ trait AutocompleteTrait {
 			if (isset($results['post'])) {
 				foreach ($results['post'] as $post) {
 					$post['image'] = Images::image($post['image'], 'post', 'thumb');
-					$search[]      = [
-						'type' => 'cardimage',
-						'src'  => $post['image'],
-						'text' => $post['name'],
-						'value'=> '<a href="' . url('content/post/index', ['slug'=> $post['slug'], 'post_id' => $post['post_id']]) . '">' . $post['name'] . '</a>',
-					];
+					$url           = url('content/post/index', ['slug'=> $post['slug'], 'post_id' => $post['post_id']]);
+
+					if ($type == 'card') {
+						$search[]      = [
+							'type' => 'cardimage',
+							'src'  => $post['image'],
+							'text' => $post['name'],
+							'value'=> '<a href="' . $url . '">' . $post['name'] . '</a>',
+						];
+					} else {
+						$search[$url] = '<img width="32" height="32" src="' . $post['image'] . '"> ' . $post['name'];
+					}
 				}
 			}
 		}
