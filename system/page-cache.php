@@ -34,6 +34,8 @@ class PageCache {
 
 	const MAX_LOCK_SECONDS = 10;
 
+	static $cacheCookies = ['user', 'cart', 'admin', 'nocache'];
+
 	private $fileName;
 
 	private $uri;
@@ -43,6 +45,8 @@ class PageCache {
 	private $canSaveCache; //can save page in cache
 
 	private $cacheFolder;
+
+	static private $enabled;
 
 	static private $instance;
 
@@ -111,7 +115,10 @@ class PageCache {
 			if (file_exists($dir)) {
 				unlink($dir);
 			}
-			mkdir($dir, (0755 & ~umask()), true);
+
+			if (! mkdir($dir, (0755 & ~umask()), true)) {
+				return false;
+			}
 		}
 
 		//keep old cache to serve while generating
@@ -127,12 +134,12 @@ class PageCache {
 	}
 
 	function validUrl($url) {
-		//no ?&\ or .. in the url and the number of levels should not exceed 5
-		$invalid = strpbrk($url, '?&\\') || (strpos($url, '..') !== false) || (substr_count($url,'/') > 5);
+		//no ?&\ or .. in the url and the number of levels should not exceed 4
+		$invalid = strpbrk($url, '?&\\') || (strpos($url, '..') !== false) || (substr_count($url,'/') > 4);
 
 		if (! $invalid) {
-			foreach (['/user', '/cart', '/checkout'] as $a) {
-				if (stripos($url,$a) !== false) {
+			foreach (['/user', '/cart', '/checkout', '/feed'] as $a) {
+				if (strncmp($url, $a, strlen($a)) === 0) {
 					$invalid = true;
 
 					break;
@@ -155,6 +162,7 @@ class PageCache {
 			isset($_COOKIE['nocache']) || //cookie set by plugin
 			isset($_COOKIE['cart']) || // cookie set by add to cart
 			isset($_COOKIE['user']) || //cookie set by login
+			isset($_COOKIE['admin']) || //cookie set by admin login
 			! $this->validUrl($this->uri) //valid url
 			) {
 			return $this->canCache = false;
@@ -203,7 +211,11 @@ class PageCache {
 		//if page not found or server error don't cache
 		if (FrontController::getStatus() != 200) {
 			//remove lock
-			unlink($this->fileName . self :: LOCK_EXT);
+			$lock = $this->fileName . self :: LOCK_EXT;
+
+			if (file_exists($lock)) {
+				unlink($lock);
+			}
 
 			//remove all empty created folders
 			while (
@@ -229,7 +241,9 @@ class PageCache {
 			$dir = dirname($this->fileName);
 
 			if (! file_exists($dir)) {
-				mkdir($dir, (0755 & ~umask()), true);
+				if (! mkdir($dir, (0755 & ~umask()), true)) {
+					return false;
+				}
 			}
 			//save cache
 			file_put_contents($this->fileName, $data);
@@ -275,10 +289,22 @@ class PageCache {
 	}
 
 	static function enable($type = false) {
-		setcookie((in_array($type, ['user', 'cart']) ? $type : 'nocache'), '', time() - 3600, '/');
+		$cookie = (in_array($type, self :: $cacheCookies) ? $type : 'nocache');
+
+		if (! self :: $enabled && isset($_COOKIE[$cookie])) {
+			setcookie($cookie, '', time() - 3600, '/');
+		}
+
+		self :: $enabled = true;
 	}
 
 	static function disable($type = false) {
-		setcookie((in_array($type, ['user', 'cart']) ? $type : 'nocache'), '1', 0, '/');
+		$cookie = (in_array($type, self :: $cacheCookies) ? $type : 'nocache');
+
+		if (self :: $enabled && ! isset($_COOKIE[$cookie])) {
+			setcookie($cookie, '1', 0, '/');
+		}
+
+		self :: $enabled = false;
 	}
 }
