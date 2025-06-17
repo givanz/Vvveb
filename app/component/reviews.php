@@ -54,7 +54,7 @@ class Reviews extends Comments {
 
 				foreach ($review['images'] as &$image) {
 					$image['thumb'] = Images::image($image['image'], 'product', $this->options['image_size']);
-					$image['image'] = Images::image($image['image'], 'product');
+					$image['image'] = Images::image($image['image'], 'product', 'xlarge');
 				}
 			}
 		}
@@ -67,7 +67,7 @@ class Reviews extends Comments {
 			//$gallery = Images::images($gallery, 'product', $this->options['image_size']);
 			foreach ($gallery as &$image) {
 				$image['thumb'] = Images::image($image['image'], 'product', $this->options['image_size']);
-				$image['image'] = Images::image($image['image'], 'product');
+				$image['image'] = Images::image($image['image'], 'product', 'xlarge');
 			}
 		}
 
