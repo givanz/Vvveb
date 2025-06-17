@@ -27,6 +27,7 @@ if (APP == 'admin') {
 } else {
 	$admin_path = \Vvveb\adminPath();
 }
+
 $admin_path .= strpos($admin_path, 'index.php') === false ? 'index.php' : '';
 $homeUrl     = Vvveb\Url('index/index');
 
@@ -519,6 +520,20 @@ return
  				'action' => 'index',
  				'icon'   => 'la la-plus-circle',
  			],
+ 			'fonts-heading' => [
+ 				'name'    => __('Customize'),
+ 				'heading' => true,
+ 				'url'     => 'javascript:void(0)',
+ 				'module'  => 'theme/themes',
+ 				'action'  => 'fonts',
+ 			],
+ 			'fonts' => [
+ 				'name'   => __('Fonts'),
+ 				'url'    => $admin_path . '?module=theme/fonts',
+ 				'module' => 'theme/themes',
+ 				'action' => 'fonts',
+ 				'icon'   => 'la la-font',
+ 			],
  			'editor' => [
  				'name'   => __('Code editor'),
  				'url'    => $admin_path . '?module=editor/code&type=themes',
@@ -668,14 +683,6 @@ return
  						'module' => 'settings/product-types',
  						'action' => 'index',
  						'icon'   => 'la la-box',
- 					],
-
- 					'fields' => [
- 						'name'   => __('Fields'),
- 						'url'    => $admin_path . '?module=field/field-group',
- 						'module' => 'field/field-group',
- 						'action' => 'index',
- 						'icon'   => 'la la-stream',
  					],
  				],
  			],
@@ -933,13 +940,6 @@ return
  					'email' => [
  						'name'   => __('Email settings'),
  						'icon'   => 'la la-envelope',
- 						'url'    => $admin_path . '?module=settings/email',
- 						'module' => 'settings/email',
- 						'action' => 'index',
- 					],
- 					'rest' => [
- 						'name'   => __('Rest Api'),
- 						'icon'   => 'la la-database',
  						'url'    => $admin_path . '?module=settings/email',
  						'module' => 'settings/email',
  						'action' => 'index',
