@@ -16,14 +16,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
+ * https://github.com/givanz/Vvveb
  */
- 
+
 if (VvvebTheme === undefined) var VvvebTheme = {};
 
 VvvebTheme.Ajax = {
 	call: function(url, parameters, element, selector, callback, requestType = "POST") {
 		if (!url) {
-			url = '/index.php?module=' +  parameters["module"] + '&action=' + parameters["action"];
+			let action = element.closest("[data-v-vvveb-action]") ?? element;
+			url = action.href ?? action.action ?? '/index.php?module=' +  parameters["module"] + '&action=' + parameters["action"];
 		} 
 		
 		if (!selector) {
@@ -32,7 +34,7 @@ VvvebTheme.Ajax = {
 	
 		let loading = element?.querySelector('.loading');
 		let btn = element?.querySelector('.button-text');
-		
+	
 		if (loading && loading.classList.contains("d-none")) {
 			loading.classList.remove('d-none');
 			btn.classList.add('d-none');
@@ -46,6 +48,8 @@ VvvebTheme.Ajax = {
 		const signal = controller.signal;
 		
 		 fetch(url, {
+			withCredentials: true,
+			credentials: 'include',			
 			method: requestType,   
 			headers: {
 			"X-Requested-With": "XMLHttpRequest",
@@ -68,13 +72,31 @@ VvvebTheme.Ajax = {
 					selector = [selector];
 				}
 				
-				for (k in selector) {
+				for (const k in selector) {
 					let elementSelector = selector[k];
 					let currentElements = document.querySelectorAll(elementSelector);
 					let newElements = response.querySelectorAll(elementSelector);
 					
 					if (currentElements && newElements) {
-						currentElements.forEach( (e, i) => {e.replaceWith(newElements[i])});
+						currentElements.forEach( (e, i) => {
+							let newElement = newElements[i] ?? document.createElement("null");
+							e.replaceWith(newElement);
+							newElement.querySelectorAll('script').forEach(oldScriptEl => {
+								  const newScriptEl = document.createElement("script");
+								  
+								  Array.from(oldScriptEl.attributes).forEach( attr => {
+									newScriptEl.setAttribute(attr.name, attr.value) 
+								  });
+								  
+								  const scriptText = document.createTextNode(oldScriptEl.innerHTML);
+								  newScriptEl.appendChild(scriptText);
+								  
+								  oldScriptEl.replaceChildren();
+								  oldScriptEl.parentNode.replaceChild(newScriptEl, oldScriptEl);
+								  oldScriptEl.remove();
+								  
+							});
+						});
 					} /*if (currentElements) {
 						currentElements.forEach(e => e.remove());
 					} else if (newElements) {
@@ -99,6 +121,9 @@ VvvebTheme.Ajax = {
 			if (element.hasAttribute("button")) {
 				element.removeAttribute("disabled");
 			}
+			
+			//add events for new actions that have different handlers than click/submit
+			//VvvebTheme.Gui.init();
 		})
 		.catch(error => {
 			console.log(error);
@@ -287,12 +312,12 @@ VvvebTheme.Search = {
 		parameters['action'] = parameters['action'] ?? action;
 		parameters['component'] = parameters['component'] ?? this.component;
 		parameters['component_id'] = parameters['component_id'] ?? this.component_id;
-		
-		VvvebTheme.Ajax.call("/search", parameters, element, selector, callback = false);
+
+		VvvebTheme.Ajax.call("/search", parameters, element, selector, callback);
 	},
 	
 	query: function(parameters, element, selector, callback) {
-		return this.ajax('index' ,parameters, element, selector);
+		return this.ajax('index' ,parameters, element, selector, callback);
 	},
 }
 
@@ -388,6 +413,7 @@ VvvebTheme.Gui = {
 	},
 	
 	addToCart: function(e) {
+		let element = this.closest("[data-v-vvveb-action]") ?? this;
 		let product = elementProduct(this);
 		
 		let img = product.querySelector("img[data-v-product-image], img[data-v-product-image-src], img[data-v-product-image], img[data-v-product-main-image]");
@@ -414,7 +440,7 @@ VvvebTheme.Gui = {
 			}
 		}
 
-		VvvebTheme.Cart.add(id, options, this, ['.mini-cart', '[data-v-notifications]'], function() {
+		VvvebTheme.Cart.add(id, options, element, ['.mini-cart', '[data-v-notifications]'], function() {
 			let src = img.getAttribute("src");
 			VvvebTheme.Alert.show(`
 			<div class="clearfix">
@@ -429,7 +455,7 @@ VvvebTheme.Gui = {
 					</a>
 				  </div>
 				  <div class="col-6">
-					<a href="/checkout" class="btn btn-primary btn-sm w-100" data-v-url="checkout/checkout/index">
+					<a href="/checkout" class="btn btn-primary btn-sm w-100 px-2" data-v-url="checkout/checkout/index">
 					  <span>Checkout</span>
 					  <i class="la la-arrow-right la-lg"></i>
 					</a>
@@ -442,6 +468,7 @@ VvvebTheme.Gui = {
 	},	
 	
 	removeFromCart: function(e) {
+		let element = this.closest("[data-v-vvveb-action]") ?? this;
 		
 		let product = this.closest("[data-v-product]");
 		if (!product) {
@@ -452,19 +479,36 @@ VvvebTheme.Gui = {
 		}
 		let img = product.querySelector("[data-v-product-image],[data-v-product-image], [data-v-cart-product-image]")?.getAttribute("src") ?? "";
 		let name = product.querySelector("[data-v-product-name]")?.textContent ?? "";
-		let id = this.dataset.product_id;
+		let key = this.dataset.key;
 		let selector = this.dataset.selector ?? '.cart-box';
 
-		if (!id) {
-			id = product.dataset.product_id;
-			if (!id) {
-				id = product.querySelector('input[name="product_id"]').value;
+		if (!key) {
+			key = product.dataset.key;
+			if (!key) {
+				key = product.querySelector('input[name="key"]').value;
 			}
 		}
 		
-		VvvebTheme.Cart.remove(id, this, ['.mini-cart', '[data-v-notifications]'], function() {
-			VvvebTheme.Alert.show('<img height=50 src="' + img + '"> &ensp; <strong>' +  name +'</strong> was removed from cart');
+		let updatElements = ['.mini-cart', '[data-v-notifications]'];
+		//if on cart page update also cart page elements
+		for (selector of ['[data-v-cart]', '.cart-right-column']) {
+			if (document.querySelector(selector)) {
+				updatElements.push(selector);
+			}
+		}
+		
+		VvvebTheme.Cart.remove(key, element, updatElements, function() {
 			product.remove();
+
+			//if on cart page and cart empty refresh page
+			let cartContainer = document.getElementById("cart-container");
+			if (cartContainer && 
+				cartContainer.querySelectorAll("[data-v-cart-product]").length == 0 ) {
+				cartContainer.remove();
+				location.reload();
+			}		
+
+			VvvebTheme.Alert.show('<img height=50 src="' + img + '"> &ensp; <strong>' +  name +'</strong> was removed from cart');
 		});
 		
 		e.preventDefault();
@@ -472,6 +516,7 @@ VvvebTheme.Gui = {
 	},
 	
 	addToWishlist: function(e) {
+		let element = this.closest("[data-v-vvveb-action]") ?? this;
 		let product = elementProduct(this);
 		let id = this.dataset.product_id ?? product.dataset.product_id;
 		let img = product.querySelector("img[data-v-product-image], img[data-v-product-image], img[data-v-cart-product-image], img[data-v-product-main-image]")?.getAttribute("src") ?? "";
@@ -483,7 +528,7 @@ VvvebTheme.Gui = {
 			}
 		}
 
-		VvvebTheme.Wishlist.add(id, this, false, function(data) {
+		VvvebTheme.Wishlist.add(id, element, false, function(data) {
 			VvvebTheme.Alert.show('<img height=50 src="' + img + '"> &ensp; <strong>' +  name +'</strong> was added to wishlist');
 		});
 		
@@ -492,18 +537,20 @@ VvvebTheme.Gui = {
 	},
 	
 	addToCompare: function(e) {
+		let element = this.closest("[data-v-vvveb-action]") ?? this;
 		let product = elementProduct(this);
 		let id = this.dataset.product_id ?? product.dataset.product_id;
 		let img = product.querySelector("img[data-v-product-image], img[data-v-product-image], img[data-v-cart-product-image], img[data-v-product-main-image]")?.getAttribute("src") ?? "";
 
 		if (!id) {
 			id = product.dataset.product_id;
-			if (!id) {
-				id = product.querySelector('input[name="product_id"]').value;
+			let input = product.querySelector('input[name="product_id"]');
+			if (!id && input) {
+				id = input.value;
 			}
 		}
 
-		VvvebTheme.Compare.add(id, this, false, function(data) {
+		VvvebTheme.Compare.add(id, element, false, function(data) {
 			VvvebTheme.Alert.show('<img height=50 src="' + img + '"> &ensp; <strong>' +  name +'</strong> was added to compare');
 		});
 		
@@ -537,11 +584,12 @@ VvvebTheme.Gui = {
 	},
 
 	addComment: function(e) {
+		let element = this.closest("[data-v-vvveb-action]") ?? this;
 		let selector = this.dataset.selector ?? ".post-comments";
 		let form = this;
 		let parameters = Object.fromEntries(new URLSearchParams(new FormData(form)));
 		
-		VvvebTheme.Comments.add(parameters, this, selector, function () {
+		VvvebTheme.Comments.add(parameters, element, selector, function () {
 			form.reset();
 		});
 		
@@ -549,13 +597,14 @@ VvvebTheme.Gui = {
 	},	
 	
 	addReview: function(e) {
+		let element = this.closest("[data-v-vvveb-action]") ?? this;
 		let selector = this.dataset.selector ?? ".product-reviews";
 		let form = this;
 		let parameters = Object.fromEntries(new URLSearchParams(new FormData(form)));
 		parameters['module'] = 'product/product';
 		parameters['action'] = 'addReview';
 		
-		VvvebTheme.Comments.add(parameters, this, selector, function () {
+		VvvebTheme.Comments.add(parameters, element, selector, function () {
 			form.reset();
 		});
 		
@@ -564,13 +613,14 @@ VvvebTheme.Gui = {
 	},		
 	
 	addQuestion: function(e) {
+		let element = this.closest("[data-v-vvveb-action]") ?? this;
 		let selector = this.dataset.selector ?? ".product-questions";
 		let form = this;
 		let parameters = Object.fromEntries(new URLSearchParams(new FormData(form)));
 		parameters['module'] = 'product/product';
 		parameters['action'] = 'addQuestion';
 		
-		VvvebTheme.Comments.add(parameters, this, selector, function () {
+		VvvebTheme.Comments.add(parameters, element, selector, function () {
 			form.reset();
 		});
 		
@@ -587,30 +637,38 @@ VvvebTheme.Gui = {
 		let parameters = Object.fromEntries(new URLSearchParams(new FormData(form)));
 		let element = this;
 		let selector = this.dataset.selector;
+		let loading = form.querySelector(".loading");
+		if (loading) {
+			loading.classList.remove('d-none');
+		}
 		
+		document.querySelector(selector).replaceChildren();
 		window.searchDebounce = setTimeout(function () {	
 			VvvebTheme.Search.query(parameters, element, selector, function(data) { 
-				component.outerHTML = data;
-		});
-		e.preventDefault();
+				if (loading) {
+					loading.classList.add('d-none');
+				}
+			});
+			e.preventDefault();
 		
 		}, 1000);
 	},
 	
 	login: function (e) {
+		let element = this.closest("[data-v-vvveb-action]") ?? this;
 		let parameters = Object.fromEntries(new URLSearchParams(new FormData(this)));
 		let componentUser;
 		let url = this.dataset.vUrl ?? false;
 		let selector = this.dataset.selector ?? '.user-box';
-
+/*
 		if (url) {
 			VvvebTheme.User.module = url;
 		}
-
+*/
 		componentUser = this.closest('[data-v-component-user]'); 
 		//parameters['component_id'] = document.querySelectorAll('[data-v-component-user]').index(componentUser);
 
-		VvvebTheme.User.login(parameters, this, selector/*, function(data) { 
+		VvvebTheme.User.login(parameters, element, selector/*, function(data) { 
 			
 			//document.querySelectorAll("[data-v-component-user]")[0].outerHTML = data;
 			componentUser.html(data);
@@ -665,17 +723,42 @@ function preloadUrl(e) {
 		
 //ajax url
 function loadAjax(url, selector, callback = null, params = {}, method = "get") {
-	let options = {method};
+	let options = {
+		method,
+		withCredentials: true,
+		credentials: 'include'			
+	};
+
 	if (method == "post" && params) {
 		options.body = new URLSearchParams(params);
 	}
 	
 	if (!url) url = window.location.href;
+	let progressPercent = 10;
+	let progressTimer;
+		
+	if (VvvebTheme.ajax.progressStatus) {
+		let progressTimer = () => {
+		  if (progressPercent >= 95 || progressPercent == 0) {
+			  clearTimeout(progressTimer);
+		  } else {
+			progressPercent += 5;
+			setTimeout(progressTimer, 100);
+		  }
+		  VvvebTheme.ajax.progressStatus(progressPercent);
+		}
+		//show progress bar only if takes longer than 1 sec
+		setTimeout(progressTimer, 1000);
+	}
 	
 	fetch(url, options).
 	then((response) => {
 		//if (!response.ok) { throw new Error(response) }
-		return response.text()
+		if (VvvebTheme.ajax.progressStatus && progressPercent > 10) {
+			progressPercent = 100;
+			VvvebTheme.ajax.progressStatus(progressPercent);
+		}		
+		return response.text();
 	}).
 	then(function (data) {
 		if (selector) {
@@ -685,7 +768,7 @@ function loadAjax(url, selector, callback = null, params = {}, method = "get") {
 				selector = [selector];
 			}
 			
-			for (k in selector) {
+			for (const k in selector) {
 				let elementSelector = selector[k];
 				let currentElements = document.querySelectorAll(elementSelector);
 				let newElements = response.querySelectorAll(elementSelector);
@@ -698,7 +781,25 @@ function loadAjax(url, selector, callback = null, params = {}, method = "get") {
 						break;
 					}
 				
-					currentElements.forEach( (e, i) => {e.replaceWith(newElements[i])});
+					currentElements.forEach( (e, i) => {
+						let newElement = newElements[i] ?? document.createElement("null");
+						e.replaceWith(newElement);
+						newElement.querySelectorAll('script').forEach(oldScriptEl => {
+							  const newScriptEl = document.createElement("script");
+							  
+							  Array.from(oldScriptEl.attributes).forEach( attr => {
+								newScriptEl.setAttribute(attr.name, attr.value) 
+							  });
+							  
+							  const scriptText = document.createTextNode(oldScriptEl.innerHTML);
+							  newScriptEl.appendChild(scriptText);
+
+							  oldScriptEl.replaceChildren();
+							  oldScriptEl.parentNode.replaceChild(newScriptEl, oldScriptEl);
+							  oldScriptEl.remove();
+							  
+						});
+					});
 				} if (currentElements) {
 					currentElements.forEach(e => e.remove());
 				} else if (newElements) {
@@ -712,6 +813,15 @@ function loadAjax(url, selector, callback = null, params = {}, method = "get") {
 			if (callback) callback();
 		}		
 
+		if (VvvebTheme.ajax.progressStatus) {
+			progressPercent = 0;
+			VvvebTheme.ajax.progressStatus(0);
+		}
+
+		if (VvvebTheme.ajax.afterLoad) {
+			VvvebTheme.ajax.afterLoad();
+		}
+		
 		window.dispatchEvent(new CustomEvent("vvveb.loadUrl", {detail: {url, selector}}));
 	}).catch(error => {
 		console.log(error);
@@ -720,7 +830,7 @@ function loadAjax(url, selector, callback = null, params = {}, method = "get") {
 
 
 VvvebTheme.ajax = {
-	selector:"a[data-url], a[data-page-url], a[data-v-menu-item-url], a[data-v-post-url], a[data-v-product-url], a[data-v-cat-url], a[data-v-archive-url], a[data-v-admin-url], a[data-v-post-author-url], a[data-v-breadcrumb-item-url], a[data-v-categories-cat-url]",
+	selector:"a[data-url], a[data-page-url], a[data-v-url], a[data-v-menu-item-url], a[data-v-post-url], a[data-v-product-url], a[data-v-cat-url], a[data-v-archive-url], a[data-v-admin-url], a[data-v-post-author-url], a[data-v-breadcrumb-item-url], a[data-v-categories-cat-url], a[data-v-cart-product-url]",
 	siteContainer:["#site-content", "body > section"],
 	scrollContainer:"body",
 	skipUrl:[]
@@ -731,7 +841,9 @@ if (!isEditor()) {
 		let element = e.target.closest(VvvebTheme.ajax.selector);
 		if (element) {
 			let url = element.getAttribute("href") ?? "";
-			if (!url || (url.indexOf("//") != -1) //external url
+			let regex = new RegExp("^.*//" + window.location.host);
+			url = url.replace(regex, "");
+			if (!url || (url.indexOf("//") != -1) || element.target //external url
 				|| (VvvebTheme.ajax.skipUrl.length && (VvvebTheme.ajax.skipUrl.includes(url) || VvvebTheme.ajax.skipUrl.includes(window.location.pathname)))
 			) return;
 			
