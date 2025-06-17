@@ -1,56 +1,56 @@
-INSERT INTO `product_content` VALUES 
-(1,1,'Product 1', 'product-one','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 1','',''),
+INSERT INTO `product_content` (`product_id`, `language_id`, `name`,`slug`,`content`,`excerpt`,`meta_title`,`meta_description`,`meta_keywords`) VALUES 
+(1,1,'Product 1', 'product-one','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 1','',''),
 
 
-(2,1,'Product 2', 'product-two','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 2','',''),
+(2,1,'Product 2', 'product-two','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 2','',''),
 
 
-(3,1,'Product 3', 'product-three','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 3','',''),
+(3,1,'Product 3', 'product-three','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 3','',''),
 
 
-(4,1,'Product 4', 'product-four','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 4','',''),
+(4,1,'Product 4', 'product-four','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 4','',''),
 
 
-(5,1,'Product 5', 'product-five','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 5','',''),
+(5,1,'Product 5', 'product-five','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 5','',''),
 
 
-(6,1,'Product 6', 'product-six','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 6','',''),
+(6,1,'Product 6', 'product-six','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 6','',''),
 
 
-(7,1,'Product 7', 'product-seven','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 7','',''),
+(7,1,'Product 7', 'product-seven','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 7','',''),
 
 
-(8,1,'Product 8', 'product-eight','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 8','',''),
+(8,1,'Product 8', 'product-eight','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 8','',''),
 
 
-(9,1,'Product 9', 'product-nine','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 9','',''),
+(9,1,'Product 9', 'product-nine','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 9','',''),
 
 
-(10,1,'Product 10', 'product-ten','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 10','',''),
+(10,1,'Product 10', 'product-ten','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 10','',''),
 
 
-(11,1,'Product 11', 'product-eleven','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 11','',''),
+(11,1,'Product 11', 'product-eleven','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 11','',''),
 
 
-(12,1,'Product 12', 'product-twelve','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 12','',''),
+(12,1,'Product 12', 'product-twelve','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 12','',''),
 
 
-(13,1,'Product 13', 'product-thirteen','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 13','',''),
+(13,1,'Product 13', 'product-thirteen','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 13','',''),
 
 
-(14,1,'Product 14', 'product-fourteen','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 14','',''),
+(14,1,'Product 14', 'product-fourteen','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 14','',''),
 
 
-(15,1,'Product 15', 'product-fifteen','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 15','',''),
+(15,1,'Product 15', 'product-fifteen','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 15','',''),
 
 
-(16,1,'Product 16', 'product-sixteen','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 16','',''),
+(16,1,'Product 16', 'product-sixteen','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 16','',''),
 
 
-(17,1,'Product 17', 'product-seventeen','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 17','',''),
+(17,1,'Product 17', 'product-seventeen','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 17','',''),
 
 
-(18,1,'Product 18','product-eighteen','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','','Product 18','',''),
+(18,1,'Product 18','product-eighteen','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua','Lorem ipsum dolor sit amet','Product 18','',''),
 
 
 (19,1,'Product 19', 'product-nineteen','<p>All in the world know the beauty of the beautiful, and in doing this they have (the idea of) what ugliness is; they all know the skill of the skilful, and in doing this they have (the idea of) what the want of skill is.</p>
@@ -67,4 +67,4 @@ INSERT INTO `product_content` VALUES
 	<br />
 	<span>`This this that makes the power not cease to be.</span>
 	</p>
-</blockquote>','','Product 19','','');
+</blockquote>','Lorem ipsum dolor sit amet','Product 19','','');
