@@ -31,7 +31,10 @@ class Categories extends Base {
 		$taxonomy_item_id = $this->request->post['taxonomy_item_id'] ?? false;
 		$categories       = new categorySQL();
 
-		//['taxonomy_items' => $data]
+		if (is_numeric($taxonomy_item_id)) {
+			$taxonomy_item_id = [$taxonomy_item_id];
+		}
+
 		if ($taxonomy_item_id && $categories->deleteTaxonomyItem(['taxonomy_item_id' => $taxonomy_item_id])) {
 			echo __('Item removed!');
 		}
@@ -66,7 +69,7 @@ class Categories extends Base {
 			$results                     = $categories->editTaxonomyItem($options);
 
 			if ($results) {
-				echo __('Item edited!');
+				echo __('Item saved!');
 			}
 		} else {
 			$results = $categories->addTaxonomyItem($options);
@@ -87,34 +90,36 @@ class Categories extends Base {
 
 		$page        = $this->request->get['page'] ?? 1;
 		$type        = $this->request->get['type'] ?? '';
-		$taxonomy_id = $this->request->get['taxonomy_id'];
+		$taxonomy_id = $this->request->get['taxonomy_id'] ?? false;
 		$limit       = 1000;
 
-		$options = [
-			'start'       => ($page - 1) * $limit,
-			'limit'       => $limit,
-			'taxonomy_id' => $taxonomy_id,
-			'post_type'   => $type,
-			'type'        => 'categories',
-		] + $this->global;
+		if ($taxonomy_id) {
+			$options = [
+				'start'       => ($page - 1) * $limit,
+				'limit'       => $limit,
+				'taxonomy_id' => $taxonomy_id,
+				'post_type'   => $type,
+				'type'        => 'categories',
+			] + $this->global;
 
-		$view->taxonomy_id = $taxonomy_id;
+			$view->taxonomy_id = $taxonomy_id;
 
-		$results = $categories->getCategoriesAllLanguages($options);
+			$results = $categories->getCategoriesAllLanguages($options);
 
-		foreach ($results['categories'] as &$taxonomy_item) {
-			$langs                      = $taxonomy_item['languages'] ? json_decode($taxonomy_item['languages'], true) : [];
-			$taxonomy_item['languages'] = [];
+			foreach ($results['categories'] as &$taxonomy_item) {
+				$langs                      = $taxonomy_item['languages'] ? json_decode($taxonomy_item['languages'], true) : [];
+				$taxonomy_item['languages'] = [];
 
-			if ($langs) {
-				foreach ($langs as $lang) {
-					$taxonomy_item['languages'][$lang['language_id']] = $lang;
+				if ($langs) {
+					foreach ($langs as $lang) {
+						$taxonomy_item['languages'][$lang['language_id']] = $lang;
+					}
+
+					$taxonomy_item['name'] = $taxonomy_item['languages'][$this->global['language_id']]['name'] ?? $langs[0]['name'] ?? '';
 				}
-
-				$taxonomy_item['name'] = $taxonomy_item['languages'][$this->global['language_id']]['name'] ?? $langs[0]['name'] ?? '';
 			}
-		}
 
-		$view->set($results);
+			$view->set($results);
+		}
 	}
 }
