@@ -110,7 +110,8 @@ class Revisions extends Base {
 
 	function index() {
 		$view           = $this->view;
-		$revisions      = model($this->object . '_content_revision');
+		$modelName      = $this->object . '_content_revision';
+		$revisions      = model($modelName);
 		$this->options += $this->global;
 		$allOptions     = $this->options;
 		unset($allOptions['created_at']);
@@ -124,7 +125,7 @@ class Revisions extends Base {
 		}
 
 		$results = [
-			'revisions' => $revisions['revision'] ?? [],
+			'revisions' => $revisions[$modelName] ?? [],
 			'revision'  => $revision ?? [],
 			'post'      => $post ?? [],
 		];
