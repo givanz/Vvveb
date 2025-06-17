@@ -214,7 +214,7 @@
 			
 			@IF isset(:taxonomy_item_id)
 			THEN
-				AND pt.taxonomy_item_id = :taxonomy_item_id
+				AND pt.taxonomy_item_id IN (:taxonomy_item_id)
 			END @IF	
 			
 			
