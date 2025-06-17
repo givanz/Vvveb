@@ -13,7 +13,7 @@
 	} else if ('@@__src__@@') {
 		echo '@@__src__@@';
 	} else {
-		echo 'img/placeholder.svg';
+		echo PUBLIC_PATH . 'media/placeholder.svg';
 	}
 ?>	
 

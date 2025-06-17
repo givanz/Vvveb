@@ -51,4 +51,4 @@ import(common.tpl)
 /* Featured media */
 [data-v-{{type}}] [data-v-image]|data-v-image = $this->{{type}}['image_url']
 [data-v-{{type}}] input[data-v-image]|value = $this->{{type}}['image']
-[data-v-{{type}}] img[data-v-image]|src = <?php echo (isset($this->{{type}}['image_url']) && $this->{{type}}['image_url']) ? $this->{{type}}['image_url'] : 'img/placeholder.svg';?>
+[data-v-{{type}}] img[data-v-image]|src = <?php echo (isset($this->{{type}}['image_url']) && $this->{{type}}['image_url']) ? $this->{{type}}['image_url'] : PUBLIC_PATH . 'media/placeholder.svg';?>

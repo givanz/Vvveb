@@ -5,4 +5,4 @@ import(crud.tpl, {"type":"currency"})
 
 [data-v-currency] [data-v-image]|data-v-image = $this->currency['image_url']
 [data-v-currency] input[data-v-image]|value = $this->currency['image']
-[data-v-currency] img[data-v-image]|src = <?php echo (isset($this->currency['image_url']) && $this->currency['image_url']) ? $this->currency['image_url'] : 'img/placeholder.svg';?>
+[data-v-currency] img[data-v-image]|src = <?php echo (isset($this->currency['image_url']) && $this->currency['image_url']) ? $this->currency['image_url'] : PUBLIC_PATH . 'media/placeholder.svg';?>
