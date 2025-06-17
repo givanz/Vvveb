@@ -76,14 +76,19 @@
 		
 		WHERE 1 = 1
 
-		@IF isset(:username)
+		@IF isset(:username) && !isset(:email)
 		THEN 
 			AND _.username = :username 
 	       	END @IF	
 
-		@IF isset(:email)
+		@IF isset(:email) && !isset(:username)
 		THEN 
 			AND _.email = :email 
+		END @IF			
+
+		@IF isset(:email) && isset(:username)
+		THEN 
+			AND _.email = :email OR _.username = :username
 		END @IF			
 
 		@IF isset(:admin_id)
@@ -151,20 +156,20 @@
 			
 		WHERE 
 
-        @IF isset(:email)
+		@IF isset(:email)
 		THEN 
 			email = :email 
-        END @IF			
+		END @IF			
 
-        @IF isset(:admin_id)
+		@IF isset(:admin_id)
 		THEN 
 			admin_id = :admin_id 
-        END @IF					
+		END @IF					
 
 		@IF isset(:username)
 		THEN 
 			username = :username 
-       	 END @IF
+	       	END @IF
 	END
 
 	-- delete admin

@@ -24,14 +24,14 @@
         SELECT * FROM `user` WHERE 1 = 1 
 
 
-            @IF isset(:status) AND !empty(:status)
-			THEN 
-				AND user.status = :status 
+        	@IF isset(:status) AND !empty(:status)
+        	THEN 
+			AND user.status = :status 
         	END @IF	
 
-			@IF isset(:email) AND !empty(:email)
-			THEN 
-				AND user.email = :email 
+		@IF isset(:email) AND !empty(:email)
+		THEN 
+			AND user.email = :email 
         	END @IF	
 
 			@IF isset(:phone_number) AND !empty(:phone_number)
@@ -39,8 +39,8 @@
 				AND user.phone_number = :phone_number 
         	END @IF	
 
-            -- search
-            @IF isset(:search) AND !empty(:search)
+        	-- search
+        	@IF isset(:search) AND !empty(:search)
 			THEN 
 				AND user.username LIKE CONCAT('%',:search,'%') OR
 				user.first_name LIKE CONCAT('%',:search,'%') OR
@@ -73,7 +73,7 @@
 	-- get user information
 
 	CREATE PROCEDURE get(
-		IN user CHAR,
+		IN username CHAR,
 		IN email CHAR,
         IN user_id INT,
         IN status INT,
@@ -83,29 +83,34 @@
         
         SELECT * FROM user AS _ WHERE 1 = 1 
 
-            @IF isset(:username)
+        	@IF isset(:username) && !isset(:email)
 		THEN 
-				AND _.username = :username 
+			AND _.username = :username 
         	END @IF	
 
-            @IF isset(:email)
-			THEN 
-				AND _.email = :email 
+        	@IF isset(:email) && !isset(:username)
+		THEN 
+			AND _.email = :email 
         	END @IF			
 
-            @IF isset(:user_id)
-			THEN 
-				AND _.user_id = :user_id 
+        	@IF isset(:email) && isset(:username)
+        	THEN 
+			AND _.email = :email OR _.username = :username
         	END @IF			
 
-            @IF isset(:status)
-			THEN 
-				AND _.status = :status 
+        	@IF isset(:user_id)
+		THEN 
+			AND _.user_id = :user_id 
+        	END @IF			
+
+        	@IF isset(:status)
+		THEN 
+			AND _.status = :status 
         	END @IF	
 			
-			@IF isset(:token)
-			THEN 
-				AND _.token = :token 
+		@IF isset(:token)
+		THEN 
+			AND _.token = :token 
         	END @IF				
 			
 		LIMIT 1;
@@ -151,13 +156,13 @@
 			
 		WHERE 
 
-            @IF isset(:email)
+        	@IF isset(:email)
 			THEN 
 				email = :email 
         	END @IF			
 
-            @IF isset(:user_id)
-			THEN 
+        	@IF isset(:user_id)
+        	THEN 
 				user_id = :user_id 
         	END @IF					
 			
@@ -190,17 +195,17 @@
 	BEGIN
 		
 	
-		UPDATE user 
+        	UPDATE user 
 			
 			SET  
             
-            @IF isset(:role_id)
+        	@IF isset(:role_id)
 			THEN 
 				role_id = :role_id 
         	END @IF		
 
 
-            @IF isset(:role)
+        	@IF isset(:role)
 			THEN 
 				role_id = (SELECT role_id FROM roles WHERE name = :role)
         	END @IF		

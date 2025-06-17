@@ -76,15 +76,20 @@
 		
 		WHERE 1 = 1
 
-		@IF isset(:username)
+		@IF isset(:username) && !isset(:email)
 		THEN 
 			AND _.username = :username 
 		END @IF	
 
-		@IF isset(:email)
+		@IF isset(:email) && !isset(:username)
 		THEN 
 			AND _.email = :email 
 		END @IF			
+
+		@IF isset(:email) && isset(:username)
+		THEN 
+			AND _.email = :email OR _.username = :username
+		END @IF		
 
 		@IF isset(:admin_id)
 		THEN 
@@ -101,7 +106,7 @@
 			AND _.token = :token 
 		END @IF	
 				
-	       	@IF isset(:role_id)
+	   	@IF isset(:role_id)
 		THEN 
 			AND _.role_id = :role_id 
 		END @IF	
@@ -127,7 +132,7 @@
 			
 			( @KEYS(:admin) )
 			
-	  	VALUES ( :admin )	 
+	  	VALUES ( :admin )
 	END    
     
 
