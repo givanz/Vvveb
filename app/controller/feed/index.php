@@ -31,6 +31,7 @@ class Index extends Base {
 
 		if ($rss) {
 			$rss   = Str::sanitizeFilename($rss);
+			$rss   = str_replace('.xml', '', $rss);
 			$xml   = "feed/{$rss}.xml";
 			$theme = $this->view->getTheme();
 
