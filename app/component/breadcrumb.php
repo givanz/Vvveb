@@ -52,7 +52,11 @@ class Breadcrumb extends ComponentBase {
 		$urlOptions  = [];
 
 		if ($this->options['absoluteURL']) {
-			$urlOptions= ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http'];
+			$urlOptions += ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http'];
+		}
+
+		if ($this->options['default_language'] != $this->options['language']) {
+			$urlOptions += ['language'=> $this->options['language']];
 		}
 
 		$breadcrumb = [
@@ -63,6 +67,8 @@ class Breadcrumb extends ComponentBase {
 			//product page
 			case 'product/product/index':
 				$product_id = $request->get['product_id'] ?? false;
+
+				$breadcrumb[] = ['text' => $shopText, 'url' => url('product/index', $urlOptions)];
 
 				if ($product_id) {
 					$category = new CategorySQL();
@@ -80,6 +86,7 @@ class Breadcrumb extends ComponentBase {
 			break;
 			//product category page
 			case 'product/category/index':
+				$breadcrumb[] = ['text' => $shopText, 'url' => url('product/index', $urlOptions)];
 				$breadcrumb[] = ['text' => $slug, 'url' => false];
 
 			break;
@@ -90,18 +97,14 @@ class Breadcrumb extends ComponentBase {
 			break;
 			//manufacturer page
 			case 'product/manufacturer/index':
-				$breadcrumb += [
-					['text' => $shopText, 'url' => url('product/index')],
-					['text' => $slug, 'url' => false],
-				];
+				$breadcrumb[] = ['text' => $shopText, 'url' => url('product/index', $urlOptions)];
+				$breadcrumb[] = ['text' => $slug, 'url' => false];
 
 			break;
 			//vendor page
 			case 'product/vendor/index':
-				$breadcrumb += [
-					['text' => $shopText, 'url' => url('product/index')],
-					['text' => $slug, 'url' => false],
-				];
+				$breadcrumb[] = ['text' => $shopText, 'url' => url('product/index', $urlOptions)];
+				$breadcrumb[] = ['text' => $slug, 'url' => false];
 
 			break;
 			//blog page
@@ -113,7 +116,7 @@ class Breadcrumb extends ComponentBase {
 			//post page
 			case 'content/post/index':
 				$post_id      = $request->get['post_id'] ?? false;
-				$breadcrumb[] =  ['text' => $blogText, 'url' => url('content')];
+				$breadcrumb[] =  ['text' => $blogText, 'url' => url('content', $urlOptions)];
 
 				if ($post_id) {
 					$category = new CategorySQL();
