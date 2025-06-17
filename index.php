@@ -46,10 +46,10 @@ if (! defined('APP')) {
 		$app = 'app';
 		$url = $_SERVER['REQUEST_URI'] ?? '';
 
-		if (REST && substr_compare($url, '/rest',0 ,5) === 0) {
+		if (defined('REST') && REST && strncmp($url, '/rest', 5) === 0) {
 			$app = 'rest';
 		} else {
-			if (GRAPHQL && substr_compare($url, '/graphql', 0, 8) === 0) {
+			if (defined('GRAPHQL') && GRAPHQL && strncmp($url, '/graphql', 8) === 0) {
 				$app = 'graphql';
 			}
 		}
@@ -86,21 +86,27 @@ if (! defined('PUBLIC_PATH')) {
 
 require_once DIR_SYSTEM . 'core/startup.php';
 
-if (PAGE_CACHE) {
+if (PAGE_CACHE && APP == 'app') {
 	require_once DIR_SYSTEM . 'page-cache.php';
 	$pageCache   = PageCache::getInstance();
 	$waitSeconds = 10;
 
 	function saveCache() {
 		$pageCache = PageCache::getInstance();
-		
+
 		if ($pageCache->canSaveCache()) {
-			$pageCache->startGenerating();
-			$pageCache->startCapture();
+			$canGenerate = $pageCache->startGenerating();
+
+			if ($canGenerate) {
+				$pageCache->startCapture();
+				define('PAGE_CACHE_GENERATING', true);
+			}
 
 			System\Core\start();
 
-			return $pageCache->saveCache();
+			if ($canGenerate) {
+				return $pageCache->saveCache();
+			}
 		} else {
 			System\Core\start();
 		}
