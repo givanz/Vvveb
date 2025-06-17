@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
+ * https://github.com/givanz/Vvveb
  */
 
 
@@ -59,15 +60,13 @@
 })();
 
 
-var rbracket = /\[\]$/;
-	
 function buildParams( prefix, obj,  add ) {
-	var name;
+	let rbracket = /\[\]$/;
 
 	if ( Array.isArray( obj ) ) {
 
 		// Serialize array item.
-		for(var key in obj) {
+		for(const key in obj) {
 			let v = obj[key];
 			if ( rbracket.test( prefix ) ) {
 
@@ -88,7 +87,7 @@ function buildParams( prefix, obj,  add ) {
 	} else if ( typeof obj === "object" ) {
 
 		// Serialize object item.
-		for ( name in obj ) {
+		for (const name in obj ) {
 			buildParams( prefix + "[" + name + "]", obj[ name ],  add );
 		}
 
@@ -102,12 +101,12 @@ function buildParams( prefix, obj,  add ) {
 // Serialize an array of form elements or a set of
 // key/values into a query string
 function nestedFormData( a ) {
-	var prefix,
+	let prefix,
 		s = [],
 		add = function( key, valueOrFunction ) {
 
 			// If value is a function, invoke it and use its return value
-			var value = typeof valueOrFunction === "function" ?
+			let value = typeof valueOrFunction === "function" ?
 				valueOrFunction() :
 				valueOrFunction;
 
@@ -123,7 +122,7 @@ function nestedFormData( a ) {
 	if ( Array.isArray( a ) || ( Object.is( a ) ) ) {
 
 		// Serialize the form elements
-		for(var key in object) {
+		for(const key in object) {
 			let v = object[key];
 		//jQuery.each( a, function() {
 			add( key, v );
@@ -133,7 +132,7 @@ function nestedFormData( a ) {
 
 		// If traditional, encode the "old" way (the way 1.3.2 or older
 		// did it), otherwise encode params recursively.
-		for ( prefix in a ) {
+		for (const prefix in a ) {
 			buildParams( prefix, a[ prefix ], add );
 		}
 	}
@@ -661,8 +660,19 @@ Vvveb.WysiwygEditor = {
 			} else {
 				element = document.createElement(tag);
 				range = selection.getRangeAt(0);
-				range.surroundContents(element);
-				range.selectNodeContents(element.childNodes[0], 0); 
+				
+				try {
+					range.surroundContents(element);
+					range.selectNodeContents(element.childNodes[0], 0); 
+
+				} catch (e) {
+					let content = range.extractContents();
+
+					element.appendChild(content);
+					range.insertNode(element);
+
+					range.selectNodeContents(element);
+				}				
 			}
 		}
 		
@@ -891,7 +901,7 @@ Vvveb.Builder = {
 			let type = list.dataset.type;
 			list.replaceChildren();
 			count ++;
-			
+
 			for (group in Vvveb.ComponentsGroup) {
 				
 				list.append(generateElements(
@@ -911,7 +921,7 @@ Vvveb.Builder = {
 				components = Vvveb.ComponentsGroup[ group ];
 				
 				for (i in components) {
-					componentType = components[i];
+					const componentType = components[i];
 					component = Vvveb.Components.get(componentType);
 					
 					if (component) {
@@ -952,11 +962,11 @@ Vvveb.Builder = {
 				</li>`)[0]);
 
 				let sectionsSubList = list.querySelector('li[data-section="' + group + '"]  ol');
-				sections = Vvveb.SectionsGroup[ group ];
+				let sections = Vvveb.SectionsGroup[ group ];
 
 				for (i in sections) {
-					sectionType = sections[i];
-					section = Vvveb.Sections.get(sectionType);
+					const sectionType = sections[i];
+					const section = Vvveb.Sections.get(sectionType);
 					
 					if (section) {
 						item = generateElements(`<li data-section="${group}" data-drag-type="section" data-type="${sectionType}" data-search="${section.name.toLowerCase()}">
@@ -1001,8 +1011,8 @@ Vvveb.Builder = {
 				blocks = Vvveb.BlocksGroup[ group ];
 
 				for (i in blocks) {
-					blockType = blocks[i];
-					block = Vvveb.Blocks.get(blockType);
+					const blockType = blocks[i];
+					const block = Vvveb.Blocks.get(blockType);
 					
 					if (block) {
 						item = generateElements(`<li data-section="${group}" data-drag-type="block" data-type="${blockType}" data-search="${block.name.toLowerCase()}">
@@ -1046,8 +1056,8 @@ Vvveb.Builder = {
 				styles = Vvveb.StylesGroup[ group ];
 
 				for (i in styles) {
-					styleType = styles[i];
-					style = Vvveb.Blocks.get(styleType);
+					const styleType = styles[i];
+					const style = Vvveb.Blocks.get(styleType);
 					
 					if (style) {
 						item = generateElements(`<li data-section="${group}" data-drag-type="style" data-type="${styleType}" data-search="${style.name.toLowerCase()}">
@@ -1215,7 +1225,7 @@ Vvveb.Builder = {
 	},
 	
 	loadNodeComponent:  function(node) {
-		data = Vvveb.Components.matchNode(node);
+		const data = Vvveb.Components.matchNode(node);
 		let component;
 		
 		if (data) 
@@ -1227,6 +1237,13 @@ Vvveb.Builder = {
 		Vvveb.Components.render(component);
 		this.selectedComponent = component;
 
+		//if component properties is loaded in left panel tab instead of right panel show tab
+		let propertiesTab = document.querySelector(".component-properties-tab a");
+		if (propertiesTab.offsetParent) {//if properites tab is enabled/visible 
+				propertiesTab.style.display = "";
+				const bsTab = bootstrap.Tab.getOrCreateInstance(propertiesTab);
+				bsTab.show(); 
+		}		
 	},
 	
 	reloadComponent:  function() {
@@ -1238,10 +1255,9 @@ Vvveb.Builder = {
 			node = Vvveb.Builder.selectedEl;
 		}
 
-		oldParent = node.parentNode;
-		oldNextSibling = node.nextSibling;
-
-		next = node.previousElementSibling;
+		const oldParent = node.parentNode;
+		const oldNextSibling = node.nextSibling;
+		const next = node.previousElementSibling;
 		
 		if (next) {
 			next.before(node);
@@ -1251,8 +1267,8 @@ Vvveb.Builder = {
 		
 		Vvveb.Builder.selectNode(node);
 
-		newParent = node.parentNode;
-		newNextSibling = node.nextSibling;
+		const newParent = node.parentNode;
+		const newNextSibling = node.nextSibling;
 		
 		Vvveb.Undo.addMutation({type: 'move', 
 								target: node,
@@ -1268,10 +1284,9 @@ Vvveb.Builder = {
 				node = Vvveb.Builder.selectedEl;
 			}
 
-			oldParent = node.parentNode;
-			oldNextSibling = node.nextSibling;
-
-			next = node.nextElementSibling;
+			const oldParent = node.parentNode;
+			const oldNextSibling = node.nextSibling;
+			const next = node.nextElementSibling;
 			
 			if (next) {
 				next.after(node);
@@ -1281,8 +1296,8 @@ Vvveb.Builder = {
 			
 			Vvveb.Builder.selectNode(node);
 			
-			newParent = node.parentNode;
-			newNextSibling = node.nextSibling;
+			const newParent = node.parentNode;
+			const newNextSibling = node.nextSibling;
 			
 			Vvveb.Undo.addMutation({type: 'move', 
 									target: node,
@@ -1297,17 +1312,13 @@ Vvveb.Builder = {
 			node = Vvveb.Builder.selectedEl;
 		}
 
-		clone = node.cloneNode(true);
-		
+		const clone = node.cloneNode(true);
 		node.after(clone);
-		
 		node.click();
-		
-		element = clone;
 		
 		Vvveb.Undo.addMutation({type: 'childList', 
 								target: node.parentNode, 
-								addedNodes: [element],
+								addedNodes: [clone],
 								nextSibling: node.nextSibling});
 		
 	},
@@ -1491,11 +1502,13 @@ Vvveb.Builder = {
 
 					let parentTagName = parent.tagName.toLowerCase();
 					let isVattribute = false;
-					//check if node is a data-v-attribute dynamic node that will overrite the content if added inside
-					for (let attr of parent.attributes) {
-						if (attr.name.indexOf("data-v-") == 0) {
-							isVattribute = true;
-							false;
+					//check if node is a data-v-attribute dynamic node that will override the content if added inside
+					if (parent.childElementCount == 0) {
+						for (let attr of parent.attributes) {
+							if (attr.name.startsWith("data-v-") && !attr.name.startsWith("data-v-component-")) {
+								isVattribute = true;
+								break;
+							}
 						}
 					}
 					
@@ -1597,18 +1610,11 @@ Vvveb.Builder = {
 					self.dragElement = self.selectedEl;
 				}
 
-				node = self.dragElement;
+				const node = self.dragElement;
 				self.selectNode(node);
 				Vvveb.TreeList.loadComponents();
 				Vvveb.TreeList.selectComponent(node);
 				self.loadNodeComponent(node);
-				//if component properties is loaded in left panel tab instead of right panel show tab
-				let propertiesTab = document.querySelector(".component-properties-tab a");
-				if (propertiesTab.offsetParent) {//if properites tab is enabled/visible 
-						propertiesTab.style.display = "";
-						const bsTab = bootstrap.Tab.getOrCreateInstance(propertiesTab);
-						bsTab.show(); 
-				}
 				
 				if (self.dragType == "section") {
 					node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
@@ -1679,13 +1685,6 @@ Vvveb.Builder = {
 							return true;
 						}
 					}
-					//if component properties is loaded in left panel tab instead of right panel show tab
-					let componentTab = document.querySelector(".component-properties-tab a");
-					if (componentTab.offsetParent) { //if properites tab is enabled/visible 
-						componentTab.style.display = "";
-						const bsTab = bootstrap.Tab.getOrCreateInstance(componentTab);
-						bsTab.show(); 
-					}
 					
 					self.selectNode(event.target);
 					Vvveb.TreeList.selectComponent(event.target);
@@ -1731,7 +1730,7 @@ Vvveb.Builder = {
 					self.dragElement = generateElements(Vvveb.dragHtml)[0];
 				}
 
-				node = self.selectedEl;			
+				const node = self.selectedEl;			
 
 				self.dragMoveMutation = {type: 'move', 
 									target: node,
@@ -1790,7 +1789,7 @@ Vvveb.Builder = {
 		
 		document.getElementById("parent-btn").addEventListener("click", function(event) {
 			
-			node = self.selectedEl.parentNode;
+			const node = self.selectedEl.parentNode;
 			
 			self.selectNode(node);
 			self.loadNodeComponent(node);
@@ -1802,14 +1801,14 @@ Vvveb.Builder = {
 		
 		document.getElementById("save-reusable-btn").addEventListener("click", function(event) {
 			
-			node = self.selectedEl;
+			const node = self.selectedEl;
 
 			let type = 'block';
 			if (node.tagName.toLowerCase() == 'section') {
 				type = 'section';
 			}
 			
-			let name = prompt("Enter name for new reusable " + type, '');
+			const name = prompt("Enter name for new reusable " + type, '');
 			if (name) {
 				Vvveb.Builder.saveElement(node, type, name);
 			}
@@ -1834,7 +1833,7 @@ Vvveb.Builder = {
 		let onSave = function(event) {
 			Vvveb.Builder.selectedEl.innerHTML = event.detail;
 			
-			node = Vvveb.Builder.selectedEl;
+			const node = Vvveb.Builder.selectedEl;
 			Vvveb.Undo.addMutation({type:'characterData', 
 				target: node, 
 				oldValue: codeEditorOldValue, 
@@ -1912,7 +1911,7 @@ Vvveb.Builder = {
 		document.getElementById("delete-btn").addEventListener("click", function(event) {
 			document.getElementById("select-box").style.display = "none";
 			
-			node = self.selectedEl;
+			const node = self.selectedEl;
 		
 			Vvveb.Undo.addMutation({type: 'childList', 
 				target: node.parentNode, 
@@ -1934,6 +1933,16 @@ Vvveb.Builder = {
 			
 			addSectionElement = self.highlightEl; 
 			addSectionBox.style.display  = "block"; 
+			let tagName = self.highlightEl.tagName.toLowerCase();
+			let bsTab;
+			if (["section", "footer", "header"].includes(tagName)) {
+				addSectionBox.classList.add("only-sections"); 
+				bsTab = bootstrap.Tab.getOrCreateInstance(document.getElementById("box-sections-tab"));
+			} else {
+				addSectionBox.classList.remove("only-sections"); 
+				bsTab = bootstrap.Tab.getOrCreateInstance(document.getElementById("box-components-tab"));
+			}
+			bsTab.show(); 
 
 			let pos = offset(addSectionElement);	
 			let top = ((pos.top + window.FrameWindow.pageYOffset + addSectionElement.clientTop) - self.frameHtml.scrollTop) + addSectionElement.offsetHeight;
@@ -1958,23 +1967,43 @@ Vvveb.Builder = {
 		});
 		
 		function addSectionComponent(component, after = true) {
-			let node = generateElements(component.html)[0];
+			let node    = generateElements(component.html)[0];
+			let tagName = node.tagName.toLowerCase();
+			let element = addSectionElement;
+			
+			//if section add after current section
+			if (["section", "footer", "header"].includes(tagName)) {
+				while (element = element.parentElement) {
+					tagName = element.tagName.toLowerCase();
+					if (["section", "footer", "header"].includes(tagName)) {
+						after = true;
+						break;
+					}
+					
+				}
+				
+				if (!element) {
+					element = addSectionElement;
+				}
+			}
 			
 			if (after) {
-				addSectionElement.after(node);
+				element.after(node);
 			} else {
-				addSectionElement.append(node);
+				element.append(node);
 			}
 			
 			if (component.afterDrop) {
 				node = component.afterDrop(node);
 			}
+			
 
-			node = node;
 			self.selectNode(node);
 			self.loadNodeComponent(node);
 			Vvveb.TreeList.loadComponents();
 			Vvveb.TreeList.selectComponent(node);
+			
+			node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 
 			Vvveb.Undo.addMutation({type: 'childList', 
 									target: node.parentNode, 
@@ -2026,6 +2055,7 @@ Vvveb.Builder = {
 		
 		document.addEventListener("mousedown", function(event) {
 			let element = event.target.closest(".drag-elements-sidepane ul > li > ol > li[data-drag-type]");
+			let html;
 			
 			if (element && event.which == 1) {//left click
 				document.getElementById("component-clone")?.remove();
@@ -2101,7 +2131,7 @@ Vvveb.Builder = {
 				self.iconDrag.style.left  = (x - 60) + "px";
 				self.iconDrag.style.top  = (y - 30) + "px";
 
-				elementMouseIsOver = document.elementFromPoint(x - 60, y - 40);
+				const elementMouseIsOver = document.elementFromPoint(x - 60, y - 40);
 				
 				//if drag elements hovers over iframe switch to iframe mouseover handler	
 				return;
@@ -2181,8 +2211,8 @@ Vvveb.Builder = {
 		//return window.FrameDocument.documentElement.innerHTML = html;
 		
 		function getTag(html, tag, outerHtml = false) {
-			start = html.indexOf("<" + tag);
-			end = html.indexOf("</" + tag);		
+			const start = html.indexOf("<" + tag);
+			const end = html.indexOf("</" + tag);		
 
 			if (start >= 0 && end >= 0) {
 				if (outerHtml)
@@ -2355,6 +2385,8 @@ Vvveb.ModalCodeEditor = {
 		if (!this.modal) {
 			this.init();
 		}
+		//enable save button
+		document.querySelectorAll("#top-panel .save-btn").forEach(e => e.removeAttribute("disabled"));
 		this.editor.value = value;
 	},
 }
@@ -2458,9 +2490,56 @@ Vvveb.Gui = {
 	
 	init: function() {
 		document.querySelectorAll("[data-vvveb-action]").forEach(function (el,i) {
-			on = el.dataset.vvvebOn ?? "click";
+			const on = el.dataset.vvvebOn ?? "click";
 			el.addEventListener(on, Vvveb.Gui[el.dataset.vvvebAction]);
 		});
+		
+		this.shortcuts();	
+	},
+	
+	shortcuts: function() {
+		let self = this;
+
+		handleShortcuts = function(e) {
+			if (e.ctrlKey) {
+				switch (e.key) {
+					case 's':
+						e.preventDefault();
+						let btn = document.querySelector('.save-btn');
+						let url = btn.dataset.vvvebUrl;
+						self.saveAjax(null, url, document.querySelector('.save-btn'));
+						return;
+					case 'z':
+						e.preventDefault();
+						self.undo();
+						return;
+					case 'Z':
+					case 'y':
+						e.preventDefault();
+						self.redo();
+						return;
+					case 'L':
+						e.preventDefault();
+						self.toggleTreeList();
+						return;
+					case 'e':
+						e.preventDefault();
+						self.toggleEditor();
+						return;
+					case 'P':
+						e.preventDefault();
+						self.newPage();
+						return;
+				}
+			}
+		}
+		
+		//handle shortcuts from main window and iframe also
+		document.addEventListener('keydown', handleShortcuts);		
+		window.addEventListener('vvveb.iframe.loaded', () => {
+			Vvveb.Builder.frameBody.addEventListener('keydown', handleShortcuts);		
+		});
+
 	},
 	
 	undo : function () {
@@ -2520,9 +2599,9 @@ Vvveb.Gui = {
 	},
 	
 	//post html content through ajax to save to filesystem/db
-	saveAjax : function () {
-		let btn = this;
-		let saveUrl = this.dataset.vvvebUrl;
+	saveAjax : function (event, saveUrl = null, saveBtn = null) {
+		let btn = saveBtn ?? this;
+		saveUrl = saveUrl ?? this.dataset.vvvebUrl;
 		let file = Vvveb.FileManager.getPageData('file');
 		//if offcanvas check if user provided new template name
 		if (btn.classList.contains("save-offcanvas")) {
@@ -2563,8 +2642,8 @@ Vvveb.Gui = {
 	},
 	
 	download : function () {
-		filename = /[^\/]+$/.exec(Vvveb.Builder.iframe.src)[0];
-		uriContent = "data:application/octet-stream,"  + encodeURIComponent(Vvveb.Builder.getHtml());
+		const filename = /[^\/]+$/.exec(Vvveb.Builder.iframe.src)[0];
+		const uriContent = "data:application/octet-stream,"  + encodeURIComponent(Vvveb.Builder.getHtml());
 
 		let link = document.createElement('a');
 		if ('download' in link) {
@@ -2573,7 +2652,7 @@ Vvveb.Gui = {
 			link.target = "_blank";
 			
 			document.body.appendChild(link);
-			result = link.click();
+			const result = link.click();
 			document.body.removeChild(link);
 			link.remove();
 			
@@ -2650,17 +2729,17 @@ Vvveb.Gui = {
 		let submitForm = function(e) {
 
 			let data = {};
-			this.querySelectorAll("input[type=text],input[type=checkbox]:checked,input[type=radio]:checked, select").forEach( (el, i) => {
-				if (el.offsetParent) data[el.name] = el.value;
+			this.querySelectorAll("input[type=text],input[type=checkbox]:checked,input[type=radio]:checked,input[name=image], select:not(:disabled)").forEach( (el, i) => {
+				if (el.offsetParent || el.name == 'image') data[el.name] = el.value;
 			});			
-			
+
 			if (data['file']) {
 				data['title']  = data['file'].replace('/', '').replace('.html', '');
 				//let name = data['name'] = data['folder'].replace('/', '_') + "-" + data['title'];
 				if (!data['name']) {
 					data['name'] = data['title'];
 				}
-				data['url']  = data['file'] = data['folder'] + "/" + data['file'];
+				data['url']  = data['folder'] + "/" + data['file'];
 				data['url']  = Vvveb.themeBaseUrl + data['url'];
 			}
 
@@ -2673,7 +2752,7 @@ Vvveb.Gui = {
 					if (typeof savedData === 'object' && savedData !== null) {
 						data.name = savedData.name ?? data.name;
 						data.url = savedData.url ?? data.url;
-						data.file = savedData.file ?? data.file;
+						data.file = savedData.file ?? (data.folder + "/" + data.file);
 						data.title = savedData.title ?? data.title;
 					}
 					
@@ -2754,6 +2833,27 @@ Vvveb.Gui = {
 			document.getElementById("toggle-tree-list").classList.remove("active");
 		}
 	},
+	
+	treeListRight: function () {
+		let treeList = document.getElementById("tree-list");
+		let btnIcon = document.querySelector("[data-vvveb-action='treeListRight'] i");
+		if (treeList.style.height) {
+			treeList.style.height = "";
+			treeList.style.right = "";
+			treeList.style.top = "";
+			treeList.style.left = "";
+			treeList.style.width = "";
+			btnIcon.className = "icon-stop-outline";
+		} else {
+			treeList.style.height = "100vh";
+			treeList.style.height = "calc(100vh - 35px)";
+			treeList.style.right = "0";
+			treeList.style.top = "35px";
+			treeList.style.left = "auto";
+			treeList.style.width = "300px";
+			btnIcon.className = "icon-remove-outline";
+		}
+	},
 
 	zoomChange: function () {
 		let wrapper = document.getElementById("iframe-wrapper");
@@ -2822,13 +2922,13 @@ Vvveb.StyleManager = {
 		let style = this.cssContainer.sheet;
 		//if style exist then load all css styles for editor
 		for (let j = 0; j < style.cssRules.length; j++) {
-			media = (typeof style.cssRules[j].media === "undefined") ? 
+			const media = (typeof style.cssRules[j].media === "undefined") ? 
 				"desktop" : (style.cssRules[j].media[0] === "screen and (max-width: 1220px)") 
 				? "tablet" : (style.cssRules[j].media[0] === "screen and (max-width: 320px)") 
 				? "mobile" : "desktop";
 			
-			selector = (media === "desktop") ? style.cssRules[j].selectorText : style.cssRules[j].cssRules[0].selectorText;
-			styles = (media === "desktop") ? style.cssRules[j].style : style.cssRules[j].cssRules[0].style;
+			const selector = (media === "desktop") ? style.cssRules[j].selectorText : style.cssRules[j].cssRules[0].selectorText;
+			const styles = (media === "desktop") ? style.cssRules[j].style : style.cssRules[j].cssRules[0].style;
 
 			if (media) {
 				this.styles[media] = this.styles[media] ?? {};
@@ -2837,8 +2937,8 @@ Vvveb.StyleManager = {
 				
 					for (let k = 0; k < styles.length; k++) {
 								
-						property = styles[k];
-						value = styles[property];
+						const property = styles[k];
+						const value = styles[property];
 					
 						this.styles[media][selector][property] = value;
 					}
@@ -2900,6 +3000,8 @@ Vvveb.StyleManager = {
 	},
 	
 	setStyle: function(element, styleProp, value) {
+		let selector;
+		
 		if (typeof(element) == "string") {
 			selector = element;
 		} else {
@@ -2922,7 +3024,7 @@ Vvveb.StyleManager = {
 		
 		selector = this.addSelectorState(selector);
 		
-		media = document.getElementById("canvas").classList.contains("tablet") ? "tablet" : document.getElementById("canvas").classList.contains("mobile") ? "mobile" : "desktop";
+		const media = document.getElementById("canvas").classList.contains("tablet") ? "tablet" : document.getElementById("canvas").classList.contains("mobile") ? "mobile" : "desktop";
 		
 		//styles[media][selector][styleProp] = value
 		if (!this.styles[media]) {
@@ -2978,7 +3080,7 @@ Vvveb.StyleManager = {
 			for (selector in this.styles[media]) {
 				css += `${selector} {\n`;	
 				for (property in this.styles[media][selector]) {
-					value = this.styles[media][selector][property];
+					const value = this.styles[media][selector][property];
 					css += `\t${property}: ${value};\n`;
 				}
 				css += '}\n\n';
@@ -2993,8 +3095,7 @@ Vvveb.StyleManager = {
 	
 	
 	_getCssStyle: function(element, styleProp){
-		let value = "";
-		let el;
+		let value = "", el, selector, media;
 
 		el = element;
 		if (el != this.currentElement) {
@@ -3004,8 +3105,8 @@ Vvveb.StyleManager = {
 		} else {
 			selector = this.currentSelector;
 		}
-		selector = this.addSelectorState(selector);
 
+		selector = this.addSelectorState(selector);
 		media = document.getElementById("canvas").classList.contains("tablet") ? "tablet" : document.getElementById("canvas").classList.contains("mobile") ? "mobile" : "desktop";
 
 		if (el.style && el.style.length > 0 && el.style[styleProp]) {//check inline
@@ -3021,6 +3122,7 @@ Vvveb.StyleManager = {
 						window.getComputedStyle(el,null).getPropertyValue(styleProp);
 
 		}
+		
 		return value;
 	},
 	
@@ -3062,13 +3164,14 @@ function getNodeTree (node, parent, allowedComponents, idToNode = {}) {
 		if (node.hasChildNodes()) {
 			for (let j = 0; j < node.childNodes.length; j++) {
 				
-				child = node.childNodes[j];
+				const child = node.childNodes[j];
 
 				//skip text and comments nodes
 				if (child.nodeType == 3 || child.nodeType == 8) {
 					continue;
 				}
 				
+				let element;
 				if (child && child["attributes"] != undefined && 
 					(matchChild = Vvveb.Components.matchNode(child))) {
 
@@ -3079,10 +3182,16 @@ function getNodeTree (node, parent, allowedComponents, idToNode = {}) {
 						continue;
 					}
 				
+					let title = "";
+					//if (matchChild.type === "elements/section") {
+						title = child.id ? child.id : (child.title ? child.title : child.ariaLabel ?? "");
+					//}
+
 					element = {
 						name: matchChild.name,
 						image: matchChild.image,
 						type: matchChild.type,
+						title,
 						node: child,
 						id: id + '-' + j,
 						children: []
@@ -3122,16 +3231,25 @@ function drawComponentsTree(tree) {
 				id = prefix + '-' + j + '-' + i; 
 			}
 			
+			let title = (node.title ? friendlyName(node.title.substr(0, 21)) : "");
+			if (title) {
+				title = ` - <span class="text-secondary">${title}</span>`;
+			}
+			
 			if (tree[i].children.length > 0) {
 				li = generateElements('<li data-component="' + node.name + '">\
-								<label for="id' + id + '" style="background-image:url(' + Vvveb.imgBaseUrl + node.image + ')"><span>' + node.name + '</span></label>\
+								<label for="id' + id + '" style="background-image:url(' + Vvveb.imgBaseUrl + node.image + ')">\
+									<span>' + node.name + '</span>' + title + '\
+								</label>\
 								<input type="checkbox" id="id' + id + '">\
 							</li>')[0];		
 				li.append(drawComponentsTreeTraverse(node.children));
 			}
 			else {
 				li = generateElements('<li data-component="' + node.name + '" class="file">\
-							<label for="id' +  id + '" style="background-image:url(' + Vvveb.imgBaseUrl + node.image + ')"><span>' + node.name + '</span></label>\
+							<label for="id' +  id + '" style="background-image:url(' + Vvveb.imgBaseUrl + node.image + ')">\
+								<span>' + node.name + '</span>' + title + '\
+							</label>\
 							<input type="checkbox" id="id' + id + '">\
 							</li>')[0];
 			}
@@ -3175,7 +3293,7 @@ Vvveb.SectionList = {
 		document.querySelector(this.selector).addEventListener("dblclick", function (e) {
 			let element = e.target.closest(":scope > div");
 			if (element) {
-				node = element._node;
+				const node = element._node;
 				node.click();
 			}
 		});
@@ -3195,7 +3313,7 @@ Vvveb.SectionList = {
 		document.querySelector(this.selector).addEventListener("mouseenter", function (e) {
 			let element = e.target.closest("li[data-component] label");
 			if (element) {
-				node = document.querySelector(element.parentNode._node);
+				const node = document.querySelector(element.parentNode._node);
 				node.css("outline","1px dashed blue");
 			}
 		});
@@ -3203,7 +3321,7 @@ Vvveb.SectionList = {
 		document.querySelector(this.selector).addEventListener("mouseleave", function (e){
 			let element = e.target.closest("li[data-component] label");
 			if (element) {
-				node = document.querySelector(element.parentNode._node);
+				const node = document.querySelector(element.parentNode._node);
 				node.css("outline","");
 				if (node.getAttribute("style") == "") node.removeAttribute("style");
 			}
@@ -3245,7 +3363,6 @@ Vvveb.SectionList = {
 			}
 		})
 		
-
 		/*
 		document.querySelector(this.selector).addEventListener("click", ".up-btn", function (e) {
 			let section = e.target.closest(".section-item");
@@ -3302,7 +3419,6 @@ Vvveb.SectionList = {
 					}
 				}
 				
-				node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 				//node.click();
 				Vvveb.Builder.selectNode(node);
 				Vvveb.Builder.loadNodeComponent(node);
@@ -3313,9 +3429,7 @@ Vvveb.SectionList = {
 				
 				delay(() => node.click(), 1000);
 				*/
-				
-				
-				node = node;
+
 				Vvveb.Undo.addMutation({type: 'childList', 
 										target: node.parentNode, 
 										addedNodes: [node], 
@@ -3325,6 +3439,7 @@ Vvveb.SectionList = {
 				self.loadSections();
 				Vvveb.TreeList.loadComponents();
 				Vvveb.TreeList.selectComponent(node);
+				node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 
 				e.preventDefault();
 			}
@@ -3404,6 +3519,7 @@ Vvveb.SectionList = {
 				if (dragover) {
 					dragover.classList.remove("drag-over");
 				}
+				
 				dragover = e.target;  
 				dragover.classList.add("drag-over");
 			}
@@ -3499,7 +3615,7 @@ Vvveb.TreeList = {
 		document.querySelector(this.selector).addEventListener("click", function (e) {
 			let element = e.target.closest("li[data-component]");
 			if (element) {
-				node = element._treeNode;
+				const node = element._treeNode;
 				node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 				//node.click();
 				Vvveb.Builder.selectNode(node);
@@ -3513,7 +3629,7 @@ Vvveb.TreeList = {
 		document.querySelector(this.selector).addEventListener("mousemove", function (e) {
 			let element = e.target.closest("li[data-component]");
 			if (element) {
-				node = element._treeNode;
+				const node = element._treeNode;
 				
 				node.dispatchEvent(new MouseEvent("mousemove", {
 					bubbles: true,
@@ -3525,7 +3641,7 @@ Vvveb.TreeList = {
 	
 	selectComponent: function(node) {
 		let id;
-		for (i in this.idToNode) {
+		for (const i in this.idToNode) {
 			if (node == this.idToNode[i]) {
 				id = i;
 				break;
@@ -3647,7 +3763,7 @@ Vvveb.FileManager = {
 		this.tree.addEventListener("click", function (e) {
 			let element = event.target.closest("li[data-component] label");
 			if (element) {
-				node = e.currentTarget.parentNode._node;
+				const node = e.currentTarget.parentNode._node;
 				node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 				node.click();
 			}
@@ -3656,7 +3772,7 @@ Vvveb.FileManager = {
 		this.tree.addEventListener("mouseenter", function (e) {
 			let element = event.target.closest("li[data-component] label");
 			if (element) {
-				node = e.currentTarget.parentNode._node;
+				const node = e.currentTarget.parentNode._node;
 				node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 
 				node.dispatchEvent(new MouseEvent("mousemove", {
@@ -3666,6 +3782,12 @@ Vvveb.FileManager = {
 				//node.trigger("mousemove");
 			}			
 		});
+	},
+	
+	clear: function() {
+		this.pages = {};
+		this.currentPage = false;
+		this.tree.replaceChildren();
 	},
 	
 	deletePage: function(element, e) {
@@ -4128,7 +4250,7 @@ Vvveb.FontsManager = {
 		let fontNames = [];
 		
 		let fontSelect = generateElements("<optgroup label='" + groupName + "'></optgroup>")[0];
-		for (font in fontList) {
+		for (const font in fontList) {
 			fontNames.push({"text":font, "value":font, "data-provider": provider});
 			let option = new Option(font, font);
 			option.dataset.provider = provider;
@@ -4218,7 +4340,7 @@ Vvveb.ColorPaletteManager = {
 	
 	cssVars: {"font": {}, "color" : {}, "dimensions": {}},
 	
-	getType:  function (type) { 
+	getType: function (type) { 
 		return this.cssVars[type];
 	},
 		
@@ -4236,17 +4358,16 @@ Vvveb.ColorPaletteManager = {
 					  let value = style.getPropertyValue(name).trim();
 					  let type = "";
 					  
-					  
 					  if(name.startsWith("--")){
 						//ignore bootstrap rgb variables
 						if (name.endsWith("-rgb")) continue;
 						//ignore variables depending on other variables
 						if (value.startsWith("var(")) continue;
 
-						 let friendlyName = name.replace("--bs-","").replaceAll("-", " ");  
+						let friendlyName = name.replace("--bs-","").replaceAll("-", " ");  
 						 
-						 if (value.startsWith("#")) {
-							 type = "color";
+						if (value.startsWith("#")) {
+							type = "color";
 						} else if (value.indexOf('"') >= 0 || value.indexOf("'") >= 0) {
 							type = "font";
 						} else if (value.endsWith('em') > 0 || value.endsWith('px') > 0) {
