@@ -24,13 +24,13 @@ namespace Vvveb\Component\Categories;
 
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use function Vvveb\url;
 
 class Pages extends ComponentBase {
 	public static $defaultOptions = [
 		'start'                    => 0,
 		'limit'                    => 7,
-		'count'                    => ['url', 100],
-		'site_id'         		       => NULL,
+		'site_id'                  => NULL,
 		'order'                    => ['url', 'price asc'],
 		'taxonomy_item_id'         => NULL,
 		'page'                     => 1,
@@ -40,34 +40,14 @@ class Pages extends ComponentBase {
 	];
 
 	function results() {
-		$product = new \Vvveb\Sql\CategorySQL();
-		$results = $product->getCategoriesPages($this->options);
+		$category = new \Vvveb\Sql\CategorySQL();
+		$results  = $category->getCategoriesPages($this->options);
 
-		$current_category_id   = 5;
-		$current_category_slug = 'cameras';
-
-		$module = \Vvveb\getModuleName();
-
-		switch ($module) {
-			case 'content/post':
-			break;
-
-			case 'content/category':
-				if ($this->options['taxonomy_item_id'] == 'page') {
-				}
-
-			break;
-		}
 		//count the number of child categories (subcategories) for each category
 		if (isset($results['categories'])) {
 			foreach ($results['categories'] as $taxonomy_item_id => &$category) {
-				$parent_id = $category['parent_id'] ?? false;
-
-				if ($current_category_slug == ($category['slug'] ?? '')) {
-					$category['active'] = true;
-				} else {
-					$category['active'] = false;
-				}
+				$parent_id          = $category['parent_id'] ?? false;
+				$category['active'] = false;
 
 				if (! isset($category['children'])) {
 					$category['children'] = 0;
@@ -80,6 +60,8 @@ class Pages extends ComponentBase {
 						$category['posts_count'] = count($category['post']);
 					}
 				}
+
+				$category['url'] = url('product/category/index', $category);
 
 				if ($parent_id > 0 && isset($results['categories'][$parent_id])) {
 					$parent = &$results['categories'][$parent_id];
