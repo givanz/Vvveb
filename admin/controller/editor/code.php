@@ -54,10 +54,13 @@ class Code extends Base {
 	}
 
 	function index() {
-		$type           = $this->request->get['type'];
+		$type           = $this->request->get['type'] ?? false;
 		$admin_path     = \Vvveb\adminPath();
 		$controllerPath = $admin_path . 'index.php?module=editor/code';
 
+		if (! $type) {
+			return;
+		}
 		$this->view->scanUrl     = "$controllerPath&action=scan&type=$type";
 		$this->view->uploadUrl   = "$controllerPath&action=upload&type=$type";
 		$this->view->loadFileUrl = "$controllerPath&action=loadFile&type=$type";
@@ -169,7 +172,7 @@ class Code extends Base {
 								'name' => $f,
 								'type' => 'file',
 								'path' => str_replace([$scandir, '\\'], ['', '/'], $dir) . '/' . $f,
-								'size' => filesize($dir . DS . $f), // Gets the size of this file
+								'size' => @filesize($dir . DS . $f), // Gets the size of this file
 							];
 						}
 					}

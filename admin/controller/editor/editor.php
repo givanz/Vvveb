@@ -81,6 +81,7 @@ class Editor extends Base {
 		if (file_exists($config)) {
 			$this->themeConfig = include $config;
 		} else {
+			//default config
 			$this->themeConfig = [];
 		}
 	}
@@ -161,7 +162,22 @@ class Editor extends Base {
 		$themeParam         = ($theme ? '&theme=' . $theme : '');
 		$view               = View::getInstance();
 		$view->themeBaseUrl = PUBLIC_PATH . 'themes/' . $theme . '/';
+		$view->themeName    = $theme;
 		$view->pages        = $this->loadTemplateList($theme);
+		$view->themeFonts   = Cache::getInstance()->cache(APP,'fonts-list.' . $theme, function () use ($theme) {
+			$fonts = \Vvveb\System\Media\Font::themeFonts($theme);
+			$names = [];
+
+			if ($fonts) {
+				foreach ($fonts as $font) {
+					if (isset($font['font-family'])) {
+						$names[$font['font-family']] = null;
+					}
+				}
+			}
+
+			return $names;
+		}, 604800);
 
 		$this->loadThemeAssets();
 
@@ -328,7 +344,7 @@ class Editor extends Base {
 		$this->view->revisionsUrl      = "$revisionsPath&action=revisions";
 		$this->view->revisionLoadUrl   = "$revisionsPath&action=load";
 		$this->view->revisionDeleteUrl = "$revisionsPath&action=delete";
-
+		$this->view->linkUrl           = $admin_path . 'index.php?module=content/post&action=urlAutocomplete&type=key-value';
 		$view->templates               = \Vvveb\getTemplateList($theme);
 		$view->folders                 = \Vvveb\getThemeFolderList($theme);
 		$view->data                    = $this->loadEditorData();
@@ -344,8 +360,12 @@ class Editor extends Base {
 		if (is_dir($backupFolder)) {
 			if (file_exists($file)) {
 				$content = file_get_contents($themeFolder . $page . '.html');
-				$base    = str_replace('/admin', '', PUBLIC_THEME_PATH) . 'themes/' . $this->getTheme() . '/';
-				$content = preg_replace('/<base(.*)href=["\'](.*?)["\'](.*?)>/', '<base$1href="' . $base . '"$3>', $content);
+
+				if (strpos($content, '<base') !== false) {
+					$content = preg_replace('/<base(.*)href=["\'](.*?)["\'](.*?)>/', '<base$1href="../"$3>', $content);
+				} else {
+					$content = str_replace('<head>', "<head>\n<base href=\"../\">\n", $content);
+				}
 
 				return @file_put_contents($backupFolder . $backupName, $content);
 			}
@@ -366,12 +386,17 @@ class Editor extends Base {
 			$fields    = $element['fields'];
 
 			//todo: check and load components from plugins
-			include_once DIR_ROOT . "app/component/$component.php";
+
 			$componentName =  "\Vvveb\Component\\$component";
+
+			if (! class_exists($componentName)) {
+				include_once DIR_ROOT . "app/component/$component.php";
+			}
 
 			if (! isset($components[$component])) {
 				$components[$component] = new $componentName();
 			}
+
 			$components[$component]->editorSave($id, $fields, $type);
 		}
 		/*
@@ -425,7 +450,7 @@ class Editor extends Base {
 
 	function delete() {
 		$post_id     = $this->request->post['post_id'] ?? false;
-		$file        = sanitizeFileName($this->request->post['file']);
+		$file        = sanitizeFileName($this->request->post['file'] ?? '');
 		$themeFolder = $this->getThemeFolder();
 
 		if ($post_id) {
@@ -450,10 +475,14 @@ class Editor extends Base {
 				}
 			}
 		} else {
-			if (unlink($themeFolder . DS . $file)) {
-				$message = ['success' => true, 'message' => __('File deleted!')];
+			if ($file && file_exists($themeFolder . DS . $file)) {
+				if (unlink($themeFolder . DS . $file)) {
+					$message = ['success' => true, 'message' => __('File deleted!')];
+				} else {
+					$message = ['success' => false, 'message' => __('Error deleting file!')];
+				}
 			} else {
-				$message = ['success' => false, 'message' => __('Error deleting file!')];
+				$message = ['success' => false, 'message' => __('File does not exist!')];
 			}
 		}
 
@@ -500,7 +529,6 @@ class Editor extends Base {
 				$slug          = slugify($name);
 
 				$this->posts   = model($model);
-				$data          = $this->posts->get([$model . '_id' => $model_id]);
 
 				if ($duplicate === 'true') {
 					$data = $this->posts->get([$model . '_id' => $model_id]);
@@ -540,18 +568,22 @@ class Editor extends Base {
 							$template = $data['template'] ?? '';
 						}
 
-						$result = $this->posts->add([
+						$new = [
 							$model => [
-								$model . '_content'  => $data[$model . '_content'],
 								'taxonomy_item'      => $taxonomy_item ?? [],
 								'template'           => $template,
 							] + $data,
-							'site_id' => $site_id,
-						]);
+							$model . '_content'  => $data[$model . '_content'],
+							'site_id'            => $site_id,
+						] + $data + $this->global;
+
+						$result = $this->posts->add($new);
+
+						$newfile = PUBLIC_PATH . "themes/$theme/" . ($dir ? $dir . '/' : '') . $template;
 
 						if ($result && isset($result[$model])) {
 							$model_id = $result[$model];
-							$message  = ['success' => true, 'name' => $name, 'slug' => $slug, $model . '_id' => $model_id, 'url' => url("$namespace/$type/index", ['slug' => $slug, $model . '_id' => $model_id]), 'message' => ucfirst($type) . ' ' . __('duplicated') . '!'];
+							$message  = ['success' => true, 'name' => $name, 'slug' => $slug, $model . '_id' => $model_id, 'newfile' => $newfile, 'url' => url("$namespace/$type/index", ['slug' => $slug, $model . '_id' => $model_id]), 'message' => ucfirst($type) . ' ' . __('duplicated') . '!'];
 						} else {
 							$message = ['success' => false, 'message' => sprintf(__('Error duplicating %s!'),  $type)];
 						}
@@ -564,8 +596,10 @@ class Editor extends Base {
 					];
 					$result  = $this->posts->editContent($data);
 
+					$newfile = PUBLIC_PATH . "themes/$theme/" . ($dir ? $dir . '/' : '') . $newfile;
+
 					if ($result && isset($result[$model . '_content'])) {
-						$message = ['success' => true, 'name' => $name, 'slug' => $slug, $model . '_id' => $model_id, 'url' => url("$namespace/$type/index", ['slug' => $slug, $model . '_id' => $model_id]), 'message' => ucfirst($type) . ' ' . __('renamed') . '!'];
+						$message = ['success' => true, 'name' => $name, 'slug' => $slug, $model . '_id' => $model_id, 'newfile' => $newfile, 'url' => url("$namespace/$type/index", ['slug' => $slug, $model . '_id' => $model_id]), 'message' => ucfirst($type) . ' ' . __('renamed') . '!'];
 					} else {
 						$message = ['success' => false, 'message' => sprintf(__('Error renaming %s!'),  $type)];
 					}
@@ -600,14 +634,16 @@ class Editor extends Base {
 		$startTemplateUrl = $this->request->post['startTemplateUrl'] ?? '';
 		$name             = $this->request->post['name'] ?? '';
 		$content          = $this->request->post['content'] ?? 'Lorem ipsum';
+		$image            = $this->request->post['image'] ?? '';
 		$type             = $this->request->post['type'] ?? false;
+		$templateType     = $this->request->post['template-type'] ?? false;
 		$addMenu          = $this->request->post['add-menu'] ?? false;
 		$menu_id          = $this->request->post['menu_id'] ?? false;
 		$theme            = $this->getTheme();
 		$url              = '';
 
 		$file             = sanitizeFileName(str_replace('.html', '', $file)) . '.html';
-		$folder           = sanitizeFileName($folder);
+		$folder           = trim(sanitizeFileName($folder), '/');
 
 		if ($type && $name) {
 			$slug    = slugify($name);
@@ -616,14 +652,15 @@ class Editor extends Base {
 			switch ($type) {
 				case 'page':
 				case 'post':
-					$file             = sanitizeFileName("content/$slug.html");
-					$startTemplateUrl = "content/$type.html";
+					$file             = $templateType == 'global' ? "content/$type.html" : "content/$slug.html";
+					$file             = sanitizeFileName($file);
+					$startTemplateUrl = sanitizeFileName($startTemplateUrl ?: "content/$type.html");
 					$post             = new PostSQL();
 					$result           = $post->add([
 						'post' => [
 							'template'     => $file,
 							'type'         => $type,
-							'image'        => 'posts/2.jpg', //'placeholder.svg'
+							'image'        => $image,
 						] + $this->global,
 						'post_content' => [[
 							'slug'        => $slug,
@@ -644,14 +681,15 @@ class Editor extends Base {
 				break;
 
 				case 'product':
-					$file             = sanitizeFileName("product/$slug.html");
-					$startTemplateUrl = "product/$type.html";
+					$file             = $templateType == 'global' ? "content/$type.html" : "product/$slug.html";
+					$file             = sanitizeFileName($file);
+					$startTemplateUrl = sanitizeFileName($startTemplateUrl ?: "product/$type.html");
 					$price            =  $this->request->post['price'] ?? 0;
 					$product          = new ProductSQL();
 					$result           = $product->add([
 						'product' => [
 							'model'           => '',
-							'image'           => 'posts/2.jpg', //'placeholder.svg'
+							'image'           => $image,
 							'status'          => 1, //active
 							'template'        => $file,
 							'price'           => $price,
@@ -685,8 +723,20 @@ class Editor extends Base {
 		$success      = false;
 		$text      		 = '';
 
-		$baseUrl     = '/themes/' . $theme . '/' . ($folder ? $folder . '/' : '');
-		$themeFolder = $this->getThemeFolder();
+		$baseUrl      = '/themes/' . $theme . '/' . ($folder ? $folder . '/' : '');
+		$themeFolder  = $this->getThemeFolder();
+		$relativeBase = '';
+		$pos          = 0;
+
+		//if file saved in folder set base one level upp
+		if ($folder) {
+			$relativeBase .= '../';
+		}
+
+		//if more than one level deep add one level up for each level
+		while ($pos = strpos($folder, '/', $pos)) {
+			$relativeBase .= '../';
+		}
 
 		if ($startTemplateUrl) {
 			$startTemplate = $themeFolder . DS . $startTemplateUrl;
@@ -699,11 +749,11 @@ class Editor extends Base {
 				$text .= sprintf(__('%s does not exist!'), $startTemplate);
 			}
 
-			$html = preg_replace('@<base href[^>]+>@', '<base href="' . $baseUrl . '">', $html);
+			$html = preg_replace('@<base\s+href[^>]+>@', '<base href="' . $relativeBase . '">', $html);
 		}
 
 		if (! $url) {
-			$url = "$baseUrl/$file";
+			$url = "$baseUrl$file";
 		}
 
 		$data = compact('file', 'name', 'url', 'startTemplateUrl');
@@ -721,7 +771,7 @@ class Editor extends Base {
 		//if plugins template use public path
 		$isPlugin = false;
 
-		if (substr_compare($file,'/plugins/', 0, 9) === 0) {
+		if (strncmp($file, '/plugins/', 9) === 0) {
 			$fileName = DIR_PUBLIC . DS . ($folder ? $folder . DS : '') . $file;
 			$isPlugin = true;
 		} else {
@@ -764,6 +814,10 @@ class Editor extends Base {
 		}
 
 		if ($html) {
+			//reset base href so that html file can be loaded properly in browser directly from folder
+			//$html = preg_replace('@<base href[^>]+>@', '', $html);
+			$html = preg_replace('@<base href[^>]+>@', '<base href="' . $relativeBase . '">', $html);
+
 			if (@file_put_contents($fileName, $html)) {
 				$globalOptions = [];
 				//keep css inline for email templates
@@ -788,8 +842,13 @@ class Editor extends Base {
 
 		$cssFile = DS . 'css' . DS . 'custom.css';
 
-		if (! is_writable($themeFolder . $cssFile)) {
-			$text .= '<br/>' . sprintf(__('%s is not writable!'), $theme . $cssFile);
+		//try to create custom.css if it doesn't exist
+		if (! file_exists($themeFolder . $cssFile) && ! touch($themeFolder . $cssFile)) {
+			$text .= '<br/>' . sprintf(__('Can not create file %s!'), $theme . $cssFile);
+		} else {
+			if (! is_writable($themeFolder . $cssFile)) {
+				$text .= '<br/>' . sprintf(__('%s is not writable!'), $theme . $cssFile);
+			}
 		}
 
 		if (CacheManager::clearCompiledFiles('app') && CacheManager::delete()) {

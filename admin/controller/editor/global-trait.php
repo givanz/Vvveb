@@ -112,7 +112,11 @@ trait GlobalTrait {
 						}
 
 						$html= $toDocument->saveHTML();
-						file_put_contents($file, $html);
+
+						if (is_writable($file)) {
+							if (@file_put_contents($file, $html)) {
+							}
+						}
 					}
 				}
 			}
