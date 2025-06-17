@@ -159,6 +159,7 @@ class View {
 			}
 		} else {
 			$theme       = \Vvveb\filter('/[a-z0-9_-]*/', $theme, 30);
+			$themePath   = DIR_ROOT . join(DS, ['public', 'themes']) . DS . $this->theme . DS;
 			$this->theme = $theme;
 		}
 
