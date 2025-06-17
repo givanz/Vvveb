@@ -56,12 +56,33 @@
 
 	PROCEDURE get(
 		IN taxonomy_id INT,
+		IN slug CHAR,
 		OUT fetch_row, 
 	)
 	BEGIN
 		-- taxonomy
-		SELECT *
-			FROM taxonomy as _ WHERE taxonomy_id = :taxonomy_id;
+		
+	-- taxonomy_item
+		SELECT * FROM taxonomy as _ 
+			LEFT JOIN taxonomy_content t2c ON (_.taxonomy_id = t2c.taxonomy_id AND t2c.language_id = :language_id ) 
+		WHERE  1 = 1
+
+		@IF isset(:taxonomy_item_id)
+		THEN 
+		
+			AND _.taxonomy_id = :taxonomy_id
+
+		END @IF			
+		
+		@IF isset(:slug)
+		THEN 
+		
+			AND t2c.slug = :slug
+
+		END @IF
+		
+		LIMIT 1;
+
 	END
 	
 	-- add taxonomy
