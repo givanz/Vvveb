@@ -165,7 +165,7 @@ class CommentsComponent extends ServerComponent{
 			col:12,
 			inputtype: AutocompleteList,
 			data: {
-				url: "/admin/?module=editor/autocomplete&action=comments",
+				url: window.location.pathname + "?module=editor/autocomplete&action=comments",
 			},
 		}];
 	}

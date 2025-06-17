@@ -118,7 +118,7 @@ class BackupController {
 	}
 	
 	make(url, btn = false) {
-		url = url ?? '/admin/?module=tools/backup&action=save';
+		url = url ?? (window.location.pathname + '?module=tools/backup&action=save');
 		return this.action(url, btn);
 	}
 

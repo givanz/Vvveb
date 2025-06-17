@@ -90,7 +90,7 @@ class UpdateController {
 					let message = error?.statusText ?? "Error updating!";
 					displayToast("bg-danger", "Error", message);
 
-					if (err.hasOwnProperty('text')) err.text().then( errorMessage => {
+					if (error.hasOwnProperty('text')) error.text().then( errorMessage => {
 						let message = errorMessage.substr(0, 200);
 						displayToast("bg-danger", "Error", message);
 					});
@@ -116,7 +116,7 @@ class UpdateController {
 	}
 	
 	core(url, btn = false) {
-		url = url ?? '/admin/?module=tools/update&action=update&type=core';
+		url = url ?? (window.location.pathname + '?module=tools/update&action=update&type=core');
 		return this.action(url, btn);
 	}
 

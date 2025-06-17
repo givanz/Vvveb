@@ -309,7 +309,7 @@ class ProductComponent extends ServerComponent{
 			col:12,
 			inputtype: AutocompleteInput,
 			data: {
-				url: "/admin/?module=editor/autocomplete&action=products&type=",
+				url: window.location.pathname + "?module=editor/autocomplete&action=products&type=",
 			},
 
 		}];	

@@ -1,20 +1,23 @@
-/*
-Copyright 2017 Ziadin Givan
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-https://github.com/givanz/VvvebJs
-*/
+/**
+ * Vvveb
+ *
+ * Copyright (C) 2021  Ziadin Givan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * https://github.com/givanz/Vvveb
+ */
 
 Vvveb.ComponentsGroup['Server Components'] = ["components/products", "components/product", "components/categories", "components/manufacturers", "components/search", "components/user", "components/product_gallery", "components/cart", "components/checkout", "components/filters", "components/slider"];
 
@@ -83,7 +86,7 @@ Vvveb.Components.add("components/products", {
 		if (node.dataset.type != undefined) {
 			$('.mb-3[data-group="'+ node.dataset.type + '"]').show();
 		} else {		
-			$('.mb-3[data-group]:first').show();
+			$('.mb-3[data-group]').show();
 		}
 	},
     properties: [{
@@ -124,7 +127,7 @@ Vvveb.Components.add("components/products", {
         htmlAttr:"data-products",
         inputtype: AutocompleteList,
         data: {
-            url: "/admin/?module=editor/autocomplete&action=products",
+            url: window.location.pathname + "?module=editor/autocomplete&action=products",
         },
     },{
         name: "Number of products",
@@ -190,7 +193,7 @@ Vvveb.Components.add("components/products", {
 		htmlAttr:"data-category",
         inputtype: AutocompleteList,
         data: {
-            url: "/admin/?module=editor/autocomplete&action=products",
+            url: window.location.pathname + "?module=editor/autocomplete&action=products",
         },
 
 	},{
@@ -200,7 +203,7 @@ Vvveb.Components.add("components/products", {
 		htmlAttr:"data-manufacturer",
         inputtype: AutocompleteList,
         data: {
-            url: "/admin/?module=editor/autocomplete&action=products",
+            url: window.location.pathname + "?module=editor/autocomplete&action=products",
 		}
 	},{
         name: "Manufacturer 2",
@@ -209,7 +212,7 @@ Vvveb.Components.add("components/products", {
 		htmlAttr:"data-manufacturer2",
         inputtype: AutocompleteList,
         data: {
-            url: "/admin/?module=editor/autocomplete&action=products",
+            url: window.location.pathname + "?module=editor/autocomplete&action=products",
         },
     }]
 });
@@ -517,7 +520,7 @@ Vvveb.Components.add("components/slider", {
         col:12,
         inputtype: AutocompleteList,
         data: {
-            url: "/admin/?module=editor/autocomplete&action=products",
+            url: window.location.pathname + "?module=editor/autocomplete&action=products",
         },
     },{
         name: "Number of products",
@@ -585,7 +588,7 @@ Vvveb.Components.add("components/slider", {
         col:12,
         inputtype: AutocompleteList,
         data: {
-            url: "/admin/?module=editor/autocomplete&action=products",
+            url: window.location.pathname + "?module=editor/autocomplete&action=products",
         },
 
 	},{
@@ -597,7 +600,7 @@ Vvveb.Components.add("components/slider", {
         col:12,
         inputtype: AutocompleteList,
         data: {
-            url: "/admin/?module=editor/autocomplete&action=products",
+            url: window.location.pathname + "?module=editor/autocomplete&action=products",
 		}
 	},{
         name: "Manufacturer 2",
@@ -608,7 +611,7 @@ Vvveb.Components.add("components/slider", {
         col:12,
         inputtype: AutocompleteList,
         data: {
-            url: "/admin/?module=editor/autocomplete&action=products",
+            url: window.location.pathname + "?module=editor/autocomplete&action=products",
         },
     }]
 });

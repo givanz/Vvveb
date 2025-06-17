@@ -18,8 +18,6 @@
  *
  */
  
-
-
 import {ServerComponent} from '../server-component.js';
 
 
@@ -28,7 +26,7 @@ let template =
 <div class="container" data-v-component-posts="popular" data-v-limit="4">      
 <div class="row">
 
-	<div class="col mb-2" data-v-post="" data-v-id="6" data-v-type="post">
+	<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-post="" data-v-id="6" data-v-type="post">
 
 	  <article class="card">
 		<div class="card-img-top">
@@ -51,7 +49,9 @@ let template =
 	  </article>
 
 
-	</div><div class="col mb-2" data-v-post="" data-v-id="5" data-v-type="post">
+	</div>
+	
+	<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-post="" data-v-id="5" data-v-type="post">
 
 	  <article class="card">
 		<div class="card-img-top">
@@ -74,7 +74,9 @@ let template =
 	  </article>
 
 
-	</div><div class="col mb-2" data-v-post="" data-v-id="4" data-v-type="post">
+	</div>
+	
+	<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-post="" data-v-id="4" data-v-type="post">
 
 	  <article class="card">
 		<div class="card-img-top">
@@ -99,7 +101,9 @@ let template =
 	  </article>
 
 
-	</div><div class="col mb-2" data-v-post="" data-v-id="3" data-v-type="post">
+	</div>
+	
+	<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-post="" data-v-id="3" data-v-type="post">
 
 	  <article class="card">
 		<div class="card-img-top">
@@ -177,7 +181,7 @@ class PostsComponent extends ServerComponent{
 			init: function (node) {
 				//this.setGroup(node.dataset.vType);
 				//return 'autocomplete';
-				return node.dataset.vSource;
+				return node.dataset.vSource ?? "automatic";
 			},
 		},{
 			name: "Start from page",
@@ -202,7 +206,7 @@ class PostsComponent extends ServerComponent{
 			htmlAttr:"data-v-limit",
 			inputtype: NumberInput,
 			data: {
-				value: "8",//default
+				value: "4",//default
 				min: "1",
 				max: "1024",
 				step: "1"
@@ -247,6 +251,23 @@ class PostsComponent extends ServerComponent{
 					text: "Descending"
 				}]
 			}
+		},{	
+			name: "Post type",
+			group:"automatic",
+			key: "order",
+			col:6,
+			inline:false,
+			htmlAttr:"data-v-type",
+			inputtype: SelectInput,
+			data: {
+				options: [{
+					value: "",//post - default
+					text: "Post"
+				},{
+					value: "page",
+					text: "Page"
+				}]
+			}
 		},{
 			name: "Limit to categories",
 			group:"automatic",
@@ -256,7 +277,7 @@ class PostsComponent extends ServerComponent{
 			col:12,
 			inputtype: TagsInput,
 			data: {
-				url: "/admin/?module=editor/autocomplete&action=categories",
+				url: window.location.pathname + "?module=editor/autocomplete&action=categories",
 			},
 
 		},{
@@ -268,7 +289,7 @@ class PostsComponent extends ServerComponent{
 			col:12,
 			inputtype: TagsInput,
 			data: {
-				url: "/admin/?module=editor/autocomplete&action=manufacturers",
+				url: window.location.pathname + "?module=editor/autocomplete&action=manufacturers",
 			}
 		},{
 			name: "Posts",
@@ -279,7 +300,7 @@ class PostsComponent extends ServerComponent{
 			col:12,
 			inputtype: AutocompleteList,
 			data: {
-				url: "/admin/?module=editor/autocomplete&action=posts",
+				url: window.location.pathname + "?module=editor/autocomplete&action=posts",
 			},
 
 		}];

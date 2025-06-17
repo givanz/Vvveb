@@ -23,9 +23,9 @@ import {ServerComponent} from '../server-component.js';
 
 let template = 
 `
-<div class="container"  data-v-component-products="popular" data-v-limit="1">
+<div class="container" data-v-component-products="popular" data-v-limit="1">
 	<div class="row">
-		<div class="col" data-v-product>
+		<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-product>
 			<article class="single-product-wrapper">
 				<!-- Product Image -->
 				<a href="product/product.html" data-v-product-url> </a>
@@ -137,7 +137,7 @@ class ProductsComponent extends ServerComponent{
 			col:12,
 			inputtype: AutocompleteList,
 			data: {
-				url: "/admin/?module=editor/autocomplete&action=products",
+				url: window.location.pathname + "?module=editor/autocomplete&action=products",
 			},
 		},{
 			name: "Nr. of products",
@@ -148,7 +148,7 @@ class ProductsComponent extends ServerComponent{
 			htmlAttr:"data-v-limit",
 			inputtype: NumberInput,
 			data: {
-				value: "8",//default
+				value: "4",//default
 				min: "1",
 				max: "1024",
 				step: "1"
@@ -194,6 +194,20 @@ class ProductsComponent extends ServerComponent{
 				}*/]
 			}
 		},{	
+			name: "Product type",
+			group:"automatic",
+			key: "order",
+			col:6,
+			inline:false,
+			htmlAttr:"data-v-type",
+			inputtype: SelectInput,
+			data: {
+				options: [{
+					value: "",//product - default
+					text: "Product"
+				}]
+			}
+		},{
 			name: "Order direction",
 			group:"automatic",
 			key: "order",
@@ -219,7 +233,7 @@ class ProductsComponent extends ServerComponent{
 			col:12,
 			inputtype: TagsInput,
 			data: {
-				url: "/admin/?module=editor/autocomplete&action=categories",
+				url: window.location.pathname + "?module=editor/autocomplete&action=categories",
 			},
 
 		},{
@@ -231,7 +245,7 @@ class ProductsComponent extends ServerComponent{
 			col:12,
 			inputtype: TagsInput,
 			data: {
-				url: "/admin/?module=editor/autocomplete&action=manufacturers",
+				url: window.location.pathname + "?module=editor/autocomplete&action=manufacturers",
 			},
 		}];
 	}

@@ -47,7 +47,7 @@ class PostComponent extends ServerComponent{
 			col:12,
 			inputtype: AutocompleteInput,
 			data: {
-				url: "/admin/?module=editor/autocomplete&action=posts&type=",
+				url: window.location.pathname + "?module=editor/autocomplete&action=posts&type=",
 			},
 
 		}];
