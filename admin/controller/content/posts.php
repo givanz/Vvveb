@@ -49,8 +49,9 @@ class Posts extends Base {
 		$post_id    = $this->request->post['post_id'] ?? $this->request->get['post_id'] ?? false;
 
 		if ($post_id) {
-			$this->posts   = new PostSQL();
-			$data          = $this->posts->get(['post_id' => $post_id, 'type' => $this->type]);
+			$this->posts  = new PostSQL();
+			$data         = $this->posts->get(['post_id' => $post_id, 'type' => $this->type]);
+			$old_id       = $data['post_id'];
 
 			unset($data['post_id']);
 			$id = rand(1, 1000);
@@ -58,12 +59,12 @@ class Posts extends Base {
 			foreach ($data['post_content'] as &$content) {
 				unset($content['post_id']);
 				$content['name'] .= ' [' . __('duplicate') . ']';
-				$content['slug'] .= '-' . __('duplicate') . "-$id";
+				$content['slug'] .= '-' . __('duplicate') . "-$old_id-$id";
 			}
 
 			if (isset($data['post_to_taxonomy_item'])) {
 				foreach ($data['post_to_taxonomy_item'] as &$item) {
-					$taxonomy_item[] = $item['taxonomy_item_id'];
+					$taxonomy_item_id[] = $item['taxonomy_item_id'];
 				}
 			}
 
@@ -75,10 +76,10 @@ class Posts extends Base {
 
 			if ($data) {
 				$result = $this->posts->add([
-					'post'          => $data,
-					'post_content'  => $data['post_content'],
-					'taxonomy_item' => $taxonomy_item ?? [],
-					'site_id'       => $site_id,
+					'post'             => $data,
+					'post_content'     => $data['post_content'],
+					'taxonomy_item_id' => $taxonomy_item_id ?? [],
+					'site_id'          => $site_id,
 				]);
 
 				if ($result && isset($result['post'])) {
@@ -88,6 +89,8 @@ class Posts extends Base {
 					$success = ucfirst($this->type) . __(' duplicated!');
 					$success .= sprintf(' <a href="%s">%s</a>', $url, __('Edit') . " {$this->type}");
 					$this->view->success[] = $success;
+					$this->session->set('success', $success);
+					$this->redirect(['module' => 'content/posts'], [], false);
 				} else {
 					$this->view->errors[] = sprintf(__('Error duplicating %s!'),  $this->type);
 				}
@@ -230,6 +233,10 @@ class Posts extends Base {
 					$post['image'] = Images::image($post['image'], 'post');
 				}
 
+				if (! $post['name'] && ($post['language_id'] != $this->global['default_language_id'])) {
+					$post['name'] = '[' . __('No translation') . ']';
+				}
+
 				$url                   = ['module' => 'content/post', 'post_id' => $post['post_id'], 'type' => $post['type']];
 				$adminPath             = \Vvveb\adminPath();
 				$template              = $post['template'] ? $post['template'] : $defaultTemplate;
@@ -238,9 +245,9 @@ class Posts extends Base {
 				$post['admin-url']     = url(['module' => 'content/posts']) . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
 				$post['delete-url']    = url(['module' => 'content/posts', 'action' => 'delete'] + $url + ['post_id[]' => $post['post_id']]);
 				$post['duplicate-url'] = url(['module' => 'content/posts', 'action' => 'duplicate'] + $url + ['post_id' => $post['post_id']]);
-				$post['view-url']      = url("content/{$this->type}/index", $post + $url + ['host' => $this->global['site_url']]);
+				$post['view-url']      = url("content/{$this->type}/index", $post + $url + ['host' => $this->global['host']]);
 				$relativeUrl           = url("content/{$this->type}/index", $post + $url);
-				$post['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($post['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template, 'host' => $this->global['site_url'] . $adminPath], false, false);
+				$post['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($post['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template, 'host' => $this->global['host']], false);
 			}
 		}
 
