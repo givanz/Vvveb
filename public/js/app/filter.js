@@ -16,11 +16,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
+ * https://github.com/givanz/Vvveb
  */
 
 function filterChange() {
 	let filters = {};
-	let filter_text = '';
+	let filterText = '';
 	let action = window.location.href;
 	let params = action.match(/\/\d+|\?/)
 	if (params) {
@@ -40,20 +41,20 @@ function filterChange() {
 		}
 		
 		let query = params.toString();
-		filter_text = (query ? "?" + query : "");
+		filterText = (query ? "?" + query : "");
 	}
 	
-	for(filter_name in filters) {
-			for (filter in filters[filter_name]) {   
-				filter_text += (filter_text ? '&' : '?') + "filter[" + filter_name + "][]=" + filters[filter_name][filter];
-			}
+	for(const filterName in filters) {
+		for (const filter in filters[filterName]) {   
+			filterText += (filterText ? '&' : '?') + "filter[" + filterName + "][]=" + filters[filterName][filter];
+		}
 	}
 
-	let url = action + filter_text;
-	let selector = "#site-content";
+	let url = action + filterText;
+	let selector = VvvebTheme.ajax.siteContainer ?? "#site-content";
 	loadAjax(url, selector);
 	window.history.pushState({url, selector}, null, url);
-	//location = action + filter_text;
+	//location = action + filterText;
 }	
 
 let _filter_timeout;
@@ -67,6 +68,8 @@ document.addEventListener("click", (event) => {
 	}, 1000);
   }
 });
+
+
 /*
 document.addEventListener("click", (event) => {
   let target = event.target.closest('.page-link');
@@ -81,5 +84,49 @@ document.addEventListener("click", (event) => {
 	window.history.pushState({url, selector}, null, url);
 	event.preventDefault();
   }
+});
+*/
+
+/*
+const rangeInput = document.querySelectorAll(".range-input input"),
+priceInput = document.querySelectorAll(".price-input input"),
+range = document.querySelector(".slider .progress");
+let priceGap = 1000;
+
+priceInput.forEach(input =>{
+    input.addEventListener("input", e =>{
+        let minPrice = parseInt(priceInput[0].value),
+        maxPrice = parseInt(priceInput[1].value);
+        
+        if((maxPrice - minPrice >= priceGap) && maxPrice <= rangeInput[1].max){
+            if(e.target.className === "input-min"){
+                rangeInput[0].value = minPrice;
+                range.style.left = ((minPrice / rangeInput[0].max) * 100) + "%";
+            }else{
+                rangeInput[1].value = maxPrice;
+                range.style.right = 100 - (maxPrice / rangeInput[1].max) * 100 + "%";
+            }
+        }
+    });
+});
+
+rangeInput.forEach(input =>{
+    input.addEventListener("input", e =>{
+        let minVal = parseInt(rangeInput[0].value),
+        maxVal = parseInt(rangeInput[1].value);
+
+        if((maxVal - minVal) < priceGap){
+            if(e.target.className === "range-min"){
+                rangeInput[0].value = maxVal - priceGap
+            }else{
+                rangeInput[1].value = minVal + priceGap;
+            }
+        }else{
+            priceInput[0].value = minVal;
+            priceInput[1].value = maxVal;
+            range.style.left = ((minVal / rangeInput[0].max) * 100) + "%";
+            range.style.right = 100 - (maxVal / rangeInput[1].max) * 100 + "%";
+        }
+    });
 });
 */
