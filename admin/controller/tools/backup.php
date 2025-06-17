@@ -50,18 +50,39 @@ class Backup extends Base {
 			$tableName = pregMatch('/TRUNCATE TABLE [`"\']?([^`"\';]+)[`"\']?;?/ms', $sql, 1);
 
 			$sql = preg_replace('/TRUNCATE TABLE [`"\']?([^`"\';]+)[`"\']?;?/ms',
-			'DELETE FROM \'\1\';DELETE FROM SQLITE_SEQUENCE WHERE name=\'\1\';',
+			"DELETE FROM '\\1';\nDELETE FROM SQLITE_SEQUENCE WHERE name='\\1';",
 			$sql);
 
 			if ($tableName == 'post_content') {
-				$sql = 'DELETE FROM \'post_content_search\';DELETE FROM SQLITE_SEQUENCE WHERE name=\'post_content_search\';' . $sql;
+				//$sql .= ';DELETE FROM \'post_content_search\';DELETE FROM SQLITE_SEQUENCE WHERE name=\'post_content_search\';';
+				$sql = trim($sql);
+				$sql .= "\nDELETE FROM 'post_content_search';\n";
 			}
 
 			if ($tableName == 'product_content') {
-				$sql = 'DELETE FROM \'product_content_search\';DELETE FROM SQLITE_SEQUENCE WHERE name=\'product_content_search\';' . $sql;
+				//$sql .= ';DELETE FROM \'product_content_search\';DELETE FROM SQLITE_SEQUENCE WHERE name=\'product_content_search\';';
+				$sql = trim($sql);
+				$sql .= "\nDELETE FROM 'product_content_search';\n";
 			}
 
 			return $sql;
+		} else {
+			if (DB_ENGINE == 'pgsql') {
+				$sql = preg_replace('/TRUNCATE TABLE [`"\']?([^`"\';]+)[`"\']?;?/ms',
+					'TRUNCATE TABLE "\1";',
+				$sql);
+			}
+		}
+
+		return $sql;
+	}
+
+	public function insertSQL($sql) {
+		if (DB_ENGINE == 'pgsql') {
+			$sql = preg_replace_callback('/INSERT INTO .+?\) VALUES \(/ms',
+				function ($matches) {
+					return str_replace('`','"', $matches[0]);
+				}, $sql);
 		}
 
 		return $sql;
@@ -102,7 +123,7 @@ class Backup extends Base {
 						if (is_numeric($v)) {
 						} else {
 							if (is_string($v)) {
-								$v = '"' . $this->db->escape($v) . '"';
+								$v = '\'' . $this->db->escape($v) . '\'';
 							}
 						}
 					}
@@ -193,20 +214,25 @@ class Backup extends Base {
 
 		$handle = fopen($filename, 'r');
 		fseek($handle, $position, SEEK_SET);
-		$start = false;
+		$start    = false;
+		$isInsert = false;
+		$sql      = '';
 
-		while (! feof($handle) && ($i < 100000) && $elapsed < 8) {
+		while (! feof($handle) && ($i < 10000 || $start) && ($elapsed < 8 || $start)) {
 			$line = fgets($handle, 1000000);
 
 			if (substr($line, 0, 14) == 'TRUNCATE TABLE') {
-				$sql   = '';
-				$line  = $this->truncateTableSQL($line);
-				$start = true;
+				$sql      = '';
+				$line     = $this->truncateTableSQL($line);
+				$start    = true;
+				$isInsert = false;
 			}
 
 			if (substr($line, 0, 11) == 'INSERT INTO') {
-				$sql   = '';
-				$start = true;
+				$sql      = '';
+				$line     = $this->insertSQL($line);
+				$isInsert = true;
+				$start    = true;
 			}
 
 			if ($start) {
@@ -216,10 +242,31 @@ class Backup extends Base {
 			$end = substr($line, -2);
 
 			if ($start && $end == ";\n") {
-				$sql = substr($sql, 0, strlen($sql) - 2);
-				$this->db->query($sql);
+				//$sql = substr($sql, 0, strlen($sql) - 2);
+				if ($isInsert) {
+					$current = ftell($handle);
 
-				$start = false;
+					while (($peek = fgets($handle, 8)) && empty(trim($peek))) {
+					}
+
+					if (feof($handle)) {
+						$isInsert = false;
+						$peek     = '';
+					}
+
+					fseek($handle, $current);
+					$next = substr($peek, 0, 6);
+
+					if ($next == 'TRUNCA' || $next == 'INSERT') {
+						$isInsert = false;
+					}
+				}
+
+				if (! $isInsert) {
+					$this->db->query($sql);
+					$sql   = '';
+					$start = false;
+				}
 			}
 
 			$i++;
