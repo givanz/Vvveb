@@ -56,7 +56,7 @@ class Notifications extends ComponentBase {
 			$this->count += $newOrders;
 			$this->menu['sales']                = [];
 			$this->menu['sales']['badge']       =  $newOrders;
-			$this->menu['sales']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
+			$this->menu['sales']['badge-class'] =  'badge bg-success-subtle text-body mx-2';
 		}
 
 		$url = ['module' => 'product/products'];
@@ -229,7 +229,7 @@ class Notifications extends ComponentBase {
 			$view       = View::getInstance();
 
 			if (isset($view->menu) && $view->menu) {
-				$view->menu = array_merge_recursive($view->menu, $results['menu']);
+				$view->menu = array_replace_recursive($view->menu, $results['menu']);
 			}
 		}
 	}
