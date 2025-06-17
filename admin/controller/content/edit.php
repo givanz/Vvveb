@@ -92,7 +92,21 @@ class Edit extends Base {
 		$view->uploadUrl = "$controllerPath&action=upload";
 		$view->linkUrl   = $admin_path . 'index.php?module=content/post&action=urlAutocomplete';
 		$theme           = Sites::getTheme() ?? 'default';
-		$view->themeCss  = PUBLIC_PATH . "themes/$theme/css/admin-post-editor.css";
+		$view->themeCss  = '';
+
+		if (file_exists(DIR_THEMES . "$theme/css/admin-post-editor.css")) {
+			$view->themeCss .= PUBLIC_PATH . "themes/$theme/css/admin-post-editor.css";
+		} else {
+			if (file_exists(DIR_THEMES . "$theme/css/style.css")) {
+				$view->themeCss .= PUBLIC_PATH . "themes/$theme/css/style.css";
+			}
+		}
+
+		foreach (['custom.css', 'fonts.css'] as $css) {
+			if (file_exists(DIR_THEMES . "$theme/css/$css")) {
+				$view->themeCss .= ',' . PUBLIC_PATH . "themes/$theme/css/$css";
+			}
+		}
 		//$view->themeCss        = PUBLIC_PATH . "themes/$theme/css/style.css";
 
 		$viewCapability = 'view_other_posts';
@@ -131,7 +145,7 @@ class Edit extends Base {
 
 			if (! $post) {
 				$message = sprintf(__('%s not found!'), humanReadable(__($this->type)));
-				$this->notFound(false, ['message' => $message, 'title' => $message]);
+				$this->notFound(['message' => $message, 'title' => $message]);
 			}
 
 			//featured image
@@ -174,7 +188,7 @@ class Edit extends Base {
 		}
 
 		//get site host for current selected site to use for absolute url
-		$url = ['host' => $this->global['site_url']];
+		$url = ['host' => $this->global['host']];
 
 		$revisionsUrl = \Vvveb\url(['module' => "$controller/revisions", 'object' => $this->object, 'type' => $this->type, $this->object . '_id' => $post_id]);
 		$name         = '';
@@ -182,10 +196,12 @@ class Edit extends Base {
 		if (isset($post[$this->object . '_content'])) {
 			foreach ($post[$this->object . '_content'] as &$content) {
 				if (! isset($post['url'])) {
-					$post['url'] = \Vvveb\url($route, ['slug'=> $content['slug'], $this->object . '_id' => $post_id] + $url);
+					$post['url']          = \Vvveb\url($route, ['slug'=> $content['slug'], $this->object . '_id' => $post_id] + $url);
+					$post['relative-url'] = \Vvveb\url($route, ['slug'=> $content['slug'], $this->object . '_id' => $post_id]);
 
 					if (! $post['url'] || $post['url'] == '//' . $this->global['site_url']) {
-						$post['url'] = \Vvveb\url($altRoute, ['slug'=> $content['slug'], $this->object . '_id' => $post_id] + $url);
+						$post['url']          = \Vvveb\url($altRoute, ['slug'=> $content['slug'], $this->object . '_id' => $post_id] + $url);
+						$post['relative-url'] = \Vvveb\url($altRoute, ['slug'=> $content['slug'], $this->object . '_id' => $post_id]);
 					}
 				}
 				$language = [];
@@ -235,7 +251,7 @@ class Edit extends Base {
 		$design_url = '';
 
 		if (isset($post['url'])) {
-			$design_url         = \Vvveb\url(['module' => 'editor/editor', 'name' => urlencode($name),  'url' => $content['url'], 'template' => $template, 'host' => $this->global['site_url'] . $admin_path], false, false);
+			$design_url         = \Vvveb\url(['module' => 'editor/editor', 'name' => urlencode($name),  'url' => $post['relative-url'], 'template' => $template, 'host' => $this->global['host']], false);
 			$post['design_url'] = $design_url;
 		}
 
@@ -263,14 +279,29 @@ class Edit extends Base {
 
 		$view->sitesList = $this->sites($sites);
 
-		list($post, $post_id) = Event :: trigger(__CLASS__,__FUNCTION__, $post, $post_id);
+		list($post, $post_id, $this->type) = Event :: trigger(__CLASS__,__FUNCTION__, $post, $post_id, $this->type);
 
 		$object          = $this->object;
 		$view->$object   = $post;
 		$view->status    = ['publish' => 'Publish', 'draft' => 'Draft', 'pending' => 'Pending', 'private' => 'Private', 'password' => 'Password', 'future' => 'Future'];
 
-		$view->templates = Cache::getInstance()->cache(APP,'template-list.' . $this->global['site_id'],function () {
-			return \Vvveb\getTemplateList(false, ['email']);
+		$view->templates = Cache::getInstance()->cache(APP,'template-list.' . $theme, function () use ($theme) {
+			return \Vvveb\getTemplateList($theme, ['email']);
+		}, 604800);
+
+		$view->themeFonts = Cache::getInstance()->cache(APP,'fonts-list.' . $theme, function () use ($theme) {
+			$fonts = \Vvveb\System\Media\Font::themeFonts($theme);
+			$names = [];
+
+			if ($fonts) {
+				foreach ($fonts as $font) {
+					if (isset($font['font-family'])) {
+						$names[$font['font-family']] = null;
+					}
+				}
+			}
+
+			return $names;
 		}, 604800);
 
 		//$validator                 = new Validator([$this->object]);
