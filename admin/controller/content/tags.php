@@ -29,8 +29,12 @@ use Vvveb\System\Images;
 
 class Tags extends Base {
 	function delete() {
-		$taxonomy_item_id = $this->request->get['taxonomy_item_id'] ?? false;
+		$taxonomy_item_id = $this->request->post['taxonomy_item_id'] ?? false;
 		$categories       = new categorySQL();
+
+		if (is_numeric($taxonomy_item_id)) {
+			$taxonomy_item_id = [$taxonomy_item_id];
+		}
 
 		if ($taxonomy_item_id && $categories->deleteTaxonomyItem(['taxonomy_item_id' => $taxonomy_item_id])) {
 			$this->view->success[] = 'Item removed!';
@@ -51,10 +55,11 @@ class Tags extends Base {
 		$limit       = 1000;
 
 		$options = [
-			'start'     => ($page - 1) * $limit,
-			'limit'     => $limit,
-			'post_type' => $type,
-			'type'      => 'tags',
+			'start'       => ($page - 1) * $limit,
+			'limit'       => $limit,
+			'post_type'   => $type,
+			'taxonomy_id' => $taxonomy_id,
+			'type'        => 'tags',
 		] + $this->global;
 
 		$results = $categories->getCategoriesAllLanguages($options);
