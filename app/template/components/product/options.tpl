@@ -70,6 +70,7 @@ if($options && is_array($options)) {
 			
 			@value [data-v-value-input]|name = <?php echo 'option[' . $option['product_option_id'] . ']';?>
 			@value [data-v-value-input]|addNewAttribute = <?php if ($option['required']) echo 'required';?>
+			@value [data-v-value-input]|addNewAttribute = <?php if (isset($value['checked']) && $value['checked']) echo 'checked';?>
 			@value [data-v-value-input]|value = $value['product_option_value_id']
 			
 			@value [data-v-value-price_formatted]|if_exists = $value['price']
