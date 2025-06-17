@@ -1,20 +1,23 @@
-/*
-Copyright 2017 Ziadin Givan
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-https://github.com/givanz/Vvvebjs
-*/
+/**
+ * Vvveb
+ *
+ * Copyright (C) 2021  Ziadin Givan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * https://github.com/givanz/Vvveb
+ */
 
 bgcolorClasses = ["bg-primary", "bg-secondary", "bg-success", "bg-danger", "bg-warning", "bg-info", "bg-body-secondary", "bg-dark", "bg-white"]
 
@@ -68,7 +71,7 @@ function changeNodeName(node, newNodeName) {
 	return newNode;
 }
 
-let base_sort = 100;//start sorting for base component from 100 to allow extended properties to be first
+let base_sort = 1000;//start sorting for base component from 100 to allow extended properties to be first
 let style_section = 'style';
 let advanced_section = 'advanced';
 
@@ -89,14 +92,27 @@ Vvveb.Components.add("_base", {
         col:6,
         inputtype: TextInput
     },{
+        name: "Title",
+        key: "title",
+        htmlAttr: "title",
+        sort: base_sort++,
+        inline:false,
+        col:6,
+        inputtype: TextInput
+    },{
         name: "Class",
         key: "class",
         htmlAttr: "class",
         sort: base_sort++,
         inline:false,
-        col:6,
-        inputtype: TextInput
-    	
+        col:12,
+		inputtype: TagsInput,
+		data: {
+			allowFreeText:true,
+			//get all classes used on the page
+			data:[...[...document.querySelectorAll("[class]")].reduce((s, e) =>
+				(e.classList.forEach(c => s.add(c)), s), new Set())].sort(),
+		},
     }
    ]
 });    
@@ -108,21 +124,21 @@ Vvveb.Components.extend("_base", "_base", {
         inputtype: SectionInput,
         name:false,
         sort: base_sort++,
-		section: style_section,
+        section: style_section,
         data: {header:"Display"},
-     },{
-		//linked styles notice message
-		name:"",
-		key: "linked_styles_check",
+    }, {
+        //linked styles notice message
+        name:"",
+        key: "linked_styles_check",
         sort: base_sort++,
         section: style_section,
         inline:false,
         col:12,
         inputtype: NoticeInput,
         data: {
-			type:'warning',
-			title:'Linked styles',
-			text:'This element shares styles with other <a class="linked-elements-hover" href="javascript:void()"><b class="elements-count">4</b> elements</a>, to apply styles <b>only for this element</b> enter a <b>unique id</b> eg: <i>marketing-heading</i> in in <br/><a class="id-input" href="#content-tab" role="tab" aria-controls="components" aria-selected="false" href="#content-tab">Content > General > Id</a>.<br/><span class="text-muted small"></span>',
+		type:'warning',
+		title:'Linked styles',
+		text:'This element shares styles with other <a class="linked-elements-hover" href="javascript:void()"><b class="elements-count">4</b> elements</a>, to apply styles <b>only for this element</b> enter a <b>unique id</b> eg: <i>marketing-heading</i> in in <br/><a class="id-input" href="#content-tab" role="tab" aria-controls="components" aria-selected="false" href="#content-tab">Content > General > Id</a>.<br/><span class="text-muted small"></span>',
 		},
 		afterInit:function(node, inputElement) {
 			let selector = Vvveb.StyleManager.getSelectorForElement(node);
@@ -329,11 +345,11 @@ Vvveb.Components.extend("_base", "_base", {
 			step:0.1
        },
 	},{
-        name: "Background Color",
+        name: "Background",
         key: "background-color",
         sort: base_sort++,
 		section: style_section,
-        col:6,
+        col:12,
 		inline:true,
 		htmlAttr: "style",
         inputtype: ColorInput,
@@ -342,7 +358,7 @@ Vvveb.Components.extend("_base", "_base", {
         key: "color",
         sort: base_sort++,
 		section: style_section,
-        col:6,
+        col:12,
 		inline:true,
 		htmlAttr: "style",
         inputtype: ColorInput,
@@ -413,11 +429,11 @@ let ComponentBaseTypography = {
     },{
         name: "Font family",
         key: "font-family",
-	htmlAttr: "style",
+        htmlAttr: "style",
         sort: base_sort++,
-	section: style_section,
+        section: style_section,
         col:12,
-	inline:false,
+        inline:false,
         inputtype: SelectInput,
         data: {
 			options: fontList
@@ -527,44 +543,44 @@ let ComponentBaseTypography = {
             }],
         },
 	},{
-        name: "Decoration Color",
-        key: "text-decoration-color",
-        sort: base_sort++,
+		name: "Decoration Color",
+		key: "text-decoration-color",
+		sort: base_sort++,
 		section: style_section,
-        col:6,
+		col:12,
 		inline:true,
 		htmlAttr: "style",
-        inputtype: ColorInput,
+		inputtype: ColorInput,
 	},{
-        name: "Decoration style",
-        key: "text-decoration-style",
+		name: "Decoration style",
+		key: "text-decoration-style",
 		htmlAttr: "style",
-        sort: base_sort++,
+		sort: base_sort++,
 		section: style_section,
-        col:6,
+		col:12,
 		inline:true,
-        inputtype: SelectInput,
+		inputtype: SelectInput,
         data: {
-			options: [{
-				value: "",
-				text: "Default"
-			},{	
-				value: "solid",
-				text: "Solid"
-			},{
-				value: "wavy",
-				text: "Wavy"
-			},{
-				value: "dotted",
-				text: "Dotted"
-			},{
-				value: "dashed",
-				text: "Dashed"
-			},{
-				value: "double",
-				text: "Double"
-			}],
-		}
+	options: [{
+			value: "",
+			text: "Default"
+		},{	
+			value: "solid",
+			text: "Solid"
+		},{
+			value: "wavy",
+			text: "Wavy"
+		},{
+			value: "dotted",
+			text: "Dotted"
+		},{
+			value: "dashed",
+			text: "Dashed"
+		},{
+			value: "double",
+			text: "Double"
+	}],
+	}
   }]
 }
 
@@ -1109,8 +1125,8 @@ Vvveb.Components.add("config/bootstrap", {
 					defaultValue: value.value,
 					//index: i - 1,
 					columnNode: this,
-					col:(value.type == "font" || value.type == "dimensions") ? 12 : 4,
-					inline:true,
+					col:(value.type == "font" || value.type == "dimensions") ? 12 : 6,
+					inline:(value.type == "font" || value.type == "dimensions") ? false : true,
 					section: advanced_section,
 					inputtype: input,
 					data: data,

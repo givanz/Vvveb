@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
+ * https://github.com/givanz/Vvveb
  */
  
 let Input = {
@@ -720,6 +721,23 @@ let SectionInput = { ...Input, ...{
   }
 }
 
+let PopOverInput = { ...Input, ...{
+
+    events: [
+        //["click", "onChange", "button" /*'select'*/],
+	 ],
+	
+
+	setValue: function(value) {
+		return false;
+	},
+	
+	init: function(data) {
+		return this.render("popoverinput", data);
+	},
+  }
+}
+
 let ListInput = { ...Input, ...{
 	
     events: [
@@ -818,7 +836,6 @@ let AutocompleteInput = { ...Input, ...{
 
 	onAutocompleteChange: function(event, node, input) {
 		input.value = event.detail.value;
-		//return input.onChange(event, node, input);
 		return input.onChange.call(this, event, node, input);
 	},
 
@@ -826,7 +843,7 @@ let AutocompleteInput = { ...Input, ...{
 		
 		this.element = this.render("textinput", data);
 		
-		let autocomplete = new _AutocompleteInput(this.element.querySelector("input"), {url:data.url});
+		let autocomplete = new _AutocompleteInput(this.element.querySelector("input"), data);
 		
 		return this.element;
 	}
@@ -841,7 +858,6 @@ let AutocompleteList = { ...Input, ...{
 
 	onAutocompleteChange: function(event, node, input) {
 		input.value = event.detail;
-		//return input.onChange(event, node, input);
 		return input.onChange.call(this, event, node, input);
 	},
 
@@ -860,7 +876,7 @@ let AutocompleteList = { ...Input, ...{
 		
 		this.element = this.render("textinput", data);
 		
-		let autocomplete = new _AutocompleteList(this.element.querySelector("input"), {url:data.url});
+		let autocomplete = new _AutocompleteList(this.element.querySelector("input"), data);
 		
 		return this.element;
 	}
@@ -873,27 +889,26 @@ let TagsInput = { ...Input, ...{
         ["tagsinput.change", "onTagsInputChange", "input"],
 	 ],
 
-	onTagsInputChange: function(event, value, text) {
-		input.value = value;
-		return this.onChange(event, node);
+	onTagsInputChange: function(event, node, input) {
+		let tags = "";
+		for (const tag in event.detail[0]) {
+			if (tags) tags += " ";
+			tags += tag;
+		}
+		input.value = tags;
+		return input.onChange.call(this, event, node, input);
 	},
 
 	setValue: function(value) {
-		if (this.element[0] && value) {
-			let input = this.element[0].querySelector('select');
-		
-			if (input) { 
-				input.dataset.tagsInput.setValue(value);
-				
-			}
+		if (this.autocomplete && value) {
+			this.autocomplete.tagsInput.setValue(value.split(" "));
 		}
 	},
 
 	init: function(data) {
 		
 		this.element = this.render("tagsinput", data);
-		
-		let autocomplete = new _TagsInput(this.element.querySelector("input"), {url:data.url});
+		this.autocomplete = new _TagsInput(this.element.querySelector("input"), data);
 		
 		return this.element;
 	}
