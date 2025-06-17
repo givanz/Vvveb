@@ -10,7 +10,7 @@ form[data-v-url-params]|action = <?php echo Vvveb\url('@@__data-v-url__@@' , @@_
 
 /* [data-v-img]|href = <?php echo htmlspecialchars(Vvveb\url('@@__data-v-img__@@'));?> */
 
-head base|href = <?php echo Vvveb\themeUrlPath()?>
+head base|href = <?php if($vvveb_is_page_edit) echo Vvveb\themeUrlPath()?>
 
 //csrf
 input[data-v-csrf]|value = <?php echo \Vvveb\session('csrf');?>
@@ -21,10 +21,16 @@ import(notifications.tpl)
 import(editor.tpl)
 import(pagination.tpl)
 
+//make sure theme has fav icon <link rel="icon" type="image/x-icon" href="/media/favicon.ico" data-v-global-site.favicon>
+link[rel="icon"]|delete
+head|append    = from(/public/themes/default/index.html|link[rel="icon"])
+link[rel="shortcut icon"]|delete
+head|append    = from(/public/themes/default/index.html|link[rel="shortcut icon"])
+
 html|addNewAttribute = <?php 
 $vvveb_is_page_edit = Vvveb\isEditor();
 
-if (isset($_COOKIE['theme']) && !$vvveb_is_page_edit) { 
+if (isset($_COOKIE['theme']) && !$vvveb_is_page_edit && !defined('PAGE_CACHE_GENERATING')) { 
 	echo 'data-bs-theme="';
 	if ($_COOKIE['theme'] == 'dark') echo 'dark'; else if ($_COOKIE['theme'] == 'light') echo 'light';else echo 'auto';  
 	echo '"';
@@ -69,6 +75,7 @@ if (isset($this->global) && $name
 }
 ?>
 
+[data-v-year]= $this->global['year']
 
 head > link[hreflang]|deleteAllButFirst
 
