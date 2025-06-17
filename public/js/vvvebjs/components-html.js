@@ -1,3 +1,24 @@
+/**
+ * Vvveb
+ *
+ * Copyright (C) 2021  Ziadin Givan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * https://github.com/givanz/Vvveb
+ */
+
 Vvveb.ComponentsGroup['Base'] =
 ["html/heading", "html/image", "html/hr",  "html/form", "html/textinput", "html/textareainput", "html/selectinput"/*, "html/fileinput"*/, "html/checkbox", "html/radiobutton", "html/link", "html/button", "html/paragraph", "html/blockquote", "html/list", "html/table", "html/preformatted", "html/audio", "html/video","html/iframe"];
 
@@ -64,7 +85,12 @@ let linkComponentProperties = [
 		key: "href",
 		sort:2,
 		htmlAttr: "href",
-		inputtype: LinkInput
+		inputtype: AutocompleteInput,
+		data: {
+			url: linkUrl,
+			allowFreeText: true,
+			useKeyAsValue: true,
+		}
 	},{
 		name: "Rel",
 		key: "rel",
@@ -114,7 +140,7 @@ Vvveb.Components.extend("_base", "html/link", {
 Vvveb.Components.extend("_base", "html/image", {
     nodes: ["img"],
     name: "Image",
-    html: '<img src="' +  Vvveb.baseUrl + 'icons/image.svg" class="mw-100 align-center">',
+    html: '<img src="' +  Vvveb.baseUrl + 'icons/image.svg" width="200" class="img-fluid align-center">',
     image: "icons/image.svg",
     resizable:true,//show select box resize handlers
     
