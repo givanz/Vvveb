@@ -6,7 +6,7 @@ CREATE TABLE `product_content` (
 `name` TEXT NOT NULL DEFAULT "",
 `slug` TEXT NOT NULL DEFAULT "",
 `content` text,
-`tag` text,
+`excerpt` text DEFAULT "",
 `meta_title` TEXT NOT NULL DEFAULT "",
 `meta_description` TEXT NOT NULL DEFAULT "",
 `meta_keywords` TEXT NOT NULL DEFAULT "",
