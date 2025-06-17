@@ -31,6 +31,7 @@ import(common.tpl)
 
 
 [data-v-controllers] [data-v-controller]|before = <?php
+	if (isset($this->controllers['permissions']))
 	foreach ($this->controllers['permissions'] as $i => $permission) { ?>
 		
 	[data-v-controllers] [data-v-controller] span = $permission	
