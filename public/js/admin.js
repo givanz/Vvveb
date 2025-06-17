@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
+ * https://github.com/givanz/Vvveb
  */
  
  
@@ -80,9 +81,14 @@ function displayToast(bg, title, message, position = 'bottom', id = "bottom-toas
 	header.classList.remove("bg-danger", "bg-success");
 	header.classList.add(bg);	
 	header.querySelector("strong").textContent = title;
+	let toastDisplay = toast.cloneNode(true);
+	toast.parentNode.appendChild(toastDisplay);
 
-	let bsToast = new bootstrap.Toast(toast, {animation:false});
-    bsToast.show()
+	let bsToast = new bootstrap.Toast(toastDisplay, {animation:true});
+	toastDisplay.addEventListener('hidden.bs.toast', () => {
+		toastDisplay.remove();
+	});
+    bsToast.show();
 }
 
 window.displayToast = displayToast;
