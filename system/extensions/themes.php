@@ -59,6 +59,9 @@ class Themes extends Extensions {
 			$dir         = Str::match('@(.+)/[a-z]+.\w+$@', $file);
 			$themeConfig = $dir . DS . 'theme.php';
 
+			if ($folder == 'default') {
+				continue;
+			}
 			$theme           = [];
 			$theme['file']   = $file;
 			$theme['folder'] = $folder;
@@ -72,7 +75,7 @@ class Themes extends Extensions {
 			}
 
 			$theme['name']       = $theme['name'] ?? ucfirst($theme['folder']);
-			$theme['screenshot'] = $theme['screenshot'] ?? '/../media/placeholder.svg';
+			$theme['screenshot'] = $theme['screenshot'] ?? (file_exists($dir . DS . 'screenshot.png') ? PUBLIC_PATH . 'themes/' . $folder . '/screenshot.png' : '/../media/extension.svg');
 
 			$themes[$folder] = $theme;
 

@@ -50,7 +50,7 @@ abstract class Extensions {
 
 		if (preg_match_all(static :: KEY_VALUE_REGEX, $comments, $matches)) {
 			$matches[1] = array_map(function ($key) {
-				return str_replace(' ','-',strtolower($key));
+				return str_replace(' ','-',strtolower(trim($key)));
 			}, $matches[1]);
 
 			$results = array_combine($matches[1], $matches[2]);

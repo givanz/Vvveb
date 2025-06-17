@@ -56,7 +56,7 @@ class Plugins extends Extensions {
 			file_exists(DIR_PUBLIC . ($file = 'plugins/' . $name . '/' . $params['thumb']))) {
 			$params['thumb_url'] = PUBLIC_PATH . $file;
 		} else {
-			$params['thumb_url'] = PUBLIC_PATH . 'media/placeholder.svg';
+			$params['thumb_url'] = PUBLIC_PATH . 'media/extension.svg';
 		}
 
 		return $params;
