@@ -19,7 +19,7 @@ INSERT INTO `post_content` VALUES
 </p>
 	
 <p>
-	<img class="img-fluid" src="http://placehold.it/1200x300">
+	<img class="img-fluid" src="http://place-hold.it/1200x300">
 	Neither can I be angry with my brother or fall foul of him; for he and I were born to work together, like a man`s two hands, feet or eyelids, or the upper and lower rows of his teeth. 
 </p>
 
@@ -28,7 +28,7 @@ INSERT INTO `post_content` VALUES
 </p>
 
 <div>
-	<img class="img-fluid align-center" src="http://placehold.it/1200x300">
+	<img class="img-fluid align-center" src="http://place-hold.it/1200x300">
 </div>
 
 <p>
@@ -36,7 +36,7 @@ INSERT INTO `post_content` VALUES
 </p>
 
 <p>
-	<img class="img-fluid align-right" src="http://placehold.it/150x150">
+	<img class="img-fluid align-right" src="http://place-hold.it/150x150">
 </p>
 
 <p>
@@ -47,7 +47,7 @@ INSERT INTO `post_content` VALUES
 </p>
 
 <p>
-	<img class="img-fluid align-left" src="http://placehold.it/150x150">
+	<img class="img-fluid align-left" src="http://place-hold.it/150x150">
 </p>
 
 <p>
@@ -78,11 +78,8 @@ INSERT INTO `post_content` VALUES
 <p>So people of my class evade the terrible contradiction in four ways. Strain my attention as I would, I saw no way except those four. One way was not to understand that life is senseless, vanity, and an evil, and that it is better not to live. I could not help knowing this, and when I once knew it could not shut my eyes to it. The second way was to use life such as it is without thinking of the future. And I could not do that. I, like Sakya Muni, could not ride out hunting when I knew that old age, suffering, and death exist. My imagination was too vivid. Nor could I rejoice in the momentary accidents that for an instant threw pleasure to my lot. The third way, having understood that life is evil and stupid, was to end it by killing oneself. I understood that, but somehow still did not kill myself. The fourth way was to live like Solomon and Schopenhauer-knowing that life is a stupid joke played upon us, and still to go on living, washing oneself, dressing, dining, talking, and even writing books. This was to me repulsive and tormenting, but I remained in that position.</p>
 <p>I see now that if I did not kill myself it was due to some dim consciousness of the invalidity of my thoughts. However convincing and indubitable appeared to me the sequence of my thoughts and of those of the wise that have brought us to the admission of the senselessness of life, there remained in me a vague doubt of the justice of my conclusion.</p>
 
-<p>It was like this: I, my reason, have acknowledged that life is senseless. If there is nothing higher than reason (and there is not: nothing can prove that there is,'',''), then reason is the creator of life for me. If reason did not exist there would be for me no life. How can reason deny life when it is the creator of life? Or to put it the other way: were there no life, my reason would not exist; therefore reason is life`s son. Life is all. Reason is its fruit yet reason rejects life itself! I felt that there was something wrong here.</p>
-', 
-
-
-'','',''),
+<p>It was like this: I, my reason, have acknowledged that life is senseless. If there is nothing higher than reason (and there is not: nothing can prove that there is, then reason is the creator of life for me. If reason did not exist there would be for me no life. How can reason deny life when it is the creator of life? Or to put it the other way: were there no life, my reason would not exist; therefore reason is life`s son. Life is all. Reason is its fruit yet reason rejects life itself! I felt that there was something wrong here.</p>
+','','',''),
             
             
             
@@ -106,8 +103,8 @@ INSERT INTO `post_content` VALUES
 ', '','',''),
             
             
-(4,1,'Etiam leo nibh, consectetur nec orci et, tempus tempus ex','hello-world-4','
-                <h2>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis perferendis rem accusantium ducimus animi nesciunt expedita omnis aut quas molestias!</h2>
+(4,1,'Aenean ligula justo, viverra in lacus porttitor','hello-world-4','
+                <h2>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</h2>
                 <p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin. Praesent at tempus lectus, eleifend blandit felis. Fusce augue arcu, consequat a nisl aliquet, consectetur elementum turpis. Donec iaculis lobortis nisl, et viverra risus imperdiet eu. Etiam mollis posuere elit non sagittis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quis arcu a magna sodales venenatis. Integer non diam sit amet magna luctus mollis ac eu nisi. In accumsan tellus ut dapibus blandit.</p>
 
                 <blockquote>
@@ -119,8 +116,8 @@ INSERT INTO `post_content` VALUES
                 <p>Praesent ac magna sed massa euismod congue vitae vitae risus. Nulla lorem augue, mollis non est et, eleifend elementum ante. Nunc id pharetra magna. Praesent vel orci ornare, blandit mi sed, aliquet nisi. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</p>', '','',''),
             
             
-(5,1,'Sed viverra pellentesque dictum. Aenean ligula justo, viverra in lacus porttitor','hello-world-5','
-                <h2>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis perferendis rem accusantium ducimus animi nesciunt expedita omnis aut quas molestias!</h2>
+(5,1,'Sed viverra pellentesque dictum','hello-world-5','
+                <h2>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</h2>
                 <p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin. Praesent at tempus lectus, eleifend blandit felis. Fusce augue arcu, consequat a nisl aliquet, consectetur elementum turpis. Donec iaculis lobortis nisl, et viverra risus imperdiet eu. Etiam mollis posuere elit non sagittis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quis arcu a magna sodales venenatis. Integer non diam sit amet magna luctus mollis ac eu nisi. In accumsan tellus ut dapibus blandit.</p>
 
                 <blockquote>
@@ -133,7 +130,7 @@ INSERT INTO `post_content` VALUES
             
             
 (6,1,'Mauris viverra cursus ante laoreet eleifend','hello-world-6','
-                <h2>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis perferendis rem accusantium ducimus animi nesciunt expedita omnis aut quas molestias!</h2>
+                <h2>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</h2>
                 <p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin. Praesent at tempus lectus, eleifend blandit felis. Fusce augue arcu, consequat a nisl aliquet, consectetur elementum turpis. Donec iaculis lobortis nisl, et viverra risus imperdiet eu. Etiam mollis posuere elit non sagittis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quis arcu a magna sodales venenatis. Integer non diam sit amet magna luctus mollis ac eu nisi. In accumsan tellus ut dapibus blandit.</p>
 
                 <blockquote>
@@ -157,7 +154,7 @@ INSERT INTO `post_content` VALUES
 
 
           	<p class="mt-5">
-			  <span><i class="la la-lg la-envelope"></i> Email:</span>
+			  <b><i class="la la-lg la-envelope"></i> Email:</b>
 			  <span>
 				<a href="mailto:contact@mysite.com">
 					<span>contact@mysite.com</span>
@@ -165,14 +162,14 @@ INSERT INTO `post_content` VALUES
 			  </span>
 			</p>
 			<p class="">
-			  <span><i class="la la-lg la-phone"></i> Phone:</span> 
+			  <b><i class="la la-lg la-phone"></i> Phone:</b> 
 			  <a href="tel:5511112377">
 				<span>+55 (111) 123 777</span>
 			  </a>
 			</p>', '','',''),
             
-(8,1,'Shipping &amp; Delivery','shipping-delivery','
-                <h2>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis perferendis rem accusantium ducimus animi nesciunt expedita omnis aut quas molestias!</h2>
+(8,1,'Shipping & Delivery','shipping-delivery','
+                <h2>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</h2>
                 <p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin. Praesent at tempus lectus, eleifend blandit felis. Fusce augue arcu, consequat a nisl aliquet, consectetur elementum turpis. Donec iaculis lobortis nisl, et viverra risus imperdiet eu. Etiam mollis posuere elit non sagittis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quis arcu a magna sodales venenatis. Integer non diam sit amet magna luctus mollis ac eu nisi. In accumsan tellus ut dapibus blandit.</p>
 
                 <blockquote>
@@ -205,7 +202,7 @@ INSERT INTO `post_content` VALUES
 (12,1,'Services','services','Services', '','',''),
 (13,1,'Pricing','pricing','Pricing', '','',''),
 (14,1,'Portfolio','portfolio','Portfolio', '','',''),
-(15,1,'Marketplace','marketplace','Marketplace', '
+(15,1,'Marketplace','marketplace', '
 <div class="text-center m-4">
 <div class="my-5"><img src="../../media/biglogo.png"></div>
 <h1 class="mb-3">Marketplace vendor</h1>
@@ -236,7 +233,9 @@ INSERT INTO `post_content` VALUES
 </div>
 </div>
 <p class="text-muted small">Our marketplace is subject to certain <a href="/page/terms-conditions-9">terms and conditions</a></p>
-</div>','',''),
+</div>','Marketplace','',''),
+(16,1,'Subscription policy','subscription-policy','Subscription policy', '','',''),
+
 (1,2,'Incepe fiecare zi prin a-ti spune','buna-lume-1','
 <blockquote cite="https://en.wikipedia.org/wiki/Marcus_Aurelius">
 	<p>Spuneţi în fiecare dimineaţă: astăzi o să mă întâlnesc cu un om nechibzuit, nerecunoscător, neruşinat, viclean, invidios, nesociabil. Toate defectele acestea sunt urmările neştiinţei oamenilor cu privire la bine şi la rău. Eu însă am recunoscut clar că binele din firea sa este frumos, şi răul este urât, că omul care păcătuieşte contra mea, în realitate îmi este înrudit, nu doar că am fi din acelaşi sânge şi origine, ci fiindcă suntem deopotrivă părtaşi la raţiune, la menirea divină.</p>
@@ -245,12 +244,12 @@ INSERT INTO `post_content` VALUES
 	</cite>	
 </blockquote>','','',''),
 
+
 (2,2,'Buna lume 2','buna-lume-2','Confesiuni', 'Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.','',''),
 (3,2,'Buna lume 3','buna-lume-3', 'Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.','','',''),
 (4,2,'Buna lume 4','buna-lume-4','Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.','','',''),
 (5,2,'Buna lume 5','buna-lume-5', 'Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.','','',''),
 (6,2,'Buna lume 6','buna-lume-6', 'Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.','','',''),
-
 (7,2,'Contacteaza-ne','contact','<p class="lead">
 			Unealta puternica si usor de folosit pentru a realiza blog-uri, site-uri de prezentare sau magazine online.
           </p>
@@ -308,4 +307,6 @@ INSERT INTO `post_content` VALUES
 ', '','',''),
 (12,2,'Servicii','servicii','Servicii', '','',''),
 (13,2,'Preturi','preturi','Preturi', '','',''),
-(14,2,'Portfoliu','portfoliu','Portfoliu', '','','');
+(14,2,'Portfoliu','portfoliu','Portfoliu', '','',''),
+(15,2,'Piata','piata','piata', '','',''),
+(16,2,'Politica subscriptii','politica-subscriptii','Politica subscriptii', '','','');
