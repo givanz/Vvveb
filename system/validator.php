@@ -104,7 +104,7 @@ class Validator {
 		$errorMessage = false;
 
 		foreach ($this->rules as $inputName => $rules) {
-			$name  = \Vvveb\humanReadable($inputName);
+			$name  = __(\Vvveb\humanReadable($inputName));
 			$value = $input[$inputName] ?? arrayPath($input, $inputName);
 
 			if ($value !== null && $value !== false) {
@@ -142,16 +142,17 @@ class Validator {
 					}
 				}
 			} else {
-				if (isset($rules['notEmpty'])) {
-					$rule    = $rules['notEmpty'];
-					$message = $rule['message'] ?? __('%s is empty');
+				//if (isset($rules['notEmpty'])) {
+					//$rule    = $rules['notEmpty'];
+					$message = $this->defaultMessages['notEmpty']; // $rule['message'] ?? __('%s is empty');
 					$name    = $rule['name'] ?? $name;
-				}
+				//}
+
 				$errors[$inputName] = sprintf($message, $name);
 			}
 		}
 
-		return empty($errors) ? true : $errors;
+		return (empty($errors) ? true : $errors);
 	}
 
 	function getJSON() {
