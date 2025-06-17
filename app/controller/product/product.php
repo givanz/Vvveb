@@ -51,13 +51,13 @@ class Product extends Base {
 			}
 		}
 
-		$language = $this->request->get['language'] ?? $this->global['language'] ?? $this->global['default_language'];
-		$product_id  = $this->request->get['product_id'] ?? '';
-		$slug     = $this->request->get['slug'] ?? '';
+		$language   = $this->request->get['language'] ?? $this->global['language'] ?? $this->global['default_language'];
+		$product_id = $this->request->get['product_id'] ?? '';
+		$slug       = $this->request->get['slug'] ?? '';
 
 		if ($slug) {
 			$contentSql = new ProductSQL();
-			$options    = $this->global + ['product_id' => $product_id, 'slug' => $slug, 'type' => $this->type, 'status' => 1];
+			$options    = $this->global + ['product_id' => $product_id, 'slug' => $slug, /*'type' => $this->type, */'status' => 1];
 			$content    = $contentSql->getContent($options);
 
 			list($content, $language, $slug) = Event :: trigger(__CLASS__,__FUNCTION__, $content, $language, $slug);
@@ -86,10 +86,10 @@ class Product extends Base {
 					//$this->session->set('language', $languageContent['code']);
 					//$this->session->set('language_id', $languageContent['language_id']);
 
-					$this->request->get['product_id']     = $languageContent['product_id'];
-					$this->request->request['product_id'] = $languageContent['product_id'];
-					$this->request->get['name']      	    = $languageContent['name'];
-					$this->request->request['name']       = $languageContent['name'];
+					$this->request->get['product_id']      = $languageContent['product_id'];
+					$this->request->request['product_id']  = $languageContent['product_id'];
+					$this->request->get['name']            = $languageContent['name'];
+					$this->request->request['name']        = $languageContent['name'];
 					$this->request->request['code']        = $languageContent['code'];
 					$this->request->request['language_id'] = $languageContent['language_id'];
 

@@ -52,7 +52,7 @@ class Post extends Base {
 
 		if ($post_id || $slug) {
 			$contentSql = new PostSQL();
-			$options    = $this->global + ['post_id' => $post_id, 'slug' => $slug, 'type' => $this->type];
+			$options    = $this->global + ['post_id' => $post_id, 'slug' => $slug/*, 'type' => $this->type*/];
 			$content    = $contentSql->getContent($options) ?? [];
 
 			$class                           = __NAMESPACE__ . '\\' . ucfirst($this->type); //__CLASS__ is always Post
