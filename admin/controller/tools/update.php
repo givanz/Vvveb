@@ -31,7 +31,7 @@ use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
 class Update extends Base {
-	private $steps = ['checkPermissions', 'download', 'unzip', 'copyInstall', /*'backup',*/ 'copySystem', /* 'copyAdmin',*/ , 'createNewTables', 'copyApp', 'copyCore', 'copyConfig', 'copyPublic', 'copyPublicAdmin', 'copyPublicMedia', 'setFilePermissions', 'cleanUp', 'clearCache', 'complete'];
+	private $steps = ['checkPermissions', 'download', 'unzip', 'copyInstall', /*'backup',*/ 'copySystem', /* 'copyAdmin',*/  'copyApp', 'copyCore', 'copyConfig', 'addNewColumns', 'createNewTables', 'copyPublic', 'copyPublicAdmin', 'copyPublicMedia', 'setFilePermissions', 'cleanUp', 'clearCache', 'complete'];
 
 	function __construct() {
 		$this->update = new UpdateSys();
@@ -182,6 +182,22 @@ class Update extends Base {
 
 		if ($result) {
 			$this->view->info[] = __('Backup successful!');
+		}
+
+		return $result;
+	}
+
+	function addNewColumns() {
+		$result = false;
+
+		try {
+			$result = $this->update->addNewColumns();
+		} catch (\Exception $e) {
+			$this->view->errors[] = $e->getMessage();
+		}
+
+		if ($result) {
+			$this->view->info[] = __('Add new columns successful!');
 		}
 
 		return $result;

@@ -24,6 +24,7 @@ namespace Vvveb\System;
 
 use function Vvveb\download;
 use function Vvveb\getUrl;
+use function Vvveb\pregMatch;
 use function Vvveb\rcopy;
 use function Vvveb\rrmdir;
 
@@ -169,7 +170,6 @@ class Update {
 	}
 
 	function copyApp() {
-		ignore_user_abort(true);
 		//$skipFolders = ['plugins', 'public', 'storage'];
 		return $this->copyFolder($this->workDir . DS . 'app', DIR_ROOT . DS . 'app');
 	}
@@ -244,6 +244,146 @@ class Update {
 		if ($sqlFiles) {
 			$sqlImport = new \Vvveb\System\Import\Sql();
 			$sqlImport->createTables($sqlFiles);
+		}
+
+		return true;
+	}
+
+	function tableColumns($sql) {
+		$cols      = [];
+		$tableName = '';
+
+		if (preg_match('/CREATE TABLE ([^\s]+?)\s*\((.+)\).*;/ms', $sql, $matches)) {
+			$tableName = trim($matches[1], ' "\'`');
+			//$columns   = explode("\n", $matches[2]);
+			$columns   = preg_split('/\r\n|\r|\n/', trim($matches[2]));
+
+			foreach ($columns as $key => &$column) {
+				$column = trim($column, ' ,');
+
+				if ($column && in_array($column[0], ['`', '"', '\''])) {
+					$colName        = pregMatch('/^[\'`"](.+?)[\'`"]/', $column, 1);
+					$cols[$colName] = trim($column, ',');
+				}
+			}
+
+			ksort($cols);
+		}
+
+		return [$tableName, $cols];
+	}
+
+	function addNewColumns() {
+		$db         = \Vvveb\System\Db::getInstance();
+		$tableNames = $db->getTableNames();
+
+		$driver     = DB_ENGINE;
+		$sqlPath    = DIR_ROOT . "install/sql/$driver/";
+		$newSqlPath = $this->workDir . DS . "install/sql/$driver/";
+		$files      = \Vvveb\globBrace($sqlPath, ['', '*/*/'], '*.sql');
+
+		$diff     = [];
+		$tableSql = [];
+		$db;
+		//get table names from sql files
+		foreach ($files as $filename) {
+			$tableName   = basename($filename, '.sql');
+			$newFilename = str_replace($sqlPath, $newSqlPath, $filename);
+
+			if (file_exists($newFilename)) {
+				$currentSql   = file_get_contents($filename);
+				$currentTable = $this->tableColumns($currentSql);
+				$tableName    = $currentTable[0];
+				$columns      = $currentTable[1];
+
+				if (! $columns) {
+					continue;
+				}
+
+				$newSql       = file_get_contents($newFilename);
+				$newColumns   = $this->tableColumns($newSql)[1];
+
+				if (! $newColumns) {
+					continue;
+				}
+
+				//newly added columns
+				$tableColumns = $db->getColumnsMeta($tableName);
+				$addedColumns = array_diff_key($newColumns, $tableColumns);
+
+				//changed columns
+				$changedColumns = [];
+				$deletedColumns = [];
+
+				foreach ($columns as $name => $column) {
+					if (isset($newColumns[$name])) {
+						if ($column != $newColumns[$name]) {
+							$changedColumns[$name] = $newColumns[$name];
+						}
+					} else {
+						$deletedColumns[$name] = $column[$name];
+					}
+				}
+
+				//check deleted columns agains existing table
+				$deletedColumns += array_diff_key($tableColumns, $newColumns);
+				$tableColumns = [];
+				//add new columns
+				if ($addedColumns) {
+					if (! $db) {
+						//don't connect to db unless we need to alter table
+						$db = Db::getInstance();
+					}
+
+					foreach ($addedColumns as $name => $definition) {
+						if (isset($tableColumns[$name])) {
+							//column already exists skip
+							continue;
+						}
+						$definition = $newColumns[$name];
+
+						$query  = "ALTER TABLE $tableName ADD $definition";
+						$result = $db->query($query);
+					}
+				}
+
+				//change columns
+				if ($changedColumns) {
+					if (! $db) {
+						//don't connect to db unless we need to alter table
+						$db = Db::getInstance();
+					}
+
+					foreach ($changedColumns as $name => $definition) {
+						if (! isset($tableColumns[$name])) {
+							//column does not exist skip
+							continue;
+						}
+
+						$query  = "ALTER TABLE $tableName MODIFY COLUMN $definition";
+						$result = $db->query($query);
+					}
+				}
+
+				//delete columns
+				//disabled to avoid deleting user added columns
+				if (false && $deletedColumns) {
+					if (! $db) {
+						//don't connect to db unless we need to alter table
+						$db = Db::getInstance();
+					}
+
+					foreach ($deletedColumns as $name => $definition) {
+						if (! isset($tableColumns[$name])) {
+							//column does not exist skip
+							continue;
+						}
+
+						$query  = "ALTER TABLE $tableName DROP COLUMN $name";
+						$result = $db->query($query);
+					}
+				}
+			}
 		}
 
 		return true;
