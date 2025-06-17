@@ -1,0 +1,45 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Vvveb",
+    "description": "Vvveb",
+    "version": "1",
+    "contact": {
+      "name": "admin",
+      "url": "https://www.vvveb.com",
+      "email": "contact@vvveb.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://demo.vvveb.com/rest"
+    }
+  ],
+  "tags": [
+    {
+      "name": "v1",
+      "description": ""
+    }
+  ],
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
+  "components": {
+	"securitySchemes":  {
+		"basicAuth": {
+			"type": "http", 
+			"scheme": "basic",
+			"in": "header",
+			"username": "demo",
+			"password": "demo",
+			"description": "Use admin user and password as credentials, user: demo password: demo"
+		}
+	},
+    "schemas": {
+	}
+  },
+  "paths": {
+  }
+}
