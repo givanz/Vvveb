@@ -21,11 +21,17 @@
  */
 
 return [
+	/*
 	'first_name' => [
 		'notEmpty'   => '',
 		'maxLength'  => 100,
 	],
 	'last_name' => [
+		'notEmpty'   => '',
+		'maxLength'  => 100,
+	],
+*/
+	'username' => [
 		'notEmpty'   => '',
 		'maxLength'  => 100,
 	],

@@ -26,8 +26,10 @@ use function Vvveb\__;
 use Vvveb\Controller\Base;
 use Vvveb\System\Core\View;
 use Vvveb\System\Images;
+use Vvveb\System\User\Admin;
 use Vvveb\System\User\Auth;
 use Vvveb\System\User\User as UserLogin;
+use Vvveb\System\User\User as UserSystem;
 use Vvveb\System\Validator;
 
 class User extends Base {
@@ -46,7 +48,7 @@ class User extends Base {
 			$user       = $users->get($options);
 
 			if (! $user) {
-				return $this->notFound(true, __('Page not found!'));
+				return $this->notFound(true, __('User not found!'));
 			}
 
 			if (isset($user['password'])) {
@@ -131,14 +133,35 @@ class User extends Base {
 					$this->view->errors[] = $users->error;
 				}
 			} else {
-				$return = $users->add([$this->type => $user]);
-				$id     = $return[$this->type];
-
-				if (! $id) {
-					$view->errors = [$users->error];
+				if ($this->type == 'admin') {
+					$result = Admin::add($user);
 				} else {
-					$view->success['get'] = ucfirst($this->type) . __(' added!');
-					$this->redirect(['module'=> $this->type . '/user', $this->type . '_id' => $id, 'success' => $this->type . __(' added!')]);
+					$result = UserSystem::add($user);
+				}
+
+				//$result = $users->add([$this->type => $user]);
+
+				if ($result) {
+					if (isset($result[$this->type])) {
+						$id = $result[$this->type];
+
+						if (! $id) {
+							$view->errors[] = $users->error;
+						} else {
+							$view->success['get'] = ucfirst($this->type) . __(' added!');
+							$this->redirect(['module'=> $this->type . '/user', $this->type . '_id' => $id, 'success' => ucfirst(__($this->type)) . __(' added!')]);
+						}
+					} else {
+						if ($result['email'] == $user['email']) {
+							$view->errors[] = __('This email is already in use. Please use another one.');
+						}
+
+						if ($result['username'] == $user['username']) {
+							$view->errors[] = __('This username is already in use. Please use another one.');
+						}
+					}
+				} else {
+					$view->errors[] = __('Error creating account!');
 				}
 			}
 		} else {

@@ -45,8 +45,11 @@ class Signup extends \Vvveb\Controller\Base {
 
 			//allow only fields that are in the validator list and remove the rest
 			$userInfo                 = $validator->filter($this->request->post);
-			$userInfo['display_name'] = $userInfo['first_name'] . ' ' . $userInfo['last_name'];
-			$userInfo['username']     = $userInfo['first_name'] . $userInfo['last_name'];
+			$userInfo['display_name'] = $userInfo['username'] ?? '';
+
+			if (! isset($userInfo['username']) && isset($userInfo['first_name'])) {
+				$userInfo['username']     = $userInfo['first_name'] . $userInfo['last_name'];
+			}
 			$userInfo['spam']     	   = $isSpam;
 
 			list($userInfo) = Event :: trigger(__CLASS__, __FUNCTION__ , $userInfo);
@@ -59,7 +62,7 @@ class Signup extends \Vvveb\Controller\Base {
 			}
 
 			if ($userInfo) {
-				$result                   = User::add($userInfo);
+				$result = User::add($userInfo);
 
 				$this->view->errors['login'] = [];
 
@@ -94,9 +97,17 @@ class Signup extends \Vvveb\Controller\Base {
 							$this->view->errors['login'] = $error;
 						}
 
-						return $this->redirect('user/index');
+						return $this->redirect('user/login/index');
 					} else {
-						$this->view->errors['login'] = __('This email is already in use. Please use another one.');
+						$this->view->errors['login'] = '';
+
+						if ($result['email'] == $userInfo['email']) {
+							$this->view->errors['login'] = __('This email is already in use. Please use another one.');
+						}
+
+						if ($result['username'] == $userInfo['username']) {
+							$this->view->errors['login'] .= __('This username is already in use. Please use another one.');
+						}
 					}
 				} else {
 					$this->view->errors['login'] = __('Error creating account!');
