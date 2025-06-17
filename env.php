@@ -53,6 +53,7 @@ defined('LOG_SQL_QUERIES') || define('LOG_SQL_QUERIES', false);
 
 defined('REST') || define('REST', false);
 defined('GRAPHQL') || define('GRAPHQL', false);
+defined('GRAPHQL_CAMELCASE') || define('GRAPHQL_CAMELCASE', true);
 
 if (DEBUG) {
     ini_set('display_errors', 1);
