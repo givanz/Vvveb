@@ -35,7 +35,7 @@ return [
 	'/user/signup'   			             => ['module' => 'user/signup/index'],
 	'/user/edit'     			             => ['module' => 'user/edit/index'],
 	'/user/reset'    			             => ['module' => 'user/reset/index'],
-	'/user/reset/{token}/{username}' => ['module' => 'user/reset/reset'],
+	'/user/reset/{token}/{user}' 			 => ['module' => 'user/reset/reset'],
 
 	//user dashboard
 	'/user/order-tracking'                   => ['module' => 'user/order-tracking/index'],
@@ -106,15 +106,17 @@ return [
 
 	//checkout
 	'/cart'                         => ['module' => 'cart/cart/index'],
+	'/cart/{cart_id}'               => ['module' => 'cart/cart/index'],
 	'/cart/add/#product_id#'        => ['module' => 'cart/cart/add'],
-	'/cart/remove/#product_id#'     => ['module' => 'cart/cart/remove'],
+	'/cart/remove/#key#'            => ['module' => 'cart/cart/remove'],
 	'/cart/voucher'                 => ['module' => 'checkout/cart/voucher'],
 
-	'/checkout/#product_id#'  => ['module' => 'checkout/checkout/index'],
-	'/checkout'               => ['module' => 'checkout/checkout/index'],
-	'/checkout/pay'           => ['module' => 'checkout/pay'],
-	'/checkout/confirm'       => ['module' => 'checkout/confirm/index'],
-	'/checkout/confirm/#id#'  => ['module' => 'checkout/order/index'],
+	//'/checkout/#product_id#'  => ['module' => 'checkout/checkout/index'],
+	'/checkout/pay'                          => ['module' => 'checkout/pay'],
+	'/checkout/confirm'                      => ['module' => 'checkout/confirm/index'],
+	'/checkout/confirm/{customer_order_id}'  => ['module' => 'checkout/order/index'],
+	'/checkout'                              => ['module' => 'checkout/checkout/index'],
+	'/checkout/{cart_id}'                    => ['module' => 'checkout/checkout/index'],
 
 	//feeds
 	'/feed/{rss}' => ['module' => 'feed/index'],
