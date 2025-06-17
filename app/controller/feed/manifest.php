@@ -35,6 +35,13 @@ class Manifest extends Base {
 
 		if ($site) {
 			$logo    = Images::image($site['logo-src'], 'logo', [144, 144]);
+			$logo192 = Images::image($site['logo-src'], 'logo', [192, 192]);
+			$logo512 = Images::image($site['logo-src'], 'logo', [512, 512]);
+			$logo192 = Images::image($site['logo-src'], 'logo', [144, 144]);
+
+			$webbanner     = Images::image($site['webbanner-src'], 'webbanner', [540, 720]);
+			$webbanner1280 = Images::image($site['webbanner-src'], 'webbanner', [1280, 920]);
+
 			$favicon = Images::image($site['favicon-src'], 'favicon', [96, 96]);
 			$url     = url('index/index', ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'https']);
 
@@ -49,17 +56,17 @@ class Manifest extends Base {
 						//'type' => 'image/svg+xml',
 						'type'  => 'image/png',
 						'sizes' => '144x144',
-					], /*
-				1 => [
-				  'src' => '/images/icons-192.png',
-				  'type' => 'image/png',
-				  'sizes' => '192x192',
-				],
-				2 => [
-				  'src' => '/images/icons-512.png',
-				  'type' => 'image/png',
-				  'sizes' => '512x512',
-				],*/
+					],
+					1 => [
+						'src'   => $logo512,
+						'type'  => 'image/png',
+						'sizes' => '192x192',
+					],
+					2 => [
+						'src'   => $logo192,
+						'type'  => 'image/png',
+						'sizes' => '512x512',
+					],
 				],
 				'id'               => $url,
 				'start_url'        => "$url/?source=pwa",
@@ -83,21 +90,20 @@ class Manifest extends Base {
 					],
 				],
 				'description' => $description['meta-description'] ?? '',
-				/*
-			  'screenshots' => [
-				0 => [
-				  'src' => '/images/screenshot1.png',
-				  'type' => 'image/png',
-				  'sizes' => '540x720',
-				  'form_factor' => 'narrow',
+				'screenshots' => [
+					0 => [
+						'src'         => $webbanner,
+						'type'        => 'image/png',
+						'sizes'       => '540x720',
+						'form_factor' => 'narrow',
+					],
+					1 => [
+						'src'         => $webbanner1280,
+						'type'        => 'image/jpg',
+						'sizes'       => '1280x920',
+						'form_factor' => 'wide',
+					],
 				],
-				1 => [
-				  'src' => '/images/screenshot2.jpg',
-				  'type' => 'image/jpg',
-				  'sizes' => '720x540',
-				  'form_factor' => 'wide',
-				],
-			  ],*/
 			];
 
 			$this->response->setType('json');

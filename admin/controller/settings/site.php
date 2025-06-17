@@ -31,6 +31,7 @@ use Vvveb\System\CacheManager;
 use Vvveb\System\Event;
 use Vvveb\System\Extensions\Themes;
 use Vvveb\System\Images;
+use Vvveb\System\Media\Image;
 use Vvveb\System\Sites;
 use Vvveb\System\Validator;
 
@@ -156,8 +157,8 @@ class Site extends Base {
 				if ($result >= 0) {
 					//CacheManager::delete('site');
 					CacheManager::delete();
-					$message             = __('Site saved!');
-					$this->view->success = [$message];
+					$message              = __('Site saved!');
+					$view->success['get'] = $message;
 				//$this->redirect(['module'=>'settings/sites', 'success'=> $message]);
 				} else {
 					$this->view->errors = [$sites->error];
@@ -178,9 +179,9 @@ class Site extends Base {
 				} else {
 					//CacheManager::delete('site');
 					CacheManager::delete();
-					$message       = __('Site saved!');
-					$view->success = [$message];
-					$this->redirect(['module'=>'settings/site', 'success'=> $message, 'site_id' => $site_id]);
+					$message              = __('Site saved!');
+					$view->success['get'] = $message;
+					$this->redirect(['module'=>'settings/site', 'success' => $message, 'site_id' => $site_id]);
 				}
 			}
 		} else {
@@ -211,10 +212,10 @@ class Site extends Base {
 			}
 		}
 
-		$default       = '{"logo":"logo.png","logo-sticky":"logo.png","logo-dark":"logo-white.png","logo-dark-sticky":"logo-white.png","favicon":"favicon.ico", "country_id":223, "region_id":3655}';
+		$default       = '{"logo":"logo.png","logo-sticky":"logo.png","logo-dark":"logo-white.png","logo-dark-sticky":"logo-white.png","favicon":"favicon.ico","webbanner":"biglogo.png", "country_id":223, "region_id":3655}';
 		$setting       = json_decode($site['settings'] ?? $default, true);
 
-		foreach (['favicon', 'logo', 'logo-sticky', 'logo-dark', 'logo-dark-sticky'] as $img) {
+		foreach (['favicon', 'logo', 'logo-sticky', 'logo-dark', 'logo-dark-sticky', 'webbanner'] as $img) {
 			if (isset($setting[$img])) {
 				$setting[$img . '-src'] = Images::image($setting[$img]);
 			}
@@ -267,7 +268,8 @@ class Site extends Base {
 			$view->set($data);
 			$view->site         = $site + $setting;
 			$view->setting      = $setting;
-			$view->resize       = ['cs' => __('Crop &amp; Resize'), 's' => __('Stretch'), 'c' => __('Crop')];
+			$view->resize       = ['cs' => __('Crop & Resize'), 's' => __('Stretch'), 'c' => __('Crop')];
+			$view->formats      = Image::formats();
 			$view->themeList    = $themeList;
 			$view->templateList = \Vvveb\getTemplateList(false, ['email']);
 
