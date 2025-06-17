@@ -62,7 +62,7 @@ class Sites {
 			self :: $sites = \Vvveb\config('sites');
 
 			foreach (self::$sites as &$site) {
-				$site['url'] = self :: url($site['host']);
+				$site['url'] = self :: url($site['host']) . (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
 			}
 
 			return self :: $sites;
@@ -168,8 +168,7 @@ class Sites {
 				return $matches['prefix'] .
 					   $subdomain . ($subdomain ? '.' : '') .
 					   $domain . ($tld ? '.' : '') . $tld .
-					   ($matches['path'] ?? '') .
-					   (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
+					   ($matches['path'] ?? '');
 			}
 
 			//if host is ip number, localhost or does not have tld remove tld and subdomain
@@ -183,8 +182,7 @@ class Sites {
 				   (! empty($matches['subdomain']) ? $matches['subdomain'] . '.' : '') .
 				   ($matches['domain'] ?? '') .
 				   (! empty($matches['tld']) ? '.' . $matches['tld'] : '') .
-				   ($matches['path'] ?? '') .
-				   (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
+				   ($matches['path'] ?? '');
 		}
 
 		return $url;
@@ -281,15 +279,20 @@ class Sites {
 
 		if ($result) {
 			$result['host'] = self :: url($result['host']);
+		} else {
+			if (APP !== 'app') {
+				//if site does not exist use fallback for admin, cli etc
+				return [
+					'host'     => 'localhost',
+					'theme'    => 'landing',
+					'template' => '',
+					'id'       => 1,
+					'state'    => 'live',
+				];
+			}
 		}
 
-		return $result ?? [
-			'host'     => 'localhost',
-			'theme'    => 'landing',
-			'template' => '',
-			'id'       => 1,
-			'state'    => 'live',
-		];
+		return $result;
 	}
 
 	public static function saveSite($site) {

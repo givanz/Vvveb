@@ -103,7 +103,7 @@ class Sites extends Base {
 
 		if (isset($results['site'])) {
 			foreach ($results['site'] as &$site) {
-				$site['url']         = SitesList::url($site['host']);
+				$site['url']         = SitesList::url($site['host']) . (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
 				$site['delete-url']  = \Vvveb\url(['module' => 'settings/sites', 'action' => 'delete', 'site_id[]' => $site['site_id']]);
 			}
 		}
