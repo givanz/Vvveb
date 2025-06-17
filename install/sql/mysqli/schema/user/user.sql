@@ -16,6 +16,7 @@ CREATE TABLE `user` (
   `avatar` varchar(250) NOT NULL DEFAULT '',
   `bio` text,
   `token` varchar(32) NOT NULL DEFAULT '',
+  `secret` varchar(32) NOT NULL DEFAULT '',
 --  `fields` text NOT NULL DEFAULT '',
   `subscribe` tinyint NOT NULL DEFAULT 0, 
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

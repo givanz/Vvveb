@@ -16,6 +16,7 @@ CREATE TABLE `admin` (
   `site_access` TEXT NOT NULL,
   `status` INT UNSIGNED NOT NULL DEFAULT '0',
   `token` varchar(32) NOT NULL DEFAULT '',
+  `secret` varchar(32) NOT NULL DEFAULT '',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`admin_id`),

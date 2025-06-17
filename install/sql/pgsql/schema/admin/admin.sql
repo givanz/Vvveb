@@ -20,6 +20,7 @@ CREATE TABLE "admin" (
   "site_access" text NOT NULL,
   "status" int check ("status" >= 0) NOT NULL DEFAULT 0,
   "token" varchar(32) NOT NULL DEFAULT '',
+  "secret" varchar(32) NOT NULL DEFAULT '',
   "created_at" timestamp(0) NOT NULL DEFAULT now(),
   "updated_at" timestamp(0) NOT NULL DEFAULT now(),
   PRIMARY KEY ("admin_id")

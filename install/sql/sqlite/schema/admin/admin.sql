@@ -15,6 +15,7 @@ CREATE TABLE `admin` (
 `role_id` INT  DEFAULT NULL,
 `site_access` INT NOT NULL DEFAULT '[]',
 `status` INT NOT NULL DEFAULT '0',
+`secret` TEXT NOT NULL DEFAULT '',
 `token` TEXT NOT NULL DEFAULT '',
 `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
