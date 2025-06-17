@@ -94,6 +94,12 @@ const tinymce_image_upload_handler = (blobInfo, progress) => new Promise((resolv
   xhr.send(formData);
 });
 
+let tinyThemeFonts = '';
+if (typeof themeFonts !== 'undefined' && themeFonts) {
+	for (const font in themeFonts) {
+		tinyThemeFonts += font + ';';
+	}
+}
 
 let tinyMceOptions = {
   selector: "textarea.html",
@@ -157,6 +163,9 @@ let tinyMceOptions = {
 				Vvveb.MediaModal.type = "single";
 				Vvveb.MediaModal.open(null, function (file) {
 						node.setAttribute("src", file);
+						if (node.parentNode && node.parentNode.tagName == 'A') {
+							node.parentNode.setAttribute("href", file);
+						}
 						/*
 						editor.insertContent(editor.dom.createHTML('img', {
 							src: file,
@@ -192,7 +201,7 @@ let tinyMceOptions = {
 					let imgs = "";
 					for (img of src.split(",")) if (img) {
 						imgs +=
-						'<div class="item"><a href="#">' + editor.dom.createHTML('img', {
+						'<div class="item"><a href="' + img + '">' + editor.dom.createHTML('img', {
 							src: img,
 							"class": "align-center"
 						}) + "</a></div>";
@@ -237,7 +246,7 @@ let tinyMceOptions = {
 						let imgs = "";
 						for (img of src.split(",")) if (img) {
 							imgs +=
-							'<div class="item"><a href="#">' + editor.dom.createHTML('img', {
+							'<div class="item"><a href="' + img + '">' + editor.dom.createHTML('img', {
 								src: img,
 								"class": "align-center"
 							}) + "</a></div>";
@@ -265,6 +274,9 @@ let tinyMceOptions = {
 				Vvveb.MediaModal.open(null, function (file) {
 						let node = editor.selection.getNode();
 						node.setAttribute("src", file);
+						if (node.parentNode && node.parentNode.tagName == 'A') {
+							node.parentNode.setAttribute("href", file);
+						}						
 						/*
 						editor.insertContent(editor.dom.createHTML('img', {
 							src: file,
@@ -447,10 +459,10 @@ let tinyMceOptions = {
 					let imgs = "";
 					for (img of src.split(",")) if (img) {
 						imgs +=
-						"<div>" + editor.dom.createHTML('img', {
+						'<div><a href="' + img + '">' + editor.dom.createHTML('img', {
 							src: img,
 							"class": "align-center"
-						}) + "</div>";
+						}) + "</a></div>";
 					}
 					editor.insertContent(imgs);
 				}
@@ -552,10 +564,10 @@ let tinyMceOptions = {
 				}
 				Vvveb.MediaModal.type = "single";
 				Vvveb.MediaModal.open(null, function (file) {
-						editor.insertContent("<div>" + editor.dom.createHTML('img', {
+						editor.insertContent('<div><a href="' + file + '">'  + editor.dom.createHTML('img', {
 							src: file,
 							"class": "align-center"
-						}) + "</div>");
+						}) + "</a></div>");
 				});				
             }
         }, {
@@ -810,7 +822,7 @@ let tinyMceOptions = {
     });
     },
     
-  plugins: 'preview searchreplace autolink autosave autoresize directionality code visualblocks visualchars fullscreen image media link table charmap lists wordcount help quickbars emoticons table accordion',
+  plugins: 'preview searchreplace autolink autosave autoresize directionality code visualblocks visualchars fullscreen image media link table charmap lists wordcount quickbars emoticons table accordion advlist anchor paste_from_word',
   //valid_children : '-p[img],h1[img],h2[img],h3[img],h4[img],+body[img],div[img],div[h1],div[h2],div[h3]',
   //editimage_cors_hosts: ['picsum.photos'],
   menubar: false,//'file edit view insert format tools table help',
@@ -894,6 +906,8 @@ let tinyMceOptions = {
   //valid_elements: "*[*]",
   apply_source_formatting : false,
   verify_html : false,
+  paste_webkit_styles: "all",
+  paste_remove_styles_if_webkit: false,  
   /* we override default upload handler to simulate successful upload*/
   images_upload_handler: tinymce_image_upload_handler,
 	formats: {
@@ -929,7 +943,7 @@ let tinyMceOptions = {
 		}
 	},	
 	
-    font_family_formats: "Arial Black=arial black,avant garde; Courier New=courier new,courier; Lato Black=lato; Roboto=roboto;",
+    font_family_formats: "Arial Black=arial black,avant garde; Courier New=courier new,courier;" + tinyThemeFonts,
 	external_plugins: {
 		//'test': '../tinymce-plugins/test/plugin.js',
 	},    
