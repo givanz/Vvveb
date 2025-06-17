@@ -170,7 +170,7 @@
 				FROM post_content pc 
 					LEFT JOIN post p ON (pc.post_id = p.post_id)  
 					LEFT JOIN post_to_taxonomy_item ptt ON (ptt.taxonomy_item_id = categories.taxonomy_item_id AND ptt.post_id = p.post_id)  
-				WHERE ptt.taxonomy_item_id =  categories.taxonomy_item_id ORDER by p.sort_order
+				WHERE ptt.taxonomy_item_id = categories.taxonomy_item_id ORDER BY p.sort_order
 			) AS post
 		
 			FROM taxonomy_item AS categories
@@ -657,7 +657,7 @@
 	-- Delete menu item
 
 	CREATE PROCEDURE deleteTaxonomyItem(
-		IN taxonomy_item_id INT,
+		IN taxonomy_item_id ARRAY,
 		OUT insert_id
 	)
 	BEGIN
@@ -668,7 +668,7 @@
 				   SELECT taxonomy_item_id, 
 					  parent_id
 				   FROM taxonomy_item
-				   WHERE taxonomy_item_id = :taxonomy_item_id
+				   WHERE taxonomy_item_id IN(:taxonomy_item_id)
 
 				   UNION ALL 
 
@@ -685,7 +685,7 @@
 				   SELECT taxonomy_item_id, 
 					  parent_id
 				   FROM taxonomy_item
-				   WHERE taxonomy_item_id = :taxonomy_item_id
+				   WHERE taxonomy_item_id IN(:taxonomy_item_id)
 
 				   UNION ALL 
 

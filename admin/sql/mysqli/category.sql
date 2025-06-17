@@ -665,7 +665,7 @@
 	-- Delete menu item
 
 	CREATE PROCEDURE deleteTaxonomyItem(
-		IN taxonomy_item_id INT,
+		IN taxonomy_item_id ARRAY,
 		OUT insert_id
 	)
 	BEGIN
@@ -676,7 +676,7 @@
 				   SELECT taxonomy_item_id, 
 					  parent_id
 				   FROM taxonomy_item
-				   WHERE taxonomy_item_id = :taxonomy_item_id
+				   WHERE taxonomy_item_id IN(:taxonomy_item_id)
 
 				   UNION ALL 
 
@@ -693,7 +693,7 @@
 				   SELECT taxonomy_item_id, 
 					  parent_id
 				   FROM taxonomy_item
-				   WHERE taxonomy_item_id = :taxonomy_item_id
+				   WHERE taxonomy_item_id IN(:taxonomy_item_id)
 
 				   UNION ALL 
 
