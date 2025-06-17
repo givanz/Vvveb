@@ -20,4 +20,6 @@ html|before   = <?php if (!isset($this->modal) || !$this->modal) { ?>
 #login|after = <?php if (!isset($this->modal) || !$this->modal) { ?>
 html|after   = <?php } ?>
 
+#safemode|addNewAttribute = <?php if (isset($this->safemode) && $this->safemode) echo 'checked';?>
+
 import(common.tpl)
