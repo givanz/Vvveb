@@ -37,7 +37,7 @@ if (empty($url)) {
 }
 
 if (isset($_GET['page'])) {
-	$current_page = $_GET['page']; 
+	$current_page = (int) $_GET['page']; 
 } else  if (isset($this->current_page)) {
 	$current_page = $this->current_page; 
 } else {

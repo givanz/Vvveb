@@ -11,7 +11,7 @@ $pagecount = ceil($this->count / $limit);
 
 $page = 1;
 $page_stop = $pagecount;
-if (isset($_GET['page'])) $current_page = $_GET['page']; else 
+if (isset($_GET['page'])) $current_page = (int) $_GET['page']; else 
 if (isset($this->current_page)) $current_page = $this->current_page; 
 else $current_page = 1;
 
