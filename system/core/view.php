@@ -74,27 +74,35 @@ class View {
 		return $this->templateEngine;
 	}
 
-	function __construct() {
-		//$this->theme        = \Vvveb\config(APP . '.theme', 'default');
-		if (APP == 'app') {
+	function __construct($app = null) {
+		//$this->theme        = \Vvveb\config($this->app . '.theme', 'default');
+		$this->app    = $app ?? APP;
+		$relativePath = PUBLIC_PATH . 'themes/';
+
+		if ($this->app == 'app') {
 			$this->theme        = Sites::getTheme() ?? 'default';
+			$themePath = DIR_ROOT . join(DS, ['public', 'themes']) . DS . $this->theme . DS;
 		} else {
-			$this->theme        = config(APP . '.theme', 'default');
+			$this->theme  = config($this->app . '.theme', 'default');
+			$relativePath = PUBLIC_PATH . $this->app . '/';
+			$themePath = DIR_ROOT . DS . 'public' . DS . $this->app . DS . $this->theme . DS;
 		}
 
 		if (isEditor()) {
 			$this->isEditor = true;
 		}
 
+		/*
 		$domain = $this->theme . '-domain';
 		addTranslationDomain($domain);
+		 */
 
-		$this->htmlPath     = DIR_THEME . $this->theme . DS;
-		$this->templatePath = DIR_THEME . $this->theme . DS; //\Vvveb\config(APP . '.theme', 'default') . DS;
+		$this->htmlPath     = $themePath;
+		$this->templatePath = $themePath; //\Vvveb\config($this->app . '.theme', 'default') . DS;
 
 		if (isset($_REQUEST['_component_ajax']) && $this->isEditor) {
-			$this->component        = \Vvveb\filter('/[a-z\-]*/', $_REQUEST['_component_ajax'], 15);
-			$this->componentCount   = \Vvveb\filter('/\d+/', $_REQUEST['_component_id'],  2);
+			$this->component        = \Vvveb\filter('/[a-z\-]+/', $_REQUEST['_component_ajax'], 80);
+			$this->componentCount   = \Vvveb\filter('/\d+/', $_REQUEST['_component_id'],  4);
 			//$this->componentCount   = 0;
 			//if (isset($_REQUEST['_server_template'])) {
 			$this->componentContent = $_POST['_component_content'] ?? '';
@@ -112,13 +120,14 @@ class View {
 
 		$template = new $templateEngine($selector, $this->componentCount, $this->componentContent);
 
-		$template->addTemplatePath(DIR_TEMPLATE);
-		$template->addTemplatePath($this->htmlPath . 'template' . DS);
+		$template->addTemplatePath(DIR_ROOT . APP . DS . 'template' . DS);
 		$template->setHtmlPath($this->htmlPath);
 
 		if ($this->isEditor) {
 			$this->isEditor = true;
 			$template->removeVattrs(false);
+		} else {
+			$template->setRelativePath($relativePath . $this->theme . '/');
 		}
 
 		$this->templateEngine = $template;
@@ -137,18 +146,29 @@ class View {
 	}
 
 	function setTheme($theme = false) {
+		$relativePath = PUBLIC_PATH . 'themes/';
+
 		if (! $theme) {
-			if (APP == 'app') {
+			if ($this->app == 'app') {
 				$this->theme = Sites::getTheme() ?? 'default';
+				$themePath = DIR_ROOT . join(DS, ['public', 'themes']) . DS . $this->theme . DS;
 			} else {
-				$this->theme = config(APP . '.theme', 'default');
+				$this->theme  = config($this->app . '.theme', 'default');
+				$relativePath = PUBLIC_PATH . $this->app . '/';
+				$themePath = DIR_ROOT . DS . 'public' . DS . $this->app . DS . $this->theme . DS;
 			}
 		} else {
-			$theme       = \Vvveb\filter('/[a-z0-9-]*/', $theme, 30);
+			$theme       = \Vvveb\filter('/[a-z0-9_-]*/', $theme, 30);
 			$this->theme = $theme;
 		}
-		$this->htmlPath       = DIR_THEME . $this->theme . DS;
-		$this->templatePath   = DIR_THEME . $this->theme . DS;
+
+		$this->htmlPath       = $themePath;
+		$this->templatePath   = $themePath;
+		$this->templateEngine->setHtmlPath($this->htmlPath);
+
+		if (! $this->isEditor) {
+			$this->templateEngine->setRelativePath($relativePath . $this->theme . '/');
+		}
 	}
 
 	function getTheme() {
@@ -189,7 +209,7 @@ class View {
 		$template          = $this->template;
 		$templateMtime     = null;
 		$templateFile      = $templatePath . $template;
-		$html              = DIR_TEMPLATE . $this->tplFile;
+		$html              = DIR_ROOT . APP . DS . 'template' . DS . $this->tplFile;
 
 		//absolute path
 		if ($this->template[0] == '/') {
@@ -206,15 +226,15 @@ class View {
 				$pluginName = substr($template, 0, $p);
 				$nameSpace  = substr($template, $p + 1);
 
-				if (APP == 'admin') {
-					$tpl      = $pluginName . DS . join(DS, [APP, 'template']) . DS . $nameSpace;
-					$template = $pluginName . DS . APP . DS . $nameSpace;
+				if ($this->app == 'admin') {
+					$tpl      = $pluginName . DS . join(DS, [$this->app, 'template']) . DS . $nameSpace;
+					$template = $pluginName . DS . $this->app . DS . $nameSpace;
 				} else {
-					$tpl      = $pluginName . DS . join(DS, [APP, 'template']) . DS . $nameSpace;
+					$tpl      = $pluginName . DS . join(DS, [$this->app, 'template']) . DS . $nameSpace;
 					$template = $pluginName . DS . $nameSpace;
 				}
 
-				$this->tplFile      = str_replace('.html', '.tpl', $tpl);
+				$this->tplFile      = str_replace(['.html', '.xml', '.json'], '.tpl', $tpl);
 				$html               = DIR_PLUGINS . $this->tplFile;
 				$templateFile       = $templatePath . $template;
 			}
@@ -259,7 +279,7 @@ class View {
 	}
 
 	private function compile($filename, $file, $service = false) {
-		@touch($file); //if recompiling takes longer avoid avoid other recompile requests
+		//@touch($file); //if recompiling takes longer avoid avoid other recompile requests
 		//regenerate component file
 		if ($this->useComponent && ! defined('CLI')) {
 			//regenerate components cache
@@ -274,6 +294,10 @@ class View {
 			}
 		}
 
+		if (is_dir($this->htmlPath . 'template')) {
+			$this->templateEngine->addTemplatePath($this->htmlPath . 'template' . DS);
+		}
+
 		list($this->template, $filename, $this->tplFile) =
 		Event :: trigger(__CLASS__,__FUNCTION__, $this->template, $filename, $this->tplFile, $this->templateEngine, $this);
 
@@ -285,7 +309,7 @@ class View {
 
 		//if no template defined use the default
 		if ($this->tplFile[0] == '/') {
-			$this->tplFile = DIR_TEMPLATE . 'common.tpl';
+			$this->tplFile = DIR_ROOT . APP . DS . 'template' . DS . 'common.tpl';
 			$this->templateEngine->loadTemplateFile($this->tplFile);
 		} else {
 			if (strpos($this->template, 'plugins' . DS) === 0) {
@@ -298,19 +322,19 @@ class View {
 				if (file_exists(DIR_PLUGINS . $this->tplFile)) {
 					$this->tplFile = DIR_PLUGINS . $this->tplFile;
 				} else {
-					$this->tplFile = DIR_TEMPLATE . 'common.tpl';
+					$this->tplFile = DIR_ROOT . APP . DS . 'template' . DS . 'common.tpl';
 				}
 
-				//$this->tplFile = $pluginName . DS . APP . DS . 'template' . DS . $nameSpace;
+				//$this->tplFile = $pluginName . DS . $this->app . DS . 'template' . DS . $nameSpace;
 				$this->templateEngine->loadTemplateFile($this->tplFile);
 			/*
-			if (APP == 'admin') {
-				$this->tplFile = $pluginName . DS . APP ."/template/$nameSpace";
+			if ($this->app == 'admin') {
+				$this->tplFile = $pluginName . DS . $this->app ."/template/$nameSpace";
 			} else {
 				$this->tplFile = "$pluginName/admin/template/$nameSpace";
 			}*/
 			} else {
-				if (! file_exists(DIR_TEMPLATE . $this->tplFile)) {
+				if (! file_exists(DIR_ROOT . APP . DS . 'template' . DS . $this->tplFile)) {
 					$this->tplFile = 'common.tpl';
 				}
 				$this->templateEngine->loadTemplateFileFromPath($this->tplFile);
@@ -337,7 +361,7 @@ class View {
 			$filename = str_replace('..', '', $filename);
 
 			$compiledFilename = DIR_COMPILED_TEMPLATES
-			. APP . '_' . (defined('SITE_ID') ? SITE_ID : '-') . '_'
+			. $this->app . '_' . (defined('SITE_ID') ? SITE_ID : '-') . '_'
 			. ((is_null($this->component)) ? '' : $this->component . $this->componentCount . '_')
 			. $this->theme . '_'
 			. str_replace([DS, '/', '\\'] , '_', $filename)
@@ -347,7 +371,7 @@ class View {
 
 			$this->compiledTemplate        = $compiledFilename;
 			$this->serviceTemplate         = $compiledFilename;
-			$this->tplFile                 = str_replace('.html', '.tpl', $filename);
+			$this->tplFile                 = str_replace(['.html', '.xml', '.json'], '.tpl', $filename);
 			$this->template                = $filename;
 		}
 
@@ -427,16 +451,22 @@ class View {
 					return FrontController::notFound();
 				}
 
-				if ($output) {
-					include_once $this->compiledTemplate;
-				} else {
-					ob_start();
+				try {
+					if ($output) {
+						include_once $this->compiledTemplate;
+					} else {
+						ob_start();
 
-					include_once $this->compiledTemplate;
-					$return = ob_get_contents();
-					ob_end_clean();
+						include_once $this->compiledTemplate;
+						$return = ob_get_contents();
+						ob_end_clean();
 
-					return $return;
+						return $return;
+					}
+				} catch (\ParseError | \Error $e) {
+					$data = \Vvveb\System\Core\exceptionToArray($e, $this->compiledTemplate);
+
+					return \Vvveb\System\Core\FrontController :: notFound(false, $data, 500);
 				}
 			}
 		}

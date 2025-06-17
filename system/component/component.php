@@ -46,19 +46,21 @@ class Component {
 
 	private $components = [];
 
-	private $componentsFile = null;
+	private $componentsFile;
 
-	private $loaded = false;
+	private $loaded;
 
-	private $content = false;
+	private $content;
 
-	private $view = false;
+	private $view;
+
+	private $app;
 
 	private $documentType = 'html';
 
 	private $cache = true;
 
-	static function getInstance($view = false, $regenerate = false, $content = false) {
+	static function getInstance($view = false, $regenerate = false, $content = false, $app = null) {
 		if (self :: $instance === NULL) {
 			if (! $view) {
 				$view = View::getInstance();
@@ -69,10 +71,12 @@ class Component {
 		return self :: $instance;
 	}
 
-	function __construct($view, $regenerate = false, $content = false) {
+	function __construct($view, $regenerate = false, $content = false, $app = null) {
 		if ($this->loaded) {
 			return true;
 		}
+
+		$this->app = $app ?? APP;
 
 		if (! $view) {
 			$view = View::getInstance();
@@ -131,7 +135,7 @@ class Component {
 					$file            = DIR_PLUGINS . "$pluginName/component/" . str_replace('-', '/', $nameSpace) . '.php';
 				} else {
 					$class = '\Vvveb\Component\\' . str_replace('-', '\\', $component);
-					$file  = DIR_APP . '/component/' . str_replace('-', '/', $component) . '.php';
+					$file  = DIR_ROOT . $this->app . DS . 'component' . DS . str_replace('-', '/', $component) . '.php';
 				}
 
 				$component = str_replace('-', '_', $component);
@@ -343,8 +347,8 @@ class Component {
 					$nameSpace  = substr($template, $p + 1);
 					$app        = '';
 
-					if (APP != 'app') {
-						$app = APP . DS;
+					if ($this->app != 'app') {
+						$app = $this->app . DS;
 					}
 					$template = DIR_PLUGINS . $pluginName . DS . 'public' . DS . $app . $nameSpace;
 				} else {
@@ -459,15 +463,15 @@ class Component {
 				$nameSpace  = substr($template, $p + 1);
 				$app        = '';
 
-				if (APP != 'app') {
-					$app = APP . DS;
+				if ($this->app != 'app') {
+					$app = $this->app . DS;
 				}
 				$pluginClassName = dashesToCamelCase($pluginName);
 				$componentClass  = "Vvveb\Plugins\\$pluginClassName\Component\\$nameSpace";
 				$file            = DIR_PLUGINS . "$pluginName/component/" . str_replace('-', '/', $nameSpace) . '.php';
 			} else {
 				$componentClass = '\Vvveb\Component\\' . ucfirst(str_replace('-', '\\', $component));
-				$file           = DIR_APP . 'component/' . str_replace('-', '/', $component) . '.php';
+				$file           = DIR_ROOT . $this->app . DS . 'component/' . str_replace('-', '/', $component) . '.php';
 			}
 
 			if (file_exists($file)) {
