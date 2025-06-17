@@ -61,6 +61,10 @@ class Menus extends Categories {
 		$menus        = new menuSQL();
 
 		if ($menu_item_id) {
+			if (is_numeric($menu_item_id)) {
+				$menu_item_id = [$menu_item_id];
+			}
+
 			try {
 				//will fail on mysql 5
 				$result = $menus->deleteMenuItemRecursive(['menu_item_id' => $menu_item_id]);
@@ -77,7 +81,7 @@ class Menus extends Categories {
 			$view->success[] = $success;
 			echo $success;
 		} else {
-			$view->errors = [$menus->error];
+			$view->errors = [$menus->error ?? ''];
 			echo $menus->error;
 		}
 
@@ -193,7 +197,7 @@ class Menus extends Categories {
 				}
 			}
 
-			$results['menu_data'] = $menus->getMenu($options);
+			$results['menu_data'] = $menus->get($options);
 		} else {
 			if ($menu_data) {
 				$menu_data = $menu_data + $this->global;
@@ -207,8 +211,11 @@ class Menus extends Categories {
 					$success         = __('Menu saved!');
 					$view->success[] = $success;
 					$this->redirect(['module'=>'content/menus', 'action' => 'menu', 'menu_id' => $id, 'success' => $success]);
+					$menu_data['menu_id'] = $id;
 				}
 			}
+
+			$results['menu_data'] = $menu_data;
 		}
 
 		$view->set($results);
