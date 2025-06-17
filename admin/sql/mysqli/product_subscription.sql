@@ -18,6 +18,7 @@
 			   THEN		
 				   sp.*, 
 				   spc.name, 
+				   spc.content, 
 			   END @IF	
 			   product_subscription.product_id,
 			   product_subscription.user_group_id,
