@@ -12,9 +12,9 @@
 
 ### [Live Demo](https://demo.vvveb.com) / [Admin Demo](https://demo.vvveb.com/admin) / [Page Builder Demo](https://demo.vvveb.com/admin/?module=/editor/editor&template=index.html&url=/)
 
-[![](https://www.vvveb.com/img/light-theme.png)](https://www.vvveb.com/img/light-theme.png)
+[![](https://www.vvveb.com/img/dark-theme.webp)](https://www.vvveb.com/img/dark-theme.png)
 
-| [![](https://www.vvveb.com/img/dark-theme.png)](https://www.vvveb.com/img/dark-theme.png) | [![](https://www.vvveb.com/img/light-theme.png)](https://www.vvveb.com/img/light-theme.png) | [![](https://www.vvveb.com/vvveb-admin/dashboard-light.png)](https://www.vvveb.com/img/dashboard-white.png) | [![](https://www.vvveb.com/vvveb-admin/dashboard-dark.png)](https://www.vvveb.com/vvveb-admin/dashboard-dark.png) |
+| [![](https://www.vvveb.com/img/dark-theme.webp)](https://www.vvveb.com/img/dark-theme.png) | [![](https://www.vvveb.com/img/light-theme.webp)](https://www.vvveb.com/img/light-theme.png) | [![](https://www.vvveb.com/vvveb-admin/dashboard-light.png)](https://www.vvveb.com/img/dashboard-white.png) | [![](https://www.vvveb.com/img/dark-theme.webp)](https://www.vvveb.com/img/dark-theme.webp) |
 |:---:|:---:|:---:|:---:|
 | **Editor dark** | **Editor light** | **Dashboard light** | **Dashboard dark** |
 | [![](https://www.vvveb.com/vvveb-admin/post-light.png)](https://www.vvveb.com/vvveb-admin/post-light.png) | [![](https://www.vvveb.com/vvveb-admin/post-dark.png)](https://www.vvveb.com/vvveb-admin/post-dark.png) | [![](https://www.vvveb.com/vvveb-admin/product-light.png)](https://www.vvveb.com/vvveb-admin/product-light.png) | [![](https://www.vvveb.com/vvveb-admin/product-dark.png)](https://www.vvveb.com/vvveb-admin/product-dark.png) |
@@ -29,13 +29,14 @@
 * Drag and drop page builder
 * Multi site support
 * Localization and multi language support
-* Easy publishing with revisions, media management, multi user access.
+* Easy publishing with revisions, media management, multi user access and advanced role permissions.
 * Advanced ecommerce features
 	* One page checkout
 	* Subscriptions
 	* Digital assets support
 	* Vouchers, coupons
 	* Product options, attributes, variants, reviews, qa etc
+	* Product variants
 * Themes and plugins marketplace with one click install from admin dashboard.
 * Flexible with custom fields, custom posts and custom products support.
 * Manual and automatic backup.
@@ -44,6 +45,11 @@
 * Built in contact forms plugin with storage and email support.
 * Very fast, with cache enabled as fast as a static website.
 * Low resource footprint serving hundreds of requests per second on free shared hosting.
+* Hybrid Headless CMS - can used both as a traditional CMS and a Headless CMS with GraphQL and REST Api.
+* Bundled advanced SEO plugin with support for schema, open graph, href langs, sitemaps etc.
+* Advanced security with brute force protection, sql injection protection, hidden admin login page
+* Easy installation without setup.
+* Secure install with only one php file exposed to public minimizing attack surface.
 
 ## System Requirements
 
@@ -69,6 +75,7 @@ git clone --recursive https://github.com/givanz/Vvveb
 * Pull changes 
 ```bash
 git pull --recurse-submodules
+git submodule update --recursive --remote
 ```
 
 * Build vvveb.zip to upload to server
