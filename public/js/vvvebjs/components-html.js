@@ -921,6 +921,13 @@ Vvveb.Components.extend("_base", "html/blockquote", {
     }]
 });
 
+Vvveb.Components.extend("_base", "html/list-item", {
+    nodes: ["li"],
+    name: "List item",
+	image: "icons/list.svg",
+	html: `<li>List item</li>`
+});
+
 Vvveb.Components.extend("_base", "html/list", {
     nodes: ["ul", "ol"],
     name: "List",
