@@ -160,7 +160,7 @@ document.addEventListener("change", function (e) {
 				})
 				.catch(error => {
 					console.log(error.statusText);
-					//displayToast("bg-danger", "Revision", "Error!");
+					//displayToast("danger", "Revision", "Error!");
 				});				
 			}
 		}

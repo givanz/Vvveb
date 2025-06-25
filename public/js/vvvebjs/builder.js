@@ -1166,6 +1166,7 @@ Vvveb.Builder = {
 		
 		//insert editor helpers like non editable areas
 		self.frameHead.append(generateElements('<link data-vvveb-helpers href="' + Vvveb.baseUrl + '../../css/vvvebjs-editor-helpers.css" rel="stylesheet">')[0]);
+		self.frameHtml.setAttribute("data-vvvebjs-editor","");
 
 		self._initHighlight();
 		
@@ -1863,7 +1864,7 @@ Vvveb.Builder = {
 			})
 			.catch(error => {
 				console.log(error.statusText);
-				displayToast("bg-danger", "Error", "Error loading translations!");
+				displayToast("danger", "Error", "Error loading translations!");
 			});			
 
 			
@@ -1879,18 +1880,18 @@ Vvveb.Builder = {
 					return response.json()
 				})
 				.then((data) => {
-					let bg = "bg-success";
+					let bg = "success";
 					
 					if (data.success || text == "success") {		
 					} else {
-						bg = "bg-danger";
+						bg = "danger";
 					}
 					
 					displayToast(bg, "Save", data.message ?? data);		
 				})
 				.catch(error => {
 					console.log(error.statusText);
-					displayToast("bg-danger", "Error", "Error saving translations!");
+					displayToast("danger", "Error", "Error saving translations!");
 				});
 				/*
 				Vvveb.Builder.frameBody.querySelectorAll("form").forEach(f => {
@@ -2167,7 +2168,7 @@ Vvveb.Builder = {
 			html = html.replace(/\s*data-vvveb-\w+(=["'].*?["'])?\s*/gi, "");
 		}
 		
-		html = html.replaceAll("vvveb-hidden", "");
+		html = html.replaceAll("vvveb-hidden", "").replaceAll("data-vvvebjs-editor", "");
 		return html;
 	},
 
@@ -2277,17 +2278,17 @@ Vvveb.Builder = {
 		})
 		.then((data) => {
 			if (callback) callback(data);
-			let bg = "bg-success";
+			let bg = "success";
 			if (data.success || text == "success") {		
 			} else {
-				bg = "bg-danger";
+				bg = "danger";
 			}
 			
 			displayToast(bg, "Save", data.message ?? data);					
 		})
 		.catch(error => {
 			console.log(error.statusText);
-			displayToast("bg-danger", "Error", "Error saving!");
+			displayToast("danger", "Error", "Error saving!");
 		});
 	},
 	
@@ -2321,11 +2322,11 @@ Vvveb.Builder = {
 		.catch((err) => {
 			if (error) error(err);
 			let message = err?.statusText ?? "Error saving!";
-			displayToast("bg-danger", "Error", message);
+			displayToast("danger", "Error", message);
 
 			if (err.hasOwnProperty('text')) err.text().then( errorMessage => {
 			  	let message = errorMessage.substr(0, 200);
-				displayToast("bg-danger", "Error", message);
+				displayToast("danger", "Error", message);
 			});
 		});
 	},
@@ -2476,15 +2477,33 @@ Vvveb.CssEditor = {
 	}
 }
 
-function displayToast(bg, title, message, id = "top-toast") {
-	document.querySelector("#" + id + " .toast-body .message").innerHTML = message.replace(/(?:\r\n|\r|\n)/g, '<br>');
-	let header = document.querySelector("#" + id + " .toast-header");
-	header.classList.remove("bg-danger", "bg-success")
-	header.classList.add(bg);
-	header.querySelector("strong").innerHTML = title;
-	document.querySelector("#" + id + " .toast").classList.add("show");
-	delay(() => document.querySelector("#" + id + " .toast").classList.remove("show"), 5000);
-}			
+function displayToast(type, title, message, position = 'bottom', id = null) {
+	if (!id) {
+		id = position + "-toast";
+	}
+	
+	let toast = document.getElementById(id);
+	let header = toast.querySelector(".toast-header");
+	toast.classList.remove("bottom-0", "top-0");
+	toast.classList.add(position + "-0");
+	toast.querySelector(".toast-body .message").innerHTML = message;
+	header.classList.remove("danger", "success");
+	header.classList.add("bg-" + type);	
+	header.querySelector("strong").textContent = title;
+	let toastDisplay = toast.cloneNode(true);
+	toast.parentNode.appendChild(toastDisplay);
+	
+	let delay = 3000;
+	if (type == "danger") {
+		delay = 10000;
+	}
+
+	let bsToast = new bootstrap.Toast(toastDisplay, {animation:true, delay});
+	toastDisplay.addEventListener('hidden.bs.toast', () => {
+		toastDisplay.remove();
+	});
+    bsToast.show();
+}		
 
 Vvveb.Gui = {
 	
@@ -2616,11 +2635,11 @@ Vvveb.Gui = {
 		return Vvveb.Builder.saveAjax({file}, saveUrl, (data) => {
 			//use toast to show save status
 
-			let bg = "bg-success";
+			let bg = "success";
 			if (data.success || data == "success") {		
 				document.querySelectorAll("#top-panel .save-btn").forEach(e => e.setAttribute("disabled", "true"));
 			} else {
-				bg = "bg-danger";
+				bg = "danger";
 			}
 			
 			displayToast(bg, "Save", data.message ?? data);
@@ -2637,7 +2656,7 @@ Vvveb.Gui = {
 			btn.querySelector(".loading").classList.add("d-none");
 			btn.querySelector(".button-text").classList.remove("d-none");
 			let message = error?.statusText ?? "Error saving!";
-			displayToast("bg-danger", "Error", message);
+			displayToast("danger", "Error", message);
 		});		
 	},
 	
@@ -2762,7 +2781,7 @@ Vvveb.Gui = {
 					bsModal.hide();
 				} else {
 					let message = savedData?.message ?? "Error saving!";
-					displayToast("bg-danger", "Error", message);
+					displayToast("danger", "Error", message);
 				}
 			});
 		};
@@ -3817,22 +3836,22 @@ Vvveb.FileManager = {
 					return response.json()
 				})
 				.then((data) => {
-						let bg = "bg-success";
+						let bg = "success";
 						if (data.success) {		
 							document.querySelectorAll("#top-panel .save-btn").forEach(e => e.setAttribute("disabled", "true"));
 						} else {
-							bg = "bg-danger";
+							bg = "danger";
 						}
 
 						displayToast(bg, "Delete", data.message ?? data);
 				})
 				.catch(error => {
 					let message = error.statusText ?? "Error deleting page!";
-					displayToast("bg-danger", "Error", message);
+					displayToast("danger", "Error", message);
 
 					error.text().then( errorMessage => {
 						let message = errorMessage.substr(0, 200);
-						displayToast("bg-danger", "Error", message);
+						displayToast("danger", "Error", message);
 					})					
 				});
 
@@ -3873,11 +3892,11 @@ Vvveb.FileManager = {
 					return response.json()
 				})
 				.then((data) => {
-						let bg = "bg-success";
+						let bg = "success";
 						if (data.success) {		
 							//document.querySelectorAll("#top-panel .save-btn").forEach(e => e.setAttribute("disabled", "true"));
 						} else {
-							bg = "bg-danger";
+							bg = "danger";
 						}
 						
 						newfile = data.newfile ?? newfile;	
@@ -3914,11 +3933,11 @@ Vvveb.FileManager = {
 				})
 				.catch(error => {
 					let message = error.statusText ?? "Error renaming page!";
-					displayToast("bg-danger", "Error", message);
+					displayToast("danger", "Error", message);
 
 					error.text().then( errorMessage => {
 						let message = errorMessage.substr(0, 200);
-						displayToast("bg-danger", "Error", message);
+						displayToast("danger", "Error", message);
 					})
 				});				
 			}
@@ -4145,7 +4164,7 @@ Vvveb.Revisions = {
 			})
 			.catch(error => {
 				console.log(error.statusText);
-				displayToast("bg-danger", "Error", "Error loading revision!");
+				displayToast("danger", "Error", "Error loading revision!");
 			});			
 		}
 	},
@@ -4178,7 +4197,7 @@ Vvveb.Revisions = {
 					})
 					.then((data) => {
 						Vvveb.Builder.setHtml(data);
-						displayToast("bg-success", "Load", "Revision loaded");
+						displayToast("success", "Load", "Revision loaded");
 						
 						Vvveb.Builder.frameBody.querySelectorAll("[data-aos]").forEach(e => e.classList.add("aos-init","aos-animate"));
 						document.querySelectorAll("#top-panel .save-btn").forEach(e => e.removeAttribute("disabled"));
@@ -4190,7 +4209,7 @@ Vvveb.Revisions = {
 					})
 					.catch(error => {
 						console.log(error.statusText);
-						displayToast("bg-danger", "Error", "Error loading revisions!");
+						displayToast("danger", "Error", "Error loading revisions!");
 					});					
 				}			
 			}			
@@ -4217,11 +4236,11 @@ Vvveb.Revisions = {
 							return response.json()
 						})
 						.then((data) => {
-								let bg = "bg-success";
+								let bg = "success";
 								if (data.success) {	
 									item.remove();
 								} else {
-									bg = "bg-danger";
+									bg = "danger";
 								}
 
 								displayToast(bg, "Delete", data.message ?? data);
@@ -4231,7 +4250,7 @@ Vvveb.Revisions = {
 						})
 						.catch(error => {
 							console.log(error.statusText);
-							displayToast("bg-danger", "Error", "Error deleting revision!");
+							displayToast("danger", "Error", "Error deleting revision!");
 						});			
 					}
 				}

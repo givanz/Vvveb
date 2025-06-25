@@ -71,20 +71,28 @@ function ucFirst(str) {
   return str[0].toUpperCase() + str.slice(1);
 }
 
-function displayToast(bg, title, message, position = 'bottom', id = "bottom-toast") {
-	let toast = document.getElementById(id);
+function displayToast(type, title, message, position = 'bottom', id = null) {
+	if (!id) {
+		id = position + "-toast";
+	}
 	
+	let toast = document.getElementById(id);
 	let header = toast.querySelector(".toast-header");
 	toast.classList.remove("bottom-0", "top-0");
 	toast.classList.add(position + "-0");
 	toast.querySelector(".toast-body .message").innerHTML = message;
 	header.classList.remove("bg-danger", "bg-success");
-	header.classList.add(bg);	
+	header.classList.add("bg-" + type);	
 	header.querySelector("strong").textContent = title;
 	let toastDisplay = toast.cloneNode(true);
 	toast.parentNode.appendChild(toastDisplay);
 
-	let bsToast = new bootstrap.Toast(toastDisplay, {animation:true});
+	let delay = 3000;
+	if (type == "danger") {
+		delay = 20000;
+	}
+
+	let bsToast = new bootstrap.Toast(toastDisplay, {animation:true, delay});
 	toastDisplay.addEventListener('hidden.bs.toast', () => {
 		toastDisplay.remove();
 	});

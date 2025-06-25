@@ -67,5 +67,5 @@ fetch(Vvveb.baseUrl + "../../resources/google-fonts.json")
 })
 .catch(error => {
 	console.log(error.statusText);
-	displayToast("bg-danger", "Error", "Error loading google fonts!");
+	displayToast("danger", "Error", "Error loading google fonts!");
 });

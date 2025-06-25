@@ -182,7 +182,7 @@ function optionTypeChange(element) {
 		})
 		.catch(error => {
 			console.log(error.statusText);
-			displayToast("bg-danger", "Error", "Error saving!");
+			displayToast("danger", "Error", "Error saving!");
 		});
 	} else {
 		setValues(optionValues[optionValueId]);

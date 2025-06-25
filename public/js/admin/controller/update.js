@@ -88,11 +88,11 @@ class UpdateController {
 			})*/
 			.catch(error => {
 					let message = error?.statusText ?? "Error updating!";
-					displayToast("bg-danger", "Error", message);
+					displayToast("danger", "Error", message);
 
 					if (error.hasOwnProperty('text')) error.text().then( errorMessage => {
 						let message = errorMessage.substr(0, 200);
-						displayToast("bg-danger", "Error", message);
+						displayToast("danger", "Error", message);
 					});
 
 					if (typeof error.json === "function") {

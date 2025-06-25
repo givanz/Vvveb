@@ -11,11 +11,11 @@ class CacheController {
 		.then((data) => {
 			let response = new DOMParser().parseFromString(data, "text/html");
 			let message = response.querySelector(".notifications .alert [data-v-notification-text]")?.innerHTML;
-			displayToast("bg-success", "Cache", message, "top");
+			displayToast("success", "Cache", message, "top");
 		})
 		.catch(error => {
-			displayToast("bg-danger", "Cache", "Error", "top");
-			//displayToast("bg-danger", "Error", "Error saving!");
+			displayToast("danger", "Cache", "Error", "top");
+			//displayToast("danger", "Error", "Error saving!");
 		});			
 
 		e.preventDefault();

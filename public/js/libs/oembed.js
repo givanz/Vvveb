@@ -24,6 +24,10 @@ const oEmbedProviders = [
     url: "https://www.youtube.com/oembed"
   },
   {
+    regex: /https?:\/\/codepen\.io\/.*/,
+    url: "https://codepen.io/api/oembed"
+  },
+  {
     regex: /^(https:\/\/vimeo.com\/(.*)|https:\/\/vimeo.com\/album\/(.*)\/video\/(.*)|https:\/\/vimeo.com\/channels\/(.*)\/(.*)|https:\/\/vimeo.com\/groups\/(.*)\/videos\/(.*)|https:\/\/vimeo.com\/ondemand\/(.*)\/(.*)|https:\/\/player.vimeo.com\/video\/(.*))/,
     url: "https://vimeo.com/api/oembed.json"
   },
@@ -292,7 +296,7 @@ async function getOembed(url, maxwidth = 800, maxheight = 600, silent = false) {
 		 
 		 if (!silent) {
 			 let message = 'Embed error: URL did not match any provider.';
-			 displayToast("bg-danger", "Error", message);
+			 displayToast("danger", "Error", message);
 		 }
 		 
 		 return;
@@ -315,14 +319,14 @@ async function getOembed(url, maxwidth = 800, maxheight = 600, silent = false) {
 
 	 if (!remoteResponse || remoteResponse.status !== 200) {
 		let message = `Embed error: Could not fetch embed URL.`;
-		displayToast("bg-danger", "Error", message);
+		displayToast("danger", "Error", message);
 	 }
 
 	 const json = await remoteResponse.json();
 
 	 if (json.html === undefined) {
 		const message = `Eembed error: ${message}`;
-		displayToast("bg-danger", "Error", message);
+		displayToast("danger", "Error", message);
 		return;
 	 }
 

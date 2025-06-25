@@ -258,7 +258,7 @@ let HtmlListSelectInput = { ...Input, ...{
 			})
 			.catch(error => {
 				console.log(error.statusText);
-				displayToast("bg-danger", "Error", "Error loading list");
+				displayToast("danger", "Error", "Error loading list");
 			});
 		}
 	},
@@ -717,23 +717,6 @@ let SectionInput = { ...Input, ...{
 	
 	init: function(data) {
 		return this.render("sectioninput", data);
-	},
-  }
-}
-
-let PopOverInput = { ...Input, ...{
-
-    events: [
-        //["click", "onChange", "button" /*'select'*/],
-	 ],
-	
-
-	setValue: function(value) {
-		return false;
-	},
-	
-	init: function(data) {
-		return this.render("popoverinput", data);
 	},
   }
 }

@@ -815,7 +815,7 @@ let tinyMceOptions = {
 		})
 		.catch(error => {
 			console.log(error);
-			displayToast("bg-danger", "Error", "Error renaming page!");
+			displayToast("danger", "Error", "Error renaming page!");
 		});	
         });
       }

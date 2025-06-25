@@ -7,7 +7,7 @@ function revisionAction(action, data, callback) {
 	.then(callback)
 	.catch(error => {
 		console.log(error.statusText);
-		displayToast("bg-danger", "Revision", "Error!");
+		displayToast("danger", "Revision", "Error!");
 	});
 }
 
@@ -27,7 +27,7 @@ document.querySelector(".revisions")?.addEventListener("click", function (e) {
 		revisionAction("revision", data, function (data) {
 			if (data.content) {
 				contentEditor.setContent(data["content"]);
-				displayToast("bg-success", "Revision", data["created_at"] + " Revision loaded!");
+				displayToast("success", "Revision", data["created_at"] + " Revision loaded!");
 		}});
 		
 		//e.preventDefault();
@@ -61,7 +61,7 @@ document.querySelector(".revisions")?.addEventListener("click", function (e) {
 
 		if (confirm('Are you sure?')) {
 			revisionAction("delete", data, function (data) {
-				displayToast("bg-success", "Revision", "Revision deleted!");
+				displayToast("success", "Revision", "Revision deleted!");
 				item.remove();
 				count.html(Math.max(count.html() - 1, 0));
 			});	
