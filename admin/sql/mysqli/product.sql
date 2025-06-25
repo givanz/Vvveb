@@ -797,6 +797,7 @@
 		LOCAL length_type INT,   -- include length type
 		LOCAL rating INT,        -- include rating average
 		LOCAL reviews INT,       -- include reviews count
+		LOCAL author INT,        -- include author/admin info
 
 			
 		-- return array of products for products query
@@ -814,6 +815,13 @@
 				END @IF
 				
 
+			-- include author info	
+			
+			@IF !empty(:author) 
+			THEN 
+				,ad.display_name, ad.first_name, ad.last_name, ad.email, ad.last_name, ad.phone_number, ad.phone_number, ad.url, ad.avatar, ad.bio, ad.status, ad.created_at
+			END @IF			
+			
 			-- include image gallery 	
 			
 			@IF !empty(:product_image) 
@@ -1011,7 +1019,11 @@
 				INNER JOIN product_attribute pa ON (pa.product_id = product.product_id)
 			END @IF		
 
-			
+			@IF !empty(:author) AND !empty(:author) 			
+			THEN 
+				LEFT JOIN admin ad ON (product.admin_id = ad.admin_id)  
+			END @IF			
+
 			WHERE p2s.site_id = :site_id
 
 			-- search

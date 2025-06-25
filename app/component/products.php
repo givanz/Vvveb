@@ -58,6 +58,7 @@ class Products extends ComponentBase {
 		'length_type'      => null, //[true, false] include length type info
 		'rating'           => null, //[true, false] include rating average
 		'reviews'          => null, //[true, false] include reviews count
+		'author'           => null, //[true, false] include author/admin info
 		'image_size'       => 'medium',
 		'filter'           => null, //[true, false] include variants
 		'order_by'         => NULL,
@@ -132,7 +133,7 @@ class Products extends ComponentBase {
 			$this->options['search'] .= '*';
 		}
 
-		$results               = $products->getAll($this->options) + $this->options;
+		$results = $products->getAll($this->options) + $this->options;
 
 		if ($results && isset($results['product'])) {
 			$this->products($results['product'], $this->options);
