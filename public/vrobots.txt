@@ -7,6 +7,7 @@ disallow: /checkout/*
 disallow: /filters-*/
 disallow: /shop/*/*/filters-*
 
-sitemap: /feed/page-sitemap
-sitemap: /feed/post-sitemap
-sitemap: /feed/product-sitemap
+sitemap: /feed/posts
+sitemap: /feed/products
+sitemap: /feed/pages
+sitemap: /feed/index
