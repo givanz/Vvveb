@@ -19,7 +19,8 @@
  * https://github.com/givanz/Vvveb
  */
 
-if (VvvebTheme === undefined) var VvvebTheme = {};
+window.VvvebTheme = window.VvvebTheme || {ajax:{}};
+window.VvvebApp = window.VvvebApp || {};
 
 VvvebTheme.Ajax = {
 	call: function(url, parameters, element, selector, callback, requestType = "POST") {
@@ -829,12 +830,11 @@ function loadAjax(url, selector, callback = null, params = {}, method = "get") {
 }
 
 
-VvvebTheme.ajax = {
-	selector:"a[data-url], a[data-page-url], a[data-v-url], a[data-v-menu-item-url], a[data-v-post-url], a[data-v-product-url], a[data-v-cat-url], a[data-v-archive-url], a[data-v-admin-url], a[data-v-post-author-url], a[data-v-breadcrumb-item-url], a[data-v-categories-cat-url], a[data-v-cart-product-url]",
-	siteContainer:["#site-content", "body > section"],
-	scrollContainer:"body",
-	skipUrl:[]
-}
+VvvebTheme.ajax.selector        =  VvvebTheme.ajax.selector || "a[data-url], a[data-page-url], a[data-v-url], a[data-v-menu-item-url], a[data-v-post-url], a[data-v-product-url], a[data-v-cat-url], a[data-v-archive-url], a[data-v-admin-url], a[data-v-post-author-url], a[data-v-breadcrumb-item-url], a[data-v-categories-cat-url], a[data-v-cart-product-url]";
+VvvebTheme.ajax.siteContainer   = VvvebTheme.ajax.siteContainer || ["#site-content", "body > section"];
+VvvebTheme.ajax.scrollContainer = VvvebTheme.ajax.scrollContainer || "body";
+VvvebTheme.ajax.skipUrl         = VvvebTheme.ajax.skipUrl || [];
+
 
 if (!isEditor()) {
 	document.addEventListener("click", function (e) {
@@ -847,12 +847,12 @@ if (!isEditor()) {
 				|| (VvvebTheme.ajax.skipUrl.length && (VvvebTheme.ajax.skipUrl.includes(url) || VvvebTheme.ajax.skipUrl.includes(window.location.pathname)))
 			) return;
 			
-			let selector = element.dataset.selector ?? VvvebTheme.ajax.siteContainer;
+			let selector = element.dataset.selector || VvvebTheme.ajax.siteContainer;
 
 			loadAjax(url, selector, () => { 
 				//if (element.dataset.scroll) {
 					let target          = document.querySelector(VvvebTheme.ajax.scrollContainer);
-					let scrollTo        = element.dataset.scroll ?? (selector == VvvebTheme.ajax.siteContainer ? "start" : "center");
+					let scrollTo        = element.dataset.scroll || (selector == VvvebTheme.ajax.siteContainer ? "start" : "center");
 					target.scrollIntoView({behavior: "smooth", block: scrollTo, inline: scrollTo});
 				//}
 				window.history.pushState({url, selector}, null, url); 

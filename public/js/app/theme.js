@@ -2,6 +2,9 @@
  * Sticky navbar
  * 
  */
+
+window.VvvebTheme = window.VvvebTheme || {ajax:{}};
+window.VvvebApp = window.VvvebApp || {};
   	
 // When the user scrolls the page, execute navbarSticky
 window.onscroll = function() {navbarSticky()};
@@ -275,13 +278,13 @@ function afterPageLoad() {
 //theme ajax configuration
 
 //include elements that will be updated on ajax calls, include body > section to trigger whole page update if sections mismatch between different page structures
-VvvebTheme.ajax.siteContainer  = ["#site-content", ".inner-page-hero", "body > section", "body > nav"];
-VvvebTheme.ajax.progressStatus  = updateProgressStatus;
-VvvebTheme.ajax.afterLoad  = afterPageLoad;
+VvvebTheme.ajax.siteContainer  = VvvebTheme.ajax.siteContainer || ["#site-content", ".inner-page-hero", "body > section", "body > nav"];
+VvvebTheme.ajax.progressStatus = VvvebTheme.ajax.progressStatus || updateProgressStatus;
+VvvebTheme.ajax.afterLoad      = VvvebTheme.ajax.afterLoad || afterPageLoad;
 //include posts, product and menu items for ajax
 //VvvebTheme.ajax.selector = "a[data-url], a[data-page-url], a[data-v-url], a[data-v-menu-item-url], a[data-v-post-url], a[data-v-product-url], a[data-v-cat-url], a[data-v-archive-url], a[data-v-admin-url], a[data-v-post-author-url], a[data-v-breadcrumb-item-url], a[data-v-categories-cat-url], a[data-v-cart-product-url]"; 
 //skip home for dark hero and contact form for google js code
-VvvebTheme.ajax.skipUrl = ["/checkout"/*, "/page/contact"*/];
+VvvebTheme.ajax.skipUrl = (VvvebTheme.ajax.skipUrl && VvvebTheme.ajax.skipUrl?.length) || ["/checkout"/*, "/page/contact"*/];
 
 //image lightbox
 if (typeof GLightbox !== 'undefined') {
