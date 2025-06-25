@@ -216,4 +216,6 @@ if (! function_exists('printAdminBarMenu')) {
 			</ul>
 		</li>
 	</ul>
+	
+	<link href="<?php echo Vvveb\publicUrlPath();?>admin/default/css/admin-bar.css" rel="stylesheet">
 </div>
