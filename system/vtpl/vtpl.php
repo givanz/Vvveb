@@ -99,6 +99,7 @@ class Vtpl {
 		'cdata'       	     => 'CDATA_START . $$0. CDATA_END',
 		'friendly_date'     => 'Vvveb\friendlyDate($$0)',
 		'human_readable'    => 'Vvveb\humanReadable($$0)',
+		'date'              => 'date($$1,is_int($$0) ? $$0 : strtotime($$0))',
 		'truncate'          => 'substr($$0, 0, $$1)',
 		'truncate_words'    => 'Vvveb\truncateWords($$0,$$1)',
 		'replace'           => 'str_replace($$1, $$2, $$0)',
@@ -466,7 +467,7 @@ class Vtpl {
 			'/\s+\+\s+/',	// /following-sibling::*[1]/self::
 
 			// E F: Matches any F element that is a descendant of an E element
-			'/([a-zA-Z\*="\[\]#._-])\s+([a-zA-Z\*="\[\]#._-])/', 	// \1//\2'  //'/([a-zA-Z\*="\[\]#._-])\s+([a-zA-Z\*#._-])/',
+			'/([\w\*="\[\]#._-])\s+([\w\*="\[\]#._-])/', 	// \1//\2'  //'/([a-zA-Z\*="\[\]#._-])\s+([a-zA-Z\*#._-])/',
 
 			// E:first-child: Matches element E when E is the first child of its parent
 			'/([a-z#\.]\w*):first-child/',	// *[1]/self::\1
@@ -1949,7 +1950,7 @@ class Vtpl {
 					$name  = $attrNode->nodeName;
 
 					//set relative media to theme folder
-					if (($name == 'src' || $name == 'href') && $this->relativePath) {
+					if (($name == 'src' || $name == 'href' || $name == 'srcset') && $this->relativePath) {
 						if ($value && $value[0] != '#' && $value[0] != '@' && (strncmp($value, 'http', 4) != 0)) {
 							if ($value[0] == '/') {
 								if (strncmp($value, '/public/', 8) == 0) {
