@@ -4,7 +4,6 @@ html {
     
 body {
 	font-family:sans-serif;
-	font-size:14px;
 	background:linear-gradient(to top right,  rgba(var(--bs-secondary-color-rgb), 0.07) 1%,var(--bs-body-bg) 100%);
 }
 
@@ -51,7 +50,7 @@ body {
 }
 .card-body 
 {
-	padding:2rem;
+	padding:3rem;
 }
 
 .btn-primary
@@ -60,8 +59,6 @@ body {
 	box-shadow:-1px 1px 2px 1px rgba(0,0,0,0.14),-1px 1px 2px 0px rgba(255,255,255,0.3) inset;
 	box-shadow:-1px 1px 2px 1px rgba(0,0,0,0.14),-3px 3px 7px 0px rgba(255,255,255,0.2) inset;
 	box-shadow:-1px 1px 2px 1px rgba(0, 0, 0, 0.07), -1px 1px 2px 0px rgba(255, 255, 255, 0.15) inset;
-	background:#2047F4;
-	border-color:#2047F4;
 	border-radius:3px;
 	font-size:1rem;
 }
@@ -86,12 +83,13 @@ body {
 
 input.form-control
 {
-	box-shadow:0px 0px 3px 1px rgba(0, 0, 0, 0.05) inset;
-	padding-top:.5rem;
-	padding-bottom:.5rem;
-	height:auto;
+    background: var(--bs-body-bg);
+    box-shadow: rgba(var(--bs-body-color-rgb), 0.08) 0px 1px 2px 0px inset;	
 }
 
+.form-select {
+	box-shadow:rgba(var(--bs-body-color-rgb), 0.08) 0px 1px 2px 0px;
+}
 
 .theme-check input {
   background-color: rgba(255, 255, 255, 0.7); }

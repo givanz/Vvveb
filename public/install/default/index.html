@@ -24,7 +24,7 @@
 
 		<div class="d-flex align-items-end">
 			
-			<a id="color-theme-switch" title="Switch sidebar color theme">
+			<a id="color-theme-switch" title="Switch color theme">
 				<i class="la la-sun"></i>
 			</a>
 
@@ -113,9 +113,9 @@
 							<p class="card-text text-muted">Please fill the form, contact your hosting provider for details</p>
 							<form method="post">
 							 <div class="mb-3 row">
-								<label for="engine" class="col-sm-3 col-form-label">Database engine</label>
-								<div class="col-sm-9">
-								   <select name="engine" id="engine" class="form-control" onchange="databaseEngine(this)">
+								<label for="engine" class="col-sm-4 col-form-label">Database engine</label>
+								<div class="col-sm-8">
+								   <select name="engine" id="engine" class="form-select" onchange="databaseEngine(this)">
 										<option value="mysqli">MySQL / MariaDB</option>
 										<option value="sqlite">SQLite</option>
 										<option value="pgsql">PgSQL</option>
@@ -123,26 +123,26 @@
 								</div>
 							  </div>
 							  <div class="mb-3 row db-field">
-								<label for="host" class="col-sm-3 col-form-label">Database host</label>
-								<div class="col-sm-9">
+								<label for="host" class="col-sm-4 col-form-label">Database host</label>
+								<div class="col-sm-8">
 								  <input type="text" class="form-control" id="host" placeholder="Database host"  placeholder="localhost" name="host" value="127.0.0.1" required>
 								</div>
 							  </div>
 							  <div class="mb-3 row db-field">
-								<label for="database" class="col-sm-3 col-form-label">Database name</label>
-								<div class="col-sm-9">
+								<label for="database" class="col-sm-4 col-form-label">Database name</label>
+								<div class="col-sm-8">
 								  <input type="text" class="form-control" id="database" placeholder="Database name" name="database" value="vvveb" required>
 								</div>
 							  </div>
 							  <div class="mb-3 row db-field">
-								<label for="user" class="col-sm-3 col-form-label">Database username</label>
-								<div class="col-sm-9">
+								<label for="user" class="col-sm-4 col-form-label">Database username</label>
+								<div class="col-sm-8">
 								  <input type="text" class="form-control" id="user" placeholder="Database username" name="user" value="root" required>
 								</div>
 							  </div>
 							  <div class="mb-3 row db-field">
-								<label for="password" class="col-sm-3 col-form-label">Database password</label>
-								<div class="col-sm-9">
+								<label for="password" class="col-sm-4 col-form-label">Database password</label>
+								<div class="col-sm-8">
 
 									<div class="input-group">
 									  <input type="password" class="form-control" id="password" placeholder="Database password" name="password" value="" aria-label="Database password">
@@ -153,26 +153,26 @@
 									</div>
 								</div>
 							  </div>							 
-							  <div class="mb-3">
+							  <div class="mb-3 pt-3">
 									<div class="form-check">
 										<input type="checkbox" class="form-check-input" name="noimport" value="1" id="noimport">
 										<label class="form-check-label" for="noimport">
 											Do not import basic configuration and demo data
-											<span class="form-text">(Not recommended, check for total empty site only)</span>
+											<div class="form-text">(Not recommended, check for total empty site only)</div>
 										</label>
 										
 									  </div>
 							  </div>
 							  <!--
 							  <div class="mb-3 row db-field">
-								<label for="prefix" class="col-sm-3 col-form-label">Table prefix</label>
-								<div class="col-sm-9">
+								<label for="prefix" class="col-sm-4 col-form-label">Table prefix</label>
+								<div class="col-sm-8">
 								  <input type="text" class="form-control" id="prefix" placeholder="vv_" name="prefix" value="">
 								</div>
 							  </div>
 							  -->
 							  <div class="row align-items-center">
-								  <div class="col-md-6 col-xs-12">
+								  <div class="col-md-7 col-xs-12">
 									  <div class="form-check">
 										<input type="checkbox" class="form-check-input" id="license" required>
 										<label class="form-check-label" for="license">
@@ -182,7 +182,7 @@
 									  </div>
 								  </div>
 
-									<div class="col-md-6 col-xs-12">												  
+									<div class="col-md-5 col-xs-12">												  
 										  <button type="submit" class="btn btn-primary btn-lg float-end"><span>Continue install</span> &rarr;<!-- &#10140; --></button>
 									</div>
 							  </div>
