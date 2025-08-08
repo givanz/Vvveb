@@ -96,8 +96,10 @@ class Vtpl {
 	private $variableFilters =
 	[
 		'capitalize'        => 'ucfirst($$0)',
+		'html_to_text'      => 'Vvveb\htmlToText($$0)',
 		'cdata'       	     => 'CDATA_START . $$0. CDATA_END',
 		'friendly_date'     => 'Vvveb\friendlyDate($$0)',
+		'friendly_number'   => 'Vvveb\parseQuantity($$0)',
 		'human_readable'    => 'Vvveb\humanReadable($$0)',
 		'date'              => 'date($$1,is_int($$0) ? $$0 : strtotime($$0))',
 		'truncate'          => 'substr($$0, 0, $$1)',
@@ -370,47 +372,61 @@ class Vtpl {
 						}
 					}
 
-					if (file_exists($importFile)) {
-						$parameter = trim($imports[2][$i]);
-						$this->debug->log('LOAD', $importFile);
+					if (strpos($importFile, '*') !== false) {
+						$files = glob($importFile);
+					} else {
+						$files = [$importFile];
+					}
 
-						if (! empty($parameter)) {
-							//if php array then parameter is a template variables list
-							if ($parameter[0] == '{'/* || $parameter[0] == '['*/) {
-								$importContent = file_get_contents($importFile);
+					$found = false;
 
-								//process template
-								$templateParams = json_decode($parameter, true);
+					foreach ($files as $importFile) {
+						if (file_exists($importFile)) {
+							$parameter = trim($imports[2][$i]);
+							$this->debug->log('LOAD', $importFile);
 
-								foreach ($templateParams as $name => $value) {
-									$importContent = str_replace('{{' . $name . '}}' , $value, $importContent);
-								}
-							} else {
+							if (! empty($parameter)) {
+								//if php array then parameter is a template variables list
+								if ($parameter[0] == '{'/* || $parameter[0] == '['*/) {
+									$importContent = file_get_contents($importFile);
+
+									//process template
+									$templateParams = json_decode($parameter, true);
+
+									foreach ($templateParams as $name => $value) {
+										$importContent = str_replace('{{' . $name . '}}' , $value, $importContent);
+									}
+								} else {
 								//parameter is a css selector to check if the element exists and conditionally include template
 								$elements = $this->xpath->query($this->cssToXpath($parameter));
-								//remove true and process froms earlier
-								if (true || $elements && $elements->length) {
-									//found, load template below
-									$importContent = file_get_contents($importFile);
-								} else {
-									//not found, replace import with nothing
-									$this->template = str_replace($imports[0][$i], '' , $this->template);
+									//remove true and process froms earlier
+									if (true || $elements && $elements->length) {
+										//found, load template below
+										$importContent = file_get_contents($importFile);
+									} else {
+										//not found, replace import with nothing
+										$this->template = str_replace($imports[0][$i], '' , $this->template);
 
-									continue;
+										continue;
+									}
 								}
+							} else {
+								$importContent = file_get_contents($importFile);
 							}
+
+							//remove comments
+							$importContent = preg_replace("/(?<![\"'])\/\*.*?\*\/|\s*(?<![\"'])\/\/[^\n]*/s", '', $importContent);
+							$content .= $importContent . "\n";
+
+							$found = true;
 						} else {
-							$importContent = file_get_contents($importFile);
+							$this->debug->log('VTPL_IMPORT_FILE_NOT_EXIST', $importFile);
+							//error_log($imports[0][$i] . " $importFile does not exists");
 						}
+					}
 
-						//remove comments
-						$importContent = preg_replace("/(?<![\"'])\/\*.*?\*\/|\s*(?<![\"'])\/\/[^\n]*/s", '', $importContent);
-						$content .= $importContent . "\n";
-
+					if ($found) {
 						break;
-					} else {
-						$this->debug->log('VTPL_IMPORT_FILE_NOT_EXIST', $importFile);
-						//error_log($imports[0][$i] . " $importFile does not exists");
 					}
 				}
 
@@ -1756,7 +1772,7 @@ class Vtpl {
 		if (strncmp($filename,'/plugins/', 9) === 0) {
 			$filename = DIR_ROOT . $filename;
 		} else {
-			if (strncmp($filename,'/public/', 8) === 0) {
+			if (strncmp($filename,PUBLIC_PATH, strlen(PUBLIC_PATH)) === 0) {
 				$filename = DIR_ROOT . $filename;
 			} else {
 				if ($filename[0] !== '/') {
@@ -1930,6 +1946,7 @@ class Vtpl {
 		}
 		$length = $currentNode->childNodes->length;
 
+		$publicLen = strlen(PUBLIC_PATH);
 		for ($i = 0; $i < $length; $i++) {
 			$node = $currentNode->childNodes[$i];
 
@@ -1953,8 +1970,8 @@ class Vtpl {
 					if (($name == 'src' || $name == 'href' || $name == 'srcset') && $this->relativePath) {
 						if ($value && $value[0] != '#' && $value[0] != '@' && (strncmp($value, 'http', 4) != 0)) {
 							if ($value[0] == '/') {
-								if (strncmp($value, '/public/', 8) == 0) {
-									$value = substr($value, 8);
+								if (strncmp($value, PUBLIC_PATH, $publicLen) == 0) {
+									$value = substr($value, $publicLen);
 								} else {
 									$value = substr($value, 1);
 								}
