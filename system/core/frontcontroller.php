@@ -79,8 +79,15 @@ class FrontController {
 		return self :: $status;
 	}
 
+	static function setStatus($status) {
+		return self :: $status = $status;
+	}
+
 	static private function callAction($controller, $action = 'index') {
-		//header(' ', true, $statusCode);
+		if ($statusCode !== 200) {
+			header(' ', true, $statusCode);
+		}
+
 		if (include_once DIR_APP . DS . 'controller' . DS . "$controller.php") {
 			$controller         = 'Vvveb\Controller\\' . $controller;
 			self :: $moduleName = $moduleName = $controller;
@@ -166,6 +173,7 @@ class FrontController {
 		$view->setType($response->getType());
 		$view->render();
 
+		die();
 		//return $response->output();
 		//self :: closeConnections();
 		//$view->render($service, true, $service);
@@ -369,7 +377,7 @@ class FrontController {
 		$uri = $_SERVER['REQUEST_URI'] ?? '';
 
 		if (V_SUBDIR_INSTALL) {
-			$uri = str_replace(V_SUBDIR_INSTALL, '', $uri);
+			$uri = substr($uri, strlen(V_SUBDIR_INSTALL));
 		}
 
 		$uri   = preg_replace('/\?.*$/', '', $uri);

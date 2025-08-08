@@ -39,7 +39,19 @@ function is_installed() {
 	return file_exists(DIR_ROOT . 'config' . DS . 'db.php');
 }
 
-$installPathRedirect = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . '/install/index.php';
+if (! isset($FILE)) {
+	$FILE = __FILE__;
+}
+
+function detectSubDir() {
+	global $FILE;
+	
+	$uri = $_SERVER['DOCUMENT_URI'] ?? $_SERVER['SCRIPT_NAME'] ?? '';
+	$path = '/' . trim(str_replace([DIR_ROOT, '\\', 'public'], ['', '/', ''], $FILE), '/ ');
+	return str_replace($path, '',  $uri);
+}
+
+$subdir = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : detectSubDir());
 
 if (! defined('APP')) {
 	if (is_installed()) {
@@ -60,14 +72,14 @@ if (! defined('APP')) {
 
 		if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'install') === false) {
 			//avoid redirect loop
-			die(header("Location: $installPathRedirect"));
+			die(header("Location: $subdir/install/index.php"));
 		}
 	}
 } elseif (! is_installed() && (! defined('APP') || APP != 'install')) {
 	defined('APP') || define('APP', 'install');
 
 	if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'install') === false) {
-		die(header("Location: $installPathRedirect"));
+		die(header("Location: $subdir/install/index.php"));
 	}
 }
 
@@ -80,8 +92,8 @@ if (! isset($PUBLIC_THEME_PATH)) {
 }
 
 if (! defined('PUBLIC_PATH')) {
-	define('PUBLIC_PATH', (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . $PUBLIC_PATH);
-	define('PUBLIC_THEME_PATH', (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . $PUBLIC_THEME_PATH);
+	define('PUBLIC_PATH', $subdir . $PUBLIC_PATH);
+	define('PUBLIC_THEME_PATH', $subdir . $PUBLIC_THEME_PATH);
 }
 
 require_once DIR_SYSTEM . 'core/startup.php';

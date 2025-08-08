@@ -48,4 +48,8 @@ if ($extensions) {
 	echo "<div style='text-align:center;margin:2rem;'>$extensions</div>";
 }
 
+if (! isset($FILE)) {
+	$FILE = __FILE__;
+}
+
 return include __DIR__ . '/../index.php';

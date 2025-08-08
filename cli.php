@@ -40,13 +40,13 @@ php cli.php admin module=plugin/plugins action=checkPluginAndActivate plugin=mar
 php cli.php admin module=content/posts action=delete post_id=1
 
 #fresh install MySQL
-php cli.php install host=127.0.0.1 user=root password= database=vvveb admin[email]=admin@vvveb.com admin[password]=admin
+php cli.php install host=127.0.0.1 user=root password= database=vvveb admin[email]=admin@vvveb.com admin[username]=admin admin[password]=admin
 
 #fresh install PgSQL
-php cli.php install engine=pgsql host=127.0.0.1 user=postgres password= database=vvveb admin[email]=admin@vvveb.com admin[password]=admin
+php cli.php install engine=pgsql host=127.0.0.1 user=postgres password= database=vvveb admin[email]=admin@vvveb.com admin[username]=admin admin[password]=admin
 
 #fresh install SQLite
-php cli.php install engine=sqlite admin[email]=admin@vvveb.com admin[password]=admin
+php cli.php install engine=sqlite admin[email]=admin@vvveb.com admin[username]=admin admin[password]=admin
 
 #import markdown posts from folder /docs/user into site with id 5
 php cli.php admin module=plugins/markdown-import/settings action=import site_id=5 settings[path]=/docs/user
@@ -66,11 +66,16 @@ php cli.php app module=cron
 php cli.php app request_uri=/hello-world
 \n
 MSG;
+namespace Vvveb;
 
 define('V_VERSION', '0.0.1');
 
 function is_installed() {
 	return file_exists(DIR_ROOT . 'config' . DS . 'db.php');
+}
+
+function detectSubDir() {
+	return false;
 }
 
 $params = implode('&', array_slice($argv, 2));

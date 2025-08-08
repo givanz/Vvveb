@@ -23,4 +23,5 @@
 $PUBLIC_PATH       = '/';
 $PUBLIC_THEME_PATH = '/admin/';
 
+$FILE = __FILE__;
 include __DIR__ . '/../../admin/index.php';

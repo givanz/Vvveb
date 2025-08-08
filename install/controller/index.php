@@ -46,6 +46,8 @@ define('DEFAULT_LANG', 'en_US');
 #[\AllowDynamicProperties]
 class Index extends Base {
 	private $config = ['engine' => 'mysqli', 'host' => '127.0.0.1', 'database'  => 'vvveb', 'user'  => 'root', 'password'  => '', 'port'  => null, 'prefix'  => ''];
+	
+	private $subdir = '';
 
 	function __construct() {
 		if (! ($lang = sess('language'))) {
@@ -59,6 +61,8 @@ class Index extends Base {
 		if ($lang) {
 			setLanguage($lang);
 		}
+		
+		$this->subdir = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : \Vvveb\detectSubDir());
 
 		if (\Vvveb\is_installed()) {
 			$admin   = false;
@@ -76,7 +80,7 @@ class Index extends Base {
 			}
 
 			if ($admin && isset($admin['status']) && $admin['status'] == '1') {
-				header('Location: /');
+				header('Location: ' . $this->subdir. '/');
 
 				die(__('Already installed! To reinstall remove config/db.php') . "\n");
 			} else {
@@ -111,6 +115,16 @@ class Index extends Base {
 		}
 
 		return $notMet;
+	}
+
+	function replaceInFile($file, $search, $replace) {
+		$content = file_get_contents($file);
+
+		if ($content) {
+			$content = str_replace($search, $replace, $content);
+
+			return file_put_contents($file, $content);
+		}
 	}
 
 	private function writeConfig($data) {
@@ -367,7 +381,10 @@ class Index extends Base {
 				@\Vvveb\setConfig($app . '.key', Str::random(32));
 			}
 
-			if (V_SUBDIR_INSTALL) {
+			$subdir = $this->request->post['subdir'] ?? $this->subdir ?? false;
+
+			if ($subdir) {
+				$subdir = '/' . trim($subdir, '/ ');
 				//add subdir path to menu links
 				$menus  = new menuSQL();
 
@@ -375,10 +392,14 @@ class Index extends Base {
 					$menuItems = $menus->get(['menu_id' => $menu_id, 'language_id' => 1])['menu'] ?? [];
 
 					foreach ($menuItems as $menuItem) {
-						$data = ['url' => V_SUBDIR_INSTALL . $menuItem['url'], 'menu_item_content' => []];
+						$data = ['url' => $this->subdir . $menuItem['url'], 'menu_item_content' => []];
 						$menus->editMenuItem(['menu_item' => $data,  'menu_item_id' => $menuItem['menu_item_id']]);
 					}
 				}
+				
+				//try to set subdir in env.php and .htaccess
+				$this->replaceInFile(DIR_ROOT . 'env.php', "define('V_SUBDIR_INSTALL', false" , "define('V_SUBDIR_INSTALL', '{$subdir}'");
+				$this->replaceInFile(DIR_ROOT . '.htaccess', 'RewriteRule ^ index.php [L]' , "RewriteRule ^ {$subdir}/index.php [L]");
 			}
 
 			if ($error) {
@@ -388,7 +409,7 @@ class Index extends Base {
 			$success               = __('Installation succesful!');
 			$this->view->success[] = $success;
 			$admin_path            = \Vvveb\adminPath();
-			$admin_path            = str_replace(V_SUBDIR_INSTALL, '', $admin_path);
+			$admin_path            = str_replace($this->subdir, '', $admin_path);
 			$location              = preg_replace('@/install.*$@', $admin_path . "/index.php?success=$success&errors=$error", ($_SERVER['REQUEST_URI'] ?? ''));
 
 			header("Location: $location");
