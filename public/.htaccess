@@ -1,14 +1,25 @@
 #Options +SymLinksIfOwnerMatch -Indexes
 
-<Files *.php>
-        Order Deny,Allow
-        Deny from all
-</Files>
+<IfModule !mod_authz_core.c>
+	<Files *.php>
+		Require all denied
+	</Files>
 
-<Files index.php>
-    Order Allow,Deny
-    Allow from all
-</Files>
+	<Files index.php>
+		Order Allow,Deny
+		Allow from all
+	</Files>
+</IfModule>
+
+<IfModule mod_authz_core.c>
+	<FilesMatch "\.(?i:php)$">
+		Require all denied
+	</FilesMatch>
+
+	<Files index.php>
+		Require all granted
+	</Files>
+</IfModule>
 
 <IfModule dir_module>
     DirectoryIndex index.php
@@ -29,8 +40,7 @@ RewriteBase /
 #page cache
 RewriteCond %{REQUEST_METHOD} !=POST
 RewriteCond %{QUERY_STRING} !.*=.*
-RewriteCond %{HTTP_COOKIE} !^.*(nocache).*$
-#RewriteCond %{QUERY_STRING} !^.*(nocache|admin).*$
+RewriteCond %{HTTP_COOKIE} !^.*(nocache|cart|user|admin).*$
 RewriteCond %{QUERY_STRING} !^.*(/admin).*$
 RewriteCond %{DOCUMENT_ROOT}/page-cache/%{HTTP_HOST}/$1/index.html -f
 RewriteRule ^(.*) /page-cache/%{HTTP_HOST}/$1/index.html [L]
