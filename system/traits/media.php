@@ -76,7 +76,12 @@ trait Media {
 			for ($count = 0; $count < $length; $count++) {
 				$path      = sanitizeFileName($this->request->post['mediaPath'] ?? '');
 				$fileName  = sanitizeFileName($files['name'][$count]);
-				$path      = preg_replace('@^[\\\/]public[\\\/]media|^[\\\/]media|^[\\\/]public@', '', $path);
+
+				if (V_SUBDIR_INSTALL && strpos($path, V_SUBDIR_INSTALL) === 0) {
+					$path  = substr_replace($path, '', 0, strlen(V_SUBDIR_INSTALL));
+				}
+
+				$path      = preg_replace('@.*[\\\/]public[\\\/]media|.*[\\\/]media|.*[\\\/]public@', '', $path);
 				$extension = strtolower(substr($fileName, strrpos($fileName, '.') + 1));
 
 				if ($files['error'][$count] == UPLOAD_ERR_OK) {

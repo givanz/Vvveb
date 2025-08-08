@@ -73,6 +73,10 @@ class Code extends Base {
 	}
 
 	function sanitizeFileName($file, $type) {
+		if (V_SUBDIR_INSTALL && strpos($file, V_SUBDIR_INSTALL) === 0) {
+			$file  = substr_replace($file, '', 0, strlen(V_SUBDIR_INSTALL));
+		}
+
 		$file = preg_replace("@^[\/]public@", '', $file);
 
 		if ($type == 'plugins') {
