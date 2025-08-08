@@ -140,6 +140,8 @@ class Site extends Base {
 				}
 			}
 
+			//array_walk_recursive($settings['description'], '\Vvveb\sanitizeHTML');
+
 			if (isset($this->request->get['site_id']) && ($site_id = $this->request->get['site_id'])) {
 				$data['site_id']  = (int)$site_id;
 				$site['settings'] = json_encode($settings);
@@ -266,6 +268,7 @@ class Site extends Base {
 			$setting['order_id_format_preview'] = $this->invoiceFormatPreview($setting['order_id_format'] ?? '');
 
 			$view->set($data);
+			$site['full-url']   = $site ? ('//' . Sites::url($site['host']) . (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '')) : '';
 			$view->site         = $site + $setting;
 			$view->setting      = $setting;
 			$view->resize       = ['cs' => __('Crop & Resize'), 's' => __('Stretch'), 'c' => __('Crop')];

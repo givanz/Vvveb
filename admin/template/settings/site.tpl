@@ -72,7 +72,7 @@ input[data-v-site-*][type=checkbox]|addNewAttribute = <?php
 
 [data-v-site-*]|innerText = $this->site['@@__data-v-site-(*)__@@']
 [data-v-site-*]|title = $this->site['@@__data-v-site-(*)__@@']
-a[data-v-site-*]|title|href = $this->site['@@__data-v-site-(*)__@@']
+a[data-v-site-*]|href = $this->site['@@__data-v-site-(*)__@@']
 
 
 input[data-v-setting]|value = <?php 
