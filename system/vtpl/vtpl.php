@@ -350,6 +350,7 @@ class Vtpl {
 		if (! $this->template || ! $this->xpath) {
 			return;
 		}
+
 		$foundImports = true;
 		//expand imports
 		while ($foundImports) {
@@ -530,6 +531,9 @@ class Vtpl {
 			// [foo]: Matches any element with the "foo" attribute set (whatever the value)
 			'/\[([a-z][\w_\-]*)\]/',	//	*[ @\1 ]
 
+			// [!foo]: Matches any element without the "foo" attribute set (whatever the value)
+			'/\[!([a-z][\w_\-]*)\]/',	//	*[ not(@\1) ]
+
 			// element[foo*]: Matches any element that starts with "foo" attribute (whatever the value)
 			'/(\w+)\[([a-z][\w\-]*)\*\]/',	//	\1 [ @*[starts-with(name(), "\2")] ]
 
@@ -577,6 +581,7 @@ class Vtpl {
 			'[ends-with(@\1,"\2")]', //[foo$="warning"]
 			'[ @\1 ]', //[attribute][attribute]
 			'*[ @\1 ]', //[attribute]
+			'[ not(@\1) ]', //[!attribute]
 			'\1 [ @*[starts-with(name(), "\2")] ]', //element[attr*]
 			'[ @*[starts-with(name(), "\1")] ]', //[attr*] - attribute with other attributes
 			'*[ @*[starts-with(name(), "\1")] ]', //[attr*] - single attribute
@@ -1858,7 +1863,7 @@ class Vtpl {
 				$xml  = Vvveb\array2xml($json);
 				$html = $xml;
 			}
-			@$this->document->loadXML($html, LIBXML_NOERROR | LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NONET);
+			@$this->document->loadXML($html, LIBXML_NOERROR | LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
 		}
 
 		$errors = libxml_get_errors();
@@ -1947,6 +1952,7 @@ class Vtpl {
 		$length = $currentNode->childNodes->length;
 
 		$publicLen = strlen(PUBLIC_PATH);
+
 		for ($i = 0; $i < $length; $i++) {
 			$node = $currentNode->childNodes[$i];
 
@@ -1968,7 +1974,7 @@ class Vtpl {
 
 					//set relative media to theme folder
 					if (($name == 'src' || $name == 'href' || $name == 'srcset') && $this->relativePath) {
-						if ($value && $value[0] != '#' && $value[0] != '@' && (strncmp($value, 'http', 4) != 0)) {
+						if ($value && $value[0] != '#' && $value[0] != '@' && (strpos($value, ':') === false)) {
 							if ($value[0] == '/') {
 								if (strncmp($value, PUBLIC_PATH, $publicLen) == 0) {
 									$value = substr($value, $publicLen);
@@ -2047,6 +2053,7 @@ class Vtpl {
 				$before = $currentNode->childNodes->length;
 
 				if ($trimmed != '') {
+					//don't translate long texts
 					if (strlen($trimmed) < 1024) {
 						/*
 						$php     = '<_script language="php"><![CDATA[ echo ' . $this->translationFunction . '(\'' . $trimmed . '\');]]></_script>';
@@ -2238,7 +2245,15 @@ class Vtpl {
 					  }, $html);
 
 		$html = str_replace(['<_script language="php"><![CDATA[', ']]></_script>', '<_script language="php">', '</_script>'], ['<?php ', ' ?>', '<?php ', ' ?>'], $html);
-
+		//decode html entities to match translation strings
+		$translationFunction = preg_quote($this->translationFunction);
+		$html = preg_replace_callback("/<\?php echo $translationFunction\('(.+?)'\); \?>/",
+			function ($matches) {
+				$translation = html_entity_decode($matches[1], ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5);
+				//keep <> encoded to avoid xss
+				$translation = str_replace(['<', '>'], ['&lt;','&gt;'], $translation);
+				return "<?php echo {$this->translationFunction}('$translation'); ?>";
+		  }, $html);
 		//remove data-v- attributes
 		//$html = preg_replace('/data-v-[\-\w]+\s*=\s*"[^"]*"|data-v-[\-\w]+/','', $html);
 	}

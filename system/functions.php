@@ -505,40 +505,13 @@ function slugify($text, $divider = '-') {
 	return $text;
 }
 
-$vvvebTranslationDomains = ['vvveb', 'landing-theme'];
-
-function addTranslationDomain($domain) {
-	global $vvvebTranslationDomains;
-
-	if (! in_array($domain, $vvvebTranslationDomains)) {
-		array_push($vvvebTranslationDomains, $domain);
-	}
-}
-
 if (function_exists('_')) {
 	function __($text, $plural = false, $count = false) {
-		global $vvvebTranslationDomains;
-
-		$text = substr($text, 0, 1024);
 
 		if ($plural) {
-			$plural = substr($plural, 0, 1024);
-
-			foreach ($vvvebTranslationDomains as $domain) {
-				$translation = dngettext($domain, $text, $plural, $count);
-
-				if ($translation && ($translation != $text)) {
-					break;
-				}
-			}
+			$translation = ngettext($text, $plural, $count);
 		} else {
-			foreach ($vvvebTranslationDomains as $domain) {
-				$translation = dgettext($domain, $text);
-
-				if ($translation && ($translation != $text)) {
-					break;
-				}
-			}
+			$translation = gettext($text);
 		}
 
 		return $translation;
@@ -961,6 +934,7 @@ function getDefaultTemplateList() {
 		'content/page.html',
 		'content/index.html',
 		'content/category.html',
+		'content/tag.html',
 		'product/index.html',
 		'product/product.html',
 		'product/category.html',
@@ -979,6 +953,7 @@ function getTemplateList($theme = null, $skip = []) {
 		'error500'                  => ['name' =>  __('Server error'), 'description'      =>  __('Site error display page'), 'global' => true],
 		'content-index'             => ['name' =>  __('Blog homepage'), 'description'     =>  __('Blog page with latest posts'), 'global' => true],
 		'content-post'              => ['name' =>  __('Blog post'), 'description'         =>  __('Blog post'), 'editor' => ['template' => 'post'], 'global' => true],
+		'content-page'              => ['name' =>  __('Page'), 'description'         =>  __('Page'), 'editor' => ['template' => 'page'], 'global' => true],
 		'product-index'             => ['name' =>  __('Shop page'), 'description'         =>  __('Shop homepage'), 'global' => true],
 		'search-index'              => ['name' =>  __('Search page'), 'description'       =>  __('Search page'), 'global' => true],
 		'user-index'                => ['name' =>  __('Dashboard'), 'description'         =>  __('User dashboard'), 'global' => true],
@@ -1019,7 +994,7 @@ function getTemplateList($theme = null, $skip = []) {
 
 		$url = PUBLIC_PATH . "themes/$theme/$file";
 
-		$pages[$name]  = ['name' => $name, 'filename' => $filename, 'file' => $file, 'url' => $url, 'title' => humanReadable($title), 'folder' => $path, 'description' => $description];
+		$pages[$name]  = ['name' => $name, 'filename' => $filename, 'file' => $file, 'url' => $url, 'title' => humanReadable($title), 'folder' => $path, 'description' => $description, 'global' => $friendlyNames[$name]['global'] ?? false];
 
 		if (isset($friendlyNames[$name]['editor'])) {
 			$pages[$name]['editor'] = $friendlyNames[$name]['editor'];
@@ -1069,8 +1044,10 @@ function parseQuantity($string) {
 	switch ($multiplier) {
 		case 'k':
 			return $number * 1024;		
+
 		case 'm':
 			return $number * 1048576;		
+
 		case 'g':
 			return $number * 1073741824;
 	}
@@ -1307,7 +1284,6 @@ function userPreferedLanguage() {
  * @return mixed 
  */
 function setLanguage($langCode = 'en_US', $domain = 'vvveb') {
-	global $vvvebTranslationDomains;
 	//setlocale(LC_TIME, "");
 	//\putenv('LOCPATH=' . DIR_ROOT. "locale");
 
@@ -1317,12 +1293,9 @@ function setLanguage($langCode = 'en_US', $domain = 'vvveb') {
 	}
 
 	if (function_exists('bindtextdomain')) {
-		foreach ($vvvebTranslationDomains as $tdomain) {
-			bindtextdomain($tdomain, DIR_ROOT . 'locale');
-		}
 		bindtextdomain($domain, DIR_ROOT . 'locale');
 		textdomain($domain);
-		bind_textdomain_codeset($domain, 'utf8');
+		bind_textdomain_codeset($domain, 'UTF-8');
 
 		setlocale(LC_ALL,'C.UTF-8');
 
@@ -1334,12 +1307,12 @@ function setLanguage($langCode = 'en_US', $domain = 'vvveb') {
 		}
 
 		if (defined('LC_MESSAGES')) {
-			setlocale(LC_MESSAGES, "$langCode.utf8");
-			setlocale(LC_CTYPE,"$langCode.utf8");
+			setlocale(LC_MESSAGES, "$langCode.UTF-8");
+			setlocale(LC_CTYPE,"$langCode.UTF-8");
 		} else {
-			setlocale(5, "$langCode.utf8");
-			setlocale(6,"$langCode.utf8");
-			setlocale(LC_ALL, "$langCode.utf8");
+			setlocale(5, "$langCode.UTF-8");
+			setlocale(6,"$langCode.UTF-8");
+			setlocale(LC_ALL, "$langCode.UTF-8");
 		}
 	}
 }
@@ -1356,7 +1329,7 @@ function clearLanguageCache($langCode = 'en_US', $domain = 'vvveb') {
 			opcache_reset();
 		}
 
-		if (function_exists('symlink') && symlink($locale, $nocache)) {
+		if (function_exists('symlink') && @symlink($locale, $nocache)) {
 			bindtextdomain($domain, $nocache);
 			textdomain($domain);
 			bind_textdomain_codeset($domain, 'different_codeset');
@@ -1739,8 +1712,8 @@ function unzip($file) {
 function htmlToText($html) {
 	$html = preg_replace('/\s+/', ' ', $html);
 	$html = str_replace('<br>', "\n", $html);
-	$html = str_replace('<p>', "\n<p>", $html);
-	$html = str_replace('<h', "\n<h", $html);
+	//add new line for block elements
+	$html = preg_replace('/<(div|p|li|hr|pre|blockquote|section|h\d+)/', "\n<$1", $html);
 
 	return trim(strip_tags($html));
 }
@@ -1876,7 +1849,6 @@ function invoiceFormat($format, $data) {
 		return $matches[0];
 	}, $format);
 }
-
 
 /*
 remove <?xml declaration to avoid issues with php short start tag
