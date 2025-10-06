@@ -145,9 +145,8 @@ class Component {
 
 					foreach ($instances as $instance => $options) {
 						$obj      = new $class($options);
-						$cacheKey = $obj->cacheKey();
 
-						if ($cacheKey && $this->cache) {
+						if ($obj->cacheExpire && $this->cache && ($cacheKey = $obj->cacheKey())) {
 							$cacheExpireKey                  = $cacheKey . '_expire';
 							$cache[]                         = $cacheKey;
 							$cache[]                         = $cacheExpireKey;
@@ -273,7 +272,7 @@ class Component {
 			}
 
 			if (! empty($saveCache)) {
-				$cacheDriver->setMulti($namespace, $saveCache, $_SERVER['REQUEST_TIME'] + COMPONENT_CACHE_EXPIRE, SITE_ID);
+				$cacheDriver->setMulti($namespace, $saveCache, /*$_SERVER['REQUEST_TIME'] + */COMPONENT_CACHE_EXPIRE * 3600, SITE_ID);
 			}
 		}
 
