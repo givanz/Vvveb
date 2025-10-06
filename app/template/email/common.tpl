@@ -4,3 +4,5 @@ import(components.tpl)
 import(ifmacros.tpl)
 
 [data-v-*]|innerText = $this->@@__data-v-(*)__@@
+
+head > title = $this->title
