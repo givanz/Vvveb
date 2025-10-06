@@ -11,6 +11,7 @@ CREATE TABLE `admin` (
   `url` varchar(100) NOT NULL DEFAULT '',
   `display_name` varchar(250) NOT NULL DEFAULT '',
   `avatar` varchar(250) NOT NULL DEFAULT '',
+  `cover` varchar(250) NOT NULL DEFAULT '',
   `bio` text,
   `role_id` INT UNSIGNED DEFAULT NULL,
   `site_access` TEXT NOT NULL,

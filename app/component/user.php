@@ -44,7 +44,7 @@ class User extends ComponentBase {
 	}
 
 	function results() {
-		if ($this->options['user_id'] || $this->options['username']) {
+		if (isset($this->options['user_id']) || isset($this->options['username'])) {
 			$users = new \Vvveb\Sql\UserSQL();
 
 			$results = $users->get($this->options);
@@ -55,8 +55,10 @@ class User extends ComponentBase {
 		if ($results) {
 			unset($results['password'], $results['token']);
 
-			if (isset($results['avatar'])) {
-				$results['avatar_url'] = Images::image($results['avatar'], 'user');
+			foreach (['avatar', 'cover'] as $image) {
+				if (isset($results[$image])) {
+					$results[$image . '_url']= Images::image($results[$image], 'user');
+				}
 			}
 
 			//$results['url'] = url('content/user/index', ['username' => $results['username']]);

@@ -1,6 +1,6 @@
 import(common.tpl)
 
-//[data-v-user] [data-v-user-*] = $this->user['@@__data-v-user-(*)__@@']
+[data-v-user] [data-v-user-*]|innerText = $this->user['@@__data-v-user-(*)__@@']
 
 /* input elements */
 [data-v-user] input[data-v-user-*]|value = 
@@ -49,6 +49,11 @@ import(common.tpl)
 [data-v-user] input[data-v-avatar]|value = $this->user['avatar']
 [data-v-user] img[data-v-avatar]|src = <?php echo (isset($this->user['avatar_url']) && $this->user['avatar_url']) ? $this->user['avatar_url'] : PUBLIC_PATH . 'media/placeholder.svg';?>
 
+/* Cover */
+[data-v-user] [data-v-cover]|data-v-cover = $this->user['cover_url']
+[data-v-user] input[data-v-cover]|value = $this->user['cover']
+[data-v-user] img[data-v-cover]|src = <?php echo (isset($this->user['cover_url']) && $this->user['cover_url']) ? $this->user['cover_url'] : PUBLIC_PATH . 'media/placeholder.svg';?>
+
 /* Site access */
 
 #all-sites-check|addNewAttribute = <?php if (!isset($this->user['site_access']) || empty($this->user['site_access'])) echo 'checked';?>
@@ -67,3 +72,5 @@ if(isset($this->sitesList) && is_array($this->sitesList)) {
 	[data-v-sites]  [data-v-site]|after = <?php
 	} 
 }?>
+
+a[data-v-admin_auth_token_url]|href = $this->admin_auth_token_url

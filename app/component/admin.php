@@ -36,15 +36,17 @@ class Admin extends ComponentBase {
 
 	protected $options = [];
 
-	public $cacheExpire = 0; //seconds
-/*
-	function cacheKey() {
-		//disable caching
-		return false;
-	}
-*/
+	public $cacheExpire = 0;
+
+	//seconds
+	/*
+		function cacheKey() {
+			//disable caching
+			return false;
+		}
+	*/
 	function results() {
-		if ($this->options['admin_id'] || $this->options['username']) {
+		if (isset($this->options['admin_id']) || isset($this->options['username'])) {
 			$admins = new \Vvveb\Sql\AdminSQL();
 
 			$results = $admins->get($this->options);
@@ -55,8 +57,10 @@ class Admin extends ComponentBase {
 		if ($results) {
 			unset($results['password'], $results['token']);
 
-			if (isset($results['avatar'])) {
-				$results['avatar_url'] = Images::image($results['avatar'], 'admin');
+			foreach (['avatar', 'cover'] as $image) {
+				if (isset($results[$image])) {
+					$results[$image . '_url']= Images::image($results[$image], 'admin');
+				}
 			}
 
 			$results['url'] = url('content/user/index', ['username' => $results['username']]);

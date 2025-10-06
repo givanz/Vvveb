@@ -32,6 +32,7 @@ use function Vvveb\setLanguage;
 use function Vvveb\siteSettings;
 use Vvveb\System\Core\View;
 use Vvveb\System\Event;
+use Vvveb\System\Images;
 use Vvveb\System\PageCache;
 use Vvveb\System\Sites;
 use Vvveb\System\User\Admin;
@@ -226,6 +227,16 @@ class Base {
 		list($site) = Event::trigger(__CLASS__, __FUNCTION__, $site);
 
 		$user = User::current();
+
+		if ($user && isset($user['avatar'])) {
+			$user['avatar_url'] = Images::image($user['avatar'], 'user');
+		}
+
+		$admin = Admin::current();
+
+		if ($admin && isset($admin['avatar'])) {
+			$admin['avatar_url'] = Images::image($admin['avatar'], 'admin');
+		}
 		/*
 				$site['url'] = \Vvveb\url('index/index',[
 						'host'   => $_SERVER['HTTP_HOST'] ?? false,
@@ -239,7 +250,8 @@ class Base {
 		$this->global['user_group_id'] = $user['user_group_id'] ?? 1;
 		$this->global['site']          = &$site;
 		$this->global['user']          = $user ?? [];
-		$this->global['year']          = date('Y');
+		$this->global['admin']         = $admin ?? [];
+		$this->global['current_year']  = date('Y');
 
 		$this->language($site['language'] ?? false, $site['language_id'] ?? false);
 		$this->currency($site['currency'] ?? false, $site['currency_id'] ?? false);

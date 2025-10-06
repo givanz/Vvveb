@@ -11,6 +11,7 @@ CREATE TABLE `admin` (
 `url` TEXT NOT NULL DEFAULT '',
 `display_name` TEXT NOT NULL DEFAULT '',
 `avatar` TEXT NOT NULL DEFAULT '',
+`cover` TEXT NOT NULL DEFAULT '',
 `bio` TEXT NOT NULL DEFAULT '',
 `role_id` INT  DEFAULT NULL,
 `site_access` INT NOT NULL DEFAULT '[]',

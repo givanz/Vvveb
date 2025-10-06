@@ -19,6 +19,7 @@ CREATE TABLE "user" (
   "status" int check ("status" >= 0) NOT NULL DEFAULT 0,
   "display_name" varchar(250) NOT NULL DEFAULT '',
   "avatar" varchar(250) NOT NULL DEFAULT '',
+  "cover" varchar(250) NOT NULL DEFAULT '',
   "bio" varchar(250) NOT NULL DEFAULT '',
   "token" varchar(32) NOT NULL DEFAULT '',
   "secret" varchar(32) NOT NULL DEFAULT '',

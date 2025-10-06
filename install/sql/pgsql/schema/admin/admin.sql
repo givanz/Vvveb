@@ -15,6 +15,7 @@ CREATE TABLE "admin" (
   "url" varchar(100) NOT NULL DEFAULT '',
   "display_name" varchar(250) NOT NULL DEFAULT '',
   "avatar" varchar(250) NOT NULL DEFAULT '',
+  "cover" varchar(250) NOT NULL DEFAULT '',
   "bio" varchar(250) NOT NULL DEFAULT '',
   "role_id" int check ("role_id" > 0) DEFAULT NULL,
   "site_access" text NOT NULL,

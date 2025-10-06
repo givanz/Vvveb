@@ -1,12 +1,12 @@
-INSERT INTO `admin` (`admin_id`, `username`, `first_name`, `last_name`,`password`, `email`, `url`, `created_at`, `token`, `status`, `site_access`, `display_name`, `avatar`, `bio`, `role_id`) VALUES
+INSERT INTO `admin` (`admin_id`, `username`, `first_name`, `last_name`,`password`, `email`, `url`, `created_at`, `token`, `status`, `site_access`, `display_name`, `avatar`, `cover`, `bio`, `role_id`) VALUES
 
-(1, 'admin', 'Admin', 'Admin', '$2y$11$o52ahesifBsklkPV8eTWSeoKbBHJXxaoDZUIDYiFYdAmHQSyfDM3W', 'admin@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Admin', 'vvveb.svg', 'Has access everywhere', 1),
-(2, 'administrator',  'Administrator', 'Administrator', '$2y$11$o52ahesifBsklkPV8eTWSeoKbBHJXxaoDZUIDYiFYdAmHQSyfDM3W', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Administrator', 'vvveb.svg', 'Has access everywhere except admin user and role management', 2),
-(3, 'site-admin',  'Site Administrator', 'Site Administrator', '$2y$11$o52ahesifBsklkPV8eTWSeoKbBHJXxaoDZUIDYiFYdAmHQSyfDM3W', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Site Admin', 'vvveb.svg', 'Manages content, products and orders', 3),
-(4, 'editor', 'Editor', 'Editor','$2y$11$o52ahesifBsklkPV8eTWSeoKbBHJXxaoDZUIDYiFYdAmHQSyfDM3W', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Editor', 'vvveb.svg', 'Manages content', 4),
-(5, 'author', 'Author', 'Author', '$2y$11$o52ahesifBsklkPV8eTWSeoKbBHJXxaoDZUIDYiFYdAmHQSyfDM3W', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Author', 'vvveb.svg', 'Can add and update content', 5),
-(6, 'contributor', 'Contributor', 'Contributor', '$2y$11$o52ahesifBsklkPV8eTWSeoKbBHJXxaoDZUIDYiFYdAmHQSyfDM3W', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Contributor', 'vvveb.svg', 'Can add and update content', 5),
-(7, 'shop', 'Shop', 'Shop', '$2y$11$o52ahesifBsklkPV8eTWSeoKbBHJXxaoDZUIDYiFYdAmHQSyfDM3W', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Shop assistant', 'vvveb.svg', 'Manages products and orders', 7),
-(8, 'vendor', 'Vendor', 'Vendor', '$2y$11$o52ahesifBsklkPV8eTWSeoKbBHJXxaoDZUIDYiFYdAmHQSyfDM3W', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Vendor', 'vvveb.svg', 'Can add own products and process orders', 8),
-(9, 'rest', 'Rest', 'Rest', '$2y$11$o52ahesifBsklkPV8eTWSeoKbBHJXxaoDZUIDYiFYdAmHQSyfDM3W', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Rest Api', 'vvveb.svg', 'Rest API access user', 9),
-(10, 'demo', 'Demo', 'Demo', '$2y$11$oNa5z5S1gabs8vB/GU9KRuFxw1psuMx8rPaVjnVLm8mm./ufAiRgm', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Demo', 'vvveb.svg', 'Read only account with access everywhere', 10);
+(1, 'admin', 'Admin', 'Admin', '$', 'admin@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Admin', 'vvveb.svg', 'posts/2.jpg', 'Has access everywhere', 1),
+(2, 'administrator',  'Administrator', 'Administrator', '$', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Administrator', 'vvveb.svg', 'posts/2.jpg', 'Has access everywhere except admin user and role management', 2),
+(3, 'site-admin',  'Site Administrator', 'Site Administrator', '$', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Site Admin', 'vvveb.svg', 'posts/2.jpg', 'Manages content, products and orders', 3),
+(4, 'editor', 'Editor', 'Editor','$', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Editor', 'vvveb.svg', 'posts/2.jpg', 'Manages content', 4),
+(5, 'author', 'Author', 'Author', '$', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Author', 'vvveb.svg', 'posts/2.jpg', 'Can add and update content', 5),
+(6, 'contributor', 'Contributor', 'Contributor', '$', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Contributor', 'vvveb.svg', 'posts/2.jpg', 'Can add and update content', 5),
+(7, 'shop', 'Shop', 'Shop', '$', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Shop assistant', 'vvveb.svg', 'posts/2.jpg', 'Manages products and orders', 7),
+(8, 'vendor', 'Vendor', 'Vendor', '$', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Vendor', 'vvveb.svg', 'posts/2.jpg', 'Can add own products and process orders', 8),
+(9, 'rest', 'Rest', 'Rest', '$', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Rest Api', 'vvveb.svg', 'posts/2.jpg', 'Rest API access user', 9),
+(10, 'demo', 'Demo', 'Demo', '', 'demo@admin.com', '', '2022-05-01 00:00:00', '', 0, '[]', 'Demo', 'vvveb.svg', 'posts/2.jpg', 'Read only account with access everywhere', 10);

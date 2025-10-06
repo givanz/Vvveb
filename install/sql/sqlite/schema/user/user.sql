@@ -14,6 +14,7 @@ CREATE TABLE `user` (
 `status` INT NOT NULL DEFAULT 0,
 `display_name` TEXT NOT NULL DEFAULT '',
 `avatar` TEXT NOT NULL DEFAULT '',
+`cover` TEXT NOT NULL DEFAULT '',
 `bio` TEXT NOT NULL DEFAULT '',
 `token` TEXT NOT NULL DEFAULT '',
 `secret` TEXT NOT NULL DEFAULT '',
