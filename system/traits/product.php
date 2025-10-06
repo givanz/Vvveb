@@ -84,7 +84,8 @@ trait Product {
 		$product['modDate'] = date('r', strtotime($product['updated_at']));
 		$product['lastMod'] = date('Y-m-d\TH:i:sP', strtotime($product['updated_at']));
 
-		$url                         = ['slug' => $product['slug'], 'product_id' => $product['product_id']] + $language;
+		$url                         = ['slug' => $product['slug'], 'type' => $product['type'], 'product_id' => $product['product_id']] + $language;
+
 		$product['url']      	       = url('product/product/index', $url);
 		$product['add_cart_url']     = url('cart/cart/add', ['product_id' => $product['product_id']]);
 		$product['buy_url']          = url('checkout/checkout/index', ['product_id' => $product['product_id']]);
