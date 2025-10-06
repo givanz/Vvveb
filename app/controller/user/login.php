@@ -22,10 +22,25 @@
 
 namespace Vvveb\Controller\User;
 
+use function Vvveb\session as sess;
+use Vvveb\System\User\User;
+
 class Login extends \Vvveb\Controller\Base {
 	use LoginTrait;
 
 	function index() {
+		if (isset($this->request->post['logout'])) {
+			User::logout();
+
+			return $this->login();
+		}
+
+		$user = sess('user');
+
+		if ($user) {
+			$this->redirect('/user');
+		}
+
 		$view = $this->view;
 
 		if ($errors = $this->session->get('errors')) {

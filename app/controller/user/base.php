@@ -36,7 +36,7 @@ class Base extends \Vvveb\Controller\Base {
 		}
 
 		if (isset($this->request->post['logout'])) {
-			return User::logout();
+			User::logout();
 		}
 	}
 }
