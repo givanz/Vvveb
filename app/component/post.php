@@ -45,6 +45,8 @@ class Post  extends ComponentBase {
 		//'type' => 'post',
 	];
 
+	public $cacheExpire = 0; //no cache
+
 	//called when fetching data, when cache expires
 	function results() {
 		$post = new PostSQL();
@@ -61,7 +63,7 @@ class Post  extends ComponentBase {
 		}
 
 		if (isset($results['avatar'])) {
-			$results['avatar'] = Images::image($results['avatar'], 'admin');
+			$results['avatar_url'] = Images::image($results['avatar'], 'admin');
 		}
 
 		//comments translations
@@ -144,7 +146,7 @@ class Post  extends ComponentBase {
 
 		if ($post || $post_content) {
 			$post['post_id'] = $id;
-			$result          = $posts->edit(['post' => $post, /* 'post_content' => [$post_content],*/ 'post_id' => $id]);
+			$result          = $posts->edit(['post' => $post, 'post_content' => [], /* 'post_content' => [$post_content],*/ 'post_id' => $id]);
 		}
 	}
 }

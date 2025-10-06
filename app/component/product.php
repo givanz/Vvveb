@@ -55,8 +55,10 @@ class Product extends ComponentBase {
 		'rating'              => null, //[true, false] include rating average
 		'reviews'             => null, //[true, false] include reviews count
 
-		'image_size'    => '',
+		'image_size'    => 'large',
 	];
+
+	public $cacheExpire = 0; //no cache
 
 	function results() {
 		$product = new ProductSQL();
@@ -80,14 +82,18 @@ class Product extends ComponentBase {
 		$results['manufacturer_url'] = url('product/manufacturer/index', ['slug' => $results['manufacturer_slug']]);
 		$results['vendor_url']       = url('product/vendor/index', ['slug' => $results['vendor_slug']]);
 
-		$variantSql = new Product_VariantSQL();
-		$voptions   = ['product_id' => $this->options['product_id'], 'start' => 0, 'limit' => 1];
+		$variants = [];
 
-		if ($this->options['product_variant_id']) {
-			$voptions['product_variant_id'] = [$this->options['product_variant_id']];
+		if (isset($this->options['product_id'])) {
+			$variantSql = new Product_VariantSQL();
+			$voptions   = ['product_id' => $this->options['product_id'], 'start' => 0, 'limit' => 1];
+
+			if (isset($this->options['product_variant_id'])) {
+				$voptions['product_variant_id'] = [$this->options['product_variant_id']];
+			}
+
+			$variants = $variantSql->getAll($voptions);
 		}
-
-		$variants   = $variantSql->getAll($voptions);
 
 		$defaultVariant   = [];
 		$defaultVariantId = null;
@@ -205,7 +211,7 @@ class Product extends ComponentBase {
 
 		if ($product) {
 			$product['product_id'] = $id;
-			$result                = $products->edit(['product' => $product, /*'product_content' => [$product_content],*/ 'product_id' => $id]);
+			$result                = $products->edit(['product' => $product, 'product_content' => [], /*'product_content' => [$product_content],*/ 'product_id' => $id]);
 		}
 	}
 }
