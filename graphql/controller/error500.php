@@ -29,13 +29,13 @@ class Error500 extends Base {
 
 		if (DEBUG) {
 			return [
-				'message'   => $this->view->message,
-				'file'      => $this->view->file,
-				'line_no'   => $this->view->line_no,
-				'line'      => $this->view->line,
-				'lines'     => $this->view->lines,
-				'trace'     => $this->view->trace,
-				'codeLines' => $this->view->code,
+				'message'   => $this->view->message ?? '',
+				'file'      => $this->view->file ?? '',
+				'line_no'   => $this->view->line_no ?? '',
+				'line'      => $this->view->line ?? '',
+				'lines'     => $this->view->lines ?? '',
+				'trace'     => $this->view->trace ?? '',
+				'codeLines' => $this->view->code ?? '',
 				'code'      => 500,
 			];
 		} else {

@@ -56,7 +56,7 @@ class Crud extends Base {
 	function index() {
 		$data = $this->get();
 
-		if (! $data) {
+		if (! $data || (! isset($data[$this->type . '_id']))) {
 			return $this->notFound(sprintf(__('%s not found!'), ucfirst($this->type)));
 		}
 

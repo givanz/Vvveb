@@ -24,6 +24,7 @@ namespace Vvveb\Component;
 
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use Vvveb\System\Images;
 use function Vvveb\url;
 
 class Categories extends ComponentBase {
@@ -37,7 +38,7 @@ class Categories extends ComponentBase {
 		'parent_id'                => NULL,
 		'search'                   => NULL,
 		'type'                     => 'categories',
-		'post_type'                => 'product',
+		'post_type'                => NULL,
 		'parents_only'             => false,
 		'parents_children_only'    => false,
 		'parents_without_children' => false,
@@ -56,7 +57,15 @@ class Categories extends ComponentBase {
 					$category['children'] = 0;
 				}
 
+				if (isset($category['post_type'])) {
+					$category['type'] = $category['post_type'];
+				}
+
 				$category['url'] = url('content/category/index', $category);
+
+				if (isset($category['image'])) {
+					$category['image_url'] = Images::image($category['image'], 'taxonomy_item');
+				}
 
 				if ($parent_id > 0 && isset($results['categories'][$parent_id])) {
 					$parent = &$results['categories'][$parent_id];

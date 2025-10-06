@@ -25,7 +25,7 @@
  		'mode' => 'token',//token = admin added token, http = basic auth using admin user and password
  	],
  	'session' => [
- 		'driver' => 'request',
+ 		'driver' => 'request',//stateless, handle session externally if needed. Change to 'php' for session management if php session cookie can be sent with the request.
  	],
  	'email' => [
  		'driver' => 'mail',

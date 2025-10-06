@@ -52,16 +52,67 @@ class Base {
 					$password  = $_SERVER['PHP_AUTH_PW'] ?? '';
 					$loginData = compact('user', 'password');
 
-					if ($userInfo = Admin::login($loginData)) {
+					if ($userInfo = Admin::login($loginData, [], $feedback)) {
 					} else {
 						$this->response->addHeader('WWW-Authenticate', 'Basic realm="REST Api"');
 						$this->response->addHeader('HTTP/1.0 401 Unauthorized');
-						FrontController::notFound(false, __('Auth failed!'), 403);
+						$message = __('Auth failed!');
+
+						if (DEBUG) {
+							$message .= ' ' . $feedback['message'] ?? [];
+							$message .= " auth.mode = $authMode";
+						}
+						//FrontController::notFound(false, $message, 403);
+						$this->notFound($message, 403);
 					}
 				} else {
 					$this->response->addHeader('WWW-Authenticate', 'Basic realm="REST Api"');
 					$this->response->addHeader('HTTP/1.0 401 Unauthorized');
-					FrontController::notFound(false, __('Auth failed!'), 403);
+					$message = __('Auth failed!');
+
+					if (DEBUG) {
+						$message .= __('No credentials!');
+						$message .= " auth.mode = $authMode";
+					}
+					//FrontController::notFound(false, $message, 403);
+					$this->notFound($message, 403);
+				}
+			} else {
+				if ($authMode == 'token') {
+					$headers = getallheaders();
+					$token   = $headers['Bearer'] ?? $_SERVER['HTTP_BEARER'] ?? null;
+
+					if (! $token) {
+						$token = $headers['Authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+						$token = trim(substr($token, 6)) ?: $this->request->get['_token'] ?? false;
+					}
+
+					if ($token) {
+						if ($userInfo = Admin::auth($token, [], $feedback)) {
+						} else {
+							$this->response->addHeader('HTTP/1.0 401 Unauthorized');
+							$message = __('Auth failed!');
+
+							if (DEBUG) {
+								$message .= ' ' . $feedback['message'] ?? [];
+								$message .= " auth.mode = $authMode";
+								$message .= " token = $token";
+							}
+							//FrontController::notFound(false, $message, 403);
+							$this->notFound($message, 403);
+						}
+					} else {
+						$this->response->addHeader('HTTP/1.0 401 Unauthorized');
+						$message = __('Auth failed!');
+
+						if (DEBUG) {
+							$message .= __('No credentials!');
+							$message .= " auth.mode = $authMode";
+							$message .= " token = $token";
+						}
+						//FrontController::notFound(false, $message, 403);
+						$this->notFound($message, 403);
+					}
 				}
 			}
 		}
@@ -80,7 +131,7 @@ class Base {
 		$this->response->setType('json');
 
 		if (! REST) {
-			die($this->notFound(__('REST is disabled!'), 404));
+			$this->notFound(__('REST is disabled!'), 404);
 		}
 
 		$this->auth();
@@ -101,14 +152,21 @@ class Base {
 
 		list($site) = Event::trigger(__CLASS__, __FUNCTION__, $site);
 
-		$this->global['site_id']       = SITE_ID ?? 1;
-		$this->global['language_id']   = $this->session->get('language_id') ?? 1;
-		$this->global['limit']         = 10;
-		$this->global['start']         = 0;
-		$this->global['user_id']       = $user['user_id'] ?? false;
-		$this->global['user_group_id'] = $user['user_group_id'] ?? 1;
-		$this->global['site']          = &$site;
-		$this->global['user']          = $user ?? [];
+		$this->global['site_id']             = SITE_ID ?? 1;
+		$this->global['language_id']         = $this->session->get('language_id') ?? $site['language_id'] ?? 1;
+		$this->global['default_language_id'] = $this->session->get('default_language_id') ?? $site['language_id'] ?? 1;
+		$this->global['limit']               = 10;
+		$this->global['start']               = 0;
+		$this->global['user_id']             = $user['user_id'] ?? false;
+		$this->global['user_group_id']       = $user['user_group_id'] ?? 1;
+		$this->global['site']                = &$site;
+		$this->global['user']                = $user ?? [];
+
+		$language_id = $this->global['language_id'];
+
+		if (isset($site['description'][$language_id])) {
+			$site['description'] = $site['description'][$language_id];
+		}
 
 		if (isset($site['country_id'])) {
 			$this->initEcommerce($site['country_id'], $site['region_id']);
@@ -136,6 +194,8 @@ class Base {
 		$response = Response::getInstance();
 		http_response_code($statusCode);
 
-		return $response->output(is_array($message) ? $message : ['message' => $message]);
+		$response->output(is_array($message) ? $message : ['message' => $message, 'code' => $statusCode]);
+
+		die();
 	}
 }

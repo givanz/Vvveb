@@ -25,6 +25,7 @@ namespace Vvveb\Controller\Content;
 use \Vvveb\Sql\categorySQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\System\Images;
 
 class Categories extends Base {
 	function delete() {
@@ -61,7 +62,8 @@ class Categories extends Base {
 		$categories  = new categorySQL();
 
 		$options = [
-			'taxonomy_item' => $data,
+			'taxonomy_item_content' => $data['taxonomy_item_content'],
+			'taxonomy_item'         => $data['taxonomy_item'],
 		] + $this->global;
 
 		if (isset($data['taxonomy_item_id']) && $data['taxonomy_item_id']) {
@@ -93,6 +95,11 @@ class Categories extends Base {
 		$taxonomy_id = $this->request->get['taxonomy_id'] ?? false;
 		$limit       = 1000;
 
+		$admin_path          = \Vvveb\adminPath();
+		$controllerPath      = $admin_path . 'index.php?module=media/media';
+		$this->view->scanUrl = "$controllerPath&action=scan";
+		$this->uploadUrl     = "$controllerPath&action=upload";
+
 		if ($taxonomy_id) {
 			$options = [
 				'start'       => ($page - 1) * $limit,
@@ -109,6 +116,10 @@ class Categories extends Base {
 			foreach ($results['categories'] as &$taxonomy_item) {
 				$langs                      = $taxonomy_item['languages'] ? json_decode($taxonomy_item['languages'], true) : [];
 				$taxonomy_item['languages'] = [];
+
+				if (isset($taxonomy_item['image'])) {
+					$taxonomy_item['image_url'] = Images::image($taxonomy_item['image'], 'taxonomy_item');
+				}
 
 				if ($langs) {
 					foreach ($langs as $lang) {
