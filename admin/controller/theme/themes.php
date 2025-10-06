@@ -29,14 +29,15 @@ use function Vvveb\rcopy;
 use function Vvveb\rrmdir;
 use function Vvveb\sanitizeFileName;
 use function Vvveb\slugify;
+use Vvveb\System\CacheManager;
 use Vvveb\System\Extensions\Themes as ThemesList;
 use Vvveb\System\Import\Theme;
 use Vvveb\System\Sites;
 
 class Themes extends Base {
 	function duplicate() {
-		$theme   = sanitizeFileName(basename($this->request->get['theme'] ?? ''));
-		$dest    = sanitizeFileName(basename($this->request->get['dest'] ?? ''));
+		$theme   = sanitizeFileName(basename($this->request->post['theme'] ?? ''));
+		$dest    = sanitizeFileName(basename($this->request->post['dest'] ?? ''));
 		$newSlug = slugify($dest);
 
 		$srcDir      = DIR_THEMES . $theme;
@@ -76,7 +77,7 @@ class Themes extends Base {
 	}
 
 	function delete() {
-		$theme = sanitizeFileName(basename($this->request->get['theme'] ?? ''));
+		$theme = sanitizeFileName(basename($this->request->post['theme'] ?? ''));
 
 		if ($theme && is_dir(DIR_THEMES . $theme)) {
 			if (rrmdir(DIR_THEMES . $theme)) {
@@ -177,16 +178,20 @@ class Themes extends Base {
 	}
 
 	function activate() {
-		$theme = $this->request->get['theme'];
+		$theme = $this->request->post['theme'] ?? false;
 
-		if (Sites::setTheme($this->global['site_id'], $theme, 'index.html')) {
+		if ($theme && Sites::setTheme($this->global['site_id'], $theme, 'index.html')) {
 			$themeName               = \Vvveb\humanReadable($theme);
 			$this->themeActivateUrl  = \Vvveb\url(['module' => 'theme/themes', 'action'=> 'import', 'theme' => $theme]);
 			$successMessage          = sprintf(__('Theme <b>%s</b> was activated!'), $themeName, $this->themeActivateUrl);
-			$successMessage .= '<a class="btn btn-success btn-sm ms-4" href="' . $this->themeActivateUrl . '">' . __('Import theme content') . '</a>';
+			//$successMessage .= '<a class="btn btn-success btn-sm ms-4" href="' . $this->themeActivateUrl . '">' . __('Import theme content') . '</a>';
 			$successMessage .= '<a class="btn btn-outline-primary btn-sm ms-2" target="_blank" href="/">' . __('View website') . '</a>';
 
 			$this->view->success[] = $successMessage;
+			CacheManager::clearObjectCache('site');
+			CacheManager::clearFrontend();
+			CacheManager::clearCompiledFiles();
+			CacheManager::clearPageCache();
 		} else {
 			$error                = __('Error activating theme, check config/sites.php write permissions');
 			$this->view->errors[] = $error;

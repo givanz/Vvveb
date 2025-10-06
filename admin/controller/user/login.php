@@ -61,6 +61,10 @@ class Login {
 			return $this->redirect($adminPath);
 		}
 
+		if (! $this->session->get('csrf')) {
+			$this->session->set('csrf', Str::random());
+		}
+
 		//don't load plugins at all if safemode get parameter
 		if (! isset($this->request->get['safemode'])) {
 			$failedPlugins = [];
@@ -121,62 +125,70 @@ class Login {
 
 		$method = $this->request->getMethod();
 
-		if (($method == 'post') &&
-			($view->errors = $validator->validate($this->request->post)) === true) {
-			$user	    = $this->request->post['user'];
-
-			$safemode = $this->request->post['safemode'] ?? false;
-			$flags    = [];
-
-			if (strpos($user, '@')) {
-				$loginData['email'] = $user;
-			} else {
-				$loginData['username'] = $user;
-			}
-
-			$failedLogin   = new Admin_Failed_LoginSQL();
-			$date          = date($this->failedTimeInterval);
-			$lastIp        = $_SERVER['REMOTE_ADDR'] ?? '';
-			$failedAttemps = $failedLogin->get(['updated_at' => $date, 'status' => 1] + $loginData);
-
-			if ($failedAttemps && ($failedAttemps['count'] > $this->failedCount)) {
-				$view->errors = [__('Too many login attempts, try again in one hour!')];
-				$failedLogin->logFailed(['last_ip' => $lastIp, 'updated_at' => $date] + $loginData);
-
+		if ($method == 'post') {
+			if ( !($csrf = $this->session->get('csrf')) || !($postCsrf = ($this->request->post['csrf'] ?? false)) || ($csrf != $postCsrf) )	{
+				$view->errors['get'] = 'Invalid csrf!';
 				return;
+				//$this->notFound('Invalid csrf!', 403);
 			}
 
-			$loginData['password'] = $this->request->post['password'];
+			if (($view->errors = $validator->validate($this->request->post)) === true) {
+				$user	    = $this->request->post['user'];
 
-			if ($safemode) {
-				$flags['safemode'] = true;
-			}
+				$safemode  = $this->request->post['safemode'] ?? false;
+				$flags     = [];
+				$loginData = [];
 
-			list($loginData) = Event :: trigger(__CLASS__, __FUNCTION__ , $loginData);
-
-			if ($loginData) {
-				if ($userInfo = Admin::login($loginData, $flags)) {
-					$view->success[] = __('Login successful!');
-
-					if (isset($this->request->post['redir']) && $this->request->post['redir'] && $_SERVER['REQUEST_URI'] != $this->request->post['redir']) {
-						$url = parse_url($this->request->post['redir']);
-						$this->redirect($url['path'] . '?' . ($url['query'] ?? '') . '#' . ($url['fragment'] ?? ''));
-					//$this->redirect($this->request->post['redirect']);
-					} else {
-						$this->redirect($adminPath);
-					}
+				if (strpos($user, '@')) {
+					$loginData['email'] = $user;
 				} else {
-					//user not found or wrong password
-					$view->errors   = [__('Authentication failed, wrong email or password!')];
-					$view->safemode = $safemode;
-					$this->session->set('csrf', Str::random());
-					//increment failed attempts
-					$failedLogin->logFailed(['last_ip' => $lastIp, 'updated_at' => $date] + $loginData);
+					$loginData['username'] = $user;
 				}
+
+				$failedLogin   = new Admin_Failed_LoginSQL();
+				$date          = date($this->failedTimeInterval);
+				$lastIp        = $_SERVER['REMOTE_ADDR'] ?? '';
+				$failedAttemps = $failedLogin->get(['updated_at' => $date, 'status' => 1] + $loginData);
+
+				if ($failedAttemps && ($failedAttemps['count'] > $this->failedCount)) {
+					$view->errors = [__('Too many login attempts, try again in one hour!')];
+					$failedLogin->logFailed(['last_ip' => $lastIp, 'updated_at' => $date] + $loginData);
+
+					return;
+				}
+
+				$loginData['password'] = $this->request->post['password'];
+
+				if ($safemode) {
+					$flags['safemode'] = true;
+				}
+
+				list($loginData) = Event :: trigger(__CLASS__, __FUNCTION__ , $loginData);
+
+				if ($loginData) {
+					if ($userInfo = Admin::login($loginData, $flags)) {
+						$view->success[] = __('Login successful!');
+
+						if (isset($this->request->post['redir']) && $this->request->post['redir'] && $_SERVER['REQUEST_URI'] != $this->request->post['redir']) {
+							$url = parse_url($this->request->post['redir']);
+							$this->redirect($url['path'] . '?' . ($url['query'] ?? '') . '#' . ($url['fragment'] ?? ''));
+						//$this->redirect($this->request->post['redirect']);
+						} else {
+							$this->redirect($adminPath);
+						}
+					} else {
+						//user not found or wrong password
+						$view->errors   = [__('Authentication failed, wrong email or password!')];
+						$view->safemode = $safemode;
+						$this->session->set('csrf', Str::random());
+						//increment failed attempts
+						$failedLogin->logFailed(['last_ip' => $lastIp, 'updated_at' => $date] + $loginData);
+					}
+				}
+			} else {
+				//return $this->redirect($adminPath);
+				$this->session->set('csrf', Str::random());
 			}
-		} else {
-			//return $this->redirect($adminPath);
-			$this->session->set('csrf', Str::random());
 		}
 	}
 }

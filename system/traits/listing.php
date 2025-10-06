@@ -42,6 +42,8 @@ trait Listing {
 
 	protected $modelName;
 
+	protected $userFilter = false;
+
 	protected $options = [];
 
 	function init() {
@@ -56,7 +58,11 @@ trait Listing {
 		$type    = $this->type;
 		$type_id = $this->type_id ?? "{$type}_id";
 
-		$data_id    = $this->request->post[$type_id] ?? $this->request->get[$type_id] ?? false;
+		if (APP == 'admin') {
+			$data_id = $this->request->post[$type_id];
+		} else {
+			$data_id = $this->request->post[$type_id] ?? $this->request->get[$type_id] ?? false;
+		}
 
 		if ($data_id) {
 			if (is_numeric($data_id)) {
@@ -82,6 +88,8 @@ trait Listing {
 				$this->view->errors[] = sprintf(__('Error deleting %s!'), humanReadable($name));
 			}
 		}
+
+		unset($this->request->get[$type_id]);
 
 		return $this->index();
 	}
@@ -111,13 +119,16 @@ trait Listing {
 			'limit' => $limit,
 			//'type'        => $this->type,
 		] + $this->global + $this->filter + $this->request->get;
-		unset($options['user_id']);
+
+		if (! $this->userFilter) {
+			unset($options['user_id']);
+		}
 
 		if ($this->data_id && ($id = $this->request->get[$this->data_id] ?? false)) {
 			$options[$this->data_id] = $id;
 		}
 
-		$results = $model->getAll($options);
+		$results = $model->getAll($this->options + $options);
 
 		if (isset($results[$type])) {
 			foreach ($results[$type] as $id => &$row) {

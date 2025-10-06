@@ -23,6 +23,7 @@
 namespace Vvveb\Controller;
 
 use function Vvveb\__;
+use function Vvveb\humanReadable;
 use Vvveb\System\Traits\Crud as CrudTrait;
 
 class Crud extends Base {
@@ -34,6 +35,10 @@ class Crud extends Base {
 		$result = $this->get();
 
 		$this->view->{$this->type}  = $this->data;
+
+		if ($this->data_id && (! $this->data || (! isset($this->data[$this->type . '_id'])))) {
+			return $this->notFound(sprintf(__('%s not found!'), humanReadable(__($this->type))));
+		}
 
 		$admin_path          = \Vvveb\adminPath();
 		$controllerPath      = $admin_path . 'index.php?module=media/media';

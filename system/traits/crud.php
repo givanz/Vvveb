@@ -50,10 +50,18 @@ trait Crud {
 	//protected $fullPost;
 
 	function delete() {
+		if (APP == 'admin') {
+			$this->checkCsrf();
+		}
+
 		$type    = $this->type;
 		$type_id = $this->type_id ?? "{$type}_id";
 
-		$data_id    = $this->request->post[$type_id] ?? $this->request->get[$type_id] ?? false;
+		if (APP == 'admin') {
+			$data_id = $this->request->post[$type_id];
+		} else {
+			$data_id = $this->request->post[$type_id] ?? $this->request->get[$type_id] ?? false;
+		}
 
 		if ($data_id) {
 			if (is_numeric($data_id)) {
@@ -133,12 +141,15 @@ trait Crud {
 
 			if ($result && isset($result[$type])) {
 				$successMessage        = humanReadable(__($type)) . __(' saved!');
-				$this->view->success[] = $successMessage;
-
-				$this->session->set('success', $successMessage);
+				$this->view->success['get'] = $successMessage;
+				$this->session->set('success', ['get' => $successMessage]);
 
 				if (! $this->data_id && $this->redirect) {
-					$this->redirect(['module' => "$module/$controller", $type_id => $result[$type]]);
+					if ($this->redirect === true) {
+					$this->redirect(['module' => "$module/$controller", $type_id => $result[$type], 'success' => $successMessage]);
+					} else {
+						$this->redirect($this->redirect . "?$type_id={$result[$type]}&success=$successMessage");
+					}
 				}
 			} else {
 				$this->view->errors[] = __('Error saving!');

@@ -23,7 +23,7 @@
 namespace Vvveb\Controller\Product;
 
 use function Vvveb\__;
-use Vvveb\Controller\Base;
+use Vvveb\Controller\Listing;
 use function Vvveb\humanReadable;
 use Vvveb\Sql\ProductSQL;
 use Vvveb\System\Core\View;
@@ -31,7 +31,7 @@ use Vvveb\System\Images;
 use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
-class Products extends Base {
+class Products extends Listing {
 	protected $type = 'product';
 
 	//check for other modules permission like post and editor to enable links like save/delete etc
@@ -46,7 +46,7 @@ class Products extends Base {
 	}
 
 	function duplicate() {
-		$product_id    = $this->request->product['product_id'] ?? $this->request->get['product_id'] ?? false;
+		$product_id    = $this->request->post['product_id'] ?? false;
 
 		if ($product_id) {
 			$this->products   = new ProductSQL();
@@ -110,7 +110,7 @@ class Products extends Base {
 	}
 
 	function delete() {
-		$product_id    = $this->request->post['product_id'] ?? $this->request->get['product_id'] ?? false;
+		$product_id    = $this->request->post['product_id'];
 
 		if ($product_id) {
 			if (is_numeric($product_id)) {
@@ -184,8 +184,8 @@ class Products extends Base {
 				$template                 = (isset($product['template']) && $product['template']) ? $product['template'] : $defaultTemplate;
 				$product['url']           = url($url);
 				$product['edit-url']      = url(['module' => 'product/product', 'product_id' => $product['product_id'], 'type' => $product['type']]);
-				$product['delete-url']    = url(['module' => 'product/products', 'action' => 'delete'] + $url + ['product_id[]' => $product['product_id']]);
-				$product['duplicate-url'] = url(['module' => 'product/products', 'action' => 'duplicate'] + $url + ['product_id' => $product['product_id']]);
+				$product['delete-url']    = url(['module' => 'product/products', 'action' => 'delete'] + $url);// + ['product_id[]' => $product['product_id']]);
+				$product['duplicate-url'] = url(['module' => 'product/products', 'action' => 'duplicate'] + $url);// + ['product_id' => $product['product_id']]);
 				$product['view-url']      = url('product/product/index', $product + $url + ['host' => $this->global['host']]);
 				$relativeUrl              = url('product/product/index', $product + $url);
 				$product['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($product['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template, 'host' => $this->global['host'] . $adminPath], false);

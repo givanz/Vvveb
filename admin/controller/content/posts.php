@@ -23,7 +23,7 @@
 namespace Vvveb\Controller\Content;
 
 use function Vvveb\__;
-use Vvveb\Controller\Base;
+use Vvveb\Controller\Listing;
 use function Vvveb\humanReadable;
 use Vvveb\Sql\PostSQL;
 use Vvveb\System\Cache;
@@ -31,7 +31,7 @@ use Vvveb\System\Images;
 use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
-class Posts extends Base {
+class Posts extends Listing {
 	protected $type = 'post';
 
 	//check for other modules permission like post and editor to enable links like save/delete etc
@@ -46,7 +46,7 @@ class Posts extends Base {
 	}
 
 	function duplicate() {
-		$post_id    = $this->request->post['post_id'] ?? $this->request->get['post_id'] ?? false;
+		$post_id    = $this->request->post['post_id'] ?? false;
 
 		if ($post_id) {
 			$this->posts  = new PostSQL();
@@ -88,9 +88,9 @@ class Posts extends Base {
 
 					$success = ucfirst($this->type) . __(' duplicated!');
 					$success .= sprintf(' <a href="%s">%s</a>', $url, __('Edit') . " {$this->type}");
-					$this->view->success[] = $success;
-					$this->session->set('success', $success);
-					$this->redirect(['module' => 'content/posts'], [], false);
+					$this->view->success['get'] = $success;
+					//$this->session->set('success', $success);
+					//$this->redirect(['module' => 'content/posts', 'type' => $this->type], [], false);
 				} else {
 					$this->view->errors[] = sprintf(__('Error duplicating %s!'),  $this->type);
 				}
@@ -101,7 +101,7 @@ class Posts extends Base {
 	}
 
 	function delete() {
-		$post_id    = $this->request->post['post_id'] ?? $this->request->get['post_id'] ?? false;
+		$post_id    = $this->request->post['post_id'] ?? false;
 
 		if ($post_id) {
 			if (is_numeric($post_id)) {
@@ -243,8 +243,8 @@ class Posts extends Base {
 				$post['url']           = url($url);
 				$post['edit-url']      = $post['url'];
 				$post['admin-url']     = url(['module' => 'content/posts']) . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
-				$post['delete-url']    = url(['module' => 'content/posts', 'action' => 'delete'] + $url + ['post_id[]' => $post['post_id']]);
-				$post['duplicate-url'] = url(['module' => 'content/posts', 'action' => 'duplicate'] + $url + ['post_id' => $post['post_id']]);
+				$post['delete-url']    = url(['module' => 'content/posts', 'action' => 'delete'] + $url);// + ['post_id[]' => $post['post_id']]);
+				$post['duplicate-url'] = url(['module' => 'content/posts', 'action' => 'duplicate'] + $url);// + ['post_id' => $post['post_id']]);
 				$post['view-url']      = url("content/{$this->type}/index", $post + $url + ['host' => $this->global['host']]);
 				$relativeUrl           = url("content/{$this->type}/index", $post + $url);
 				$post['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($post['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template, 'host' => $this->global['host']], false);

@@ -1851,7 +1851,7 @@ Vvveb.Builder = {
 			// uncomment to use outerHTML, not recommended
 			//let text = selectedEl.outerHTML;
 			
-			fetch(namespaceUrl + "/translate&action=get", {method: "POST",  body: new URLSearchParams({text})})
+			fetch(namespaceUrl + "/translate&action=get", {method: "POST",  body: new URLSearchParams({text, csrf: document.getElementById('csrf')?.value})})
 			.then((response) => {
 				if (!response.ok) { throw new Error(response) }
 				return response.json()
@@ -1873,6 +1873,7 @@ Vvveb.Builder = {
 
 			let onSave = function(event) { 
 				let data = Object.fromEntries(new FormData(document.getElementById("translateForm")));
+				data["csrf"] = document.getElementById('csrf')?.value;
 
 				fetch(namespaceUrl + "/translate&action=save", {method: "POST",  body: new URLSearchParams(data)})
 				.then((response) => {
@@ -2269,7 +2270,7 @@ Vvveb.Builder = {
 			Vvveb.Builder.loadBlockGroups();
 		}
 		
-		let data = {type, name, html:element.outerHTML};
+		let data = {type, name, html:element.outerHTML, csrf: document.getElementById('csrf')?.value};
 		
 		fetch(saveReusableUrl, {method: "POST",  body: new URLSearchParams(data)})
 		.then((response) => {
@@ -2298,6 +2299,7 @@ Vvveb.Builder = {
 		}
 
 		data["elements"] = Vvveb.ChangeManager.getChangedElements();
+		data["csrf"]     = document.getElementById('csrf')?.value;
                 
 		if (!data["startTemplateUrl"]) {
 			data["html"] = this.getHtml();
@@ -3830,7 +3832,7 @@ Vvveb.FileManager = {
 			
 			if (page) {
 				
-				fetch(deleteFileUrl, {method: "POST",  body: new URLSearchParams({file:page.file,post_id})})
+				fetch(deleteFileUrl, {method: "POST",  body: new URLSearchParams({file:page.file, post_id, csrf: document.getElementById('csrf')?.value})})
 				.then((response) => {
 					if (!response.ok) {  return Promise.reject(response);  }
 					return response.json()
@@ -3886,7 +3888,7 @@ Vvveb.FileManager = {
 			
 			if (page) {
 
-				fetch(renameFileUrl, {method: "POST",  body: new URLSearchParams({file:page.file, newfile:newfile, name, duplicate, post_id, product_id})})
+				fetch(renameFileUrl, {method: "POST",  body: new URLSearchParams({file:page.file, newfile:newfile, name, duplicate, post_id, product_id, csrf: document.getElementById('csrf')?.value})})
 				.then((response) => {
 					if (!response.ok) {  return Promise.reject(response);  }
 					return response.json()
@@ -4189,7 +4191,7 @@ Vvveb.Revisions = {
 						headers: {
 						  'Content-Type': 'application/x-www-form-urlencoded',
 						},
-						body: new URLSearchParams({file})
+						body: new URLSearchParams({file, csrf: document.getElementById('csrf')?.value})
 					})
 					.then((response) => {
 						if (!response.ok) { throw new Error(response) }
@@ -4229,7 +4231,7 @@ Vvveb.Revisions = {
 							headers: {
 							  'Content-Type': 'application/x-www-form-urlencoded',
 							},
-							body: new URLSearchParams({file})
+							body: new URLSearchParams({file, csrf: document.getElementById('csrf')?.value})
 						})
 						.then((response) => {
 							if (!response.ok) { throw new Error(response) }

@@ -23,3 +23,6 @@ html|after   = <?php } ?>
 #safemode|addNewAttribute = <?php if (isset($this->safemode) && $this->safemode) echo 'checked';?>
 
 import(common.tpl)
+
+//csrf
+input[data-v-csrf]|value = <?php echo \Vvveb\session('csrf');?>
