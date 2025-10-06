@@ -21,12 +21,13 @@
 
 window.VvvebTheme = window.VvvebTheme || {ajax:{}};
 window.VvvebApp = window.VvvebApp || {};
+window.VvvebApp.path = document.currentScript.src.replace(/\/public.+$|assets-cache.+$|\/js.+$/, '');
 
 VvvebTheme.Ajax = {
 	call: function(url, parameters, element, selector, callback, requestType = "POST") {
 		if (!url) {
 			let action = element.closest("[data-v-vvveb-action]") ?? element;
-			url = action.href ?? action.action ?? '/index.php?module=' +  parameters["module"] + '&action=' + parameters["action"];
+			url = action.href ?? action.action ?? window.VvvebApp.path + '/index.php?module=' +  parameters["module"] + '&action=' + parameters["action"];
 		} 
 		
 		if (!selector) {
@@ -450,13 +451,13 @@ VvvebTheme.Gui = {
 			</div>
 			<div class="row mt-2 g-2 " data-v-if="cart.total_items">
 				  <div class="col-6">
-					<a href="/cart" class="btn btn-light btn-sm border w-100" data-v-url="cart/cart/index">
+					<a href="${window.VvvebApp.path}/cart" class="btn btn-light btn-sm border w-100" data-v-url="cart/cart/index">
 					  <i class="la la-shopping-cart la-lg"></i>
 					  <span>View cart</span>
 					</a>
 				  </div>
 				  <div class="col-6">
-					<a href="/checkout" class="btn btn-primary btn-sm w-100 px-2" data-v-url="checkout/checkout/index">
+					<a href="${window.VvvebApp.path}/checkout" class="btn btn-primary btn-sm w-100 px-2" data-v-url="checkout/checkout/index">
 					  <span>Checkout</span>
 					  <i class="la la-arrow-right la-lg"></i>
 					</a>
@@ -852,7 +853,7 @@ if (!isEditor()) {
 			loadAjax(url, selector, () => { 
 				//if (element.dataset.scroll) {
 					let target          = document.querySelector(VvvebTheme.ajax.scrollContainer);
-					let scrollTo        = element.dataset.scroll || (selector == VvvebTheme.ajax.siteContainer ? "start" : "center");
+					let scrollTo        = element.dataset.scroll || (selector == VvvebTheme.ajax.siteContainer ? "start" : "start");
 					target.scrollIntoView({behavior: "smooth", block: scrollTo, inline: scrollTo});
 				//}
 				window.history.pushState({url, selector}, null, url); 
