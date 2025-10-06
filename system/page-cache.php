@@ -208,11 +208,11 @@ class PageCache {
 	function saveCache() {
 		$data = ob_get_contents();
 
+		$lock = $this->fileName . self :: LOCK_EXT;
+
 		//if page not found or server error don't cache
 		if (FrontController::getStatus() != 200) {
 			//remove lock
-			$lock = $this->fileName . self :: LOCK_EXT;
-
 			if (file_exists($lock)) {
 				unlink($lock);
 			}
@@ -248,7 +248,10 @@ class PageCache {
 			//save cache
 			file_put_contents($this->fileName, $data);
 			//remove lock
-			unlink($this->fileName . self :: LOCK_EXT);
+			if (file_exists($lock)) {
+				unlink($lock);
+			}
+
 			//remove stale
 			if (file_exists($this->fileName . self :: STALE_EXT)) {
 				@unlink($this->fileName . self :: STALE_EXT);
@@ -292,7 +295,7 @@ class PageCache {
 		$cookie = (in_array($type, self :: $cacheCookies) ? $type : 'nocache');
 
 		if (! self :: $enabled && isset($_COOKIE[$cookie])) {
-			setcookie($cookie, '', time() - 3600, '/');
+			@setcookie($cookie, '', time() - 3600, '/');
 		}
 
 		self :: $enabled = true;
@@ -302,7 +305,7 @@ class PageCache {
 		$cookie = (in_array($type, self :: $cacheCookies) ? $type : 'nocache');
 
 		if (self :: $enabled && ! isset($_COOKIE[$cookie])) {
-			setcookie($cookie, '1', 0, '/');
+			@setcookie($cookie, '1', 0, '/');
 		}
 
 		self :: $enabled = false;
