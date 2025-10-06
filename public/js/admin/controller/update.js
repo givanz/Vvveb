@@ -19,12 +19,15 @@ class UpdateController {
 		let request = function () {
 			return fetch(next, {method: "POST",   headers: {
 				"X-Requested-With": "XMLHttpRequest",
-			  }})
+				"Content-Type": "application/x-www-form-urlencoded",
+			  }, body: new URLSearchParams({csrf: document.querySelector('[name=csrf]')?.value})})
 			.then((response) => {
 				next = false;
 				if (!response.ok) {
-					return Promise.reject(response);
-				}				
+					return Promise.resolve(response.text()).then((responseInText) => {
+						return Promise.reject([response, responseInText]);
+					});
+				}										
 				if (!response.ok) { 
 					let message = response.statusText + " " + response.body();
 					throw new Error(message); 
@@ -87,7 +90,8 @@ class UpdateController {
 				}
 			})*/
 			.catch(error => {
-					let message = error?.statusText ?? "Error updating!";
+					let [response, responseInText] = error;
+					let message = response.statusText ?? "Error!";
 					displayToast("danger", "Error", message);
 
 					if (error.hasOwnProperty('text')) error.text().then( errorMessage => {

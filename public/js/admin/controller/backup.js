@@ -19,18 +19,22 @@ class BackupController {
 		let request = function () {
 			return fetch(next, {method: "POST",   headers: {
 				"X-Requested-With": "XMLHttpRequest",
-			  }})
+				"Content-Type": "application/x-www-form-urlencoded",
+			  }, body: new URLSearchParams({csrf: document.querySelector('[name=csrf]')?.value})})
 			.then((response) => {
 				next = false;
 				if (!response.ok) {
-					return Promise.reject(response);
-				}				
+					return Promise.resolve(response.text()).then((responseInText) => {
+						return Promise.reject([response, responseInText]);
+					});
+				}										
 				if (!response.ok) { 
 					let message = response.statusText + " " + response.body();
 					throw new Error(message); 
 				}
 				return response.json()
 			})
+			
 			.then((json) => {
 					document.getElementById('progress-status').innerHTML = '';
 					
@@ -95,7 +99,9 @@ class BackupController {
 					}
 				})*/
 				.catch(error => {
-						let message = error.statusText ?? error;
+						let [response, responseInText] = error;
+						let message = response.statusText ?? "Error!";
+						let progessSuccess, progressStatus;
 
 						if (typeof error.json === "function") {
 							error.json().then(jsonError => {
@@ -105,9 +111,9 @@ class BackupController {
 							});
 						}				
 					
-						console.log(error);
-						document.getElementById('progress-success').innerHTML = '';
-						document.getElementById('progress-message').innerHTML = '<div class="text-danger">' + message + '</div>';
+						displayToast("danger", "Error", message);
+						if (progessSuccess = document.getElementById('progress-success')) progessSuccess.innerHTML = '';
+						if (progressStatus = document.getElementById('progress-status')) progressStatus.innerHTML = '<div class="text-danger">' + message + '</div>';
 						//console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
 						document.getElementById('progress-bar').classList.add('bg-danger');
 						enableBtn();
