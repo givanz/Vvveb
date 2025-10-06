@@ -158,7 +158,7 @@
 		-- allow only table fields and set defaults for missing values
 		@FILTER(:media, media)
 	
-		@IF !empty(:media) 
+		@IF isset(:media) && !empty(:media) 
 		THEN
 			UPDATE media 
 				
