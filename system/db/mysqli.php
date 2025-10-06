@@ -127,6 +127,10 @@ class Mysqli extends DBDriver {
 	}
 
 	public function __construct($host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = DB_PORT,  $prefix = DB_PREFIX) {
+		//return $this->connect($host, $dbname, $user, $pass, $port,  $prefix);
+	}
+
+	public function connect($host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = DB_PORT,  $prefix = DB_PREFIX) {
 		//mysqli_report(MYSQLI_REPORT_OFF);
 		//connect to database
 		if (self :: $link) {
@@ -217,11 +221,21 @@ class Mysqli extends DBDriver {
 	}
 
 	public function query($sql) {
+		if (! self :: $link) {
+			$this->connect();
+		}
+
 		if (LOG_SQL_QUERIES) {
 			error_log($sql);
 		}
 
+		try {
 		$result = self :: $link->query($sql);
+		} catch (\mysqli_sql_exception $e) {
+			$message = $e->getMessage() . "\n" . $sql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
+
+			throw new \Exception($message, $e->getCode());
+		}
 
 		if ($result) {
 			$this->affected_rows = self :: $link->affected_rows;
@@ -232,6 +246,10 @@ class Mysqli extends DBDriver {
 	}
 
 	public function multi_query($sql) {
+		if (! self :: $link) {
+			$this->connect();
+		}
+		
 		$result = self :: $link->multi_query($sql);
 
 		if ($result) {
@@ -326,12 +344,16 @@ class Mysqli extends DBDriver {
 		//save orig sql for debugging info
 		$origSql = $sql;
 
+		if (! self :: $link) {
+			$this->connect();
+		}
+
 		list($parameters, $types) = $this->paramsToQmark($sql, $params, $paramTypes);
 
 		try {
 			$stmt = self::$link->prepare($sql);
 		} catch (\mysqli_sql_exception $e) {
-			$message = $e->getMessage() . "\n" . $this->debugSql($origSql, $params, $paramTypes) . "\n - " . $origSql;
+			$message = $e->getMessage() . "\n" . $this->debugSql($origSql, $params, $paramTypes) . "\n - " . $origSql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
 			throw new \Exception($message, $e->getCode());
 		}
@@ -365,7 +387,7 @@ class Mysqli extends DBDriver {
 					error_log($this->debugSql($sql, $params, $paramTypes));
 				}
 			} catch (\mysqli_sql_exception $e) {
-				$message = $e->getMessage() . "\n" . $origSql . "\n" . $this->debugSql($origSql, $params, $paramTypes) . "\n" . print_r($parameters, 1) . $types;
+				$message = $e->getMessage() . "\n" . $origSql . "\n" . $this->debugSql($origSql, $params, $paramTypes) . "\n" . print_r($parameters, 1) . $types . "\n" . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
 				throw new \Exception($message, $e->getCode());
 			}

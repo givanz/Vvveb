@@ -73,6 +73,10 @@ class Sqlite extends DBDriver {
 	}
 
 	public function __construct($filename = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = null,  $prefix = DB_PREFIX) {
+		//return $this->connect($host, $dbname, $user, $pass, $port,  $prefix);
+	}
+
+	public function connect($filename = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = null,  $prefix = DB_PREFIX) {
 		if (self :: $link) {
 			return self :: $link;
 		}
@@ -190,6 +194,10 @@ class Sqlite extends DBDriver {
 	}
 
 	public function query($sql) {
+		if (! self :: $link) {
+			$this->connect();
+		}
+
 		$result = false;
 
 		try {
@@ -205,10 +213,12 @@ class Sqlite extends DBDriver {
 				$this->num_rows      = $result->numColumns() && $result->columnType(0) != SQLITE3_NULL;
 			//$result->finalize();
 			} else {
-				throw new \Exception($this->error(), $this->errorCode());
+				$message = $this->error() . "\n" . $sql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
+
+				throw new \Exception($message, $this->errorCode());
 			}
 		} catch (\Exception $e) {
-			$message = $e->getMessage() . "\n$sql\n";
+			$message = $e->getMessage() . "\n$sql\n" . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
 			throw new \Exception($message, $e->getCode());
 		}
@@ -239,12 +249,14 @@ class Sqlite extends DBDriver {
 					$this->num_rows      = $result->numColumns() && $result->columnType(0) != SQLITE3_NULL;
 				//$result->finalize();
 				} else {
-					throw new \Exception($this->error(), $this->errorCode());
+					$message = $this->error() . "\n" . $sql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
+
+					throw new \Exception($message, $this->errorCode());
 				}
 
 				$results[] = $result;
 			} catch (\Exception $e) {
-				$message = $e->getMessage() . "\n$query\n";
+				$message = $e->getMessage() . "\n$sql\n" . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
 				throw new \Exception($message, $e->getCode());
 			}
@@ -254,7 +266,9 @@ class Sqlite extends DBDriver {
 	}
 
 	public function close() {
+		if (self :: $link) {
 		return self :: $link->close();
+	}
 	}
 
 	// Prepare
@@ -263,12 +277,16 @@ class Sqlite extends DBDriver {
 		//save orig sql for debugging info
 		$origSql = $sql;
 
+		if (! self :: $link) {
+			$this->connect();
+		}
+
 		list($parameters, $types) = $this->paramsToQmark($sql, $params, $paramTypes);
 
 		try {
 			$stmt = self::$link->prepare($sql);
 		} catch (\Exception $e) {
-			$message = $e->getMessage() . "\n" . $this->debugSql($origSql, $params, $paramTypes) . "\n - " . $origSql;
+			$message = $e->getMessage() . "\n" . $this->debugSql($origSql, $params, $paramTypes) . "\n - " . $origSql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
 			throw new \Exception($message, $e->getCode());
 		}
@@ -305,7 +323,7 @@ class Sqlite extends DBDriver {
 					error_log($this->debugSql($sql, $params, $paramTypes));
 				}
 			} catch (\Exception $e) {
-				$message = $e->getMessage() . "\n" . $origSql . "\n" . $this->debugSql($origSql, $params, $paramTypes) . "\n" . print_r($parameters, 1) . $types;
+				$message = $e->getMessage() . "\n" . $origSql . "\n" . $this->debugSql($origSql, $params, $paramTypes) . "\n" . print_r($parameters, 1) . $types . "\n" . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
 				throw new \Exception($message, $e->getCode());
 			}

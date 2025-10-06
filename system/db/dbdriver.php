@@ -122,7 +122,7 @@ class DBDriver {
 		foreach ($params as $name => $type) {
 			if (! isset($data[$name])) {
 				if (! $ignoreMissing) {
-				$errors[] = sprintf('%s missing!', $name);
+					$errors[] = sprintf('%s missing!', $name);
 				}
 
 				continue;
@@ -255,6 +255,8 @@ class DBDriver {
 		$query = preg_replace('/LIMIT\s+(\d+|:\w+)\s+OFFSET\s*(\d+|:\w+)\s*;?$/', '', $query);
 		//mysql
 		$query = preg_replace('/LIMIT\s+(\d+|:\w+),\s*(\d+|:\w+)\s*;?$/', '', $query);
+		//remove order by
+		$query = preg_replace('/ORDER BY\s+([a-z\._\-]+|,|\s+|DESC|ASC)+/', '', $query);
 
 		$query = preg_replace("/^\s*SELECT .*?\s*FROM\s*$table\s/ms", "SELECT $column FROM $table ", $query);
 

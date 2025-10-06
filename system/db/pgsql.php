@@ -74,6 +74,10 @@ class Pgsql extends DBDriver {
 	}
 
 	public function __construct($host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = DB_PORT, $prefix = DB_PREFIX) {
+		//return $this->connect($host, $dbname, $user, $pass, $port,  $prefix);
+	}
+
+	public function connect($host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = DB_PORT, $prefix = DB_PREFIX) {
 		if (! self :: $link) {
 			//port 5432 for direct pgsql connection 6432 for pgbouncer
 			$port           = $port ?: 5432;
@@ -198,6 +202,7 @@ class Pgsql extends DBDriver {
 		if (! self :: $link) {
 			return false;
 		}
+
 		$result = false;
 
 		try {
@@ -217,8 +222,9 @@ class Pgsql extends DBDriver {
 
 			if ($this->last_res == false) {
 				$errorMessage = pg_last_error(self :: $link);
+				$message      = $errorMessage . "\n" . $this->debugSql($origSql, $params) . "\n - " . $origSql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
-				throw new \Exception($errorMessage);
+				throw new \Exception($message);
 			}
 
 			if ($result) {
@@ -227,7 +233,7 @@ class Pgsql extends DBDriver {
 
 			return $this->last_res;
 		} catch (\Exception $e) {
-			$message = $e->getMessage() . "\n$sql\n";
+			$message = $e->getMessage() . "\n" . $this->debugSql($origSql, $params) . "\n - " . $origSql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
 			throw new \Exception($message, $e->getCode());
 		}
@@ -307,6 +313,10 @@ class Pgsql extends DBDriver {
 		//save orig sql for debugging info
 		$origSql = $sql;
 
+		if (! self :: $link) {
+			$this->connect();
+		}
+
 		list($parameters, $types) = $this->paramsToQmark($sql, $params, $paramTypes, '$');
 
 		if (LOG_SQL_QUERIES) {
@@ -328,9 +338,9 @@ class Pgsql extends DBDriver {
 		if ($this->last_res == false) {
 			$errorMessage = pg_last_error(self :: $link);
 			//error_log('pgsql error: ' . pg_last_error(self :: $link));
-			$errorMessage .= $this->debugSql($origSql, $params, $paramTypes);
+			$message = $errorMessage . "\n" . $this->debugSql($origSql, $params, $paramTypes) . "\n - " . $origSql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
-			throw new \Exception($errorMessage);
+			throw new \Exception($message);
 		}
 
 		return $this->last_res;
