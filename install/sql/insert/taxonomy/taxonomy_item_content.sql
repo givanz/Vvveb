@@ -177,5 +177,5 @@ INSERT INTO `taxonomy_item_content` VALUES
 (84	,2, 'category 23', 'category-23', 'category 23', 'category 23', '', ''),
 (85	,2, 'category 24', 'category-24', 'category 24', 'category 24', '', ''),
 (86	,2, 'Tablete', 'tablete', 'Tablete', 'Tablete', '', ''),
-(87	,2, 'category 25', 'test 25', 'test 25', 'test 25', '', '');
-
+(87	,2, 'category 25', 'test 25', 'test 25', 'test 25', '', ''),
+(88	,1, 'Homepage', 'homepage', 'homepage', 'homepage', '', '');

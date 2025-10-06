@@ -85,4 +85,5 @@ INSERT INTO `taxonomy_to_site` VALUES
 (84,1),
 (85,1),
 (86,1),
-(87,1);
+(87,1),
+(88,1);
