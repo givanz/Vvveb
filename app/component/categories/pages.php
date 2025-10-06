@@ -30,13 +30,13 @@ class Pages extends ComponentBase {
 	public static $defaultOptions = [
 		'start'                    => 0,
 		'limit'                    => 7,
+		'posts_start'              => 0,
+		'posts_limit'              => NULL,
 		'site_id'                  => NULL,
 		'order'                    => ['url', 'price asc'],
 		'taxonomy_item_id'         => NULL,
 		'page'                     => 1,
-		'parents_only'             => false,
-		'parents_children_only'    => false,
-		'parents_without_children' => false,
+		'parent_id'                => false,
 	];
 
 	function results() {
@@ -57,6 +57,10 @@ class Pages extends ComponentBase {
 					$category['post'] = json_decode($category['post'], true);
 
 					if (is_array($category['post'])) {
+						if (isset($this->options['posts_limit'])) {
+							$category['post'] = array_slice($category['post'], 0 , $this->options['posts_limit']);
+						}
+
 						$category['posts_count'] = count($category['post']);
 					}
 				}
