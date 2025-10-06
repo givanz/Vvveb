@@ -23,6 +23,7 @@
 namespace Vvveb\Controller\Content;
 
 use \Vvveb\Sql\categorySQL;
+use function Vvveb\__;
 use Vvveb\System\Images;
 use function Vvveb\url;
 
@@ -111,6 +112,25 @@ trait AutocompleteTrait {
 		$results = $products->getAll($options);
 
 		$search = [];
+		$pages  = [
+			'index/index'             => __('Home'),
+			'product/index'           => __('Shop'),
+			'content/index'           => __('Blog'),
+			'user/index'              => __('User'),
+			'user/login/index'        => __('Login'),
+			'user/signup/index'       => __('Signup'),
+			'cart/cart/index'         => __('Cart'),
+			'checkout/checkout/index' => __('Checkout'),
+		];
+
+		foreach ($pages as $route => $name) {
+			if (stripos($name, $text) !== false) {
+				$url          = url($route);
+				$search[$url] = $name;
+
+				break;
+			}
+		}
 
 		if (isset($results['product'])) {
 			foreach ($results['product'] as $product) {
