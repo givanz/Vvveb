@@ -36,6 +36,8 @@ class Breadcrumb extends ComponentBase {
 
 	public $options = [];
 
+	public $cacheExpire = 0; //no cache
+
 	function cacheKey() {
 		//disable caching
 		return false;
@@ -46,17 +48,24 @@ class Breadcrumb extends ComponentBase {
 		$module      = $request->get['module'] ?? '';
 		$slug        = $request->get['slug'] ?? '';
 		$name        = $request->get['name'] ?? '';
+		$type        = $request->get['type'] ?? '';
 		$homeText    = __('Home');
 		$shopText    = __('Shop');
 		$blogText    = __('Blog');
 		$urlOptions  = [];
 
-		if ($this->options['absoluteURL']) {
+		if (isset($this->options['absoluteURL'])) {
 			$urlOptions += ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http'];
 		}
 
 		if ($this->options['default_language'] != $this->options['language']) {
 			$urlOptions += ['language'=> $this->options['language']];
+		}
+
+		if ($type) {
+			$shopText = __(ucfirst($type));
+			$blogText = __(ucfirst($type));
+			$urlOptions += ['type'=> $type];
 		}
 
 		$breadcrumb = [
