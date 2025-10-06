@@ -11,30 +11,47 @@
 		IN  slug CHAR,
 			
 		-- return menus count for count query
-		OUT fetch_row
+		OUT fetch_row,  --menu
+		OUT fetch_all -- menu_to_site
 	)
 	BEGIN
 
 		SELECT *			
 			FROM menu AS _
+			
+			@IF isset(:site_id)
+			THEN 
+				INNER JOIN menu_to_site ON (_.menu_id = menu_to_site.menu_id)		
+			END @IF	
 		
 		WHERE 1 = 1
 
 		@IF isset(:slug)
 		THEN 
 		
-			AND slug = :slug
+			AND _.slug = :slug
 			
 		END @IF	
 		
 		@IF isset(:menu_id)
 		THEN 
 		
-			AND menu_id = :menu_id
+			AND _.menu_id = :menu_id
+			
+		END @IF			
+		
+		@IF isset(:site_id)
+		THEN 
+		
+			AND menu_to_site.site_id = :site_id
 			
 		END @IF	
 			
 		LIMIT 1;
+		
+		-- menu_to_site
+		SELECT site_id as array_key, site_id FROM menu_to_site
+			WHERE menu_to_site.menu_id = :menu_id;	
 
 
 	END 
@@ -46,7 +63,7 @@
 		-- variables
 		IN  language_id INT,
 		IN  menu_id INT,
-		IN  site_id INT,
+		IN  site_id ARRAY,
 		IN  slug CHAR,
 		IN  name CHAR,
 			
@@ -57,6 +74,18 @@
 
 		UPDATE menu SET slug = :slug, name = :name WHERE menu_id = :menu_id;
 
+		@IF isset(:site_id) 
+		THEN
+			DELETE FROM menu_to_site WHERE menu_id = :menu_id
+		END @IF;
+
+		@EACH(:site_id) 
+			INSERT INTO menu_to_site 
+			
+				( menu_id, site_id )
+				
+			VALUES ( :menu_id, :each );
+
 	END -- edit menu 	
 	
 	-- add menu 
@@ -66,7 +95,7 @@
 		-- variables
 		IN  language_id INT,
 		IN  menu_id INT,
-		IN  site_id INT,
+		IN  site_id ARRAY,
 		IN  menu ARRAY,
 			
 		-- return menus count for count query
@@ -80,6 +109,13 @@
 			( @KEYS(:menu) )
 			
 	  	VALUES ( :menu ) RETURNING menu_id;
+	
+		@EACH(:site_id) 
+			INSERT INTO menu_to_site 
+			
+				( menu_id, site_id )
+				
+			VALUES ( @result.menu, :each );	
 
 	END
 	
@@ -130,9 +166,23 @@
 			
 			FROM menu
 			
+			@IF isset(:site_id)
+			THEN 
+				INNER JOIN menu_to_site ON (menu.menu_id = menu_to_site.menu_id)		
+			END @IF	
+		
+			WHERE 1 = 1
+
 			@IF isset(:menu_id)
 			THEN 
-				WHERE menu.menu_id IN (:menu_id)
+				AND menu.menu_id IN (:menu_id)
+			END @IF			
+
+			@IF isset(:site_id)
+			THEN 
+			
+				AND menu_to_site.site_id = :site_id
+				
 			END @IF			
 		
 			-- limit

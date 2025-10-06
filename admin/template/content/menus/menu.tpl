@@ -108,3 +108,6 @@ foreach ($languages as $key => $language) {
 	$_i++;
 }
 ?>
+
+
+import(content/sites.tpl)

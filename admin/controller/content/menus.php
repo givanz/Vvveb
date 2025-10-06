@@ -28,6 +28,8 @@ use Vvveb\Sql\menuSQL;
 use Vvveb\System\Sites;
 
 class Menus extends Categories {
+	use SitesTrait;
+
 	function deleteMenu() {
 		$view         = $this->view;
 		$menu_id      = $this->request->post['menu_id'] ?? $this->request->get['menu_id'] ?? false;
@@ -157,6 +159,7 @@ class Menus extends Categories {
 	function menu() {
 		$menuId      = $this->request->get['menu_id'] ?? false;
 		$menu_data   = 	$this->request->post['menu_data'] ?? false;
+		$site_id     = $this->request->post['site'] ?? []; //[$this->global['site_id']];
 		$view        = $this->view;
 		$menus       = new menuSQL();
 
@@ -186,11 +189,13 @@ class Menus extends Categories {
 			}
 
 			if ($menu_data) {
-				$menu_data = $menu_data + $options;
+				$menu_data = $menu_data + ['site_id' => $site_id] + $options;
+
 				$return    = $menus->editMenu($menu_data);
 				$id        = $return['menu'];
+				$menu_site = $return['menu_to_site'];
 
-				if (! $id) {
+				if (! $id && ! $menu_site) {
 					$view->errors = ['No changes!'];
 				} else {
 					$view->success[] = __('Menu saved!');
@@ -201,7 +206,7 @@ class Menus extends Categories {
 		} else {
 			if ($menu_data) {
 				$menu_data = $menu_data + $this->global;
-				$return    = $menus->addMenu(['menu' => $menu_data]);
+				$return    = $menus->addMenu(['menu' => $menu_data, 'site_id' => $site_id]);
 
 				$id     = $return['menu'];
 
@@ -219,7 +224,18 @@ class Menus extends Categories {
 		}
 
 		$view->set($results);
+		$view->menu_id = $menuId;
+		$sites         = $results['menu_data']['menu_to_site'] ?? [];
 
+		if ($sites) {
+			$sites = array_keys($sites);
+		} else {
+			if (! $menuId) {
+				$sites[] = $this->global['site_id'];
+			}
+		}
+
+		$view->sitesList = $this->sites($sites);
 		$admin_path      = \Vvveb\adminPath();
 		$controllerPath  = $admin_path . 'index.php?module=media/media';
 		$view->scanUrl   = "$controllerPath&action=scan";
