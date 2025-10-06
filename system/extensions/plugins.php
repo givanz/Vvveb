@@ -32,6 +32,8 @@ class Plugins extends Extensions {
 
 	static protected $feedUrl = 'https://plugins.vvveb.com/feed/plugins';
 
+	static protected $categoriesFeedUrl = 'https://plugins.vvveb.com/feed/categories';
+
 	static protected $extension = 'plugin';
 
 	static protected $loaded  = false;
@@ -124,7 +126,12 @@ class Plugins extends Extensions {
 			$publicDest = DIR_PUBLIC . "plugins/$pluginName";
 
 			if (! file_exists($publicDest)) {
-				return rcopy($publicSrc, $publicDest);
+				//try symlink first
+				if(symlink($publicSrc, $publicDest)){
+					return true;
+				} else {
+					return rcopy($publicSrc, $publicDest);
+				}
 			} else {
 				return false;
 			}
@@ -132,12 +139,14 @@ class Plugins extends Extensions {
 	}
 
 	static function install($zipFile, $slug = false, $validate = true) {
-		$pluginName = parent :: install($zipFile, $validate);
+		if ($pluginName = parent :: install($zipFile, $validate)) {
 
-		self :: copyPublicDir($pluginName);
-		self :: clearPluginsCache();
+			if (self :: copyPublicDir($pluginName)) {
+				self :: clearPluginsCache();
 
-		return $pluginName;
+				return $pluginName;
+			}
+		}
 	}
 
 	static function uninstall($pluginName, $site_id = SITE_ID) {

@@ -22,6 +22,7 @@
 
 namespace Vvveb\System\Extensions;
 
+use \Vvveb\System\Cache;
 use \Vvveb\System\Event;
 use \Vvveb\System\Sites;
 use function Vvveb\__;
@@ -37,6 +38,8 @@ class Themes extends Extensions {
 
 	static protected $feedUrl = 'https://themes.vvveb.com/feed/themes';
 
+	static protected $categoriesFeedUrl = 'https://themes.vvveb.com/feed/categories';
+
 	static protected $themes = [];
 
 	static protected $categories = [];
@@ -48,44 +51,72 @@ class Themes extends Extensions {
 		return $params;
 	}
 
-	static function getList($site_id = false) {
+	static function clearThemesCache($site_id = SITE_ID) {
+		$cacheDriver = Cache :: getInstance();
+		$cacheKey    = "themes_list_$site_id";
+		$cacheDriver->delete('vvveb', $cacheKey);
+	}
+
+	static function getList($site_id = false, $cache = true) {
+		$cacheDriver = Cache :: getInstance();
+		$cacheKey    = "themes_list_$site_id";
 		$activeTheme = Sites::getTheme($site_id) ?? 'default';
-		$list        = glob(DIR_ROOT . '/public/themes/*/index.html');
 
-		$themes = [];
-
-		foreach ($list as $file) {
-			$folder      = Str::match('@/([^/]+)/[a-z]+.\w+$@', $file);
-			$dir         = Str::match('@(.+)/[a-z]+.\w+$@', $file);
-			$themeConfig = $dir . DS . 'theme.php';
-
-			if ($folder == 'default') {
-				continue;
-			}
-			$theme           = [];
-			$theme['file']   = $file;
-			$theme['folder'] = $folder;
-			$theme['import'] = false;
-			$theme['author'] = 'n/a';
-
-			if (file_exists($themeConfig)) {
-				$content         = file_get_contents($themeConfig);
-				$theme           = static::getInfo($content, $folder) + $theme;
-				$theme['import'] = file_exists($dir . DS . 'import');
+		if ($cache && $themes = $cacheDriver->get('vvveb', $cacheKey)) {
+			foreach ($themes as &$theme) {
+				$theme['active'] = ($activeTheme == $theme['folder']);
 			}
 
-			$theme['name']       = $theme['name'] ?? ucfirst($theme['folder']);
-			$theme['screenshot'] = $theme['screenshot'] ?? (file_exists($dir . DS . 'screenshot.png') ? PUBLIC_PATH . 'themes/' . $folder . '/screenshot.png' : '/../media/extension.svg');
-
-			$themes[$folder] = $theme;
-
-			if ($theme['active'] = ($activeTheme == $theme['folder'])) {
+			if (isset($themes[$activeTheme])) {
+				$theme = $themes[$activeTheme];
 				unset($themes[$activeTheme]);
 				$themes = [$activeTheme => $theme] + $themes;
 			}
-		}
 
-		static :: $extensions[static :: $extension] = $themes;
+			return $themes;
+		} else {
+			$list        = glob(DIR_ROOT . '/public/themes/*/index.html');
+
+			$themes = [];
+
+			foreach ($list as $file) {
+				$folder      = Str::match('@/([^/]+)/[a-z]+.\w+$@', $file);
+				$dir         = Str::match('@(.+)/[a-z]+.\w+$@', $file);
+				$themeConfig = $dir . DS . 'theme.php';
+
+				if ($folder == 'default') {
+					continue;
+				}
+				$theme           = [];
+				$theme['file']   = $file;
+				$theme['folder'] = $folder;
+				$theme['slug']   = $folder;
+				$theme['import'] = false;
+				$theme['author'] = 'n/a';
+
+				if (file_exists($themeConfig)) {
+					$content         = file_get_contents($themeConfig);
+					$theme           = static::getInfo($content, $folder) + $theme;
+					$theme['import'] = file_exists($dir . DS . 'import');
+				}
+
+				$theme['name']       = $theme['name'] ?? ucfirst($theme['folder']);
+				$theme['screenshot'] = $theme['screenshot'] ?? (file_exists($dir . DS . 'screenshot.png') ? PUBLIC_PATH . 'themes/' . $folder . '/screenshot.png' : '/../media/extension.svg');
+
+				$themes[$folder] = $theme;
+
+				if ($theme['active'] = ($activeTheme == $theme['folder'])) {
+					unset($themes[$activeTheme]);
+					$themes = [$activeTheme => $theme] + $themes;
+				}
+			}
+
+			static :: $extensions[static :: $extension] = $themes;
+
+			if ($cache) {
+				$cacheDriver->set('vvveb', $cacheKey, $themes);
+			}
+		}
 
 		return $themes;
 	}

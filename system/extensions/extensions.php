@@ -242,19 +242,28 @@ abstract class Extensions {
 		return static :: $url;
 	}
 
-	static function getMarketList($params = []) {
+	static function getMarketUrl($url, $params = [], $key = null) {
 		$query            = http_build_query($params);
-		$content          = getUrl(static :: $feedUrl . '?' . $query);
+		$content          = getUrl($url . '?' . $query);
 
 		if ($content) {
 			$rss  = new Rss($content);
 
-			$result[static :: $extension . 's'] = $rss->get($params['start'] ?? 1, $params['limit'] ?? 10);
+			$key                                = $key ?? static :: $extension . 's';
+			$result[$key]                       = $rss->get($params['start'] ?? 1, $params['limit'] ?? 10);
 			$result['count']                    = $rss->value('count');
 
 			return $result;
 		}
 
 		return [];
+	}
+
+	static function getMarketCategories($params = [], $key = null) {
+		return static :: getMarketUrl(static :: $categoriesFeedUrl, $params, $key);
+	}
+
+	static function getMarketList($params = [], $key = null) {
+		return static :: getMarketUrl(static :: $feedUrl, $params, $key);
 	}
 }

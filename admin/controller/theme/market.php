@@ -24,13 +24,14 @@ namespace Vvveb\Controller\Theme;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\System\CacheManager;
 use Vvveb\System\Core\View;
 use Vvveb\System\Extensions\Themes;
 use Vvveb\System\Validator;
 
 class Market extends Base {
 	function install() {
-		$slug = $this->request->get['slug'];
+		$slug = $this->request->post['slug'] ?? false;
 
 		try {
 			if ($slug) {
@@ -49,6 +50,8 @@ class Market extends Base {
 						$this->view->log[] = sprintf(__('Unpacking "%s"'), $tempFile);
 
 						if (Themes :: install($tempFile, $slug, false)) {
+							CacheManager::clearObjectCache('vvveb', 'themes_list_' . $this->global['site_id']);
+
 							$themeName        = \Vvveb\humanReadable($slug);
 							$themeName        = "<b>$themeName</b>";
 							$themeActivateUrl = \Vvveb\url(['module' => 'theme/themes', 'action'=> 'activate', 'theme' => $slug]);
@@ -56,7 +59,7 @@ class Market extends Base {
 							$successMessage    = sprintf(__('Theme %s was successfully installed!'), $themeName, $themeActivateUrl);
 							$this->view->log[] = $successMessage;
 
-							$successMessage .= "<a class='btn btn-primary btn-sm m-2'  href='$themeActivateUrl'>" . __('Activate theme') . '</a>';
+							$successMessage .= "<button class='btn btn-primary btn-sm m-2' formaction='$themeActivateUrl' name='theme' value='$slug'>" . __('Activate theme') . '</button>';
 							$this->view->success[] = $successMessage;
 						} else {
 							$error                = sprintf(__('Error installing "%s"!'), $slug);
@@ -88,14 +91,15 @@ class Market extends Base {
 		$validator = new Validator(['themes']);
 
 		//allow only fields that are in the validator
-		$request = $validator->filter($this->request->get);
+		$request = array_filter($validator->filter($this->request->get));
 		$themes  = [];
 
 		$request['limit'] = $this->view->limit = 8;
 
 		try {
-			$themes    = Themes :: getMarketList($request);
-			$installed = Themes :: getList($this->global['site_id']);
+			$themes     = Themes :: getMarketList($request);
+			$categories = Themes :: getMarketCategories(['limit' => 100] + $request, 'categories');
+			$installed  = Themes :: getList($this->global['site_id']);
 
 			foreach ($themes['themes'] as &$theme) {
 				$theme['installed']  = isset($installed[$theme['slug']]);
@@ -109,5 +113,7 @@ class Market extends Base {
 		}
 
 		$view->set($themes);
+		$view->categories = $categories['categories'];
+		$view->set($request);
 	}
 }

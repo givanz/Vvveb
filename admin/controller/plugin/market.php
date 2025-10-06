@@ -24,13 +24,14 @@ namespace Vvveb\Controller\Plugin;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\System\CacheManager;
 use Vvveb\System\Core\View;
 use Vvveb\System\Extensions\Plugins;
 use Vvveb\System\Validator;
 
 class Market extends Base {
 	function install() {
-		$slug = $this->request->get['slug'];
+		$slug = $this->request->post['slug'] ?? false;
 
 		try {
 			if ($slug) {
@@ -49,6 +50,7 @@ class Market extends Base {
 						$this->view->log[] = sprintf(__('Unpacking "%s"'), $tempFile);
 
 						if (Plugins :: install($tempFile, $slug)) {
+							CacheManager::clearObjectCache('vvveb', 'plugins_list_' . $this->global['site_id']);
 							$pluginName        = \Vvveb\humanReadable($slug);
 							$pluginName        = "<b>$pluginName</b>";
 							$pluginActivateUrl = \Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'activate', 'plugin' => $slug]);
@@ -56,7 +58,7 @@ class Market extends Base {
 							$successMessage    = sprintf(__('Plugin %s was successfully installed!'), $pluginName, $pluginActivateUrl);
 							$this->view->log[] = $successMessage;
 
-							$successMessage .= "<a class='btn btn-primary btn-sm m-2'  href='$pluginActivateUrl'>" . __('Activate plugin') . '</a>';
+							$successMessage .= "<button class='btn btn-primary btn-sm m-2' formaction='$pluginActivateUrl' name='plugin' value='$slug'>" . __('Activate plugin') . '</button>';
 							$this->view->success[] = $successMessage;
 						} else {
 							$error                = sprintf(__('Error installing "%s"!'), $slug);
@@ -95,14 +97,15 @@ class Market extends Base {
 		$validator = new Validator(['plugins']);
 
 		//allow only fields that are in the validator list and remove the rest
-		$request = $validator->filter($this->request->get);
+		$request = array_filter($validator->filter($this->request->get));
 		$plugins = [];
 
 		$request['limit'] = $this->view->limit = 8;
 
 		try {
-			$plugins   =  Plugins :: getMarketList($request);
-			$installed = Plugins :: getList($this->global['site_id']);
+			$plugins    = Plugins :: getMarketList($request);
+			$categories = Plugins :: getMarketCategories(['limit' => 100] + $request, 'categories');
+			$installed  = Plugins :: getList($this->global['site_id']);
 
 			foreach ($plugins['plugins'] as &$plugin) {
 				$plugin['installed']  = isset($installed[$plugin['slug']]);
@@ -117,6 +120,8 @@ class Market extends Base {
 
 		$admin_path       = \Vvveb\adminPath();
 		$view->installUrl = $admin_path . 'index.php?module=plugin/market&action=install&json';
+		$view->categories = $categories['categories'];
+		$view->set($request);
 		$view->set($plugins);
 	}
 }
