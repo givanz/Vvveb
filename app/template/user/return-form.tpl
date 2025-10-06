@@ -26,7 +26,7 @@ import(common.tpl)
 
 	@reason [name="return_reason_id"]|value = $text['return_reason_id']
 	@reason [name="return_reason_id"]|addNewAttribute = <?php if ($text['return_reason_id'] == $selected) echo 'checked';?>
-	@reason span = <?php if (is_array($text)) { if (isset($text['name'])) echo htmlspecialchars(Vvveb\humanReadable($text['name']));} else echo $text;?>  
+	@reason span = <?php if (is_array($text)) { if (isset($text['name'])) echo htmlspecialchars(Vvveb\humanReadable($text['name']));} else echo htmlspecialchars($text);?>  
 
 @reason|after = <?php 
 } }?>
