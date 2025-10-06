@@ -35,10 +35,14 @@ class AttributeGroup extends Crud {
 	protected $module = 'product';
 
 	function save() {
-		$delete          	  = $this->request->post['delete']['attribute_id'] ?? [];
-		$attribute          = $this->request->post['attribute'] ?? [];
-		$attribute_group	   = $this->request->post['attribute_group'] ?? [];
-		$attribute_group_id = $this->request->get['attribute_group_id'] ?? false;
+		$this->redirect = false;
+		parent::save();
+
+		$delete          	     = $this->request->post['delete']['attribute_id'] ?? [];
+		$attribute             = $this->request->post['attribute'] ?? [];
+		$attribute_group	      = $this->request->post['attribute_group'] ?? [];
+		$edit                  = $this->request->get['attribute_group_id'] ?? false;
+		$attribute_group_id    = $this->attribute_group_id;
 		$new                = [];
 
 		foreach ($attribute as $index => &$attr) {
@@ -75,15 +79,18 @@ class AttributeGroup extends Crud {
 			$result      = $attributeGroup->edit(['attribute_group_id' => $attribute_group_id, 'attribute_group' => $attribute_group]);
 
 			if ($result && isset($result['attribute_group_content'])) {
-				//$successMessage        = __('Saved!');
-				//$this->view->success[] = $successMessage;
-				//$this->view->errors    = [];
+				if (! $edit) {
+					$this->redirect(['module' => "{$this->module}/{$this->controller}", 'attribute_group_id' => $attribute_group_id]);
+				}
+
+				$successMessage        = __('Saved!');
+				$this->view->success['get'] = $successMessage;
 			} else {
 				$this->view->errors[] = __('Error saving!');
 			}
 		}
 
-		parent::save();
+		return $this->index();
 	}
 
 	function index() {
