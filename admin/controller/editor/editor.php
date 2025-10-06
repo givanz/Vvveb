@@ -89,7 +89,7 @@ class Editor extends Base {
 	private function loadTemplateList($theme = null) {
 		$list = $this->themeConfig['pages'] ?? [];
 
-		$pages = $list + Cache::getInstance()->cache(APP, 'template-list.' . $theme,
+		$pages = $list + Cache::getInstance()->cache(APP, 'template-list-' . $theme,
 		function () use ($theme) {
 			return \Vvveb\getTemplateList($theme);
 		}, 604800);
@@ -100,7 +100,7 @@ class Editor extends Base {
 	}
 
 	private function clearTemplateListCache($theme = null) {
-		return Cache::getInstance()->delete(APP, 'template-list.' . $theme);
+		return Cache::getInstance()->delete(APP, 'template-list-' . $theme);
 	}
 
 	private function loadEditorData() {
@@ -164,7 +164,8 @@ class Editor extends Base {
 		$view->themeBaseUrl = PUBLIC_PATH . 'themes/' . $theme . '/';
 		$view->themeName    = $theme;
 		$view->pages        = $this->loadTemplateList($theme);
-		$view->themeFonts   = Cache::getInstance()->cache(APP,'fonts-list.' . $theme, function () use ($theme) {
+
+		$view->themeFonts   = Cache::getInstance()->cache(APP,'fonts-list-' . $theme, function () use ($theme) {
 			$fonts = \Vvveb\System\Media\Font::themeFonts($theme);
 			$names = [];
 
@@ -191,6 +192,10 @@ class Editor extends Base {
 		$posts   = [];
 
 		foreach ($results['post'] as $post) {
+			//skip posts without translations
+			if (! isset($post['slug']) || ! isset($post['name'])) {
+				continue;
+			}
 			$slug = htmlspecialchars($post['slug']);
 			$url  = url('content/page/index',['slug' => $slug, 'post_id' => $post['post_id']]);
 
@@ -308,6 +313,13 @@ class Editor extends Base {
 					$name = \Vvveb\humanReadable($url);
 				}
 			}
+
+			$global = false;
+
+			if ($file == 'index.html') {
+				$global = true;
+			}
+
 			$current_page += [
 				'name'      => $key,
 				'file'      => $file,
@@ -315,6 +327,7 @@ class Editor extends Base {
 				'title'     => $name,
 				'folder'    => '',
 				'className' => $className,
+				'global'    => $global,
 			];
 
 			$view->pages = [$key => $current_page] + $view->pages;
