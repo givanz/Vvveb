@@ -31,15 +31,22 @@ class Category extends Base {
 
 	function index() {
 		$category_name             = $this->request->get['slug'] ?? '';
+		$type                      = $this->request->get['type'] ?? '';
 		$this->view->category_name = $category_name;
 
 		if ($category_name) {
 			$categorySql = new CategorySQL();
 			$options     = $this->global + ['slug' => $category_name];
+
+			if ($type) {
+				$options['post_type'] = $type;
+			}
+
 			$category    = $categorySql->getCategory($options);
 
 			if ($category) {
 				$this->request->get['taxonomy_item_id'] = $category['taxonomy_item_id'];
+				$this->request->get['slug']             = $category['slug'];
 				$this->view->category_name              = $category['name'];
 			} else {
 				$message = sprintf(__('%s not found!'), ucfirst(__($this->type)));
