@@ -33,10 +33,6 @@ class Media extends Base {
 
 	protected $dirMedia = DIR_MEDIA;
 
-	protected $uploadDenyExtensions = ['php', 'svg', 'js'];
-
-	//protected $uploadAllowExtensions = ['ico','jpg','jpeg','png','gif','webp', 'mp4', 'mkv', 'mov'];
-
 	function index() {
 		$adminPath      = \Vvveb\adminPath();
 		$controllerPath = $adminPath . 'index.php?module=media/media';

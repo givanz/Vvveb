@@ -28,6 +28,14 @@ use function Vvveb\parseQuantity;
 use function Vvveb\sanitizeFileName;
 
 trait Media {
+	protected $uploadDenyExtensions = ['php', 'svg', 'js', 'exe'];
+
+	protected $uploadDenyMime    = ['image/svg', 'image/svg+xml', 'application/javascript', 'application/x-msdownload'];
+
+	protected $stripMetadataMime = ['image/jpg', 'image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+
+	//protected $uploadAllowExtensions = ['ico','jpg','jpeg','png','gif','webp', 'mp4', 'mkv', 'mov'];
+
 	function dirForType($type) {
 		switch ($type) {
 			case 'public':
@@ -78,11 +86,13 @@ trait Media {
 				$fileName  = sanitizeFileName($files['name'][$count]);
 
 				if (V_SUBDIR_INSTALL && strpos($path, V_SUBDIR_INSTALL) === 0) {
+					//$path  = str_replace(V_SUBDIR_INSTALL, '', $path);
 					$path  = substr_replace($path, '', 0, strlen(V_SUBDIR_INSTALL));
 				}
 
 				$path      = preg_replace('@.*[\\\/]public[\\\/]media|.*[\\\/]media|.*[\\\/]public@', '', $path);
 				$extension = strtolower(substr($fileName, strrpos($fileName, '.') + 1));
+				$mimeType  = mime_content_type($files['tmp_name'][$count]);
 
 				if ($files['error'][$count] == UPLOAD_ERR_OK) {
 					$success = true;
@@ -93,6 +103,15 @@ trait Media {
 				if (isset($this->uploadDenyExtensions) && in_array($extension, $this->uploadDenyExtensions)) {
 					$message .= __('File type not allowed!');
 					$success = false;
+				}
+
+				if (isset($this->uploadDenyMime) && in_array($mimeType, $this->uploadDenyMime)) {
+					$message .= __('File type not allowed!');
+					$success = false;
+				}
+
+				if (isset($this->stripMetadataMime) && in_array($mimeType, $this->stripMetadataMime)) {
+					$files['tmp_name'][$count];
 				}
 
 				$origFilename = $fileName;
@@ -159,6 +178,13 @@ trait Media {
 
 		$currentFile = $dirMedia . DS . $file;
 		$targetFile  = $dirMedia . DS . $newfile;
+
+		$extension = strtolower(substr($newfile, strrpos($newfile, '.') + 1));
+
+		if (isset($this->uploadDenyExtensions) && in_array($extension, $this->uploadDenyExtensions)) {
+			$message .= __('File type not allowed!');
+			$success = false;
+		}
 
 		if ($duplicate) {
 			if (copy($currentFile, $targetFile)) {
