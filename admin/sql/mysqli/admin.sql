@@ -64,6 +64,7 @@
 		IN username CHAR,
 		IN email CHAR,
 		IN token CHAR,
+		IN admin_auth_token CHAR,
 		IN admin_id INT,
 		IN status INT,
 		IN role_id INT,
@@ -73,7 +74,12 @@
         
         SELECT _.*, role.name as role,role.permissions FROM admin AS _ 
 			LEFT JOIN role ON (_.role_id = role.role_id)
-		
+
+			@IF isset(:admin_auth_token)
+			THEN 
+				LEFT JOIN admin_auth_token ON (_.admin_id = admin_auth_token.admin_id)
+			END @IF	
+
 		WHERE 1 = 1
 
 		@IF isset(:username) && !isset(:email)
@@ -105,7 +111,12 @@
 		THEN 
 			AND _.token = :token 
 		END @IF	
-				
+
+		@IF isset(:admin_auth_token)
+		THEN 
+			AND admin_auth_token.token = :admin_auth_token 
+		END @IF	
+
 	   	@IF isset(:role_id)
 		THEN 
 			AND _.role_id = :role_id 
