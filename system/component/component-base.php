@@ -48,7 +48,7 @@ class ComponentBase {
 		if (! self :: $global) {
 			$user                                  = User::current();
 			self :: $global['start']               = 0;
-			self :: $global['site_id']             = sess('site_id') ?? (defined('SITE_ID') ? SITE_ID : 0);
+			self :: $global['site_id']             = (APP == 'admin') ? sess('site_id') ?? SITE_ID : (defined('SITE_ID') ? SITE_ID : 0);
 			self :: $global['user_id']             = $user['user_id'] ?? null;
 			self :: $global['user_group_id']       = $user['user_group_id'] ?? 1;
 			self :: $global['language_id']         = (isset($request->request['language_id']) && is_numeric($request->request['language_id'])) ?
@@ -103,6 +103,10 @@ class ComponentBase {
 				}
 
 				$value = (isset($request->request[$key]) ? $request->request[$key] : (isset($request->get[$key]) ? $request->get[$key] : null));
+			}
+
+			if ($value === null) {
+				unset($this->options[$key]);
 			}
 		}
 
