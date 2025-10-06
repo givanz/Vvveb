@@ -24,6 +24,7 @@ namespace Vvveb\Controller\User;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use function Vvveb\model;
 use Vvveb\System\Core\View;
 use Vvveb\System\Images;
 use Vvveb\System\User\Admin;
@@ -38,13 +39,12 @@ class User extends Base {
 	function index() {
 		$view = View :: getInstance();
 
-		$user_id = (int)($this->request->get[$this->type . '_id'] ?? 0);
+		$user_id = (int)($this->request->get[$this->type . '_id'] ?? false);
 
 		if ($user_id) {
 			$options = [$this->type . '_id' => (int)$user_id];
 
-			$sqlModel   = 'Vvveb\Sql\\' . ucfirst($this->type) . 'SQL';
-			$users      = new $sqlModel();
+			$users      = model($this->type);
 			$user       = $users->get($options);
 
 			if (! $user) {
@@ -57,8 +57,10 @@ class User extends Base {
 			}
 
 			//featured avatar
-			if (isset($user['avatar'])) {
-				$user['avatar_url'] = Images::image($user['avatar'], $this->type);
+			foreach (['avatar', 'cover'] as $image) {
+				if (isset($user[$image])) {
+					$user[$image . '_url']= Images::image($user[$image], $this->type);
+				}
 			}
 
 			if (isset($user['site_access'])) {
@@ -72,10 +74,16 @@ class User extends Base {
 		$controllerPath  = $admin_path . 'index.php?module=media/media';
 		$view->scanUrl   = "$controllerPath&action=scan";
 		$view->uploadUrl = "$controllerPath&action=upload";
+
+		if ($this->type == 'user') {
+			$userGroup           = model('user_group');
+			$groups              = $userGroup->getAll(['status' => 1] + $this->global)['user_group'] ?? '';
+			$view->user_group_id = $groups;
+		}
 	}
 
 	function loginAs() {
-		$user_id = (int)($this->request->get[$this->type . '_id'] ?? 0);
+		$user_id = (int)($this->request->get[$this->type . '_id'] ?? false);
 
 		if ($user_id) {
 			$view      = View :: getInstance();
@@ -93,19 +101,20 @@ class User extends Base {
 				$view->errors[] = $error;
 			}
 		}
+
+		return $this->index();
 	}
 
 	function save() {
 		$validator = new Validator([$this->type]);
 		$view      = View :: getInstance();
 
-		$user_id = (int)($this->request->get[$this->type . '_id'] ?? 0);
+		$user_id = (int)($this->request->get[$this->type . '_id'] ?? false);
 		$user    = $this->request->post[$this->type] ?? [];
 
 		if (($errors = $validator->validate($user)) === true) {
-			$sqlModel = 'Vvveb\Sql\\' . ucfirst($this->type) . 'SQL';
-			$users    = new $sqlModel();
-			$user     = $this->request->post[$this->type] ?? [];
+			$users      = model($this->type);
+			$user       = $this->request->post[$this->type] ?? [];
 
 			//if no password provided don't change
 			if (empty($user['password'])) {
@@ -123,6 +132,8 @@ class User extends Base {
 			} else {
 				$user['site_access'] = '[]';
 			}
+
+			$user['updated_at'] = date('Y-m-d H:i:s');
 
 			if ($user_id) {
 				$result  = $users->edit([$this->type . '_id' => $user_id, $this->type => $user]);
