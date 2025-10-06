@@ -1081,6 +1081,62 @@ function controller($name) {
 	return new $controllerClass();
 }
 
+function postTypes($type) {
+	$defaultTypes = [
+		'post' => [
+			'post' => [
+				'name'    => 'Post',
+				'source'  => 'default',
+				'site_id' => '0',
+				'type'    => 'post',
+				'plural'  => 'posts',
+				'icon'    => 'icon-document-text-outline',
+				'comments'=> true,
+			],
+			'page' => [
+				'name'    => 'Page',
+				'source'  => 'default',
+				'site_id' => '0',
+				'type'    => 'page',
+				'plural'  => 'pages',
+				'icon'    => 'icon-document-outline',
+				'comments'=> false,
+			],
+		],
+		'product' => [
+			'product' => [
+				'name'    => 'Product',
+				'type'    => 'product',
+				'site_id' => '0',
+				'source'  => 'default',
+				'plural'  => 'products',
+				'icon'    => 'icon-cube-outline',
+			],
+		],
+	];
+
+	$default               = $defaultTypes[$type] ?? [];
+	$typeName              = ucfirst($type);
+	list($pluginTypes)     = System\Event::trigger('Vvveb\postTypes', "custom$typeName", []);
+	array_walk($pluginTypes, function (&$type,$key) {$type['source'] = 'plugin'; $type['name'] = ucfirst($key); });
+
+	$userTypes = getSetting($type, 'types', []);
+
+	$params            = ['module' => "settings/{$type}-type"];
+	$paramsList        = ['module' => "settings/{$type}-types"];
+
+	array_walk($userTypes, function (&$type,$key) use ($params, $paramsList) {
+		$type['source'] = 'user';
+		$type['name'] = ucfirst($key);
+		$type['url']        = \Vvveb\url($params + ['type' => $type['type']]);
+		$type['delete-url'] = \Vvveb\url($paramsList + ['action' => 'delete', 'type[]' => $type['type']]);
+	});
+
+	$types = $default + $pluginTypes + $userTypes;
+
+	return $types;
+}
+
 function d(...$variables) {
 	foreach ($variables as $variable) {
 		echo highlight_string("<?php\n" . var_export($variable, true), true);
@@ -1213,7 +1269,7 @@ function availableLanguages() {
 		return [];
 	}, 259200);
 
-	return $languages;
+	return $languages ?: [];
 }
 
 function availableCurrencies() {

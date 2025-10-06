@@ -30,6 +30,7 @@ use function Vvveb\clearLanguageCache;
 use function Vvveb\filter;
 use function Vvveb\setLanguage;
 use Vvveb\Sql\taxonomySQL;
+use Vvveb\System\Cache;
 use Vvveb\System\Core\FrontController;
 use Vvveb\System\Core\Request;
 use Vvveb\System\Core\View;
@@ -103,7 +104,7 @@ class Base {
 
 		$custom_posts_types        = \Vvveb\getSetting('post', 'types', []);
 		$custom_posts_types += $default_custom_posts;
-		list($custom_posts_types) = Event::trigger(__CLASS__, __FUNCTION__, $custom_posts_types);
+		list($custom_posts_types) = Event::trigger('Vvveb\postTypes', __FUNCTION__, $custom_posts_types);
 
 		$custom_post_menu = \Vvveb\config('custom-post-menu', []);
 		$posts_menu       = [];
@@ -170,7 +171,7 @@ class Base {
 
 		$custom_products_types       = \Vvveb\getSetting('product', 'types', []);
 		$custom_products_types += $default_custom_products;
-		list($custom_products_types) = Event::trigger(__CLASS__, __FUNCTION__, $custom_products_types);
+		list($custom_products_types) = Event::trigger('Vvveb\postTypes', __FUNCTION__, $custom_products_types);
 
 		$custom_product_menu = \Vvveb\config('custom-product-menu', []);
 		$products_menu       = [];
@@ -378,16 +379,20 @@ class Base {
 		$view->removeVattrs(false);
 
 		if (isset($this->request->get['errors']) && $this->request->get['errors']) {
-			$view->errors['get'] = htmlentities($this->request->get['errors']);
+			$view->errors['get'] = htmlspecialchars($this->request->get['errors']);
 		}
 
 		if (isset($this->request->get['success']) && $this->request->get['success']) {
-			$view->success['get'] = htmlentities($this->request->get['success']);
+			$view->success['get'] = htmlspecialchars($this->request->get['success']);
 		}
 
 		//prevent admin loading in iframe
 		$this->response->addHeader('X-Frame-Options', 'SAMEORIGIN');
 		$this->response->addHeader('X-Content-Type-Options', 'nosniff');
+
+		if (! $this->session->get('csrf')) {
+			$this->session->set('csrf', Str::random());
+		}
 
 		$admin = Admin::current();
 
@@ -395,9 +400,7 @@ class Base {
 			return $this->requireLogin();
 		}
 
-		if (! $this->session->get('csrf')) {
-			$this->session->set('csrf', Str::random());
-		}
+		$this->checkCsrf();
 
 		if (($site_id = ($this->request->post['site'] ?? false)) && is_numeric($site_id)) {
 			$this->setSite($site_id);
@@ -474,25 +477,34 @@ class Base {
 		if (defined('CLI')) {
 			return;
 		}
-		$menu             = \Vvveb\config('admin-menu', []);
 
-		//custom posts -- add to menu
-		$this->taxonomies = $this->getTaxonomies();
-		$posts_menu       = $this->customPost();
-		$menu             = arrayInsertArrayAfter('edit', $menu, $posts_menu);
+		$cacheDriver = Cache :: getInstance();
+		$cacheKey    = $this->global['admin_id'] . '.' . $this->global['site_id'] . '.' . $this->global['language_id'];
 
-		//products - add to menu
-		$products_menu = $this->customProduct();
-		$menu          = arrayInsertArrayAfter('sales', $menu, $products_menu);
+		if ($menu = $cacheDriver->get('admin-menu', $cacheKey)) {
+		} else {
+			$menu             = \Vvveb\config('admin-menu', []);
 
-		list($menu)       = Event::trigger(__CLASS__, __FUNCTION__ . '-menu', $menu);
+			//custom posts -- add to menu
+			$this->taxonomies = $this->getTaxonomies();
+			$posts_menu       = $this->customPost();
+			$menu             = arrayInsertArrayAfter('edit', $menu, $posts_menu);
 
-		$urls = [];
-		$this->getPermissionsFromUrl($menu, $urls);
-		$permissions = Admin::hasPermission($urls);
-		//$urls        = array_map(fn ($value) => $value ? ($permissions[$value] ?? false) : false, $urls);
-		$urls        = array_map(function ($value) use ($permissions) { return $value ? ($permissions[$value] ?? false) : false; }, $urls);
-		$this->setPermissionsFromUrl($menu, $urls);
+			//products - add to menu
+			$products_menu = $this->customProduct();
+			$menu          = arrayInsertArrayAfter('sales', $menu, $products_menu);
+
+			list($menu)       = Event::trigger(__CLASS__, __FUNCTION__ . '-menu', $menu);
+
+			$urls = [];
+			$this->getPermissionsFromUrl($menu, $urls);
+			$permissions = Admin::hasPermission($urls);
+			//$urls        = array_map(fn ($value) => $value ? ($permissions[$value] ?? false) : false, $urls);
+			$urls        = array_map(function ($value) use ($permissions) { return $value ? ($permissions[$value] ?? false) : false; }, $urls);
+			$this->setPermissionsFromUrl($menu, $urls);
+
+			$cacheDriver->set('admin-menu', $cacheKey, $menu);
+		}
 
 		$view->menu         = $menu;
 		$view->global       = $this->global;
@@ -540,6 +552,18 @@ class Base {
 		$this->view->render();
 
 		die(0);
+	}
+
+	/**
+	 * Call this method on form posts to protect against csrf attacks.
+	 *
+	 */
+	protected function checkCsrf() {
+		if (! defined('CLI') &&
+			(($method = $this->request->getMethod()) == 'post') &&
+			(! ($csrf = $this->session->get('csrf')) || ! ($postCsrf = ($this->request->post['csrf'] ?? false)) || ($csrf != $postCsrf))) {
+			$this->notFound('Invalid csrf!', 403);
+		}
 	}
 
 	/**

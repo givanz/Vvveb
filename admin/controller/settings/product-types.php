@@ -24,15 +24,4 @@ namespace Vvveb\Controller\Settings;
 
 class ProductTypes extends PostTypes {
 	protected $type = 'product';
-
-	protected $defaultTypes = 	[
-		'product' => [
-			'name'    => 'Product',
-			'type'    => 'product',
-			'site_id' => '0',
-			'source'  => 'default',
-			'plural'  => 'products',
-			'icon'    => 'icon-cube-outline',
-		],
-	];
 }

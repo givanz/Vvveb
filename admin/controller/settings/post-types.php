@@ -23,7 +23,7 @@
 namespace Vvveb\Controller\Settings;
 
 use Vvveb\Controller\Listing;
-use Vvveb\System\Event;
+use function Vvveb\postTypes;
 
 class PostTypes extends Listing {
 	protected $type = 'post';
@@ -51,45 +51,8 @@ class PostTypes extends Listing {
 		return $this->index();
 	}
 
-	protected $defaultTypes = 	[
-		'post' => [
-			'name'    => 'Post',
-			'source'  => 'default',
-			'site_id' => '0',
-			'type'    => 'post',
-			'plural'  => 'posts',
-			'icon'    => 'icon-document-text-outline',
-			'comments'=> true,
-		],
-		'page' => [
-			'name'    => 'Page',
-			'source'  => 'default',
-			'site_id' => '0',
-			'type'    => 'page',
-			'plural'  => 'pages',
-			'icon'    => 'icon-document-outline',
-			'comments'=> false,
-		],
-	];
-
 	function index() {
-		$type              = ucfirst($this->type);
-		list($pluginTypes) = Event::trigger('Vvveb\Controller\Base', "custom$type", []);
-		array_walk($pluginTypes, function (&$type,$key) {$type['source'] = 'plugin'; $type['name'] = ucfirst($key); });
-
-		$userTypes = \Vvveb\getSetting($this->type, 'types', []);
-
-		$params            = ['module' => "settings/{$this->type}-type"];
-		$paramsList        = ['module' => "settings/{$this->type}-types"];
-
-		array_walk($userTypes, function (&$type,$key) use ($params, $paramsList) {
-			$type['source'] = 'user';
-			$type['name'] = ucfirst($key);
-			$type['url']        = \Vvveb\url($params + ['type' => $type['type']]);
-			$type['delete-url'] = \Vvveb\url($paramsList + ['action' => 'delete', 'type[]' => $type['type']]);
-		});
-
-		$types = $this->defaultTypes + $pluginTypes + $userTypes;
+		$types = postTypes($this->type);
 
 		$this->view->type  = $types;
 		$this->view->count = count($types);
