@@ -62,7 +62,7 @@ class Sites {
 			self :: $sites = \Vvveb\config('sites');
 
 			foreach (self::$sites as &$site) {
-				$site['url'] = self :: url($site['host']) . (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
+				$site['url'] = self :: url($site['host']) . (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . ($site['path'] ?? '' ? '/' . $site['path'] : '');
 			}
 
 			return self :: $sites;
@@ -246,7 +246,7 @@ class Sites {
 	}
 
 	public static function getHost() {
-		$host =$_SERVER['HTTP_HOST'] ?? 'localhost';
+		$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
 		return $host;
 	}
@@ -260,36 +260,44 @@ class Sites {
 			$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 		}
 
-		$host = self :: siteKey($host);
+		$cacheDriver = Cache :: getInstance();
+		$cacheKey    = $host;
 
-		$first = strpos($host, ' ');
-		$last  = strrpos($host, ' ');
-
-		$subdomain_wildcard    = '* ' . substr($host, $first);
-		$tld_wildcard          = substr($host, 0, $last) . ' *';
-		$domain_wildcard       = substr($host, 0, $first) . ' *';
-		$full_wildcard         = '* ' . trim(substr($host, $first, $last - $first)) . ' *';
-
-		$result = \Vvveb\config("sites.$host", null) ??
-				  \Vvveb\config("sites.$subdomain_wildcard", null) ??
-				  \Vvveb\config("sites.$domain_wildcard", null) ??
-				  \Vvveb\config("sites.$full_wildcard", null) ??
-				  \Vvveb\config("sites.$tld_wildcard", null) ??
-				  \Vvveb\config('sites.* * *', null);
-
-		if ($result) {
-			$result['host'] = self :: url($result['host']);
+		if ($result = $cacheDriver->get('site', $cacheKey)) {
+			return $result;
 		} else {
-			if (APP !== 'app') {
-				//if site does not exist use fallback for admin, cli etc
-				return [
-					'host'     => 'localhost',
-					'theme'    => 'landing',
-					'template' => '',
-					'id'       => 1,
-					'state'    => 'live',
-				];
+			$host  = self :: siteKey($host);
+			$first = strpos($host, ' ');
+			$last  = strrpos($host, ' ');
+
+			$subdomain_wildcard    = '* ' . substr($host, $first);
+			$tld_wildcard          = substr($host, 0, $last) . ' *';
+			$domain_wildcard       = substr($host, 0, $first) . ' *';
+			$full_wildcard         = '* ' . trim(substr($host, $first, $last - $first)) . ' *';
+
+			$result = \Vvveb\config("sites.$host", null) ??
+					  \Vvveb\config("sites.$subdomain_wildcard", null) ??
+					  \Vvveb\config("sites.$domain_wildcard", null) ??
+					  \Vvveb\config("sites.$full_wildcard", null) ??
+					  \Vvveb\config("sites.$tld_wildcard", null) ??
+					  \Vvveb\config('sites.* * *', null);
+
+			if ($result) {
+				$result['host'] = self :: url($result['host']);
+			} else {
+				if (APP !== 'app') {
+					//if site does not exist use fallback for admin, cli etc
+					$result = [
+						'host'     => 'localhost',
+						'theme'    => 'landing',
+						'template' => '',
+						'id'       => 1,
+						'state'    => 'live',
+					];
+				}
 			}
+
+			$cacheDriver->set('site', $cacheKey, $result);
 		}
 
 		return $result;
