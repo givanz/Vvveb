@@ -49,7 +49,7 @@ class Vendors extends ComponentBase {
 
 		$filter = [];
 
-		if ($this->options['filter']) {
+		if (isset($this->options['filter'])) {
 			$filter = $this->options['filter']['vendor_id'] ?? [];
 		}
 

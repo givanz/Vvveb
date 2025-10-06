@@ -75,7 +75,7 @@ class Archives extends ComponentBase {
 
 			$archive['month'] = sprintf('%02d', $archive['month']);
 
-			$archive['url'] = htmlentities(\Vvveb\url('content/archive/index', $archive));
+			$archive['url'] = htmlspecialchars(\Vvveb\url('content/archive/index', $archive));
 		}
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);

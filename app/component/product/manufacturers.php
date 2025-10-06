@@ -43,13 +43,15 @@ class Manufacturers extends ComponentBase {
 		'filter'                   => null,
 	];
 
+	public $cacheExpire = 0; //no cache
+
 	function results() {
 		$category = new \Vvveb\Sql\ManufacturerSQL();
 		$results  = $category->getAll($this->options);
 
 		$filter = [];
 
-		if ($this->options['filter']) {
+		if (isset($this->options['filter'])) {
 			$filter = $this->options['filter']['manufacturer_id'] ?? [];
 		}
 

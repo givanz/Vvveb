@@ -20,28 +20,36 @@
  *
  */
 
-namespace Vvveb\Component\Product;
+namespace Vvveb\Component;
 
-use \Vvveb\Sql\Product_SubscriptionSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use Vvveb\System\Images;
+use function Vvveb\url;
 
-class Subscriptions extends ComponentBase {
+class Admins extends ComponentBase {
 	public static $defaultOptions = [
-		'start'       => 0,
-		'limit'       => 7,
-		'site_id'     => NULL,
-		'language_id' => NULL,
-		'product_id'  => 'url',
-		'parent_id'   => NULL,
-		'search'      => NULL,
+		'start'  => 0,
+		'limit'  => ['url', 4],
+		'status' => 1,
 	];
 
-	public $cacheExpire = 0; //no cache
+	public $options = [];
 
 	function results() {
-		$category = new Product_SubscriptionSQL();
-		$results  = $category->getAll($this->options);
+		$admins = new \Vvveb\Sql\AdminSQL();
+
+		$results = $admins->getAll($this->options);
+
+		if (isset($results['admin'])) {
+			foreach ($results['admin'] as $id => &$admin) {
+				if (isset($admin['avatar'])) {
+					$admin['avatar_url'] = Images::image($admin['avatar'], 'admin');
+				}
+				unset($admin['password']);
+				$admin['url'] = url('content/user/index', ['admin_id' => $admin['admin_id']]);
+			}
+		}
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 

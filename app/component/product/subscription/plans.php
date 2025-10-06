@@ -37,6 +37,8 @@ class Plans extends ComponentBase {
 		'search'         => NULL,
 	];
 
+	public $cacheExpire = 0; //no cache
+
 	function results() {
 		$category = new Subscription_PlanSQL();
 		$results  = $category->getAll($this->options);

@@ -28,7 +28,7 @@ use Vvveb\System\Event;
 class Tags extends ComponentBase {
 	public static $defaultOptions = [
 		'language_id'              => NULL,
-		'count'                    => ['url', 4],
+		'count'                    => NULL,
 		'id_manufacturer'          => NULL,
 		'order'                    => ['url', 'price asc'],
 		'id_category'              => NULL,

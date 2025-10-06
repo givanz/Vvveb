@@ -44,6 +44,8 @@ class Options extends ComponentBase {
 		'search'              => NULL,
 	];
 
+	public $cacheExpire = 0; //no cache
+
 	function results() {
 		$productSql      = new ProductSQL();
 		$optionSql       = new Product_OptionSQL();
@@ -52,7 +54,7 @@ class Options extends ComponentBase {
 
 		$product = [];
 
-		if ($this->options['product_id']) {
+		if (isset($this->options['product_id'])) {
 			$product = $productSql->get(['product_id' => $this->options['product_id']]);
 		}
 
@@ -61,7 +63,7 @@ class Options extends ComponentBase {
 
 		$voptions   = ['product_id' => $this->options['product_id'], 'start' => 0, 'limit' => 1];
 
-		if ($this->options['product_variant_id']) {
+		if (isset($this->options['product_variant_id'])) {
 			$voptions['product_variant_id'] = [$this->options['product_variant_id']];
 		}
 

@@ -44,6 +44,8 @@ class Reviews extends Comments {
 		'order'         => 'asc', //desc
 	];
 
+	public $cacheExpire = 0; //no cache
+
 	function results() {
 		$results = parent::results();
 

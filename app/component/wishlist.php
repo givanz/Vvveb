@@ -46,6 +46,8 @@ class Wishlist extends ComponentBase {
 
 	public $options = [];
 
+	public $cacheExpire = 0; //no cache
+
 	function results() {
 		$products = new \Vvveb\Sql\User_wishlistSQL();
 

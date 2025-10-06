@@ -42,7 +42,7 @@ class Address extends ComponentBase {
 	function results() {
 		$results  = [];
 
-		if ($this->options['user_id']) {
+		if (isset($this->options['user_id'])) {
 			$user_address  = new User_AddressSQL();
 			$results       = $user_address->getAll($this->options);
 

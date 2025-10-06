@@ -40,6 +40,8 @@ class Digital_assets extends ComponentBase {
 
 	public $options = [];
 
+	public $cacheExpire = 0; //no cache
+
 	function results() {
 		$digital_asset = new Digital_assetSQL();
 

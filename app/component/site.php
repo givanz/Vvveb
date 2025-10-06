@@ -62,7 +62,7 @@ class Site extends ComponentBase {
 		} else {
 		}
 
-		$results['url']      = url('index/index');
+		$results['url']      = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . '/'; //url('index/index');
 		$results['full-url'] = SITE_URL; //url('index/index', $urlOptions + ['host' => '*.*.*']);
 
 		$results['site_id'] = $this->options['site_id'];

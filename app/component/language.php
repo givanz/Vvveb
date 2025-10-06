@@ -25,6 +25,7 @@ namespace Vvveb\Component;
 use function Vvveb\availableLanguages;
 use function Vvveb\getCurrentUrl;
 use function Vvveb\isSecure;
+use function Vvveb\session;
 use Vvveb\Sql\LanguageSQL;
 use Vvveb\System\Cache;
 use Vvveb\System\Component\ComponentBase;
@@ -68,7 +69,7 @@ class Language extends ComponentBase {
 		$view       = View::getInstance();
 
 		if ($results) {
-			$results['current']    = $code = $request->request['language'] ?? Session::getInstance()->get('language') ?? 'en_US';
+			$results['current']    = $code = $request->request['language'] ?? session('language', 'en_US');
 			$language              = $results['language'][$code] ?? [];
 
 			if (! $language) {

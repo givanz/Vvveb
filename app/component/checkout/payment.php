@@ -32,6 +32,8 @@ class Payment extends ComponentBase {
 		'checkout' => null,
 	];
 
+	public $cacheExpire = 0; //no cache
+
 	function cacheKey() {
 		//disable caching
 		return false;

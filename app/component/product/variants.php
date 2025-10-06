@@ -41,6 +41,8 @@ class Variants extends ComponentBase {
 		'search'      => NULL,
 	];
 
+	public $cacheExpire = 0; //no cache
+
 	function results() {
 		$productSql      = new ProductSQL();
 		$variantSql      = new Product_VariantSQL();

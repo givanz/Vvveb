@@ -38,4 +38,6 @@ class Questions extends Comments {
 		'limit'         => 10,
 		'order'         => 'asc', //desc
 	];
+
+	public $cacheExpire = 0; //no cache
 }

@@ -49,6 +49,8 @@ class Comments extends ComponentBase {
 		'order'       => 'asc', //desc
 	];
 
+	public $cacheExpire = 0; //no cache
+
 	//called when fetching data, when cache expires
 	function results() {
 		$this->modelInstance         = model($this->modelName); //new CommentSQL();

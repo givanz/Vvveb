@@ -23,6 +23,7 @@
 namespace Vvveb\Component;
 
 use function Vvveb\availableCurrencies;
+use function Vvveb\session;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Session;
@@ -44,7 +45,7 @@ class Currency extends ComponentBase {
 		$results['currency'] = availableCurrencies();
 
 		if (isset($results['currency']) && $results['currency']) {
-			$code     = Session::getInstance()->get('currency');
+			$code     = session('currency');
 			$currency = $results['currency'][$code] ?? [];
 
 			if ($currency) {

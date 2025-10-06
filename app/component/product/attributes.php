@@ -37,6 +37,8 @@ class Attributes extends ComponentBase {
 		'image_size'  => 'thumb',
 	];
 
+	public $cacheExpire = 0; //no cache
+
 	function results() {
 		$category   = new AttributeSQL();
 
