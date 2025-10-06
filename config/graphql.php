@@ -22,7 +22,7 @@
 
  return [
  	'auth' => [
- 		'mode' => 'http',
+ 		'mode' => 'token', //token = admin added token, http = basic auth using admin user and password
  	],
  	'session' => [
  		'driver' => 'request',
@@ -32,6 +32,11 @@
  	],
  	'cache' => [
  		'driver'  => 'file',
+ 		'servers' => [
+ 		],
+ 		'options' => [
+ 		],
  	],
- 	'key' => 'Q8qJ6CVpUW4msSM8pHmdGwyXIkSvT6Lo'
+ 	'key'     => 'NRtV7fInOn2RaX4piJ0aT1t8G2MkFClJ',
+ 	'cronkey' => 'SkLEcmLlETUC3dzoOEOU0r7jZwKi8SzO',
  ];

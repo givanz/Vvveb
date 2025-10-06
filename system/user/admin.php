@@ -22,6 +22,7 @@
 
 namespace Vvveb\System\User;
 
+use function Vvveb\__;
 use function Vvveb\session as sess;
 use Vvveb\Sql\AdminSQL;
 use Vvveb\System\PageCache;
@@ -52,6 +53,8 @@ class Admin extends Auth {
 		if (! isset($data['username']) || ! $data['username']) {
 			return false;
 		}
+
+		self::sanitize($data);
 
 		//check if email or username is already registered
 		$check = ['email'=> $data['email']];
@@ -109,6 +112,7 @@ class Admin extends Auth {
 		$admin = new AdminSQL();
 
 		self::setUserData($data);
+		self::sanitize($data);
 
 		return $admin->edit(array_merge([self :: $namespace => $data], $condition));
 	}
@@ -117,32 +121,10 @@ class Admin extends Auth {
 		$loginInfo = []; //['status' => 1];
 		$adminInfo = false;
 
-		if (isset($data['email'])) {
-			$loginInfo['email'] = $data['email'];
-		}
-
-		if (isset($data['user'])) {
-			$loginInfo['username'] = $data['user'];
-		}
-
-		if (isset($data['username'])) {
-			$loginInfo['username'] = $data['username'];
-		}
-
-		if (isset($data['role_id'])) {
-			$loginInfo['role_id'] = $data['role_id'];
-		}
-
-		if (isset($data['user_id'])) {
-			$loginInfo['user_id'] = $data['user_id'];
-		}
-
-		if (isset($data['token'])) {
-			$loginInfo['token'] = $data['token'];
-		}
-
-		if (isset($data['status'])) {
-			$loginInfo['status'] = $data['status'];
+		foreach (['email', 'user', 'username', 'role_id', 'user_id', 'token', 'admin_auth_token', 'admin_auth_token', 'status'] as $key) {
+			if (isset($data[$key])) {
+				$loginInfo[$key] = $data[$key];
+			}
 		}
 
 		if ($loginInfo) {
@@ -165,13 +147,63 @@ class Admin extends Auth {
 		return $adminInfo;
 	}
 
-	public static function login($data, $additionalInfo = []) {
+	public static function auth($admin_auth_token, $additionalInfo = [], &$feedback = []) {
 		//check admin email and that status is active
-		$data['status'] = 1;
-		$adminInfo      = self::get($data);
+		$data['status']           = 1;
+		$data['admin_auth_token'] = $admin_auth_token;
+		$adminInfo                = self::get($data);
+		$userExists               = ($adminInfo && isset($adminInfo['password']));
 
-		if (! ($adminInfo && isset($adminInfo['password'])) ||
-			! self::checkPassword($data['password'], $adminInfo['password'])) {
+		if ($userExists) {
+			$passwordCorrect = $data['admin_auth_token'] == $admin_auth_token;
+		}
+
+		if (! $userExists || ! $passwordCorrect) {
+			if ($userExists) {
+				$message = __('Token incorrect!');
+				$code    = 0;
+			} else {
+				$message = __('User not found or has status inactive!');
+				$code    = 1;
+			}
+
+			$feedback = ['message' => $message, 'code' => $code];
+
+			return false;
+		}
+
+		$session = Session :: getInstance();
+		$session->regenerateId(true);
+		unset($adminInfo['password']);
+		$session->set(self :: $namespace, $adminInfo + $additionalInfo);
+
+		PageCache::disable('user');
+
+		return $adminInfo;
+	}
+
+	public static function login($data, $additionalInfo = [], &$feedback = []) {
+		//check admin email and that status is active
+		$data['status']  = 1;
+		$adminInfo       = self::get($data);
+		$passwordCorrect = false;
+		$userExists      = ($adminInfo && isset($adminInfo['password']));
+
+		if ($userExists) {
+			$passwordCorrect = self::checkPassword($data['password'], $adminInfo['password']);
+		}
+
+		if (! $userExists || ! $passwordCorrect) {
+			if ($userExists) {
+				$message = __('Password incorrect!');
+				$code    = 0;
+			} else {
+				$message = __('User not found or has status inactive!');
+				$code    = 1;
+			}
+
+			$feedback = ['message' => $message, 'code' => $code];
+
 			return false;
 		}
 

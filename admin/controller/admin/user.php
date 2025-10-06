@@ -34,13 +34,14 @@ class User extends UserBase {
 		$roles    = new \Vvveb\Sql\RoleSQL();
 
 		$options    =  [
-			'type'         => 'admin', //$this->type,
+			'type' => 'admin', //$this->type,
 			'limit'=> 100,
 		] + $this->global;
 
 		$roles             = $roles->getAll($options);
 		$sites             = new SiteSQL();
 
+		$this->view->admin_auth_token_url = \Vvveb\url(['module' => 'admin/auth-token', 'admin_id' => $this->request->get['admin_id'] ?? '']);
 		$this->view->sitesList = $sites->getAll()['site'] ?? [];
 		$this->view->roles     = $roles ? $roles['role'] : [];
 	}

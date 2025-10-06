@@ -52,16 +52,67 @@ class Base {
 					$password  = $_SERVER['PHP_AUTH_PW'] ?? '';
 					$loginData = compact('user', 'password');
 
-					if ($userInfo = Admin::login($loginData)) {
+					if ($userInfo = Admin::login($loginData, [], $feedback)) {
 					} else {
 						$this->response->addHeader('WWW-Authenticate', 'Basic realm="REST Api"');
 						$this->response->addHeader('HTTP/1.0 401 Unauthorized');
-						FrontController::notFound(false, __('Auth failed!'), 403);
+						$message = __('Auth failed!');
+
+						if (DEBUG) {
+							$message .= ' ' . $feedback['message'] ?? [];
+							$message .= " auth.mode = $authMode";
+						}
+						//FrontController::notFound(false, $message, 403);
+						$this->notFound($message, 403);
 					}
 				} else {
 					$this->response->addHeader('WWW-Authenticate', 'Basic realm="REST Api"');
 					$this->response->addHeader('HTTP/1.0 401 Unauthorized');
-					FrontController::notFound(false, __('Auth failed!'), 403);
+					$message = __('Auth failed!');
+
+					if (DEBUG) {
+						$message .= __('No credentials!');
+						$message .= " auth.mode = $authMode";
+					}
+					//FrontController::notFound(false, $message, 403);
+					$this->notFound($message, 403);
+				}
+			} else {
+				if ($authMode == 'token') {
+					$headers = getallheaders();
+					$token   = $headers['Bearer'] ?? $_SERVER['HTTP_BEARER'] ?? null;
+
+					if (! $token) {
+						$token = $headers['Authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+						$token = trim(substr($token, 6)) ?: $this->request->get['_token'] ?? false;
+					}
+
+					if ($token) {
+						if ($userInfo = Admin::auth($token, [], $feedback)) {
+						} else {
+							$this->response->addHeader('HTTP/1.0 401 Unauthorized');
+							$message = __('Auth failed!');
+
+							if (DEBUG) {
+								$message .= ' ' . $feedback['message'] ?? [];
+								$message .= " auth.mode = $authMode";
+								$message .= " token = $token";
+							}
+							//FrontController::notFound(false, $message, 403);
+							$this->notFound($message, 403);
+						}
+					} else {
+						$this->response->addHeader('HTTP/1.0 401 Unauthorized');
+						$message = __('Auth failed!');
+
+						if (DEBUG) {
+							$message .= __('No credentials!');
+							$message .= " auth.mode = $authMode";
+							$message .= " token = $token";
+						}
+						//FrontController::notFound(false, $message, 403);
+						$this->notFound($message, 403);
+					}
 				}
 			}
 		}
@@ -80,7 +131,7 @@ class Base {
 		$this->response->setType('json');
 
 		if (! GRAPHQL) {
-			die($this->notFound(__('GRAPHQL is disabled!'), 404));
+			$this->notFound(__('GRAPHQL is disabled!'), 404);
 		}
 
 		$this->auth();
@@ -130,6 +181,8 @@ class Base {
 		$response = Response::getInstance();
 		http_response_code($statusCode);
 
-		return $response->output(['errors' => is_array($message) ? $message : ['message' => $message]]);
+		$response->output(['errors' => is_array($message) ? $message : ['message' => $message]]);
+
+		die();
 	}
 }

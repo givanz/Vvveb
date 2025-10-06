@@ -25,6 +25,16 @@ namespace Vvveb\System\User;
 class Auth {
 	static $options = ['cost' => 11];
 
+	public static function sanitize(&$data) {
+		if (isset($data['username'])) {
+			$data['username'] = preg_replace('/[^\w-]/', '', $data['username']);
+		}
+
+		if (isset($data['email'])) {
+			$data['email']    = filter_var($data['email'], FILTER_VALIDATE_EMAIL);
+		}
+	}
+
 	public static function checkPassword($password, $hash) {
 		if (password_verify($password, $hash)) {
 			// Check if a newer hashing algorithm is available
