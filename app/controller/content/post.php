@@ -27,7 +27,9 @@ use function Vvveb\__;
 use Vvveb\Controller\Base;
 //use Vvveb\System\Component\Component;
 use function Vvveb\model;
+use function Vvveb\postTypes;
 use function Vvveb\setLanguage;
+use Vvveb\System\Core\FrontController;
 use Vvveb\System\Event;
 use Vvveb\System\User\Admin;
 
@@ -85,6 +87,7 @@ class Post extends Base {
 					$this->request->get['admin_id']        = $languageContent['admin_id'];
 					$this->request->request['post_id']     = $languageContent['post_id'];
 					$this->request->get['name']            = $languageContent['name'];
+					$this->request->get['type']            = $languageContent['type'];
 					$this->request->request['name']        = $languageContent['name'];
 					$this->request->request['code']        = $languageContent['code'];
 					$this->request->request['language_id'] = $languageContent['language_id'];
@@ -114,7 +117,28 @@ class Post extends Base {
 
 				list($content, $languageContent, $language, $slug) = Event :: trigger($class, __FUNCTION__ . ':after', $content, $languageContent, $language, $slug);
 			} else {
-				return $this->notFound(true, ['message' => $error, 'title' => $error]);
+				//check for custom post or product
+				$class     = '';
+				$postTypes = postTypes('post');
+
+				if (isset($postTypes[$slug])) {
+					$class = 'Content';
+				} else {
+					$postTypes = postTypes('product');
+
+					if (isset($postTypes[$slug])) {
+						$class = 'Product';
+					}
+				}
+
+				if ($class) {
+					$this->request->get['type'] = $slug;
+					FrontController::redirect($class, 'index');
+
+					die();
+				} else {
+					return $this->notFound(true, ['message' => $error, 'title' => $error]);
+				}
 			}
 
 			$this->view->post    = $languageContent;
