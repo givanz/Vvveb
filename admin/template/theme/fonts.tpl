@@ -12,12 +12,12 @@ if(isset($this->builtin) && is_array($this->builtin)) {
 	foreach ($this->builtin as $family => $font) {?>
 	
     @font [data-v-font-family]|innerText = $family
-    @font [data-v-font-*]|innerText      = $font['@@__data-v-font-([-_\w]+)__@@']
+    @font [data-v-font-*]|innerText      = $font['@@__data-v-font-(*)__@@']
 
 	@variant|before = <?php
 	if(is_array($font['variants'])) foreach ($font['variants'] as $variant) {?>
 
-		@variant [data-v-variant-*]|innerText = $variant['@@__data-v-variant-([-_\w]+)__@@']
+		@variant [data-v-variant-*]|innerText = $variant['@@__data-v-variant-(*)__@@']
 		
 			@variant [data-v-values]|before = <?php
 			if(is_array($variant)) foreach ($variant as $key => $value) {?>
@@ -44,7 +44,7 @@ if(isset($this->fonts) && is_array($this->fonts)) {
 	$i = 0;
 	foreach ($this->fonts as $font) { $i++;?>
 	
-    @font [data-v-*]|innerText = $font['@@__data-v-([-_\w]+)__@@']
+    @font [data-v-*]|innerText = $font['@@__data-v-(*)__@@']
     @font [data-v-*]|name = <?php echo str_replace('[0]', "[$i]", '@@__name__@@');?>
 	@font .accordion-button|data-bs-target = <?php echo '#font-' . $i?>;
 	@font .accordion-collapse|id = <?php echo 'font-' . $i?>;

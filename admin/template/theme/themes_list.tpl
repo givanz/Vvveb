@@ -5,9 +5,11 @@ if(isset($this->themes) && is_array($this->themes)) {
 	//$pagination = $this->themes[$_themes_idx]['pagination'];
 	foreach ($this->themes as $index => $theme) {?>
 	
-    [data-v-themes] [data-v-theme] [data-v-theme-*]|innerText  = $theme['@@__data-v-theme-([-_\w]+)__@@']
-    [data-v-themes] [data-v-theme] a[data-v-theme-*]|href  = $theme['@@__data-v-theme-([-_\w]+)__@@']
-    [data-v-themes] [data-v-theme] img[data-v-theme-*]|src  = $theme['@@__data-v-theme-([-_\w]+)__@@']
+    [data-v-themes] [data-v-theme] [data-v-theme-*]|innerText   = $theme['@@__data-v-theme-(*)__@@']
+    [data-v-themes] [data-v-theme] a[data-v-theme-*]|href       = $theme['@@__data-v-theme-(*)__@@']
+    [data-v-themes] [data-v-theme] img[data-v-theme-*]|src      = $theme['@@__data-v-theme-(*)__@@']
+    [data-v-themes] [data-v-theme] input[data-v-theme-*]|value  = $theme['@@__data-v-theme-(*)__@@']
+    [data-v-themes] [data-v-theme] button[data-v-theme-*]|value = $theme['@@__data-v-theme-(*)__@@']
     
 	[data-v-themes] [data-v-theme] [data-v-theme-activate-url]|href  = <?php echo Vvveb\url(['module' => 'theme/themes', 'action' => 'activate', 'theme' => $theme['folder']]);?>
 	[data-v-themes] [data-v-theme] [data-v-theme-duplicate-url]|href  = <?php echo Vvveb\url(['module' => 'theme/themes', 'action' => 'duplicate', 'theme' => $theme['folder']]);?>
@@ -16,7 +18,7 @@ if(isset($this->themes) && is_array($this->themes)) {
 	[data-v-themes] [data-v-theme] [data-v-theme-edit-url]|href  = <?php echo Vvveb\url(['module' => 'editor/editor']) . '&url=/&template=index.html&theme=' . $theme['folder'];?>
 	[data-v-themes] [data-v-theme] [data-v-theme-code-url]|href  = <?php echo Vvveb\url(['module' => 'editor/code']) . '&type=themes#%2F' . $theme['folder'];?>
 	[data-v-themes] [data-v-theme] [data-v-theme-fonts-url]|href  = <?php echo Vvveb\url(['module' => 'theme/fonts', 'theme' => $theme['folder']]);?>
-	[data-v-themes]  [data-v-theme]|after = <?php 
+	[data-v-themes] [data-v-theme]|after = <?php 
 	}
 }?>
 
