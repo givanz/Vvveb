@@ -9,6 +9,7 @@
 		IN site_id INT,
 		IN post_id INT,
 		IN product_id INT,
+		IN count INT,
 		IN search CHAR,
 		IN type CHAR,
 		IN post_type CHAR,
@@ -24,7 +25,12 @@
 	)
 	BEGIN
 
-		SELECT DISTINCT categories.taxonomy_item_id, categories.*, tc.*, tc.content as content, tc.name as name, categories.taxonomy_item_id as array_key
+		-- SELECT DISTINCT categories.taxonomy_item_id, categories.*, ANY_VALUE(tc.language_id) as language_id, ANY_VALUE(tc.name) as name, ANY_VALUE(tc.content) as content, ANY_VALUE(tc.slug) as slug, ANY_VALUE(tc.content) as content, categories.taxonomy_item_id as array_key
+		SELECT DISTINCT categories.taxonomy_item_id, categories.*, tc.language_id, tc.name, tc.content, tc.slug, tc.content, categories.taxonomy_item_id as array_key
+				@IF isset(:count) AND :count
+				THEN 
+					,count(post_id) as count 
+				END @IF				
 			
 				@IF isset(:post_id)
 				THEN 
@@ -41,6 +47,13 @@
 			INNER JOIN taxonomy_to_site t2s ON (categories.taxonomy_item_id = t2s.taxonomy_item_id AND t2s.site_id = :site_id) 
 			INNER JOIN taxonomy_item_content tc ON (categories.taxonomy_item_id = tc.taxonomy_item_id AND tc.language_id = :language_id)  
 			INNER JOIN taxonomy t ON (categories.taxonomy_id = t.taxonomy_id)  
+			
+			@IF isset(:count) AND :count
+			THEN 
+			
+				LEFT JOIN post_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id)  
+				
+			END @IF				
 			
 			@IF isset(:post_id) AND :type == "categories"
 			THEN 
@@ -117,12 +130,23 @@
 				
 			END @IF			
 
-		ORDER BY categories.parent_id, categories.sort_order, categories.taxonomy_item_id
-		
-		@IF isset(:limit) && !empty(:limit)
-		THEN 
-			@SQL_LIMIT(:start, :limit)
-		END @IF					
+			@IF isset(:count) AND :count
+			THEN 
+				GROUP BY categories.taxonomy_item_id, tc.language_id
+			END @IF				
+
+			@IF isset(:count) AND :count
+			THEN 
+				ORDER BY count 
+			@ELSE			
+				ORDER BY categories.parent_id, categories.sort_order, categories.taxonomy_item_id
+			END @IF				
+
+			
+			@IF isset(:limit) && !empty(:limit)
+			THEN 
+				@SQL_LIMIT(:start, :limit)
+			END @IF					
 		;
 		
 		SELECT count(*) FROM (
@@ -141,12 +165,15 @@
 		IN taxonomy_id INT,
 		IN site_id INT,
 		IN post_id INT,
+		IN parent_id INT,
 		IN search CHAR,
 		IN type CHAR,
 		
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN posts_start INT,
+		IN posts_limit INT,
 			
 		-- return array of categories for categories query
 		OUT affected_rows,
@@ -172,6 +199,12 @@
 					LEFT JOIN post p ON (pc.post_id = p.post_id)  
 					LEFT JOIN post_to_taxonomy_item ptt ON (ptt.taxonomy_item_id = @taxonomy_item_id AND ptt.post_id = p.post_id)  
 				WHERE ptt.taxonomy_item_id = @taxonomy_item_id ORDER by p.sort_order
+				
+				@IF isset(:posts_limit) && !empty(:posts_limit)
+				THEN 
+					@SQL_LIMIT(:posts_start, :posts_limit)
+				END @IF
+				
 			) AS post
 		
 			FROM taxonomy_item AS categories
@@ -193,7 +226,7 @@
 				INNER JOIN post_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.post_id = :post_id)  
 			@ELSE		
 			
-				LEFT JOIN post_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.post_id = :post_id)  
+				LEFT JOIN post_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id)  
 				
 			END @IF	
 
@@ -221,6 +254,14 @@
 				AND categories.taxonomy_id = :taxonomy_id
 				
 			END @IF			
+
+			@IF isset(:parent_id)
+			THEN 
+			
+				AND categories.parent_id = :parent_id 
+				
+			END @IF				
+
 
 		ORDER BY categories.parent_id, categories.sort_order, categories.taxonomy_item_id
 
@@ -578,13 +619,14 @@
 
 	CREATE PROCEDURE editTaxonomyItem(
 		IN taxonomy_item ARRAY,
+		IN taxonomy_item_content ARRAY,
 		IN taxonomy_item_id INT,
 		OUT insert_id
 	)
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		:taxonomy_item_content_data = @FILTER(:taxonomy_item.taxonomy_item_content, taxonomy_item_content)
+		:taxonomy_item_content_data = @FILTER(:taxonomy_item_content, taxonomy_item_content)
 
 		@EACH(:taxonomy_item_content_data) 
 			INSERT INTO taxonomy_item_content 
@@ -610,6 +652,7 @@
 
 	CREATE PROCEDURE addTaxonomyItem(
 		IN taxonomy_item ARRAY,
+		IN taxonomy_item_content ARRAY,
 		IN site_id INT,
 		OUT insert_id,
 		OUT insert_id
@@ -617,7 +660,7 @@
 	BEGIN
 		
 		-- allow only table fields and set defaults for missing values
-		:taxonomy_item_content_data = @FILTER(:taxonomy_item.taxonomy_item_content, taxonomy_item_content)
+		:taxonomy_item_content_data = @FILTER(:taxonomy_item_content, taxonomy_item_content)
 		:taxonomy_item_data  = @FILTER(:taxonomy_item, taxonomy_item)
 		
 		INSERT INTO taxonomy_item 
