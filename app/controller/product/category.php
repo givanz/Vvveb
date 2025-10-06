@@ -29,15 +29,21 @@ use Vvveb\Controller\Base;
 class Category extends Base {
 	function index() {
 		$slug                      = $this->request->get['slug'] ?? '';
+		$type                      = $this->request->get['type'] ?? '';
 		$this->view->category_name = $slug;
 
 		if ($slug) {
 			$categorySql = new CategorySQL();
-			$options     = $this->global + ['slug' => $slug, 'post_type' => 'product'];
+			$options     = $this->global + ['slug' => $slug/*, 'post_type' => 'product'*/];
+
+			if ($type) {
+				$options['post_type'] = $type;
+			}
+
 			$category    = $categorySql->getCategoryBySlug($options);
 
 			if ($category) {
-				$this->request->get['category_id']     = $this->request->request['taxonomy_item_id']     = $category['taxonomy_item_id'];
+				$this->request->get['category_id']     = $this->request->request['taxonomy_item_id'] = $category['taxonomy_item_id'];
 				$this->view->category                  = $category;
 				$this->view->category_name             = $category['name'];
 			} else {
