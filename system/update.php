@@ -259,6 +259,7 @@ class Update {
 			$columns   = preg_split('/\r\n|\r|\n/', trim($matches[2]));
 
 			foreach ($columns as $key => &$column) {
+				$column = preg_replace('/-- .+$/', '', $column); //remove comments
 				$column = trim($column, ' ,');
 
 				if ($column && in_array($column[0], ['`', '"', '\''])) {
@@ -309,6 +310,11 @@ class Update {
 
 				//newly added columns
 				$tableColumns = $db->getColumnsMeta($tableName);
+				//if table does not exist yet skip, it will be created
+				if (! $tableColumns) {
+					continue;
+				}
+
 				$addedColumns = array_diff_key($newColumns, $tableColumns);
 
 				//changed columns
