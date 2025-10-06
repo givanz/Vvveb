@@ -1,5 +1,5 @@
 @categories  = [data-v-component-product-categories] [data-v-cats]
-@category    = [data-v-component-product-categories] [data-v-cats] [data-v-cat]
+@category    = [data-v-component-product-categories] [data-v-cat]
 
 @categories|deleteAllButFirstChild
 @category|deleteAllButFirstChild
@@ -31,6 +31,8 @@ $_categories = $product_categories['categories'] ?? [];
 
 $_pagination_count = $product_categories['count'] ?? 0;
 $_pagination_limit = isset($product_categories['limit']) ? $product_categories['limit'] : 5;
+$parent            = $product_categories[key($_categories)]['parent_id'] ?? 0;
+$generate_menu     = false;
 ?>
 
 @categories|before = <?php
@@ -46,9 +48,9 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
 
 		//catch all data attributes
 		@category [data-v-cat-*]|innerText = $category['@@__data-v-cat-(*)__@@']
+		@category img[data-v-cat-*]|src = $category['@@__data-v-cat-(*)__@@']
 		
 		@category [data-v-cat-url]|href = $category['url']
-		@category [data-v-cat-img]|src = $category['images'][0]
 		
 		@category input|id = <?php echo 'm' . $category['taxonomy_item_id'];?>
 		@category input|addNewAttribute = <?php if (isset($category['active']) && $category['active']) echo 'checked';?>
@@ -57,7 +59,11 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
 		@category|addClass = <?php if (isset($category['active']) && $category['active']) echo 'active';?>
 		
 		@category|append = <?php 
-		 $generate_menu($category['taxonomy_item_id'], $_categories);
+		 if ($generate_menu) $generate_menu($category['taxonomy_item_id'], $_categories);
+		?>
+		
+		@category|after = <?php 
+		// $generate_menu($category['taxonomy_item_id'], $_categories);
 		} 
 	}
 	?>
@@ -67,6 +73,6 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
 
 if ($_categories) {
 	reset($_categories);
-	$generate_menu($_categories[key($_categories)]['parent_id'], $_categories); }
+	$generate_menu($parent, $_categories); }
 }
 ?>

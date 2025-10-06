@@ -1,5 +1,5 @@
 @categories = [data-v-component-categories] [data-v-cats]
-@category   = [data-v-component-categories] [data-v-cats] [data-v-cat]
+@category   = [data-v-component-categories] [data-v-cat]
 
 @categories|deleteAllButFirstChild
 @category|deleteAllButFirstChild
@@ -30,7 +30,9 @@ $categories = $current_component = $this->_component['categories'][$_categories_
 $_categories = $categories['categories'] ?? [];
 
 $_pagination_count = $categories['count'] ?? 0;
-$_pagination_limit = isset($categories['limit']) ? $categories['limit'] : 5;	
+$_pagination_limit = isset($categories['limit']) ? $categories['limit'] : 5;
+$parent            = $categories[key($_categories)]['parent_id'] ?? 0;
+$generate_menu     = false;
 ?>
 	
 @categories|before = <?php
@@ -46,6 +48,7 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
 
 		//catch all data attributes
 		@category [data-v-cat-*]|innerText = $category['@@__data-v-cat-(*)__@@']
+		@category img[data-v-cat-*]|src = $category['@@__data-v-cat-(*)__@@']
 		
 		@category [data-v-cat-url]|href = $category['url']
 		@category [data-v-cat-img]|src  = $category['images'][0]
@@ -57,7 +60,7 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
 		@category|addClass = <?php if (isset($category['active']) && $category['active']) echo 'active';?>
 		
 		@category|append = <?php 
-		 $generate_menu($category['taxonomy_item_id'], $_categories);
+		 if ($generate_menu) $generate_menu($category['taxonomy_item_id'], $_categories);
 		} 
 	}
 	?>
@@ -67,6 +70,6 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
 
 if ($_categories) {
 reset($_categories);
-$generate_menu($_categories[key($_categories)]['parent_id'], $_categories); }
+	$generate_menu($parent, $_categories); }
 }
 ?>
