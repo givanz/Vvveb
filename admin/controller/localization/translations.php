@@ -48,8 +48,47 @@ class Translations extends Base {
 			$this->view->domains = $domains;
 			$this->view->count   = count($domains);
 		} else {
-			$this->notFound(false, __('Invalid request!'));
+			$this->notFound(__('Invalid request!'));
 		}
+	}
+
+	private function compile() {
+		//add default translations first to be overriden by all others
+		$domains = ['vvveb'];
+		$message = '';
+		$view    = $this->view;
+
+		$folder = DIR_ROOT . 'locale' . DS . $view->lang . DS . 'LC_MESSAGES' . DS;
+
+		foreach (glob("$folder/*.po") as $file) {
+			$domain = str_replace('.po', '', basename($file));
+
+			if ($domain !== 'user' && $domain !== 'vvveb') {
+				$domains[] = $domain;
+			}
+		}
+
+		//add user translations last to override all others
+		$domains[] = 'user';
+
+		foreach ($domains as $domain) {
+			$poFile = $folder . $domain . '.po';
+
+			if (file_exists($poFile) && ($translations = phpmo_parse_po_file($poFile) ?: []) && is_array($translations)) {
+				$view->translations = array_merge($view->translations, $translations);
+			}
+		}
+		//compile
+		if (phpmo_write_mo_file($view->translations, $folder . 'vvveb-new.mo')) {
+			if (rename($folder . 'vvveb-new.mo',  $folder . 'vvveb.mo')) {
+				clearstatcache();
+				$message .= "\n" . __('Compiled!');
+			}
+		} else {
+			$message .= "\n" . __('Error compiling!');
+		}
+
+		return $message;
 	}
 
 	function save() {
@@ -71,21 +110,7 @@ class Translations extends Base {
 
 			if (phpmo_write_po_file($view->translations, $folder . $view->domain . '.po')) {
 				$message = __('Saved!');
-
-				//append user translations
-				if ($view->domain != 'user') {
-					$user = $folder . 'user.po';
-
-					if (file_exists($user) && ($translations = phpmo_parse_po_file($user) ?: []) && is_array($translations)) {
-						$view->translations = array_merge($view->translations, $translations);
-					}
-				}
-				//compile
-				if (phpmo_write_mo_file($view->translations, $folder . $view->domain . '.mo')) {
-					$message .= "\n" . __('Compiled!');
-				} else {
-					$message .= "\n" . __('Error compiling!');
-				}
+				$message .= $this->compile();
 			} else {
 				$message = __('Error saving!');
 			}
@@ -118,11 +143,11 @@ class Translations extends Base {
 					//if domain is user then create it
 					$view->translations = [];
 				} else {
-					$this->notFound(false, __('Po file does not exist!'));
+					$this->notFound(__('Po file does not exist!'));
 				}
 			}
 		} else {
-			$this->notFound(false, __('Invalid request!'));
+			$this->notFound(__('Invalid request!'));
 		}
 	}
 }
