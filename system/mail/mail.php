@@ -46,7 +46,7 @@ class Mail {
 
 		$header  = 'MIME-Version: 1.0' . EOL;
 		$header .= "Date: $date" . EOL;
-		$header .= "From: =?UTF-8?B?$date?= <{$this->option['from']}>" . EOL;
+		$header .= "From: =?UTF-8?B?$sender?= <{$this->option['from']}>" . EOL;
 
 		if (! $this->option['reply_to']) {
 			$header .= "Reply-To: =?UTF-8?B?$sender?= <{$this->option['from']}>" . EOL;
@@ -129,6 +129,6 @@ class Mail {
 		ini_set('sendmail_from', $this->option['from']);
 		$subject = '=?UTF-8?B?' . base64_encode($this->option['subject']) . '?=';
 
-		\mail($to, $subject, $message, $header, $this->option['parameter'] ?? '');
+		return \mail($to, $subject, $message, $header, $this->option['parameter'] ?? '');
 	}
 }
