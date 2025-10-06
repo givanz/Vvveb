@@ -33,7 +33,7 @@ class Response {
 
 	private $callback = 'callback';
 
-	private $typeHeaders = ['html' => 'text/html', 'xml' => 'text/xml', 'text' => 'text/plain', 'json' => 'application/json', 'jsonp' => 'application/javascript'];
+	private $typeHeaders = ['html' => 'text/html', 'xml' => 'text/xml', 'text' => 'text/plain', 'json' => 'application/json', 'jsonp' => 'application/javascript', 'activityjson' => 'application/activity+json', 'ldjson' => 'application/ld+json', 'jrdjson' => 'application/jrd+json'];
 
 	protected static $instance;
 
@@ -46,7 +46,15 @@ class Response {
 	}
 
 	private function __construct() {
-		$this->addHeader('X-Powered-By', 'Vvveb'/* . V_VERSION*/);
+		$this->addHeader('X-Powered-By', 'Vvveb ' . V_VERSION);
+	}
+
+	function getStatus() {
+		return $this->status;
+	}
+
+	function setStatus($status) {
+		return $this->status = $status;
 	}
 
 	public function addHeader($header, $value = null) {
@@ -95,14 +103,18 @@ class Response {
 
 				header($header, true);
 			}
+
+			if ($this->status !== 200) {
+				header(' ', true, $this->status);
+			}
 		}
 
 		if ($this->type == 'text' && $data !== null) {
 			echo $data;
 		} else {
-			if (($this->type == 'json' || $this->type == 'jsonp') && $data !== null && (! defined('CLI'))) {
+			if (($this->type == 'json' || $this->type == 'jsonp' || $this->type == 'ldjson' || $this->type == 'activityjson' || $this->type == 'jrdjson') && $data !== null && (! defined('CLI'))) {
 				if (is_array($data) || is_object($data)) {
-					$data = json_encode($data, JSON_PRETTY_PRINT);
+					$data = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
 					if ($this->type == 'jsonp') {
 						$data = "/**/{$this->callback}($data)";
