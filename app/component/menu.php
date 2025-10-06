@@ -128,7 +128,7 @@ class Menu extends ComponentBase {
 				$productOptions = [
 					'product_id'  => $productIds,
 					'language_id' => $options['language_id'],
-					'site_id'     => $options['site_id'],
+					//'site_id'     => $options['site_id'],
 				];
 
 				$productSql = new productSql();
@@ -153,7 +153,7 @@ class Menu extends ComponentBase {
 				$postOptions = [
 					'post_id'     => $postIds,
 					'language_id' => $options['language_id'],
-					'site_id'     => $options['site_id'],
+					//'site_id'     => $options['site_id'],
 				];
 
 				$postSql = new postSql();
