@@ -268,12 +268,14 @@ class Site extends Base {
 			$setting['order_id_format_preview'] = $this->invoiceFormatPreview($setting['order_id_format'] ?? '');
 
 			$view->set($data);
-			$site['full-url']   = $site ? ('//' . Sites::url($site['host']) . (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '')) : '';
+			//$site['full-url']   = $site ? ('//' . Sites::url($site['host']) . (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '')  . ($site['path'] ?? '' ? '/' . $site['path'] : '')) : '';
+			$site['full-url']   = $site ? ('//' . $site['url']) : '';
 			$view->site         = $site + $setting;
 			$view->setting      = $setting;
 			$view->resize       = ['cs' => __('Crop & Resize'), 's' => __('Stretch'), 'c' => __('Crop')];
 			$view->formats      = Image::formats();
 			$view->themeList    = $themeList;
+			$view->subdir       = V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '';
 			$view->templateList = \Vvveb\getTemplateList(false, ['email']);
 
 			$controllerPath  = $admin_path . 'index.php?module=media/media';
