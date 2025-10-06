@@ -22,14 +22,26 @@
 
 namespace Vvveb\Controller\Content;
 
+use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\System\User\Admin;
 
 class User extends Base {
 	function index() {
-		//$post = Components::get('post');
+		$admin_id    = $this->request->get['admin_id'] ?? '';
+		$username    = $this->request->get['username'] ?? '';
 
-		//if (! $post) {
-			//$this->notFound();
-		//}
+		if ($admin_id || $username) {
+			$options = ['admin_id' => $admin_id, 'username' => $username];
+			$user    = Admin::get($options);
+
+			if ($user) {
+				$this->request->get['admin_id'] = $user['admin_id'];
+			} else {
+				$error = sprintf(__('%s not found!'), ucfirst(__('user')));
+
+				return $this->notFound(true, ['message' => $error, 'title' => $error]);
+			}
+		}
 	}
 }
