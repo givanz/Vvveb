@@ -8,6 +8,10 @@ if ($is_admin && $vvveb_is_page_edit) {
 		$css = file_get_contents($customCssFile);//'body {background:red}';
 		echo "<style id=\"vvvebjs-styles\">$css</style>";
 	}
+	
+	if (isset($_GET['preview'])) {
+		echo '<link data-vvveb-helpers href="' . PUBLIC_PATH . 'css/vvvebjs-editor-helpers.css" rel="stylesheet">';
+	}
 }
 ?>
 

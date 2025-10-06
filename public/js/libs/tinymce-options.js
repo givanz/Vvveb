@@ -498,6 +498,9 @@ let tinyMceOptions = {
 		editor.on('change', function(ed, e)  {
 			// text changed set has_changes flag to save revision
 			ed.target.container.parentNode.querySelector(".has_changes").value = "1";
+			delay(() => {
+				if (typeof contentElement !== "undefined") contentElement.innerHTML = editor.getContent(); 
+			}, 500);
 		});
 
 		window.dispatchEvent(new CustomEvent("tinymce.setup", {detail: editor}));
