@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
+ * https://github.com/givanz/Vvveb
  */
 
 Vvveb.ComponentsGroup['Elements'] = [
@@ -24,7 +25,6 @@ Vvveb.ComponentsGroup['Elements'] = [
 "elements/carousel", 
 "elements/gallery",
 "elements/slider",
-//"elements/logo",
 "elements/tabs",
 "elements/accordion",
 "elements/flip-box",
@@ -424,37 +424,37 @@ Vvveb.Components.add("elements/gallery", {
     html: `
 			<div class="gallery masonry has-shadow" data-component-gallery>
 				<div class="item">
-					<a>
+					<a href="#">
 						<img src="../../media/posts/1.jpg">
 					</a>
 				</div>
 				<div class="item">
-					<a>
+					<a href="#">
 						<img src="../../media/posts/2.jpg">
 					</a>
 				</div>
 				<div class="item">
-					<a>
+					<a href="#">
 						<img src="../../media/posts/3.jpg">
 					</a>
 				</div>
 				<div class="item">
-					<a>
+					<a href="#">
 						<img src="../../media/posts/4.jpg">
 					</a>
 				</div>
 				<div class="item">
-					<a>
+					<a href="#">
 						<img src="../../media/posts/5.jpg">
 					</a>
 				</div>
 				<div class="item">
-					<a>
+					<a href="#">
 						<img src="../../media/posts/6.jpg">
 					</a>
 				</div>
 				<div class="item">
-					<a>
+					<a href="#">
 						<img src="../../media/posts/7.jpg">
 					</a>
 				</div>
@@ -471,8 +471,8 @@ Vvveb.Components.add("elements/gallery", {
 				off: "flex"
 			},
 			setGroup: group => {
-				document.querySelectorAll(".mb-3[data-group]").forEach(el => el.style.display = "none");
-				document.querySelector('.mb-3[data-group="'+ group + '"]').style.display = "";
+				document.querySelectorAll(".mb-2[data-group]").forEach(el => el.style.display = "none");
+				document.querySelector('.mb-2[data-group="'+ group + '"]').style.display = "";
 			}, 		
 			onChange : function(node, value, input)  {
 				this.setGroup(value);
@@ -553,7 +553,7 @@ Vvveb.Components.add("elements/gallery", {
 			inputtype: ButtonInput,
 			data: {text:"Add image", icon:"la la-plus"},
 			onChange: function(node) {
-				 node.append(generateElements('<div class="item"><a><img src="../../media/posts/1.jpg"></a></div>')[0]);
+				 node.append(generateElements('<div class="item"><a href="#"><img src="../../media/posts/1.jpg"></a></div>')[0]);
 				 
 				 //render component properties again to include the new image
 				 //Vvveb.Components.render("ellements/gallery");
@@ -563,7 +563,7 @@ Vvveb.Components.add("elements/gallery", {
 	}],
     init(node)	{
 
-		document.querySelectorAll(".mb-3[data-group]").forEach(el => el.style.display = "none");
+		document.querySelectorAll(".mb-2[data-group]").forEach(el => el.style.display = "none");
 		
 		let source = "flex";
 		if (node.classList.contains("masonry")) {
@@ -572,7 +572,7 @@ Vvveb.Components.add("elements/gallery", {
 			source = "flex";
 		}
 		
-		document.querySelector('.mb-3[data-group="'+ source + '"]').style.display = "";
+		document.querySelector('.mb-2[data-group="'+ source + '"]').style.display = "";
 	}	
 });  
 

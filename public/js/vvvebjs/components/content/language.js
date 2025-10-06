@@ -97,7 +97,7 @@ class LanguageComponent extends ServerComponent{
 
 
     init(node) {
-		document.querySelectorAll('.mb-3[data-group]').forEach((el, i) => {
+		document.querySelectorAll('.mb-2[data-group]').forEach((el, i) => {
 			el.classList.add("d-none");
 		});			
 		
@@ -106,7 +106,7 @@ class LanguageComponent extends ServerComponent{
 			source = "automatic";
 		} 
 
-		document.querySelectorAll('.mb-3[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
+		document.querySelectorAll('.mb-2[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
 	}
 }
 

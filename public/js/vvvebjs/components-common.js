@@ -937,7 +937,7 @@ Vvveb.Components.extend("_base", "_base", {
 		section: style_section,
 		htmlAttr: "style",
         col:6,
-		inline:true,
+		inline:false,
 		inputtype: SelectInput,
         data: {
 			options: [{
@@ -961,7 +961,7 @@ Vvveb.Components.extend("_base", "_base", {
 		section: style_section,
 		htmlAttr: "style",
         col:6,
-		inline:true,
+		inline:false,
 		inputtype: SelectInput,
         data: {
 			options: [{

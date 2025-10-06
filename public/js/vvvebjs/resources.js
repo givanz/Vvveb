@@ -1,3 +1,24 @@
+/**
+ * Vvveb
+ *
+ * Copyright (C) 2021  Ziadin Givan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * https://github.com/givanz/Vvveb
+ */
+
 V = {};
 V.Resources = {};
 
@@ -7,19 +28,19 @@ V.Resources.Icons =
     <path d="M 30.335938 12.546875 L 20.164063 11.472656 L 16 2.132813 L 11.835938 11.472656 L 1.664063 12.546875 L 9.261719 19.394531 L 7.140625 29.398438 L 16 24.289063 L 24.859375 29.398438 L 22.738281 19.394531 Z"/>
     </svg>`,
 	text: "Star"
-}, {
+},{
 	value: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><path d="M 5 5 L 5 11 L 24 11 L 24 5 L 5 5 z M 7 7 L 22 7 L 22 9 L 7 9 L 7 7 z M 9 13 L 9 19 L 28 19 L 28 13 L 9 13 z M 11 15 L 26 15 L 26 17 L 11 17 L 11 15 z M 5 21 L 5 27 L 24 27 L 24 21 L 5 21 z M 7 23 L 22 23 L 22 25 L 7 25 L 7 23 z"/></svg>`,
 	text: "Sections"
-}, {
+},{
 	value: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><path d="M 5 5 L 5 11 L 24 11 L 24 5 L 5 5 z M 7 7 L 22 7 L 22 9 L 7 9 L 7 7 z M 9 13 L 9 19 L 28 19 L 28 13 L 9 13 z M 11 15 L 26 15 L 26 17 L 11 17 L 11 15 z M 5 21 L 5 27 L 24 27 L 24 21 L 5 21 z M 7 23 L 22 23 L 22 25 L 7 25 L 7 23 z"/></svg>`,
 	text: "Sections"
-}, {
+},{
 	value: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><path d="M 5 5 L 5 11 L 24 11 L 24 5 L 5 5 z M 7 7 L 22 7 L 22 9 L 7 9 L 7 7 z M 9 13 L 9 19 L 28 19 L 28 13 L 9 13 z M 11 15 L 26 15 L 26 17 L 11 17 L 11 15 z M 5 21 L 5 27 L 24 27 L 24 21 L 5 21 z M 7 23 L 22 23 L 22 25 L 7 25 L 7 23 z"/></svg>`,
 	text: "Sections"
-}, {
+},{
 	value: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><path d="M 5 5 L 5 11 L 24 11 L 24 5 L 5 5 z M 7 7 L 22 7 L 22 9 L 7 9 L 7 7 z M 9 13 L 9 19 L 28 19 L 28 13 L 9 13 z M 11 15 L 26 15 L 26 17 L 11 17 L 11 15 z M 5 21 L 5 27 L 24 27 L 24 21 L 5 21 z M 7 23 L 22 23 L 22 25 L 7 25 L 7 23 z"/></svg>`,
 	text: "Sections"
-}, {
+},{
 	value: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="32" height="32"><g fill="#fff" fill-rule="evenodd" stroke="#000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="6"><path d="M11.397 38.115V146.23l99.475-27.451V27.845zM11.397 146.231l77.677 35.287 101.63-38.561-79.832-24.177z"/><path d="M110.872 27.845l79.832 9.045v106.067l-79.832-24.177z"/><path d="M11.397 38.115l77.677 13.2 101.63-14.425-79.832-9.045z"/><path d="M89.074 51.315v130.203l101.63-38.561V36.89z" fill="#eee" fill-opacity=".933"/><path d="M11.397 38.115l77.677 13.2v130.203L11.397 146.23z"/></g></svg>`,
 	text: "Flipbox"
 }];

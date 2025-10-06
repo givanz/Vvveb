@@ -212,7 +212,7 @@ Vvveb.Components.extend("_base", "html/image", {
             className: "form-switch"
         },
 		setGroup: value => {
-			let group = document.querySelectorAll('.mb-3[data-group="link"]');
+			let group = document.querySelectorAll('.mb-2[data-group="link"]');
 			if (group.length) {
 				group.forEach(el => {
 					if (value) {	
@@ -248,7 +248,7 @@ Vvveb.Components.extend("_base", "html/image", {
 	)),
 	
     init(node) {
-		let group = document.querySelectorAll('.mb-3[data-group="link"]');
+		let group = document.querySelectorAll('.mb-2[data-group="link"]');
 		if (group.length) {
 			group.forEach(el => {
 				if (value) {	

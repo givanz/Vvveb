@@ -822,6 +822,12 @@ let AutocompleteInput = { ...Input, ...{
 		return input.onChange.call(this, event, node, input);
 	},
 
+	setValue: function(value) {
+		if (this.element && value) {
+			let input = this.element.querySelectorAll('input').forEach(e => e.value = value);
+		}
+	},	
+
 	init: function(data) {
 		
 		this.element = this.render("textinput", data);
@@ -845,13 +851,8 @@ let AutocompleteList = { ...Input, ...{
 	},
 
 	setValue: function(value) {
-		if (this.element[0] && value) {
-			let input = this.element[0].querySelector('input');
-		
-			if (input) { 
-				input.dataset.autocompleteList.setValue(value);
-				
-			}
+		if (this.element && value) {
+			let input = this.element.querySelectorAll('input').forEach(e => e.value = value);
 		}		
 	},
 

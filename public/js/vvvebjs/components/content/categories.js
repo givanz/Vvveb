@@ -21,8 +21,7 @@
 import {ServerComponent} from '../server-component.js';
 
 let template = `
-<div class="card categories-widget" data-v-component-content-categories data-v-type="categories">
-  <div data-v-if="count > 0" class=" ">
+<div class="card categories-widget" data-v-categories data-v-type="categories">
 	<h6 class="card-header">Categories</h6>
 	<div class="card-body">
 	  <ul data-v-cats>                    
@@ -54,8 +53,7 @@ let template = `
 			  <a href="/cat/category-1" data-v-cat-url data-v-cat-name>category 1</a>
 			</li>                                        
 	  </ul>
-	</div>
-  </div>            
+	</div>        
 </div>			  
 `;
 
@@ -65,7 +63,7 @@ class CategoriesComponent extends ServerComponent{
 		super();
 
 		this.name = "Categories";
-		this.attributes = ["data-v-component-content-categories"],
+		this.attributes = ["data-v-component-categories"],
 
 		this.image ="icons/categories.svg";
 		this.html = template;
@@ -94,8 +92,8 @@ class CategoriesComponent extends ServerComponent{
 				}],
 			},
 			setGroup: group => {
-				document.querySelectorAll('.mb-3[data-group]').forEach(e => e.classList.add("d-none"));
-				document.querySelectorAll('.mb-3[data-group="'+ group + '"].d-none').forEach((el, i) => {
+				document.querySelectorAll('.mb-2[data-group]').forEach(e => e.classList.add("d-none"));
+				document.querySelectorAll('.mb-2[data-group="'+ group + '"].d-none').forEach((el, i) => {
 					el.classList.remove("d-none");
 				});				
 				//return element;
@@ -118,14 +116,14 @@ class CategoriesComponent extends ServerComponent{
 			col:12,
 			inputtype: AutocompleteList,
 			data: {
-				url: "/admin/?module=editor/autocomplete&action=categories",
+				url: window.location.pathname + "?module=editor/autocomplete&action=categories",
 			},
 		}];
 	}
 
 
     init(node) {
-		document.querySelectorAll('.mb-3[data-group]').forEach((el, i) => {
+		document.querySelectorAll('.mb-2[data-group]').forEach((el, i) => {
 			el.classList.add("d-none");
 		});			
 		
@@ -134,7 +132,7 @@ class CategoriesComponent extends ServerComponent{
 			source = "automatic";
 		} 
 
-		document.querySelectorAll('.mb-3[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
+		document.querySelectorAll('.mb-2[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
 	}
 }
 

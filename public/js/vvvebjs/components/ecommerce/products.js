@@ -113,8 +113,8 @@ class ProductsComponent extends ServerComponent{
 			},
 			
 			setGroup: group => {
-				document.querySelectorAll('.mb-3[data-group]').forEach(e => e.classList.add("d-none"));
-				document.querySelectorAll('.mb-3[data-group="'+ group + '"].d-none').forEach((el, i) => {
+				document.querySelectorAll('.mb-2[data-group]').forEach(e => e.classList.add("d-none"));
+				document.querySelectorAll('.mb-2[data-group="'+ group + '"].d-none').forEach((el, i) => {
 					el.classList.remove("d-none");
 				});	
 				//return element;
@@ -251,7 +251,7 @@ class ProductsComponent extends ServerComponent{
 	}
 
     init(node)	{
-		document.querySelectorAll('.mb-3[data-group]').forEach((el, i) => {
+		document.querySelectorAll('.mb-2[data-group]').forEach((el, i) => {
 			el.classList.add("d-none");
 		});			
 		
@@ -260,7 +260,7 @@ class ProductsComponent extends ServerComponent{
 			source = "automatic";
 		} 
 
-		document.querySelectorAll('.mb-3[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
+		document.querySelectorAll('.mb-2[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
 	}
 }
 

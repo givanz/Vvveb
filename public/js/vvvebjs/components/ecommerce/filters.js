@@ -92,8 +92,8 @@ class FiltersComponent {
 			},
 			
 			setGroup: group => {
-				document.querySelectorAll('.mb-3[data-group]').forEach(e => e.classList.add("d-none"));
-				document.querySelectorAll('.mb-3[data-group="'+ group + '"].d-none').forEach((el, i) => {
+				document.querySelectorAll('.mb-2[data-group]').forEach(e => e.classList.add("d-none"));
+				document.querySelectorAll('.mb-2[data-group="'+ group + '"].d-none').forEach((el, i) => {
 					el.classList.remove("d-none");
 				});	
 
@@ -119,7 +119,7 @@ class FiltersComponent {
 			col:12,
 			inputtype: AutocompleteList,
 			data: {
-				url: "/admin/?module=editor&action=filtersAutocomplete",
+				url: window.location.pathname + "?module=editor&action=filtersAutocomplete",
 			},
 		},{
 			name: "Nr. of filters",
@@ -188,7 +188,7 @@ class FiltersComponent {
 			col:12,
 			inputtype: TagsInput,
 			data: {
-				url: "/admin/?module=editor&action=filtersAutocomplete",
+				url: window.location.pathname + "?module=editor&action=filtersAutocomplete",
 			},
 
 		},{
@@ -200,7 +200,7 @@ class FiltersComponent {
 			col:12,
 			inputtype: TagsInput,
 			data: {
-				url: "/admin/?module=editor&action=filtersAutocomplete",
+				url: window.location.pathname + "?module=editor&action=filtersAutocomplete",
 			}
 		},{
 			name: "Manufacturer 2",
@@ -211,14 +211,14 @@ class FiltersComponent {
 			col:12,
 			inputtype: TagsInput,
 			data: {
-				url: "/admin/?module=editor&action=filtersAutocomplete",
+				url: window.location.pathname + "?module=editor&action=filtersAutocomplete",
 			},
 		}];
 	}
 
     init(node)
 	{
-		document.querySelectorAll('.mb-3[data-group]').forEach((el, i) => {
+		document.querySelectorAll('.mb-2[data-group]').forEach((el, i) => {
 			el.classList.add("d-none");
 		});			
 		
@@ -227,7 +227,7 @@ class FiltersComponent {
 			source = "automatic";
 		} 
 
-		document.querySelectorAll('.mb-3[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
+		document.querySelectorAll('.mb-2[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
 	}
 }
 

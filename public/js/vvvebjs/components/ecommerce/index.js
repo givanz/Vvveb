@@ -42,7 +42,7 @@ Vvveb.Components.add("ecommerce/filters", filtersComponent);
 
 Vvveb.ComponentsGroup['Ecommerce'] = ["ecommerce/products", 
 	"ecommerce/product", 
-	"ecommerce/categories", 
+//	"ecommerce/categories", 
 	"ecommerce/manufacturers", 
 	"ecommerce/vendors", 
 	"ecommerce/search", 
@@ -51,6 +51,5 @@ Vvveb.ComponentsGroup['Ecommerce'] = ["ecommerce/products",
 	"ecommerce/cart", 
 	"ecommerce/checkout", 
 	"ecommerce/filters", 
-	"ecommerce/product", 
-	"ecommerce/slider"
+//	"ecommerce/slider"
 ];

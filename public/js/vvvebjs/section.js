@@ -26,10 +26,10 @@ let defaultSeparatorSvg = '<svg id="Layer_1" data-name="Layer 1" xmlns="http://w
 let section_sort = 1;
 
 let SectionContent = [{
-        name: "Title",
-        key: "title",
+        name: "Label",
+        key: "label",
         sort: section_sort++,
-        htmlAttr: "title",
+        htmlAttr: "aria-label",
         inputtype: TextInput
     },{
         name: "Container width",
@@ -122,12 +122,12 @@ let SectionBackground = [{
             }],
         },
 		hideGroups : function() {
-			document.querySelectorAll('.mb-3[data-group="bg-image"],.mb-3[data-group="bg-video"]').forEach(e => e.classList.add("d-none"));
+			document.querySelectorAll('.mb-2[data-group="bg-image"],.mb-2[data-group="bg-video"]').forEach(e => e.classList.add("d-none"));
 		},
 		
 		onChange : function(node, value, input) {
 			this.hideGroups();
-			document.querySelectorAll('.mb-3[data-group="'+ input.value + '"].d-none').forEach((el, i) => {
+			document.querySelectorAll('.mb-2[data-group="'+ input.value + '"].d-none').forEach((el, i) => {
 				el.classList.remove("d-none");
 			});
 
@@ -249,7 +249,7 @@ let SectionOverlay = [{
             off: 'false'
         },
 		onChange : function(node, value, input) {
-			let group = document.querySelectorAll('.mb-3[data-group="overlay"]');
+			let group = document.querySelectorAll('.mb-2[data-group="overlay"]');
 			let overlay = node.querySelector(":scope > .overlay");
 			
 			if (value == 'true') {
@@ -270,7 +270,7 @@ let SectionOverlay = [{
 		}, 
 		init: function(node) {
 			let overlay = node.querySelector(":scope > .overlay");
-			let group = document.querySelectorAll('.mb-3[data-group="overlay"]');
+			let group = document.querySelectorAll('.mb-2[data-group="overlay"]');
 
 			if (overlay && overlay.offsetParent) {
 				group.forEach(e => e.classList.remove("d-none"));
@@ -616,7 +616,7 @@ let ComponentSectionAdvanced = [];/* [{
 
 function componentsInit(node) {
 		
-		document.querySelectorAll('.mb-3[data-group]').forEach(e => e.classList.add("d-none"));
+		document.querySelectorAll('.mb-2[data-group]').forEach(e => e.classList.add("d-none"));
 
 		let img = node.querySelector(":scope > .background-container img");
 		let video = node.querySelector(":scope > .background-container video");
@@ -633,7 +633,7 @@ function componentsInit(node) {
 		}		
 		
 		let showSection = function (section) {
-			document.querySelectorAll('.mb-3[data-group="' + section + '"]').forEach(e => e.classList.remove("d-none"));
+			document.querySelectorAll('.mb-2[data-group="' + section + '"]').forEach(e => e.classList.remove("d-none"));
 		}
 		
 		if (bg) {

@@ -80,8 +80,8 @@ class TagsComponent extends ServerComponent{
 				}],
 			},
 			setGroup: group => {
-				document.querySelectorAll('.mb-3[data-group]').forEach(e => e.classList.add("d-none"));
-				document.querySelectorAll('.mb-3[data-group="'+ group + '"].d-none').forEach((el, i) => {
+				document.querySelectorAll('.mb-2[data-group]').forEach(e => e.classList.add("d-none"));
+				document.querySelectorAll('.mb-2[data-group="'+ group + '"].d-none').forEach((el, i) => {
 					el.classList.remove("d-none");
 				});				
 				//return element;
@@ -104,14 +104,14 @@ class TagsComponent extends ServerComponent{
 			col:12,
 			inputtype: AutocompleteList,
 			data: {
-				url: "/admin/?module=editor/autocomplete&action=tags",
+				url: window.location.pathname + "?module=editor/autocomplete&action=tags",
 			},
 		}];
 	}
 
 
     init(node) {
-		document.querySelectorAll('.mb-3[data-group]').forEach((el, i) => {
+		document.querySelectorAll('.mb-2[data-group]').forEach((el, i) => {
 			el.classList.add("d-none");
 		});			
 		
@@ -120,7 +120,7 @@ class TagsComponent extends ServerComponent{
 			source = "automatic";
 		} 
 
-		document.querySelectorAll('.mb-3[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
+		document.querySelectorAll('.mb-2[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
 	}
 }
 
