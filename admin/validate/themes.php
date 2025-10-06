@@ -28,6 +28,12 @@ return [
 		'maxLength' => 100 /*,
 			 'message' => __('%s must not be greater than %d')*/,
 	],
+	'taxonomy_item_id' => [
+		'optional'  => '',
+	],
+	'search' => [
+		'optional'  => '',
+	],
 	'browse' => [
 		'allowedValues' => ['popular', 'featured', 'updated', 'new'],
 	],

@@ -25,6 +25,12 @@ return [
 		'notEmpty'  => '',
 		'maxLength' => 100,
 	],
+	'search' => [
+		'optional'  => '',
+	],
+	'taxonomy_item_id' => [
+		'optional'  => '',
+	],
 	'browse' => [
 		'allowedValues' => ['popular', 'featured', 'updated', 'new'],
 	],
