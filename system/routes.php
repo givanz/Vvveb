@@ -106,11 +106,31 @@ class Routes {
 	}
 
 	public static function init($app = 'app') {
-		self :: $routes += include DIR_ROOT . "/config/$app-routes.php";
-		list(self :: $routes) = Event::trigger(__CLASS__, __FUNCTION__ , self :: $routes);
+		$cacheDriver = Cache :: getInstance();
+		$cacheKey    = $app;
 
-		foreach (self :: $routes as $url => $data) {
-			self :: processRoute($url, $data);
+		if ($result = $cacheDriver->get('routes', $cacheKey)) {
+			static::$routes  = $result['routes'];
+			static::$urls    = $result['urls'];
+			static::$modules = $result['modules'];
+		} else {
+			$routesConfig = DIR_ROOT . "/config/$app-routes.php";
+
+			if (file_exists($routesConfig)) {
+				self :: $routes += include $routesConfig;
+			}
+			list(self :: $routes) = Event::trigger(__CLASS__, __FUNCTION__ , self :: $routes);
+
+			foreach (self :: $routes as $url => $data) {
+				self :: processRoute($url, $data);
+			}
+
+			$result            = [];
+			$result['routes']  = static::$routes;
+			$result['modules'] = static::$modules;
+			$result['urls']    = static::$urls;
+
+			$cacheDriver->set('routes', $cacheKey, $result);
 		}
 
 		self :: $init = true;
@@ -126,6 +146,7 @@ class Routes {
 		$url = preg_replace('/\?.*$/', '', str_replace('//', '/', $url));
 
 		foreach (self :: $urls as $route => $data) {
+			$params                 = static::$routes[$route] ?? '';
 			list($pattern, $module) = $data;
 
 			if ($url == $pattern || preg_match('/^' . $pattern . '$/', $url, $matches)) {
@@ -134,6 +155,8 @@ class Routes {
 				$parameters['route']   = $route;
 				$parameters['module']  = $module;
 				$parameters['pattern'] = $pattern;
+
+				$parameters += $params;
 
 				return $parameters;
 			}
