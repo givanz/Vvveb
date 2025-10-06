@@ -25,7 +25,7 @@ $_pagination_limit = isset($categories_pages['limit']) ? $categories_pages['limi
 $_categories = $categories_pages['categories'] ?? [];
 
 if ($_categories) {
-$generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
+$generate_menu = function ($parent) use (&$_categories, &$generate_menu, &$index) {
 ?>
 	@category|before = <?php 
 
@@ -37,7 +37,14 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
 		
 		@category [data-v-cat-url]|href = <?php echo htmlspecialchars(Vvveb\url('content/category/index', $category));?>
 		@category [data-v-cat-img]|src = $category['images'][0]
-		
+
+		@category input|id  = <?php echo 'm' . $index . $category['taxonomy_item_id'];?>
+		@category label|for = <?php echo 'm' . $index . $category['taxonomy_item_id'];?>
+
+		@post input|id  = <?php echo 'p' . $index . $post['post_id'];?>
+		@post label|for = <?php echo 'p' . $index . $post['post_id'];?>
+
+		@category|addClass = <?php if ($category['active']) echo 'active';?>		
 		
 			@post|before = <?php 
 			if (isset($category['post']) && $category['post'])	
@@ -52,7 +59,7 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
 		    ?>
 		
 		@category|append = <?php 
-		 $generate_menu($category['taxonomy_item_id'], $_categories);
+		 $generate_menu($category['taxonomy_item_id'], $_categories, $index);
 		} 
 	}
 	?>
@@ -60,5 +67,5 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
 	@categories|after = <?php 
 }; 
 reset($_categories);
-$generate_menu($_categories[key($_categories)]['parent_id'], $_categories); }
+$generate_menu($_categories[key($_categories)]['parent_id'], $_categories, $_categories_pages_idx); }
 ?>
