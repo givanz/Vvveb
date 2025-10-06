@@ -22,6 +22,7 @@
 
 namespace Vvveb\System\User;
 
+use function Vvveb\__;
 use function Vvveb\session as sess;
 use Vvveb\Sql\UserSQL;
 use Vvveb\System\PageCache;
@@ -37,11 +38,13 @@ class User extends Auth {
 			return false;
 		}
 
-		//check if email or username is already registered
-		$check = ['email'=> $data['email']];
+		self::sanitize($data);
 
-		if (isset($data['username'])) {
-			$check['username'] = $data['username'];
+		//check if email or username is already registered
+		$check = ['username'=> $data['username']];
+
+		if (isset($data['email'])) {
+			$check['email'] = $data['email'];
 		}
 
 		if ($userInfo = $user->get($check)) {
@@ -68,6 +71,8 @@ class User extends Auth {
 			$data['password'] = self :: password($data['password']);
 		}
 		//$data['status']   = 0;
+
+		self::sanitize($data);
 
 		return $user->edit(array_merge([self :: $namespace => $data], $condition));
 	}
@@ -111,24 +116,36 @@ class User extends Auth {
 		return $userInfo;
 	}
 
-	public static function login($data) {
-		$data['status'] = 1;
-		$userInfo       = self::get($data);
+	public static function login($data, $additionalInfo = [], &$feedback = []) {
+		$data['status']  = 1;
+		$userInfo        = self::get($data);
+		$passwordCorrect = false;
+		$userExists      = ($userInfo && isset($userInfo['password']));
 
-		if (! $userInfo) {
-			return null;
+		if ($userExists) {
+			$passwordCorrect = self::checkPassword($data['password'], $userInfo['password']);
 		}
 
-		if (! self::checkPassword($data['password'], $userInfo['password'])) {
+		if (! $userExists || ! $passwordCorrect) {
+			if ($userExists) {
+				$message = __('Password incorrect!');
+				$code    = 0;
+			} else {
+				$message = __('User not found or has status inactive!');
+				$code    = 1;
+			}
+
+			$feedback = ['message' => $message, 'code' => $code];
+
 			return false;
 		}
 
 		$session = Session :: getInstance();
 		$session->regenerateId(true);
 		unset($userInfo['password']);
-		$session->set(self :: $namespace, $userInfo);
+		$session->set(self :: $namespace, $userInfo + $additionalInfo);
 
-		PageCache::disable(self :: $namespace);
+		PageCache::disable('user');
 
 		return $userInfo;
 	}
