@@ -303,6 +303,7 @@ class FrontController {
 
 		//list($responseType) = Event :: trigger($controllerClass, "$actionName:after", $response->getType('json'));
 
+		$response->setStatus(self :: $status);
 		$return = $response->output();
 		self :: closeConnections();
 
@@ -337,14 +338,19 @@ class FrontController {
 		if (strpos($moduleName, 'Plugins/') === 0) {
 			$dir             = str_replace('plugins' . DS, '', $dir);
 			$p               = strpos($dir, DS);
+			$pluginName      = $dir;
+			$nameSpace       = 'index';
+
+			if ($p !== false) {
 			$pluginName      = substr($dir, 0, $p);
 			$nameSpace       = substr($dir, $p + 1);
-			$className       = str_replace('Plugins\\', '', $className);
+			}
+			//$className       = str_replace('Plugins\\', '', $className);
 			$file            = DIR_PLUGINS . $pluginName . DS . APP .
 							   DS . 'controller' . DS . "$nameSpace.php";
 			$pluginName      = \Vvveb\dashesToCamelCase($pluginName);
 			//insert Controller namespace
-			$className  	    = str_replace($pluginName, $pluginName . '\Controller', $className);
+			$className  	    = str_replace('Plugins\\' . $pluginName, $pluginName . '\Controller', $className);
 			$controllerClass = 'Vvveb\Plugins\\' . $className;
 		} else {
 			$file = DIR_APP . 'controller' . DS . $dir . '.php';
@@ -387,7 +393,10 @@ class FrontController {
 			$_GET = array_merge($route, $_GET);
 		} else {
 			$module         = $module ?? ((APP == 'install' || APP == 'admin') ? 'index' : 'error404');
-			self :: $status = 404;
+
+			if (! $module && APP == 'app') {
+				self :: $status = 404;
+			}
 		}
 
 		if ($route) {
