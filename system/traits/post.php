@@ -70,7 +70,7 @@ trait Post {
 		}
 
 		if (isset($post['avatar'])) {
-			$post['avatar'] = $post['avatar'] = Images::image($post['avatar'], 'admin');
+			$post['avatar_url'] = Images::image($post['avatar'], 'admin');
 		}
 
 		if (empty($post['excerpt']) && ! empty($post['content'])) {
