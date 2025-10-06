@@ -74,14 +74,22 @@ class Products extends ComponentBase {
 
 	public $options = [];
 
+	function cacheKey() {
+		if (isset($this->options['search'])) {
+			return false;
+		}
+
+		return parent::cacheKey();
+	}
+
 	function results() {
 		$products = new \Vvveb\Sql\ProductSQL();
 
-		if (($page = $this->options['page']) && is_numeric($page)) {
+		if (($page = $this->options['page'] ?? false) && is_numeric($page)) {
 			$this->options['start'] = ($page - 1) * ((int) ($this->options['limit'] ?? 4));
 		}
 
-		if ($this->options['filter']) {
+		if ($this->options['filter'] ?? false) {
 			foreach ($this->options['filter'] as $name => $values) {
 				if ($name == 'manufacturer_id' || $name == 'vendor_id') {
 					$this->options[$name] = $values;
@@ -90,7 +98,7 @@ class Products extends ComponentBase {
 		}
 
 		if (isset($this->options['product_id']) &&
-			($this->options['related'] || $this->options['variant'] || $this->options['source'] == 'autocomplete')) {
+			(isset($this->options['related']) || isset($this->options['variant']) || ($this->options['source'] ?? '' == 'autocomplete'))) {
 			if (! is_array($this->options['product_id'])) {
 				$this->options['product_id'] = [$this->options['product_id'] => 1];
 			}
@@ -129,7 +137,7 @@ class Products extends ComponentBase {
 			$this->options['taxonomy_item_id'] = [$this->options['taxonomy_item_id']];
 		}
 
-		if ($this->options['search'] && $this->options['search_boolean']) {
+		if (isset($this->options['search']) && isset($this->options['search_boolean'])) {
 			$this->options['search'] .= '*';
 		}
 
@@ -143,7 +151,7 @@ class Products extends ComponentBase {
 
 		$results['limit']  = $this->options['limit'];
 		$results['start']  = $this->options['start'];
-		$results['search'] = $this->options['search'];
+		$results['search'] = $this->options['search'] ?? '';
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 

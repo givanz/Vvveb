@@ -75,11 +75,11 @@ class Posts extends ComponentBase {
 			break;
 
 			case 'content/category':
-				if ($this->options['taxonomy_item_id'] == 'page') {
-					$this->options['taxonomy_item_id'] = 54;
+				if (isset($this->options['taxonomy_item_id']) && $this->options['taxonomy_item_id'] == 'page') {
+					$this->options['taxonomy_item_id'] = get('taxonomy_item_id');
 				}
 
-				if ($this->options['taxonomy_item_slug'] == 'page') {
+				if (isset($this->options['taxonomy_item_slug']) && $this->options['taxonomy_item_slug'] == 'page') {
 					$this->options['taxonomy_item_slug'] = get('slug');
 				}
 
@@ -87,14 +87,22 @@ class Posts extends ComponentBase {
 		}
 	}
 
+	function cacheKey() {
+		if (isset($this->options['search'])) {
+			return false;
+		}
+
+		return parent::cacheKey();
+	}
+
 	function results() {
 		$posts = new PostSQL();
 
-		if (! $this->options['page'] && ! $this->options['start']) {
+		if (! isset($this->options['page']) && ! isset($this->options['start'])) {
 			$this->options['page'] = 1;
 		}
 
-		if ($page = $this->options['page']) {
+		if ($page = ($this->options['page'] ?? false)) {
 			$this->options['start'] = ($page - 1) * ((int) ($this->options['limit'] ?? 4));
 		}
 		/*
@@ -118,7 +126,7 @@ class Posts extends ComponentBase {
 			unset($this->options['direction']);
 		}
 
-		if ($this->options['search'] && $this->options['search_boolean']) {
+		if (isset($this->options['search']) && isset($this->options['search_boolean'])) {
 			$this->options['search'] .= '*';
 		}
 
@@ -146,7 +154,7 @@ class Posts extends ComponentBase {
 
 		$results['limit']  = $this->options['limit'];
 		$results['start']  = $this->options['start'];
-		$results['search'] = $this->options['search'];
+		$results['search'] = $this->options['search'] ?? '';
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 
