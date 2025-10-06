@@ -34,6 +34,7 @@ class Redis {
 	public function __construct($options) {
 		$this->options += $options;
 
+		$this->cachePrefix = crc32(DIR_ROOT); //unique instance for shared hosting
 		$this->expire      = $this->options['expire'] ?? $this->expire;
 		$this->cachePrefix = $this->options['prefix'] ?? $this->cachePrefix;
 

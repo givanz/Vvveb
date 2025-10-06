@@ -29,22 +29,29 @@ class APCu {
 
 	private $active;
 
-	private $cachePrefix = 'cache.';
+	private $cachePrefix = '';
 
 	public function __construct($options) {
 		$this->options += $options;
 
-		$this->cachePrefix = md5(DIR_ROOT); //unique instance for shared hosting
+		$this->cachePrefix = crc32(DIR_ROOT); //unique instance for shared hosting
 		$this->expire      = $this->options['expire'] ?? $this->expire;
 		$this->active      = function_exists('apcu_cache_info') && ini_get('apc.enabled');
 	}
 
 	private function key($namespace, $key = '') {
-		return str_replace(['\\', '/'], '.', $this->cachePrefix . $namespace . $key);
+		return str_replace(['\\', '/'], '.', $this->cachePrefix . $namespace . '.' . $key);
 	}
 
 	public function get($namespace, $key) {
-		return $this->active ? apcu_fetch($this->key($namespace, $key)) : null;
+		$success = false;
+		$result  = $this->active ? apcu_fetch($this->key($namespace, $key), $success) : null;
+
+		if ($success) {
+			return $result;
+		}
+
+		return null;
 	}
 
 	public function set($namespace, $key, $value, $expire = null) {
@@ -60,6 +67,7 @@ class APCu {
 	public function getMulti($namespace, $keys, $serverKey = false) {
 		$result   = [];
 		$fullKeys = [];
+		$success  = false;
 
 		foreach ($keys as &$key) {
 			// simulate with single call version
@@ -71,11 +79,15 @@ class APCu {
 			$key            = $newKey;
 		}
 
-		$result = $this->active ? apcu_fetch($keys) : null;
+		$result = $this->active ? apcu_fetch($keys, $success) : null;
 
 		if ($result) {
 			foreach ($fullKeys as $key => &$fullKey) {
-				$fullKeys[$key] = $result[$fullKey] ?? null;
+				$fullKeys[$key] = null;
+
+				if (isset($result[$fullKey]) && $success) {
+					$fullKeys[$key] = $fullKeys[$key];
+				}
 			}
 
 			return $fullKeys;
@@ -94,6 +106,8 @@ class APCu {
 		if ($this->active) {
 			if ($namespace) {
 				if ($key) {
+					return apcu_delete(new \APCUIterator('/' . $this->key($namespace, $key) . '.*/'));
+
 					return apcu_delete($this->key($namespace, $key));
 				} else {
 					return apcu_delete(new \APCUIterator('/' . $this->key($namespace, $key) . '.*/'));

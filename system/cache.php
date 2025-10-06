@@ -65,9 +65,10 @@ class Cache {
 
 	// cache the results of the callback retrive if exists or save if expired
 	public function cache($namespace, $key, $callback, $expire = 0) {
-		if ($value = $this->driver->get($namespace, $key)) {
+		if (($value = $this->driver->get($namespace, $key)) !== null) {
 			return $value;
 		}
+
 		$value = $callback();
 
 		$expire = $expire ?? $this->expire;

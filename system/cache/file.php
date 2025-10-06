@@ -60,9 +60,11 @@ class File {
 		$files = glob($this->cacheDir . $namespace . '.' . $this->cachePrefix . basename($key) . '.*');
 
 		if ($files) {
-			$data = file_get_contents($files[0]);
+			if (file_exists($files[0])) {
+				$data = file_get_contents($files[0]);
 
-			return json_decode($data, true);
+				return json_decode($data, true);
+			}
 		}
 
 		return null;
@@ -141,5 +143,25 @@ class File {
 				}
 			}
 		}
+	}
+
+	public function purgeExpired() {
+		$files = glob($this->cacheDir);
+
+		if (rand(1, 1000) == 1 && $files = (glob($this->cacheDir))) {
+			foreach ($files as $file) {
+				$time = substr(strrchr($file, '.'), 1);
+
+				if ($time < time()) {
+					if (! @unlink($file)) {
+						clearstatcache(false, $file);
+					}
+				}
+			}
+		}
+	}
+
+	public function __destruct() {
+		$this->purgeExpired();
 	}
 }

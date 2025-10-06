@@ -27,6 +27,8 @@ class Memcached {
 
 	private $memcached;
 
+	private $cachePrefix = '';
+
 	public function stats($time = false) {
 		$stats = $this->memcached->getStats();
 		/*
@@ -43,8 +45,9 @@ class Memcached {
 
 	public function __construct($options) {
 		//$this->expire = $expire;
-		$this->memcached = new \Memcached();
 
+		$this->cachePrefix = crc32(DIR_ROOT); //unique instance for shared hosting
+		$this->memcached = new \Memcached();
 		$this->memcached->addServers($options['servers']);
 
 		if (isset($options['options'])) {
@@ -56,12 +59,16 @@ class Memcached {
 		return $this->memcached;
 	}
 
+	private function key($namespace, $key = '') {
+		return $this->cachePrefix . ($namespace ? ".$namespace" : '') . $key;
+	}
+
 	public function get($namespace, $key) {
-		return $this->memcached->get($namespace . $key);
+		return $this->memcached->get($this->key($namespace, $key));
 	}
 
 	public function set($namespace, $key, $value, $expire = 0) {
-		return $this->memcached->set($namespace . $key, $value, $expire);
+		return $this->memcached->set($this->key($namespace, $key), $value, $expire);
 	}
 
 	public function getMulti($namespace, $keys, $serverKey = false) {
@@ -81,6 +88,6 @@ class Memcached {
 	}
 
 	public function delete($namespace, $key) {
-		$this->memcached->delete($namespace . $key);
+		$this->memcached->delete($this->key($namespace, $key));
 	}
 }
