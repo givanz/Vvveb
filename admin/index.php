@@ -21,7 +21,7 @@
  */
 
 define('APP', 'admin');
-define('DISABLE_PLUGIN_ON_ERORR', true);
+//define('DISABLE_PLUGIN_ON_ERORR', true);
 //no trailing slash for subdir path
 //define('V_SUBDIR_INSTALL', '/vvveb');
 
@@ -38,4 +38,8 @@ if (! defined('PUBLIC_PATH')) {
 	define('PUBLIC_THEME_PATH', (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . $PUBLIC_THEME_PATH);
 }
 */
+if (! isset($FILE)) {
+	$FILE = __FILE__;
+}
+
 return include __DIR__ . '/../index.php';
