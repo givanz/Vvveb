@@ -28,8 +28,7 @@ use function Vvveb\humanReadable;
 use function Vvveb\model;
 use function Vvveb\sanitizeHTML;
 use function Vvveb\slugify;
-use Vvveb\Sql\categorySQL;
-use Vvveb\Sql\SiteSQL;
+use Vvveb\Sql\CategorySQL;
 use Vvveb\System\Cache;
 use Vvveb\System\CacheManager;
 use Vvveb\System\Core\View;
@@ -46,34 +45,7 @@ class Edit extends Base {
 
 	protected $revisions = true;
 
-	use TaxonomiesTrait, AutocompleteTrait;
-
-	function sites($selectedSites = []) {
-		$sites = new SiteSQL();
-
-		$options = [];
-
-		if (Admin::hasCapability('edit_other_sites')) {
-			//unset($options['site_id']);
-		} else {
-			$options['site_id'] = Admin :: siteAccess();
-		}
-
-		$results = $sites->getAll(
-			$options + [
-				'start'        => 0,
-				'limit'        => 100,
-			]
-		)['site'] ?? [];
-
-		if ($results && $selectedSites) {
-			foreach ($results as &$site) {
-				$site['selected'] = in_array($site['site_id'], $selectedSites);
-			}
-		}
-
-		return $results;
-	}
+	use TaxonomiesTrait, AutocompleteTrait, SitesTrait;
 
 	function getThemeFolder() {
 		return DIR_THEMES . Sites::getTheme() ?? 'default';
@@ -285,11 +257,11 @@ class Edit extends Base {
 		$view->$object   = $post;
 		$view->status    = ['publish' => 'Publish', 'draft' => 'Draft', 'pending' => 'Pending', 'private' => 'Private', 'password' => 'Password', 'future' => 'Future'];
 
-		$view->templates = Cache::getInstance()->cache(APP,'template-list.' . $theme, function () use ($theme) {
+		$view->templates = Cache::getInstance()->cache(APP, 'template-list-' . $theme, function () use ($theme) {
 			return \Vvveb\getTemplateList($theme, ['email']);
 		}, 604800);
 
-		$view->themeFonts = Cache::getInstance()->cache(APP,'fonts-list.' . $theme, function () use ($theme) {
+		$view->themeFonts = Cache::getInstance()->cache(APP, 'fonts-list-' . $theme, function () use ($theme) {
 			$fonts = \Vvveb\System\Media\Font::themeFonts($theme);
 			$names = [];
 
@@ -384,6 +356,21 @@ class Edit extends Base {
 				}
 			}
 
+			//process fields
+			$post_field_value = [];
+
+			if (isset($post['field'])) {
+				foreach ($post['field'] as $language_id => $fields) {
+					foreach ($fields as $field_id => $value) {
+						if (is_array($value)) {
+							$value = json_encode($value);
+						}
+
+						$post_field_value[] = ['field_id' => $field_id, 'language_id' => $language_id, 'value' => $value];
+					}
+				}
+			}
+
 			$site_id = $this->request->post['site'] ?? []; //[$this->global['site_id']];
 
 			$post = $post + $this->global;
@@ -410,6 +397,7 @@ class Edit extends Base {
 					$this->object . '_id'      => $post_id,
 					$this->object . '_content' => $post[$this->object . '_content'],
 					'taxonomy_item_id'         => $post['taxonomy_item_id'] ?? [],
+					'post_field_value'         => $post_field_value,
 					'site_id'                  => $site_id,
 				] + $this->global;
 
@@ -433,9 +421,6 @@ class Edit extends Base {
 							}
 						}
 					}
-
-					//CacheManager::delete($this->object);
-					CacheManager::delete();
 				} else {
 					$this->view->errors = [$posts->error];
 				}
@@ -450,6 +435,7 @@ class Edit extends Base {
 					$this->object              => $post,
 					$this->object . '_content' => $post[$this->object . '_content'],
 					'taxonomy_item_id'         => $post['taxonomy_item_id'] ?? [],
+					'post_field_value'         => $post_field_value,
 					'site_id'                  => $site_id,
 				] + $this->global;
 
@@ -459,7 +445,6 @@ class Edit extends Base {
 				if (! $id) {
 					$view->errors = [$posts->error];
 				} else {
-					CacheManager::delete($this->object);
 					$this->request->get[$this->object . '_id'] = $id;
 
 					$post_id = $id;
@@ -481,6 +466,10 @@ class Edit extends Base {
 			}
 
 			list($post, $post_id, $this->type) = Event :: trigger(__CLASS__,__FUNCTION__, $post, $post_id, $this->type);
+
+			CacheManager::clearObjectCache('component', $this->object);
+			CacheManager::clearObjectCache('component', $this->object . 's');
+			CacheManager::clearPageCache();
 
 			if ($new) {
 				$this->redirect(['module'=>$this->module, $this->object . '_id' => $id, 'type' => $this->type, 'success' => $message], [], false);

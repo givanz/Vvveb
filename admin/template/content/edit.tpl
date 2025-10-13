@@ -68,8 +68,8 @@ if ($optgroup != $option['folder']) {
 foreach ($this->languagesList as $language) {
 	$content = $this->{{type}}['{{type}}_content'][$language['language_id']] ?? [];
 ?>
-	[data-v-languages] [data-v-language-id]|id = <?php echo 'lang-' . $language['code'] . '-' . $_lang_instance;?>
-	[data-v-languages]  [data-v-language-id]|addClass = <?php if ($_i == 0) echo 'show active';?>
+	[data-v-languages] [data-v-language-id]|id       = <?php echo 'lang-' . $language['code'] . '-' . $_lang_instance;?>
+	[data-v-languages] [data-v-language-id]|addClass = <?php if ($_i == 0) echo 'show active';?>
 
 	@language [data-v-language-name] = $language['name']
 	@language [data-v-language-img]|title = $language['name']
@@ -161,21 +161,6 @@ foreach ($revisions as $revision) {
 [data-v-{{type}}] [data-v-revisions_url]|href = <?php echo $this->revisions_url . '&language_id=' . $language['language_id'];?>
 
 
-@site = [data-v-sites] [data-v-site]
-@site|deleteAllButFirstChild
-
-@site|before = <?php
-if(isset($this->sitesList) && is_array($this->sitesList)) {
-	foreach ($this->sitesList as $index => $site) {?>
-	
-	@site [data-v-*]|innerText = $site['@@__data-v-(*)__@@']
-	@site [data-v-*]|title = $site['@@__data-v-(*)__@@']
-	@site input[data-v-*]|addNewAttribute = <?php if (isset($site['selected']) && $site['selected']) echo 'checked';?>
-
-	
-	@site|after = <?php
-	} 
-}?>
-
+import(content/sites.tpl)
 
 import(content/post_taxonomy.tpl)
