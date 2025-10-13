@@ -24,14 +24,12 @@ namespace Vvveb\Controller\Tools;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
-use Vvveb\System\Import\Sql;
 use Vvveb\System\Import\Xml;
 
 #[\AllowDynamicProperties]
 class Import extends Base {
 	function __construct() {
 		$this->xml = new Xml();
-		$this->sql = new Sql();
 	}
 
 	function importFile($file, $name = '') {
@@ -40,7 +38,7 @@ class Import extends Base {
 		if ($file) {
 			try {
 				// use temorary file, php cleans temporary files on request finish.
-				$result = $this->import($file);
+				$result = $this->import($file, $name);
 			} catch (\Exception $e) {
 				$error                = $e->getMessage();
 				$this->view->errors[] = $error;
@@ -82,19 +80,14 @@ class Import extends Base {
 		return $this->index();
 	}
 
-	private function import($file) {
-		$extension = substr($file, -3, 3);
+	private function import($file, $name = '') {
+		$extension = substr($name, -3, 3);
 
 		$result = false;
 
 		if ($extension == 'xml') {
 			$content = file_get_contents($file);
 			$result  = $this->xml->import($content);
-		}
-
-		if ($extension == 'sql') {
-			$content = file_get_contents($file);
-			$result  = $this->sql->multiQuery($content, $file);
 		}
 
 		return $result;
