@@ -42,8 +42,8 @@ class Comments extends Listing {
 
 	function save() {
 		$type       = $this->type;
-		$comment_id = $this->request->get[$type . '_id'] ?? false;
-		$status     = $this->request->get['newstatus'] ?? false;
+		$comment_id = $this->request->get[$type . '_id'] ?? $this->request->post[$type . '_id'] ?? false;
+		$status     = $this->request->get['newstatus'] ?? $this->request->post['newstatus'] ?? false;
 
 		if ($comment_id) {
 			$comments = model($type);
