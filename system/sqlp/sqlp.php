@@ -155,15 +155,15 @@ class Sqlp {
 
 		//avoid subselects with negative lookbehind for (
 		$selectRegex   = '/(@[^\s]+\s*)?(?<!\()\s*SELECT.*?FROM\s*([`"]?\w+[`"]? AS \w+|[`"]?\w+[`"]?)/ims';
-		$updateRegex   = '/(@[^\s]+\s*)?UPDATE\s*([`"]?\w+[`"]? AS \w+|[`"]?\w+[`"]?)/ims';
 		$insertRegex   = '/(@[^\s]+\s*)?INSERT\s*INTO\s*([`"]?\w+[`"]? AS \w+|[`"]?\w+[`"]?)/ims';
+		$updateRegex   = '/(@[^\s]+\s*)?UPDATE\s*([`"]?\w+[`"]? AS \w+|[`"]?\w+[`"]?)/ims';
 		$deleteRegex   = '/(@[^\s]+\s*)?DELETE.*FROM\s*([`"]?\w+[`"]? AS \w+|[`"]?\w+[`"]?)/ims';
 		$functionRegex = '/(@[^\s]+\s*)?(?<!\()SELECT.*?\w+\(\)\s*AS\s*[`"]?(\w+)[`"]?/ims';
 		$countRegex    = '/(@[^\s]+\s*)?SELECT\s*count\(.*?\s*AS\s*[`"]?(\w+)[`"]?$/ims';
 
 		if (preg_match($selectRegex, $query, $matches1) ||
-			preg_match($updateRegex, $query, $matches1) ||
 			preg_match($insertRegex, $query, $matches1) ||
+			preg_match($updateRegex, $query, $matches1) ||
 			preg_match($deleteRegex, $query, $matches1) ||
 			preg_match($functionRegex, $query, $matches1) ||
 			preg_match($countRegex, $query, $matches1)) {
@@ -228,11 +228,11 @@ class Sqlp {
 				//return  '$result->fetch_array(MYSQLI_NUM)[0] ?? null';
 
 			case (isset($type[0]) && $type[0] == '@'):
-				 $key = str_replace('@result.', '', $type);
+				$key = str_replace('@result.', '', $type);
 
-				 return $this->template($this->model['fetch_result'], ['key' => $key]);
-				 //return sprintf($this->model['fetch_result'], $key, $key);
-				 //return "isset(\$results['$key']) ? \$results['$key'] : 'NULL'";
+				return $this->template($this->model['fetch_result'], ['key' => $key]);
+				//return sprintf($this->model['fetch_result'], $key, $key);
+				//return "isset(\$results['$key']) ? \$results['$key'] : 'NULL'";
 
 			case 'fetch_all':
 			default:
@@ -266,26 +266,26 @@ class Sqlp {
 
 				//replace macro template variables %$variable
 				$macro = preg_replace_callback(
-				'@\$%(\w+)@',
-				function ($varMatch) use ($match) {
-					return
-					preg_replace_callback(
-						$this->config['varRegex'],
-						function ($matches) {
-							return '$' . \Vvveb\dotToArrayKey('params.' . $matches[1]);
-						//return '$params[\'' . $matches[1] . '\']';
-						},
-					$match[$varMatch[1]]);
-				},
-				$macro);
+					'@\$%(\w+)@',
+					function ($varMatch) use ($match) {
+						return
+						preg_replace_callback(
+							$this->config['varRegex'],
+							function ($matches) {
+								return '$' . \Vvveb\dotToArrayKey('params.' . $matches[1]);
+								//return '$params[\'' . $matches[1] . '\']';
+							},
+							$match[$varMatch[1]]);
+					},
+					$macro);
 
 				//replace macro template placeholders %placeholder
 				$macro = preg_replace_callback(
-				'@\%(\w+)@',
+					'@\%(\w+)@',
 					function ($varMatch) use ($match) {
 						return $match[$varMatch[1]];
 					},
-				$macro);
+					$macro);
 
 				$statement = str_replace($match[0], $macro, $statement);
 			}
@@ -342,9 +342,9 @@ class Sqlp {
 						$key = $matches[1];
 
 						return "' . (isset(\$params['$key']) ? \$params['$key'] : 'NULL') . '";
-					//return "' . \$results['". $matches[1] . "'] . '";
+						//return "' . \$results['". $matches[1] . "'] . '";
 					},
-				$statement);
+					$statement);
 
 		$lex       = new Lexer($this->config['tokenMap'],  $this->config['macroMap']);
 		$structure = $lex->lex($statement);
@@ -362,7 +362,7 @@ class Sqlp {
 
 							return "' . (isset($key) ? $key : 'NULL') . '";
 						},
-					$statement);
+						$statement);
 
 		//FILTER
 		if (preg_match_all($this->config['filterRegex'], $statement, $matches, PREG_SET_ORDER)) {
@@ -551,12 +551,12 @@ class Sqlp {
 
 					//$query = $this->parseSQLCount($query);
 					$statement .= $this->template($template,
-				[
-					'statement'   => $this->parseMacros($query, $method['params']),
-					'query_id'    => $queryId,
-					'array_key'   => $arrayKey,
-					'array_value' => $arrayValue,
-				]);
+						[
+							'statement'   => $this->parseMacros($query, $method['params']),
+							'query_id'    => $queryId,
+							'array_key'   => $arrayKey,
+							'array_value' => $arrayValue,
+						]);
 
 					$statement = $this->parseEach($statement, $method['params']);
 
@@ -644,19 +644,19 @@ class Sqlp {
 				$method['fetch'] = $this->fetchType($fetch);
 
 				$method['params'] = trim(implode(', ', array_map(
-								function ($param) {
-									if ($param['in_out'] == 'IN') {
-										return '$' . $param['name'];
-									}
-								} ,$method['params'])), ', ');
+					function ($param) {
+						if ($param['in_out'] == 'IN') {
+							return '$' . $param['name'];
+						}
+					} ,$method['params'])), ', ');
 
 				//if ($queriesCount > 1)
 				//{
 				$methods .= $this->template($this->model['methodMultipleTemplate'], $method);
 				//} else
-			//{
+				//{
 				//$methods .= $this->template($this->config['METHOD_TEMPLATE'], $method);
-			//}
+				//}
 			}
 		}
 

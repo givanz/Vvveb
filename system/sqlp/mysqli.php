@@ -85,10 +85,17 @@ class %name%SQL {
 					} 
 				
 					if ('%query_id%' == '_') {
-						$results[$row['array_key']] = $values;
+						if ($row['array_key'] === null) {
+							$results[] = $values;
+						} else {
+							$results[$row['array_key']] = $values;
+						}
 					} else {
-						$results['%query_id%'][$row['array_key']] = $values;
-						
+						if ($row['array_key'] === null) {
+							$results['%query_id%'][] = $values;
+						} else {
+							$results['%query_id%'][$row['array_key']] = $values;
+						}
 					}
 				}
 			} else {

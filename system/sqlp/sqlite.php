@@ -86,10 +86,17 @@ class %name%SQL {
 					} 
 				
 					if ('%query_id%' == '_') {
-						$results[$row['array_key']] = $values;
+						if ($row['array_key'] === null) {
+							$results[] = $values;
+						} else {
+							$results[$row['array_key']] = $values;
+						}
 					} else {
-						$results['%query_id%'][$row['array_key']] = $values;
-						
+						if ($row['array_key'] === null) {
+							$results['%query_id%'][] = $values;
+						} else {
+							$results['%query_id%'][$row['array_key']] = $values;
+						}
 					}
 				}
 			} else {
@@ -140,7 +147,7 @@ class %name%SQL {
 
 //$result->fetchArray(SQLITE3_NUM)[0] ?? null
 %fetch_one_start%
-		$this->db->fetchOne($result)
+	$this->db->fetchOne($result)
 %fetch_one_end%
 
 %fetch_result_start%
