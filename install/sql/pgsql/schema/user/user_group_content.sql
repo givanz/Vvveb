@@ -5,5 +5,5 @@ CREATE TABLE user_group_content (
   "language_id" int check ("language_id" > 0) NOT NULL,
   "name" varchar(32) NOT NULL,
   "content" text NOT NULL,
-  PRIMARY KEY ("user_group_id","language_id")
+  PRIMARY KEY("user_group_id","language_id")
 );

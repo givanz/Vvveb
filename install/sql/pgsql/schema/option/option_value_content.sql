@@ -5,5 +5,5 @@ CREATE TABLE "option_value_content" (
   "language_id" INT NOT NULL,
   "option_id" INT NOT NULL,
   "name" TEXT NOT NULL,
-  PRIMARY KEY ("option_value_id","language_id")
+  PRIMARY KEY("option_value_id","language_id")
 );

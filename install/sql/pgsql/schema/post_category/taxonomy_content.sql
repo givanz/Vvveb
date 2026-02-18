@@ -5,7 +5,7 @@ CREATE TABLE taxonomy_content (
   "name" varchar(191) NOT NULL,
   "slug" varchar(191) NOT NULL DEFAULT '',
   "content" text NOT NULL,
-  PRIMARY KEY ("taxonomy_id","language_id")
+  PRIMARY KEY("taxonomy_id","language_id")
 );
 
 CREATE INDEX "taxonomy_content_name" ON taxonomy_content ("name");

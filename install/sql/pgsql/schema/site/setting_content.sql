@@ -6,5 +6,5 @@ CREATE TABLE setting_content (
   "namespace" varchar(128) NOT NULL,
   "key" varchar(128) NOT NULL,
   "value" text NOT NULL,
-  PRIMARY KEY ("site_id","language_id","namespace","key")
+  PRIMARY KEY("site_id","language_id","namespace","key")
 );

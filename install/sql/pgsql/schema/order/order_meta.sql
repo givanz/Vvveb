@@ -1,17 +1,14 @@
 DROP TABLE IF EXISTS order_meta;
 
-DROP SEQUENCE IF EXISTS order_meta_seq;
-CREATE SEQUENCE order_meta_seq;
--- SELECT setval('order_meta_seq', 0, true); -- last inserted id by sample data
-
+-- DROP SEQUENCE IF EXISTS order_meta_order_meta_id_seq;
+-- CREATE SEQUENCE order_meta_order_meta_id_seq;
 
 CREATE TABLE order_meta (
-  "meta_id" int check ("meta_id" > 0) NOT NULL DEFAULT NEXTVAL ('order_meta_seq'),
-  "order_id" int check ("order_id" > 0) NOT NULL DEFAULT 0,
-  "key" varchar(191) DEFAULT NULL,
-  "value" text DEFAULT NULL,
-  PRIMARY KEY ("meta_id")
+  "order_id" int check ("order_id" > 0) NOT NULL,
+  "namespace" varchar(32) NOT NULL DEFAULT '',
+  "key" varchar(191) NOT NULL,
+  "value" text DEFAULT NULL
 );
 
-CREATE INDEX "order_meta_order_id" ON order_meta ("order_id");
-CREATE INDEX "order_meta_key" ON order_meta ("key");
+CREATE UNIQUE INDEX "order_meta_order_id" ON order_meta ("order_id","namespace","key");
+-- SELECT setval('order_meta_order_meta_id_seq', 0, true); -- last inserted id by sample data

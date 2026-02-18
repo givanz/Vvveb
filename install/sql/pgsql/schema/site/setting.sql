@@ -5,5 +5,5 @@ CREATE TABLE setting (
   "namespace" varchar(128) NOT NULL,
   "key" varchar(128) NOT NULL,
   "value" text NOT NULL,
-  PRIMARY KEY ("site_id","namespace","key")
+  PRIMARY KEY("site_id","namespace","key")
 );

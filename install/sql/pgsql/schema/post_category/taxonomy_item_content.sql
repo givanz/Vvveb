@@ -8,7 +8,7 @@ CREATE TABLE taxonomy_item_content (
   "meta_title" varchar(191) NOT NULL DEFAULT '',
   "meta_description" varchar(191) NOT NULL DEFAULT '',
   "meta_keywords" varchar(191) NOT NULL DEFAULT '',
-  PRIMARY KEY ("taxonomy_item_id","language_id")
+  PRIMARY KEY("taxonomy_item_id","language_id")
 );
 
 CREATE INDEX "taxonomy_item_content_name" ON taxonomy_item_content ("name");

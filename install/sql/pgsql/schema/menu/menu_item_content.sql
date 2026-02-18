@@ -5,7 +5,7 @@ CREATE TABLE menu_item_content (
   "name" varchar(191) NOT NULL DEFAULT '',
   "slug" varchar(191) NOT NULL DEFAULT '',
   "content" text NOT NULL,
-  PRIMARY KEY ("menu_item_id","language_id")
+  PRIMARY KEY("menu_item_id","language_id")
 );
 
 CREATE INDEX "menu_item_content_name" ON menu_item_content ("name");
