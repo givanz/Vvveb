@@ -82,3 +82,14 @@
 
 	END
 	
+	-- delete stock_status
+
+	PROCEDURE delete(
+		IN stock_status_id ARRAY,
+		OUT affected_rows, 
+		OUT affected_rows, 
+	)
+	BEGIN
+		-- user_group
+		DELETE FROM stock_status WHERE stock_status_id IN (:stock_status_id);
+	END
