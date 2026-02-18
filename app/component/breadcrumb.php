@@ -32,6 +32,8 @@ use function Vvveb\url;
 class Breadcrumb extends ComponentBase {
 	public static $defaultOptions = [
 		'absoluteURL' => null,
+		'blog' => true,
+		'shop' => true,
 	];
 
 	public $options = [];
@@ -62,7 +64,7 @@ class Breadcrumb extends ComponentBase {
 			$urlOptions += ['language'=> $this->options['language']];
 		}
 
-		if ($type) {
+		if ($type && $type != 'post' && $type != 'product') {
 			$shopText = __(ucfirst($type));
 			$blogText = __(ucfirst($type));
 			$urlOptions += ['type'=> $type];
@@ -77,7 +79,9 @@ class Breadcrumb extends ComponentBase {
 			case 'product/product/index':
 				$product_id = $request->get['product_id'] ?? false;
 
-				$breadcrumb[] = ['text' => $shopText, 'url' => url('product/index', $urlOptions)];
+				if (isset($this->options['shop']) && $this->options['shop']) {
+					$breadcrumb[] = ['text' => $shopText, 'url' => url('product/index', $urlOptions)];
+				}
 
 				if ($product_id) {
 					$category = new CategorySQL();
@@ -85,47 +89,50 @@ class Breadcrumb extends ComponentBase {
 						['product_id' => $product_id, 'limit' => 1, 'type' => 'categories', 'post_type' => 'product']
 						+ self :: $global);
 
-					if ($result) {
+					if ($result && isset($result['taxonomy_item_id'])) {
 						$breadcrumb[] = ['text' => $result['name'], 'url' => url('product/category/index', $result + $urlOptions)];
 					}
 				}
 
-				$breadcrumb[] = ['text' => $slug, 'url' => false];
+				$breadcrumb[] = ['text' => $name, 'url' => false];
 
-			break;
-			//product category page
+				break;
+				//product category page
 			case 'product/category/index':
 				$breadcrumb[] = ['text' => $shopText, 'url' => url('product/index', $urlOptions)];
-				$breadcrumb[] = ['text' => $slug, 'url' => false];
+				$breadcrumb[] = ['text' => $name, 'url' => false];
 
-			break;
-			//shop page
+				break;
+				//shop page
 			case 'product/index':
 				$breadcrumb[] = ['text' => $shopText, 'url' => false];
 
-			break;
-			//manufacturer page
+				break;
+				//manufacturer page
 			case 'product/manufacturer/index':
 				$breadcrumb[] = ['text' => $shopText, 'url' => url('product/index', $urlOptions)];
-				$breadcrumb[] = ['text' => $slug, 'url' => false];
+				$breadcrumb[] = ['text' => $name, 'url' => false];
 
-			break;
-			//vendor page
+				break;
+				//vendor page
 			case 'product/vendor/index':
 				$breadcrumb[] = ['text' => $shopText, 'url' => url('product/index', $urlOptions)];
-				$breadcrumb[] = ['text' => $slug, 'url' => false];
+				$breadcrumb[] = ['text' => $name, 'url' => false];
 
-			break;
-			//blog page
+				break;
+				//blog page
 			case 'content':
 			case 'content/index':
 				$breadcrumb[] = ['text' => $blogText, 'url' => false];
 
-			break;
-			//post page
+				break;
+				//post page
 			case 'content/post/index':
 				$post_id      = $request->get['post_id'] ?? false;
-				$breadcrumb[] =  ['text' => $blogText, 'url' => url('content', $urlOptions)];
+
+				if (isset($this->options['blog']) && $this->options['blog']) {
+					$breadcrumb[] =  ['text' => $blogText, 'url' => url('content', $urlOptions)];
+				}
 
 				if ($post_id) {
 					$category = new CategorySQL();
@@ -133,36 +140,36 @@ class Breadcrumb extends ComponentBase {
 						['post_id' => $post_id, 'limit' => 1, 'type' => 'categories', 'post_type' => 'post']
 						+ self :: $global);
 
-					if ($result && isset($result['category'])) {
+					if ($result && isset($result['taxonomy_item_id'])) {
 						$breadcrumb[] = ['text' => $result['name'], 'url' => url('content/category/index', $result + $urlOptions)];
 					}
 				}
 
-				$breadcrumb[] = ['text' => $slug, 'url' => false];
+				$breadcrumb[] = ['text' => $name, 'url' => false];
 
-			break;
+				break;
 
 			case 'content/page/index':
 				$post_id = $request->get['post_id'] ?? false;
 
-				$breadcrumb[] = ['text' => $slug, 'url' => false];
+				$breadcrumb[] = ['text' => $name, 'url' => false];
 
-			break;
-			//post category page
+				break;
+				//post category page
 			case 'content/category/index':
-				$breadcrumb[] = ['text' => $slug, 'url' => false];
+				$breadcrumb[] = ['text' => $name, 'url' => false];
 
-			break;
-			//compare
+				break;
+				//compare
 			case 'cart/cart/index':
 				$breadcrumb[] = ['text' => __('Cart'), 'url' => false];
 
-			break;
-			//compare
+				break;
+				//compare
 			case 'cart/compare/index':
 				$breadcrumb[] = ['text' => __('Compare'), 'url' => false];
 
-			break;
+				break;
 
 			default:
 		}
