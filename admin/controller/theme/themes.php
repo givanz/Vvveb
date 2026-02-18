@@ -25,6 +25,7 @@ namespace Vvveb\Controller\Theme;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use function Vvveb\fileUploadErrMessage;
+use function Vvveb\humanReadable;
 use function Vvveb\rcopy;
 use function Vvveb\rrmdir;
 use function Vvveb\sanitizeFileName;
@@ -35,6 +36,101 @@ use Vvveb\System\Import\Theme;
 use Vvveb\System\Sites;
 
 class Themes extends Base {
+	function update() {
+		$slug = $this->request->post['theme'] ?? false;
+
+		try {
+			if ($slug) {
+				$theme =  ThemesList :: getMarketList(['slug' => $slug])['themes'];
+
+				if ($theme && isset($theme[0])) {
+					$themeInfo = $theme[0];
+					extract($themeInfo);
+					$url          = ThemesList :: marketUrl();
+					$downloadLink = "$url$download_link";
+
+					$this->view->log[] = sprintf(__('Installing "%s"'), $name);
+					$this->view->log[] = sprintf(__('Downloading "%s"'), $downloadLink);
+
+					if ($tempFile = ThemesList :: download($downloadLink)) {
+						$this->view->log[] = sprintf(__('Backup theme "%s"'), $slug);
+
+						$newSlug     = $slug . '-backup-' . date('Y-m-d_H_i_s');
+						$newName     = humanReadable($slug) . ' backup ' . date('Y-m-d H:i:s');
+						$srcDir      = DIR_THEMES . $slug;
+						$destDir     = DIR_THEMES . $newSlug;
+
+						$skipFolders = [/*'backup', */'src', 'node_modules', '.git'];
+						if ($theme && is_dir($srcDir)) {
+							if (rcopy($srcDir, $destDir, $skipFolders)) {
+								$themePhp = $destDir . DS . 'theme.php';
+								$content  = file_get_contents($themePhp);
+
+								if ($content) {
+									$content = preg_replace('/[Nn]ame:.+/', "Name: $newName", $content);
+									$content = preg_replace('/[Ss]lug:.+/', "Slug: $newSlug", $content);
+									$content = preg_replace('/[Tt]ext [Dd]omain:.+/', "Text Domain: $newSlug", $content);
+
+									if (file_put_contents($themePhp, $content)) {
+										ThemesList :: clearThemesCache();
+									} else {
+										$this->view->errors[] = _('Error setting theme name!');
+									}
+								} else {
+									$this->view->errors[] = _('Error getting theme info!');
+								}
+
+								$this->view->log[] = __('Backup complete') . ' - ' . $newName;
+							} else {
+								$this->view->log[] = __('Backup error');
+							}
+						}
+
+						$this->view->log[] = sprintf(__('Unpacking "%s"'), $tempFile);
+
+						if (! is_writable(DIR_THEMES . $slug) && ! @chmod($path, 0750)) {
+							$this->view->errors[] = sprintf(__('"%s" is not writable'), DIR_THEMES . $slug);
+						}
+
+						if (ThemesList :: install($tempFile, $slug, false)) {
+							CacheManager::clearObjectCache('vvveb', 'themes_list_' . $this->global['site_id']);
+							CacheManager::clearObjectCache('site');
+							CacheManager::clearFrontend();
+							CacheManager::clearCompiledFiles();
+							CacheManager::clearPageCache();
+							ThemesList :: clearThemesCache();
+
+							$themeName        = humanReadable($slug);
+							$themeActivateUrl = \Vvveb\url(['module' => 'theme/themes', 'action'=> 'activate', 'theme' => $slug]);
+
+							$successMessage    = sprintf(__('Theme %s was successfully updated!'), $themeName, $themeActivateUrl);
+							$this->view->log[] = $successMessage;
+
+							$this->view->success[] = $successMessage;
+						} else {
+							$error                = sprintf(__('Error updating "%s"!'), $slug);
+							$this->view->log[]    = $error;
+							$this->view->errors[] = $error;
+						}
+
+						unlink($tempFile);
+					} else {
+						$this->view->errors[] = sprintf(__('Error downloading "%s" from %s!'), $slug, $downloadLink);
+					}
+				} else {
+					$this->view->errors[] = sprintf(__('Theme "%s" not found!'), $slug);
+				}
+			}
+		} catch (\Exception $e) {
+			$error                = $e->getMessage();
+			$this->view->errors[] = $error;
+		}
+
+		if (isset($this->request->get['json'])) {
+			$this->view->setType('json');
+		}
+	}
+
 	function duplicate() {
 		$theme   = sanitizeFileName(basename($this->request->post['theme'] ?? ''));
 		$dest    = sanitizeFileName(basename($this->request->post['dest'] ?? ''));
@@ -60,6 +156,7 @@ class Themes extends Base {
 
 							if (file_put_contents($themePhp, $content)) {
 								$this->view->success[] = _('Theme duplicated!');
+								ThemesList :: clearThemesCache();
 							} else {
 								$this->view->errors[] = _('Error setting theme name!');
 							}
@@ -81,6 +178,7 @@ class Themes extends Base {
 
 		if ($theme && is_dir(DIR_THEMES . $theme)) {
 			if (rrmdir(DIR_THEMES . $theme)) {
+				ThemesList :: clearThemesCache();
 				$this->view->success[] = _('Theme removed!');
 			} else {
 				$this->view->errors[] = _('Error removing theme!');
@@ -116,12 +214,13 @@ class Themes extends Base {
 			}
 
 			if (! $error && $this->themeSlug) {
-				$this->themeName         = \Vvveb\humanReadable($this->themeSlug);
+				$this->themeName         = humanReadable($this->themeSlug);
 				$this->themeName         = "<b>$this->themeName</b>";
 				$this->themeActivateUrl  = \Vvveb\url(['module' => 'theme/themes', 'action'=> 'activate', 'theme' => $this->themeSlug]);
-				$successMessage          = sprintf(__('Theme %s was successfully installed!'), $this->themeSlug);
-				$successMessage .= "<p><a href='{$this->themeActivateUrl}'>" . __('Activate theme') . '</a></p>';
+				$successMessage          = sprintf(__('Theme %s was successfully installed!'), '<b>' . $this->themeSlug . '</b>');
+				$successMessage         .= '<button type="submit" name="theme" value="' . $this->themeSlug . '" class="btn btn-primary btn-sm ms-2" onclick="document.getElementById(\'action\').value=\'activate\';">' . __('Activate theme') . '</button>';
 				$this->view->success[]   = $successMessage;
+				ThemesList :: clearThemesCache();
 			}
 		}
 
@@ -181,7 +280,7 @@ class Themes extends Base {
 		$theme = $this->request->post['theme'] ?? false;
 
 		if ($theme && Sites::setTheme($this->global['site_id'], $theme, 'index.html')) {
-			$themeName               = \Vvveb\humanReadable($theme);
+			$themeName               = humanReadable($theme);
 			$this->themeActivateUrl  = \Vvveb\url(['module' => 'theme/themes', 'action'=> 'import', 'theme' => $theme]);
 			$successMessage          = sprintf(__('Theme <b>%s</b> was activated!'), $themeName, $this->themeActivateUrl);
 			//$successMessage .= '<a class="btn btn-success btn-sm ms-4" href="' . $this->themeActivateUrl . '">' . __('Import theme content') . '</a>';

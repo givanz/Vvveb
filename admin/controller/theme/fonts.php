@@ -39,7 +39,7 @@ class Fonts extends Base {
 	protected $fontsPath = '../../../fonts/'; // /public/fonts relative to /themes/theme-slug/css folder
 
 	private function getTheme() {
-		return $theme = sanitizeFileName($this->request->get['theme'] ?? Sites::getTheme() ?? 'default');
+		return $theme = sanitizeFileName($this->request->get['theme'] ?? Sites::getTheme($this->global['site_id']) ?? 'default');
 	}
 
 	function save() {
@@ -122,48 +122,5 @@ class Fonts extends Base {
 
 		$controllerPath        = $adminPath . 'index.php?module=theme/fonts';
 		$this->setMediaEndpoints($controllerPath);
-
-		/*
-				$this->view->fonts =
-		[
-			0 => [
-				'font-family'  => 'test1',
-				'font-weight'  => 'normal',
-				'font-style'   => 'normal',
-				'src'          => 'asdasd',
-				'font-display' => 'auto',
-			],
-			3 => [
-				'font-family'  => 'test 2',
-				'font-weight'  => 'normal',
-				'font-style'   => 'normal',
-				'src'          => 'asdasd',
-				'font-display' => 'auto',
-			],
-			4 => [
-				'font-family'  => 'test 3',
-				'font-weight'  => 'normal',
-				'font-style'   => 'normal',
-				'src'          => 'asd',
-				'font-display' => 'auto',
-			],
-			5 => [
-				'font-family'  => 'test 4',
-				'font-weight'  => 'normal',
-				'font-style'   => 'normal',
-				'src'          => 'fef4f',
-				'font-display' => 'auto',
-			],
-			6 => [
-				'font-family'  => 'test 5',
-				'font-weight'  => 'normal',
-				'font-style'   => 'normal',
-				'src'          => 'fsdf',
-				'font-display' => 'auto',
-			],
-		];
-		*/
-		//var_dump($builtIn);
-		//var_dump($custom);
 	}
 }
