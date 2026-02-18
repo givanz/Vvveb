@@ -244,7 +244,17 @@
 			@IF isset(:slug)
 			THEN 
 			
-				AND menu_item.menu_id = (SELECT menu_id FROM menu WHERE slug = :slug LIMIT 1)
+				AND menu_item.menu_id = (
+					SELECT menu.menu_id FROM menu 
+					
+						@IF isset(:site_id)
+						THEN 
+							INNER JOIN menu_to_site ON (menu.menu_id = menu_to_site.menu_id AND menu_to_site.site_id = :site_id)		
+						END @IF	
+						
+						WHERE slug = :slug 
+					LIMIT 1
+				)
 				
 			END @IF			
 

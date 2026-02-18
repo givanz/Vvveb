@@ -38,6 +38,7 @@ class Menu extends ComponentBase {
 		'start'       => 0, //defaut, override from html
 		'limit'       => 10000,
 		'menu_id'     => null, //unset, set from html
+		'site_id'     => null, //unset, set from html
 		'language_id' => null, //unset, set from html
 		'slug'        => null, //unset, set from html
 	];
@@ -57,7 +58,7 @@ class Menu extends ComponentBase {
 		$defaultLanguage = true;
 		$languageOption  = [];
 
-		if ($options['default_language'] != $options['language']) {
+		if (self :: $global['default_language'] != self :: $global['language']) {
 			$languageOption  = ['language'=> $options['language']];
 			$defaultLanguage = false;
 		}
@@ -172,9 +173,10 @@ class Menu extends ComponentBase {
 					}
 				}
 			}
+		} else {
+			$results = ['menu_item' => [], 'count' => 0];
 		}
-		//var_dump($results);
-		//die();
+
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 
 		return $results;
@@ -182,9 +184,9 @@ class Menu extends ComponentBase {
 
 	//called on each request
 	function request(&$results, $index = 0) {
-		$currentUrl            = getCurrentUrl();
-
 		if (isset($results['menu_item'])) {
+			$currentUrl            = getCurrentUrl();
+
 			foreach ($results['menu_item'] as $taxonomy_item_id => &$category) {
 				$category['active'] = isset($category['url']) && ($category['url'] === $currentUrl);
 			}
@@ -198,10 +200,13 @@ class Menu extends ComponentBase {
 	static function editorSave($id, $fields, $type = 'menu') {
 		$menu              = new menuSQL();
 		$menu_item_content = [];
+		$menu_item         = [];
 
 		foreach ($fields as $field) {
 			$name  = $field['name'];
 			$value = $field['value'];
+			
+			$name = str_replace('item-', '', $name);
 
 			if ($name == 'name') {
 				$menu_item_content[$name] = sanitizeHTML($value);
@@ -213,11 +218,13 @@ class Menu extends ComponentBase {
 				}
 			}
 		}
+		
 		//$menu_item['menu_item_content']['post_id'] = $id;
 		$menu_item_content['language_id']      = self :: $global['language_id'];
 		$menu_item_content['content']          = $menu_item_content['content'] ?? '';
 		$menu_item['menu_item_content'][]      = $menu_item_content;
 		$menu_item['menu_item_id']             = $id;
+
 
 		if ((isset($menu_item_content['name']) && $menu_item_content['name']) ||
 			(isset($menu_item_content['content']) && $menu_item_content['content'])) {

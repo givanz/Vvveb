@@ -26,9 +26,67 @@ use function Vvveb\__;
 use function Vvveb\sanitizeHTML;
 use Vvveb\Sql\menuSQL;
 use Vvveb\System\Sites;
+use function Vvveb\url;
 
 class Menus extends Categories {
 	use SitesTrait;
+
+	function duplicate() {
+		$menu_id    = $this->request->post['menu_id'] ?? false;
+
+		if ($menu_id) {
+			$this->menus  = new menuSQL();
+			$data         = $this->menus->get(['menu_id' => $menu_id]);
+			$old_id       = $data['menu_id'];
+
+			unset($data['menu_id']);
+			$id = rand(1, 1000);
+
+			$data['name'] .= ' [' . __('duplicate') . ']';
+			//$data['slug'] .= '-' . __('duplicate') . "-$old_id-$id";
+
+			if (isset($data['menu_to_site'])) {
+				foreach ($data['menu_to_site'] as &$item) {
+					$site_id[] = $item['site_id'];
+				}
+			}
+
+			if ($data) {
+				$result = $this->menus->addMenu([
+					'menu'             => $data,
+					'site_id'          => $site_id,
+				]);
+
+				if ($result && isset($result['menu'])) {
+					$menu_id = $result['menu'];
+					$items         = $this->menus->getMenuAllLanguages(['menu_id' => $old_id])['categories'] ?? [];
+
+					$parentId = [];
+					foreach ($items as &$item) {
+						$old_menu_item_id = $item['menu_item_id'];
+						$item['menu_id'] = $menu_id;
+						$item['parent_id'] = $parentId[$item['parent_id']] ?? 0;
+						$item['menu_item_content'] = json_decode($item['languages'], true);
+						unset($item['menu_item_id']);
+						$res = $this->menus->addMenuItem(['menu_item' => $item]);
+						$menu_item_id = $res['menu_item'];
+						$parentId[$old_menu_item_id] = $menu_item_id;
+					}
+
+					$url     = url(['module' => 'content/menus', 'action' => 'menu', 'menu_id' => $menu_id]);
+
+					$type = __('menu');
+					$success = ucfirst($type) . ' ' . __('duplicated') . '!';
+					$success .= sprintf(' <a href="%s">%s</a>', $url, __('Edit') . ' ' . $type);
+					$this->view->success['get'] = $success;
+				} else {
+					$this->view->errors[] = sprintf(__('Error duplicating %s!'), $type);
+				}
+			}
+		}
+
+		return $this->index();
+	}
 
 	function deleteMenu() {
 		$view         = $this->view;
@@ -104,7 +162,7 @@ class Menus extends Categories {
 		die(0);
 	}
 
-	function add() {
+	function save() {
 		$data = $this->request->post;
 
 		$menus  = new menuSQL();
@@ -202,6 +260,7 @@ class Menus extends Categories {
 				}
 			}
 
+			unset($options['site_id']);
 			$results['menu_data'] = $menus->get($options);
 		} else {
 			if ($menu_data) {
@@ -241,7 +300,7 @@ class Menus extends Categories {
 		$view->scanUrl   = "$controllerPath&action=scan";
 		$view->uploadUrl = "$controllerPath&action=upload";
 		$view->linkUrl   = $admin_path . 'index.php?module=content/post&action=urlAutocomplete';
-		$theme           = Sites::getTheme() ?? 'default';
+		$theme           = Sites::getTheme($this->global['site_id']) ?? 'default';
 		$view->themeCss  = PUBLIC_PATH . "themes/$theme/css/admin-post-editor.css";
 	}
 

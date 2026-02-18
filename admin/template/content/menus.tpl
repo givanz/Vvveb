@@ -11,6 +11,7 @@ if(isset($this->menus) && is_array($this->menus)) {
 	
 	[data-v-menus] [data-v-menu] [data-v-*]|innerText = $menu['@@__data-v-(*)__@@']
 	[data-v-menus] [data-v-menu] [data-v-*]|title = $menu['@@__data-v-(*)__@@']
+	[data-v-menus] [data-v-menu] button[data-v-*]|value = $menu['@@__data-v-(*)__@@']
 
 	[data-v-menus] [data-v-menu] [data-v-img]|src =  <?php echo $menu['image'] ? $menu['image']: PUBLIC_PATH . 'media/placeholder.svg';?>
 	[data-v-menus] [data-v-menu] [data-v-url]|title = $menu['name']	

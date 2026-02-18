@@ -72,8 +72,7 @@ if (isset($category['class'])) {
 
 
 @category-recursive|before = <?php
-$generate_menu = function ($parent_id) use (&$_categories, &$generate_menu, &$parents) {
-	global $vvveb_is_page_edit;
+$generate_menu = function ($parent_id) use (&$_categories, &$generate_menu, &$parents, $vvveb_is_page_edit) {
 ?>
 
 @category-recursive|after = <?php 
