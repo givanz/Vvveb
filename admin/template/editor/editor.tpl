@@ -61,6 +61,23 @@ if(isset($this->themeSections) && is_array($this->themeSections))
 	} 
 }?>
 
+
+//theme styles
+[data-v-theme-styles]|deleteAllButFirstChild
+
+[data-v-theme-styles]|before = <?php
+if(isset($this->themeStyles) && is_array($this->themeStyles)) 
+{
+	foreach ($this->themeStyles as $id => $file) {?>
+	
+	[data-v-theme-styles]|src = $file
+	[data-v-theme-styles]|id = <?php echo 'theme-' . htmlspecialchars($id);?>
+
+	[data-v-theme-styles]|after = <?php 
+	} 
+}?>
+
+
 //theme js
 [data-v-theme-js]|deleteAllButFirstChild
 
