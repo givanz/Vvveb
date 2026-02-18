@@ -46,7 +46,7 @@ class Shipping {
 	public function __construct($options = []) {
 	}
 
-	public function getMethods($checkoutInfo) {
+	public function getMethods(&$checkoutInfo) {
 		$data = [];
 
 		foreach ($this->methods as $name => $method) {
