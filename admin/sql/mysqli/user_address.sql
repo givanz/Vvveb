@@ -55,13 +55,13 @@
 		@IF isset(:user_address_id)
 		THEN
 			AND _.user_address_id = :user_address_id
-        	END @IF			
+		END @IF			
 
         	-- user
-        	@IF isset(:user_id)
-        	THEN 
+		@IF isset(:user_id)
+		THEN 
 			AND _.user_id  = :user_id
-        	END @IF	   
+		END @IF	   
 			
         LIMIT 1; 
 		

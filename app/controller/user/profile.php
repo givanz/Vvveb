@@ -28,6 +28,37 @@ use Vvveb\System\User\User;
 use Vvveb\System\Validator;
 
 class Profile extends Base {
+	function download() {
+		header('Content-Disposition: attachment; filename=user.xml');
+		header('Content-Type: application/octet-stream');
+
+		$data = User::get(['user_id' => $this->global['user_id']]);
+		unset($data['password']);
+		$xml = new \SimpleXMLElement('<root/>');
+		array_walk_recursive($data, function ($value, $key) use ($xml) {
+			$xml->addChild($key, $value);
+		});
+		echo $xml->asXML();
+
+		die();
+	}
+
+	function delete() {
+		//status set to 3 = request delete
+		$result = User::update(['status' => 3], ['user_id' => $this->global['user_id']]);
+
+		if (! $result) {
+			$userModel          = new UserSQL();
+			$this->view->errors = [$userModel->error];
+		} else {
+			User::logout();
+			$message               =  __('Account deleted!');
+			$this->session->set('success', ['login' => $message]);
+			$this->view->success[] = $message;
+			$this->redirect('/user/login');
+		}
+	}
+
 	function save() {
 		$validator    = new Validator(['user']);
 

@@ -34,32 +34,33 @@
 			AND user.email = :email 
         	END @IF	
 
-			@IF isset(:phone_number) AND !empty(:phone_number)
-			THEN 
-				AND user.phone_number = :phone_number 
+		@IF isset(:phone_number) AND !empty(:phone_number)
+		THEN 
+			AND user.phone_number = :phone_number 
         	END @IF	
 
         	-- search
         	@IF isset(:search) AND !empty(:search)
-			THEN 
-				AND user.username LIKE CONCAT('%',:search,'%') OR
-				user.first_name LIKE CONCAT('%',:search,'%') OR
-				user.last_name LIKE CONCAT('%',:search,'%')
+        	THEN 
+			AND user.username LIKE CONCAT('%',:search,'%') OR
+			user.first_name LIKE CONCAT('%',:search,'%') OR
+			user.last_name LIKE CONCAT('%',:search,'%') OR
+			user.email LIKE CONCAT('%',:search,'%')
         	END @IF	        
 
-			-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
-			@IF isset(:order_by)
-			THEN
-				ORDER BY user.$order_by $direction		
-			@ELSE
-				ORDER BY user.user_id DESC
-			END @IF
-			
-			-- limit
-			@IF isset(:limit)
-			THEN
-				@SQL_LIMIT(:start, :limit)
-			END @IF;		
+		-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
+		@IF isset(:order_by)
+		THEN
+			ORDER BY user.$order_by $direction		
+		@ELSE
+			ORDER BY user.user_id DESC
+		END @IF
+		
+		-- limit
+		@IF isset(:limit)
+		THEN
+			@SQL_LIMIT(:start, :limit)
+		END @IF;		
 
 		-- SELECT FOUND_ROWS() as count;
 		SELECT count(*) FROM (

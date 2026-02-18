@@ -39,27 +39,28 @@
 			AND user.phone_number = :phone_number 
         	END @IF	
 
-            -- search
-            @IF isset(:search) AND !empty(:search)
-			THEN 
-				AND user.username LIKE '%' || :search || '%' OR 
-				user.first_name LIKE '%' || :search || '%' OR 
-				user.last_name LIKE '%' || :search || '%'
+        	-- search
+        	@IF isset(:search) AND !empty(:search)
+        	THEN 
+			AND user.username LIKE '%' || :search || '%' OR 
+			user.first_name LIKE '%' || :search || '%' OR 
+			user.last_name LIKE '%' || :search || '%' OR
+			user.email LIKE '%' || :search || '%'
         	END @IF	        
             
-			-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
-			@IF isset(:order_by)
-			THEN
-				ORDER BY user.$order_by $direction		
-			@ELSE
-				ORDER BY user.user_id DESC
-			END @IF
-			
-			-- limit
-			@IF isset(:limit)
-			THEN
-				@SQL_LIMIT(:start, :limit)
-			END @IF;		
+		-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
+		@IF isset(:order_by)
+		THEN
+			ORDER BY user.$order_by $direction		
+		@ELSE
+			ORDER BY user.user_id DESC
+		END @IF
+		
+		-- limit
+		@IF isset(:limit)
+		THEN
+			@SQL_LIMIT(:start, :limit)
+		END @IF;		
 
 		-- SELECT FOUND_ROWS() as count;
 		SELECT count(*) FROM (
@@ -85,7 +86,7 @@
 
         	@IF isset(:username) && !isset(:email)
 		THEN 
-				AND _.username = :username 
+			AND _.username = :username 
         	END @IF	
 
         	@IF isset(:email) && !isset(:username)
@@ -162,7 +163,7 @@
         	END @IF			
 
         	@IF isset(:user_id)
-			THEN 
+        	THEN 
 				user_id = :user_id 
         	END @IF					
 			
@@ -199,13 +200,13 @@
 			
 			SET  
             
-            @IF isset(:role_id)
+        	@IF isset(:role_id)
 			THEN 
 				role_id = :role_id 
         	END @IF		
 
 
-            @IF isset(:role)
+        	@IF isset(:role)
 			THEN 
 				role_id = (SELECT role_id FROM roles WHERE name = :role)
         	END @IF		

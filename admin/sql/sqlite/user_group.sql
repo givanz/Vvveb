@@ -6,6 +6,7 @@
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN status INT,
 		OUT fetch_all, 
 		OUT fetch_one,
 	)
@@ -20,6 +21,11 @@
 		@IF !empty(:language_id) 
 		THEN			
 			AND user_group_content.language_id = :language_id
+		END @IF	
+		
+		@IF !empty(:status) 
+		THEN			
+			AND user_group.status = :status
 		END @IF
 				
 		@IF !empty(:limit) 
