@@ -200,7 +200,7 @@ class Pgsql extends DBDriver {
 
 	public function query($sql, $parameters = []) {
 		if (! self :: $link) {
-			return false;
+			$this->connect();
 		}
 
 		$result = false;
@@ -222,7 +222,7 @@ class Pgsql extends DBDriver {
 
 			if ($this->last_res == false) {
 				$errorMessage = pg_last_error(self :: $link);
-				$message      = $errorMessage . "\n" . $this->debugSql($origSql, $params) . "\n - " . $origSql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
+				$message      = $errorMessage . "\n" . $this->debugSql($sql, $parameters) . "\n - " . $sql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
 				throw new \Exception($message);
 			}
@@ -233,7 +233,7 @@ class Pgsql extends DBDriver {
 
 			return $this->last_res;
 		} catch (\Exception $e) {
-			$message = $e->getMessage() . "\n" . $this->debugSql($origSql, $params) . "\n - " . $origSql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
+			$message = $e->getMessage() . "\n" . $this->debugSql($sql, $parameters) . "\n - " . $sql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
 			throw new \Exception($message, $e->getCode());
 		}

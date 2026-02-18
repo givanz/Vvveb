@@ -230,7 +230,7 @@ class Mysqli extends DBDriver {
 		}
 
 		try {
-		$result = self :: $link->query($sql);
+			$result = self :: $link->query($sql);
 		} catch (\mysqli_sql_exception $e) {
 			$message = $e->getMessage() . "\n" . $sql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 

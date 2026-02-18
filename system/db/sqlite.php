@@ -211,7 +211,7 @@ class Sqlite extends DBDriver {
 				$this->affected_rows = self :: $link->changes();
 				$this->insert_id     = self :: $link->lastInsertRowID();
 				$this->num_rows      = $result->numColumns() && $result->columnType(0) != SQLITE3_NULL;
-			//$result->finalize();
+				//$result->finalize();
 			} else {
 				$message = $this->error() . "\n" . $sql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
@@ -247,7 +247,7 @@ class Sqlite extends DBDriver {
 					$this->affected_rows = self :: $link->changes();
 					$this->insert_id     = self :: $link->lastInsertRowID();
 					$this->num_rows      = $result->numColumns() && $result->columnType(0) != SQLITE3_NULL;
-				//$result->finalize();
+					//$result->finalize();
 				} else {
 					$message = $this->error() . "\n" . $sql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
@@ -267,8 +267,8 @@ class Sqlite extends DBDriver {
 
 	public function close() {
 		if (self :: $link) {
-		return self :: $link->close();
-	}
+			return self :: $link->close();
+		}
 	}
 
 	// Prepare
