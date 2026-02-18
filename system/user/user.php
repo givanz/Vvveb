@@ -58,6 +58,7 @@ class User extends Auth {
 		}
 
 		$data['status'] = 1; //0
+		$data['last_ip'] = $_SERVER['REMOTE_ADDR'] ?? '';
 
 		return $user->add([self :: $namespace => $data]);
 	}
@@ -71,8 +72,9 @@ class User extends Auth {
 			$data['password'] = self :: password($data['password']);
 		}
 		//$data['status']   = 0;
-
 		self::sanitize($data);
+
+		$data['updated_at'] = $data['updated_at'] ??  date('Y-m-d H:i:s', time());
 
 		return $user->edit(array_merge([self :: $namespace => $data], $condition));
 	}
@@ -144,6 +146,9 @@ class User extends Auth {
 		$session->regenerateId(true);
 		unset($userInfo['password']);
 		$session->set(self :: $namespace, $userInfo + $additionalInfo);
+
+		$lastIp        = $_SERVER['REMOTE_ADDR'] ?? '';
+		self::update(['last_ip' => $lastIp],  ['user_id' => $userInfo['user_id']]);
 
 		PageCache::disable('user');
 

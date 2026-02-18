@@ -68,6 +68,7 @@ class Admin extends Auth {
 		}
 
 		$data['status'] = 1; //0
+		$data['last_ip'] = $_SERVER['REMOTE_ADDR'] ?? '';
 
 		self::setUserData($data);
 
@@ -114,6 +115,8 @@ class Admin extends Auth {
 		self::setUserData($data);
 		self::sanitize($data);
 
+		$data['updated_at'] = $data['updated_at'] ??  date('Y-m-d H:i:s', time());
+
 		return $admin->edit(array_merge([self :: $namespace => $data], $condition));
 	}
 
@@ -121,7 +124,7 @@ class Admin extends Auth {
 		$loginInfo = []; //['status' => 1];
 		$adminInfo = false;
 
-		foreach (['email', 'user', 'username', 'role_id', 'user_id', 'token', 'admin_auth_token', 'admin_auth_token', 'status'] as $key) {
+		foreach (['email', 'user', 'username', 'role_id', 'admin_id', 'token', 'admin_auth_token', 'admin_auth_token', 'status'] as $key) {
 			if (isset($data[$key])) {
 				$loginInfo[$key] = $data[$key];
 			}
@@ -211,6 +214,8 @@ class Admin extends Auth {
 		$session->regenerateId(true);
 		unset($adminInfo['password']);
 		$session->set(self :: $namespace, $adminInfo + $additionalInfo);
+		$lastIp        = $_SERVER['REMOTE_ADDR'] ?? '';
+		self::update(['last_ip' => $lastIp],  ['admin_id' => $adminInfo['admin_id']]);
 
 		PageCache::disable('user');
 
