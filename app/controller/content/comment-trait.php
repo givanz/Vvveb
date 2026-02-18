@@ -33,6 +33,13 @@ trait CommentTrait {
 		$result = false;
 		$post   = &$this->request->post;
 
+		$commentsOpen = $this->global['site']['default_comment_status'] ?? false;
+		$anonymousComments = $this->global['site']['anonymous_comments'] ?? false;
+
+		if (! $commentsOpen || (! $anonymousComments && ! $this->global['user'])) {
+			return [];
+		}
+
 		if (isset($post['content'])) {
 			//robots will also fill hidden inputs
 			$notSpam =
@@ -54,6 +61,7 @@ trait CommentTrait {
 				'notSpam'     => $notSpam,
 				'commentType' => $commentType,
 				'commentName' => $commentName,
+				'user_id' => $user['user_id'],
 			]);
 
 			list($comment) = Event :: trigger(__CLASS__, __FUNCTION__ , $comment);

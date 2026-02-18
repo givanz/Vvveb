@@ -58,7 +58,6 @@ class Post extends Base {
 			$content    = $contentSql->getContent($options) ?? [];
 
 			$class                           = __NAMESPACE__ . '\\' . ucfirst($this->type); //__CLASS__ is always Post
-			$error                           = __('Post not found!');
 			list($content, $language, $slug) = Event :: trigger($class,__FUNCTION__, $content, $language, $slug);
 
 			if ($content) {
@@ -112,7 +111,13 @@ class Post extends Base {
 						$this->view->tplFile("content/{$this->type}.tpl");
 					}
 				} else {
+					$error = sprintf(__('%s not found!'), ucfirst(__($this->type)));
 					return $this->notFound(true, ['message' => $error, 'title' => $error]);
+				}
+
+				$languageContent['title'] = $languageContent['name'];
+				if (isset($this->global['site']['description']['title'])) {
+					$languageContent['title'] = $languageContent['title'] . ' - ' . $this->global['site']['description']['title'];
 				}
 
 				list($content, $languageContent, $language, $slug) = Event :: trigger($class, __FUNCTION__ . ':after', $content, $languageContent, $language, $slug);
@@ -137,6 +142,7 @@ class Post extends Base {
 
 					die();
 				} else {
+					$error = sprintf(__('%s not found!'), ucfirst(__($this->type)));
 					return $this->notFound(true, ['message' => $error, 'title' => $error]);
 				}
 			}
@@ -144,5 +150,8 @@ class Post extends Base {
 			$this->view->post    = $languageContent;
 			$this->view->content = $content;
 		}
+
+		$this->view->default_comment_status = $this->global['site']['default_comment_status'] ?? false;
+		$this->view->anonymous_comments = $this->global['site']['anonymous_comments'] ?? false;
 	}
 }
