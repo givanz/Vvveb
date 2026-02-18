@@ -140,6 +140,9 @@ class Order extends Base {
 			$data     = $orders->getData($this->global);
 			$view->set($data);
 		}
+
+		$this->view->order_payment  = $payment->getMethods($order);
+		$this->view->order_shipping = $shipping->getMethods($order);
 	}
 
 	function print() {
@@ -182,7 +185,13 @@ class Order extends Base {
 		try {
 			$error =  __('Error sending order confirmation mail!');
 			$title = sprintf(__('Order update #%s'), $customer_order_id);
-			if (! email([$email], $title, 'order/update', ['message' => $message, 'title' => $title], [], 'app')) {
+
+			$options = ['order_id' => $order_id] + $this->global;
+
+			$orders   = new OrderSQL();
+			$results  = $orders->get($options);
+
+			if (! email([$email], $title, 'order/update', ['message' => $message, 'title' => $title] + $results + $this->global, [], 'app')) {
 				$this->session->set('errors', $error);
 				$this->view->errors[] = $error;
 			}
@@ -198,10 +207,10 @@ class Order extends Base {
 	function saveLog() {
 		$order_id          = $this->request->get['order_id'] ?? false;
 		$customer_order_id = $this->request->post['customer_order_id'] ?? false;
-		$log       = $this->request->post['log'] ?? [];
-		$notify    = $log['notify'] ?? false;
-		$public    = $log['public'] ?? false;
-		$view      = $this->view;
+		$log               = $this->request->post['log'] ?? [];
+		$notify            = $log['notify'] ?? false;
+		$public            = $log['public'] ?? false;
+		$view              = $this->view;
 
 		$this->index();
 
@@ -244,7 +253,7 @@ class Order extends Base {
 		$order_id  = $this->request->get['order_id'] ?? false;
 		$order     = $this->request->post ?? [];
 
-		$site = Sites :: getSiteData();
+		$site = Sites :: getSiteData($this->global['site_id']);
 
 		$order_url = url('user/orders', [
 			'host'   => $site['host'] ?? false,
