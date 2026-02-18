@@ -30,14 +30,18 @@ class Translate extends Base {
 		$text         = $this->request->post['text'];
 		$languages    = \Vvveb\availableLanguages();
 		$translations = [];
+		$defaultLang  = \Vvveb\getLanguage();
 
 		foreach ($languages as $lang) {
 			$code = $lang['code'];
 			\Vvveb\setLanguage($code);
-			$translations[$code] = __($text);
+			\Vvveb\setLanguageCode($code);
+
+			$translations[$code] = __($text, false, false, true);
 		}
 		//restore language
-		\Vvveb\setLanguage(\Vvveb\getLanguage());
+		\Vvveb\setLanguage($defaultLang);
+		\Vvveb\setLanguageCode($defaultLang);
 
 		$this->response->setType('json');
 		$this->response->output($translations);
@@ -50,6 +54,7 @@ class Translate extends Base {
 
 		if ($translations) {
 			require_once DIR_SYSTEM . 'functions' . DS . 'php-mo.php';
+			unset($translations['csrf']);
 
 			$defaultLang  = key($translations); //'en_US';
 			$domain       = 'vvveb';
@@ -94,7 +99,16 @@ class Translate extends Base {
 					$success = false;
 				}
 			}
+
+			if ($success) {
+				$cacheFile = DIR_CACHE . $langCode . '-translations.php';
+				if (file_exists($cacheFile)) {
+					@unlink($cacheFile);
+				}
+			}
 		}
+
+
 
 		$this->response->setType('json');
 		$this->response->output(['success' => $success, 'message' => $message]);

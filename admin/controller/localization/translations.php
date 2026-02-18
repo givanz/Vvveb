@@ -103,6 +103,9 @@ class Translations extends Base {
 			$this->domain();
 
 			$folder = DIR_ROOT . 'locale' . DS . $view->lang . DS . 'LC_MESSAGES' . DS;
+			if (! file_exists($folder)) {
+				mkdir($folder, 0777, true);
+			}
 
 			foreach ($translations as $text => $translation) {
 				$view->translations[$text] = ['msgid' => $text, 'msgstr' => [$translation]];
