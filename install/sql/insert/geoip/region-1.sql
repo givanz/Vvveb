@@ -171,7 +171,7 @@ INSERT INTO `region` VALUES
 (609,	38,	'Nunavut',	'NU',	0),
 (610,	38,	'Ontario',	'ON',	0),
 (611,	38,	'Prince Edward Island',	'PE',	0),
-(612,	38,	'Qu&eacute;bec',	'QC',	0),
+(612,	38,	'Québec',	'QC',	0),
 (613,	38,	'Saskatchewan',	'SK',	0),
 (614,	38,	'Yukon Territory',	'YT',	0),
 (615,	39,	'Boa Vista',	'BV',	0),
