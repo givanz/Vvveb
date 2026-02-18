@@ -14,7 +14,7 @@ foreach ($this->product['product_points'] as $product_points_id => $points)  {
 	
 	@product-points [data-v-user_group_id]|name = <?php echo "product_points[$product_points_id][user_group_id]";?>
 	
-	[data-v-product] [data-v-product-points] [data-v-user_group_id]|before = <?php 
+	@product-points [data-v-user_group_id]|before = <?php 
 		$name = 'user_group';
 		$selected = $points['user_group_id'] ?? 1;
 	?>		

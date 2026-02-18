@@ -1,6 +1,6 @@
 import(crud.tpl, {"type":"currency"})
 
-[data-v-currency] select[data-v-currency-*] option|addNewAttribute = <?php if (isset($this->currency) && isset($this->currency['status']) == '@@__value__@@') echo 'selected';?>
+[data-v-currency] select[data-v-currency-*] option|addNewAttribute = <?php if (isset($this->currency['status']) && ($this->currency['status'] == '@@__value__@@')) echo 'selected';?>
 
 
 [data-v-currency] [data-v-image]|data-v-image = $this->currency['image_url']
