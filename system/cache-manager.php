@@ -98,23 +98,23 @@ class CacheManager {
 		return true;
 	}
 
-	public static function clearObjectCache($namespace = '', $key = '') {
+	public static function clearObjectCache($namespace = '', $key = null) {
 		$cacheDriver = Cache::getInstance();
 
 		return $cacheDriver->delete($namespace, $key);
 	}
 
-	public static function clearPageCache($host = null, $namespace = '') {
+	public static function clearPageCache($host = null, $path = '') {
 		$pageCache = new PageCache($host);
 
-		return $pageCache->purge($namespace);
+		return $pageCache->purge($path);
 	}
 
 	public static function delete($namespace = '') {
-		//self :: clearModelCache($namespace);
+		self :: clearModelCache($namespace);
 		self :: clearObjectCache($namespace);
-		self :: clearCompiledFiles();
-		self :: clearPageCache($namespace);
+		self :: clearCompiledFiles($namespace);
+		self :: clearPageCache();
 
 		return true;
 	}
