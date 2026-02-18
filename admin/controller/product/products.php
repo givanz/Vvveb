@@ -95,7 +95,7 @@ class Products extends Listing {
 
 					$url = url(['module' => 'product/product', 'product_id' => $product_id, 'type' => $this->type]);
 
-					$success = ucfirst($this->type) . __(' duplicated!');
+					$success = ucfirst($this->type) . ' ' . __('duplicated') . '!';
 					$success .= sprintf(' <a href="%s">%s</a>', $url, __('Edit') . " {$this->type}");
 					$this->view->success[] = $success;
 					$this->session->set('success', $success);
@@ -184,11 +184,11 @@ class Products extends Listing {
 				$template                 = (isset($product['template']) && $product['template']) ? $product['template'] : $defaultTemplate;
 				$product['url']           = url($url);
 				$product['edit-url']      = url(['module' => 'product/product', 'product_id' => $product['product_id'], 'type' => $product['type']]);
-				$product['delete-url']    = url(['module' => 'product/products', 'action' => 'delete'] + $url);// + ['product_id[]' => $product['product_id']]);
-				$product['duplicate-url'] = url(['module' => 'product/products', 'action' => 'duplicate'] + $url);// + ['product_id' => $product['product_id']]);
+				$product['delete-url']    = url(['module' => 'product/products', 'action' => 'delete'] + $url); // + ['product_id[]' => $product['product_id']]);
+				$product['duplicate-url'] = url(['module' => 'product/products', 'action' => 'duplicate'] + $url); // + ['product_id' => $product['product_id']]);
 				$product['view-url']      = url('product/product/index', $product + $url + ['host' => $this->global['host']]);
 				$relativeUrl              = url('product/product/index', $product + $url);
-				$product['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($product['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template, 'host' => $this->global['host'] . $adminPath], false);
+				$product['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($product['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template], false);
 			}
 		}
 

@@ -86,7 +86,7 @@ class Posts extends Listing {
 					$post_id = $result['post'];
 					$url     = url(['module' => 'content/post', 'post_id' => $post_id, 'type' => $this->type]);
 
-					$success = ucfirst($this->type) . __(' duplicated!');
+					$success = ucfirst($this->type) . ' ' . __('duplicated') . '!';
 					$success .= sprintf(' <a href="%s">%s</a>', $url, __('Edit') . " {$this->type}");
 					$this->view->success['get'] = $success;
 					//$this->session->set('success', $success);
@@ -243,11 +243,11 @@ class Posts extends Listing {
 				$post['url']           = url($url);
 				$post['edit-url']      = $post['url'];
 				$post['admin-url']     = url(['module' => 'content/posts']) . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
-				$post['delete-url']    = url(['module' => 'content/posts', 'action' => 'delete'] + $url);// + ['post_id[]' => $post['post_id']]);
-				$post['duplicate-url'] = url(['module' => 'content/posts', 'action' => 'duplicate'] + $url);// + ['post_id' => $post['post_id']]);
+				$post['delete-url']    = url(['module' => 'content/posts', 'action' => 'delete'] + $url); // + ['post_id[]' => $post['post_id']]);
+				$post['duplicate-url'] = url(['module' => 'content/posts', 'action' => 'duplicate'] + $url); // + ['post_id' => $post['post_id']]);
 				$post['view-url']      = url("content/{$this->type}/index", $post + $url + ['host' => $this->global['host']]);
 				$relativeUrl           = url("content/{$this->type}/index", $post + $url);
-				$post['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($post['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template, 'host' => $this->global['host']], false);
+				$post['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($post['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template], false);
 			}
 		}
 
