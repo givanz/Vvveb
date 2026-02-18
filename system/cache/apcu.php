@@ -85,7 +85,7 @@ class APCu {
 			foreach ($fullKeys as $key => &$fullKey) {
 				$fullKeys[$key] = null;
 
-				if (isset($result[$fullKey]) && $success) {
+				if ($fullKey && isset($result[$fullKey]) && $success) {
 					$fullKeys[$key] = $fullKeys[$key];
 				}
 			}
