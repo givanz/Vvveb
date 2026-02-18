@@ -38,7 +38,7 @@ class Theme {
 		$path   = $this->path;
 		//$glob   = glob($this->path . '{*,*/*,*/*/*}', GLOB_BRACE | GLOB_ONLYDIR);
 		$glob   = ['', '*,*/*,*/*/*'];
-		
+
 		$files  = globBrace($path, $glob);
 		$result = [];
 
