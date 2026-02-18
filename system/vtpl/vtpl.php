@@ -810,22 +810,24 @@ class Vtpl {
 						break;
 
 						case 'replace_variable':
+							$variable = $this->variables[(int) $valueElements[1]];
 							if ($modifier) {
 								if ($modifier == 'if_exists' || $modifier == 'hide') {
-									$val = $this->variables[(int) $valueElements[1]];
+									$val = $variable;
 								} else {
-									if (! in_array($modifier, $this->_modifiers)) {
-										$val = '<_script language="php"><![CDATA[if (isset(' . $this->variables[(int) $valueElements[1]] . ')) echo htmlspecialchars(' . $this->variables[(int) $valueElements[1]] . ');]]></_script>';
+									if (! in_array($modifier, $this->_modifiers) || $modifier == 'addClass') {
+										$val = '<_script language="php"><![CDATA[if (isset(' . $variable . ')) echo htmlspecialchars(' . $variable . ');]]></_script>';
 									}
 								}
 							} else {
 								if ($isConstant) {
-									$val = '<_script language="php"><![CDATA[if (isset(' . $this->variables[(int) $valueElements[1]] . ')) echo ' . $this->variables[(int) $valueElements[1]] . ';]]></_script>';
+									$val = '<_script language="php"><![CDATA[if (isset(' . $variable . ')) echo ' . $variable . ';]]></_script>';
 								} else {
-									$val = '<_script language="php"><![CDATA[if (isset(' . $this->variables[(int) $valueElements[1]] . ')) echo htmlspecialchars(' . $this->variables[(int) $valueElements[1]] . ');]]></_script>';
+									$val = '<_script language="php"><![CDATA[if (isset(' . $variable . ')) echo htmlspecialchars(' . $variable . ');]]></_script>';
 								}
 							}
-							$this->debug->log('SELECTOR_VARIABLE', $this->variables[(int) $valueElements[1]]);
+
+							$this->debug->log('SELECTOR_VARIABLE', $variable);
 
 						break;
 
@@ -1813,9 +1815,13 @@ class Vtpl {
 			@$document->loadXML($html);
 		}
 
-		$xpath         = new DOMXpath($document);
-		$xpathSelector = $this->cssToXpath($selector);
-		$elements      = $xpath->query($xpathSelector);
+		if ($selector) {
+			$xpath         = new DOMXpath($document);
+			$xpathSelector = $this->cssToXpath($selector);
+			$elements      = $xpath->query($xpathSelector);
+		} else {
+			$elements = $document->childNodes;
+		}
 
 		return $elements;
 	}
@@ -1973,8 +1979,8 @@ class Vtpl {
 					$name  = $attrNode->nodeName;
 
 					//set relative media to theme folder
-					if (($name == 'src' || $name == 'href' || $name == 'srcset') && $this->relativePath) {
-						if ($value && $value[0] != '#' && $value[0] != '@' && (strpos($value, ':') === false)) {
+					if (($name == 'src' || $name == 'href' || $name == 'srcset') && $this->relativePath && $node->nodeName != 'A') {
+						if ($value && $value[0] != '#' && $value[0] != '@' && strncmp($value, '//', 2) != 0 && (strpos($value, ':') === false)) {
 							if ($value[0] == '/') {
 								if (strncmp($value, PUBLIC_PATH, $publicLen) == 0) {
 									$value = substr($value, $publicLen);
@@ -2014,8 +2020,10 @@ class Vtpl {
 
 					if (($name == 'placeholder' || $name == 'title'/* || $name == 'alt'*/) && ($value && $value[0] != '@' && $value[0] != '<')) {
 						$trimmed = trim($value);
-						$php     = '<_script language="php"><![CDATA[ echo ' . $this->translationFunction . '(\'' . addcslashes($trimmed, "'") . '\');]]></_script>';
-						$this->setNodeAttribute($node, $name, $php);
+						if ($trimmed) {
+							$php     = '<_script language="php"><![CDATA[echo ' . $this->translationFunction . '(\'' . addcslashes($trimmed, "'") . '\');]]></_script>';
+							$this->setNodeAttribute($node, $name, $php);						
+						}
 					}
 					/*
 					if (strpos($name, 'data-v-') === 0) {
@@ -2247,13 +2255,18 @@ class Vtpl {
 		$html = str_replace(['<_script language="php"><![CDATA[', ']]></_script>', '<_script language="php">', '</_script>'], ['<?php ', ' ?>', '<?php ', ' ?>'], $html);
 		//decode html entities to match translation strings
 		$translationFunction = preg_quote($this->translationFunction);
-		$html = preg_replace_callback("/<\?php echo $translationFunction\('(.+?)'\); \?>/",
+		$html                = preg_replace_callback("/<\?php echo $translationFunction\('(.+?)'\); \?>/",
 			function ($matches) {
 				$translation = html_entity_decode($matches[1], ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5);
 				//keep <> encoded to avoid xss
-				$translation = str_replace(['<', '>'], ['&lt;','&gt;'], $translation);
+				$translation = str_replace(['<', '>'], ['&lt;', '&gt;'], $translation);
+
 				return "<?php echo {$this->translationFunction}('$translation'); ?>";
-		  }, $html);
+			}, $html);
+
+		//remove empty value for data attributes
+		//$html = preg_replace('/(data-[\w\-]+)="\s*"/','$1', $html);
+
 		//remove data-v- attributes
 		//$html = preg_replace('/data-v-[\-\w]+\s*=\s*"[^"]*"|data-v-[\-\w]+/','', $html);
 	}
