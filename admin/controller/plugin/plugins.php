@@ -40,6 +40,63 @@ class Plugins extends Base {
 		$this->plugin = $this->request->post['plugin'] ?? null;
 	}
 
+	function update() {
+		$slug = $this->request->post['plugin'] ?? false;
+
+		try {
+			if ($slug) {
+				$plugin =  PluginsList :: getMarketList(['slug' => $slug])['plugins'];
+
+				if ($plugin && isset($plugin[0])) {
+					$pluginInfo = $plugin[0];
+					extract($pluginInfo);
+					$url          = PluginsList :: marketUrl();
+					$downloadLink = "$url$download_link";
+
+					$this->view->log[] = sprintf(__('Installing "%s"'), $name);
+					$this->view->log[] = sprintf(__('Downloading "%s"'), $downloadLink);
+
+					if ($tempFile = PluginsList :: download($downloadLink)) {
+						$this->view->log[] = sprintf(__('Unpacking "%s"'), $tempFile);
+
+						if (! is_writable(DIR_PLUGINS . $slug) && ! @chmod($path, 0750)) {
+							$this->view->errors[] = sprintf(__('"%s" is not writable'), DIR_PLUGINS . $slug);
+						}
+
+						if (PluginsList :: install($tempFile, $slug)) {
+							CacheManager::clearObjectCache('vvveb', 'plugins_list_' . $this->global['site_id']);
+							$pluginName        = \Vvveb\humanReadable($slug);
+							$pluginName        = "<b>$pluginName</b>";
+							$pluginActivateUrl = \Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'activate', 'plugin' => $slug]);
+
+							$successMessage    = sprintf(__('Plugin %s was successfully updated!'), $pluginName, $pluginActivateUrl);
+							$this->view->log[] = $successMessage;
+
+							$this->view->success[] = $successMessage;
+						} else {
+							$error                = sprintf(__('Error updating "%s"!'), $slug);
+							$this->view->log[]    = $error;
+							$this->view->errors[] = $error;
+						}
+
+						unlink($tempFile);
+					} else {
+						$this->view->errors[] = sprintf(__('Error downloading "%s" from %s!'), $slug, $downloadLink);
+					}
+				} else {
+					$this->view->errors[] = sprintf(__('Plugin "%s" not found!'), $slug);
+				}
+			}
+		} catch (\Exception $e) {
+			$error                = $e->getMessage();
+			$this->view->errors[] = $error;
+		}
+
+		if (isset($this->request->get['json'])) {
+			$this->view->setType('json');
+		}
+	}
+
 	function deactivate() {
 		if (PluginsList::deactivate($this->plugin, $this->global['site_id'])) {
 			$this->view->success[] = sprintf(__('Plugin `%s` deactivated!'), '<b>' . \Vvveb\humanReadable($this->plugin) . '</b>');
@@ -80,25 +137,20 @@ class Plugins extends Base {
 
 	function delete() {
 		if ($this->plugin) {
-			try {
-				if (PluginsList::uninstall($this->plugin, $this->global['site_id'])) {
-					$this->view->success[] = sprintf(__('Plugin "%s" removed!'), \Vvveb\humanReadable($this->plugin));
-				} else {
-					$this->view->errors[] = sprintf(__('Error removing "%s" plugin!'), \Vvveb\humanReadable($this->plugin));
-				}
+			if (!is_array($this->plugin)) {
+				$this->plugin[] = $this->plugin;
+			}
 
-				/*
-				//remove plugin public files if any
-				rrmdir(DIR_PUBLIC . DS . 'plugins' . DS . $this->plugin);
-
-				if (rrmdir(DIR_PLUGINS . $this->plugin)) {
-					$this->view->success[] = sprintf(__('Plugin "%s" removed!'), \Vvveb\humanReadable($this->plugin));
-				} else {
-					$this->view->errors[] = sprintf(__('Error removing "%s" plugin!'), \Vvveb\humanReadable($this->plugin));
+			foreach ($this->plugin as $plugin) { 
+				try {
+					if (PluginsList::uninstall($plugin, $this->global['site_id'])) {
+						$this->view->success[] = sprintf(__('Plugin "%s" removed!'), \Vvveb\humanReadable($plugin));
+					} else {
+						$this->view->errors[] = sprintf(__('Error removing "%s" plugin!'), \Vvveb\humanReadable($plugin));
+					}
+				} catch (\Exception $e) {
+					$this->view->errors[] = sprintf(__('Error removing "%s" plugin!'), \Vvveb\humanReadable($plugin)) . ' - ' . $e->getMessage();
 				}
-				 */
-			} catch (\Exception $e) {
-				$this->view->errors[] = sprintf(__('Error removing "%s" plugin!'), \Vvveb\humanReadable($this->plugin)) . ' - ' . $e->getMessage();
 			}
 		}
 
@@ -130,7 +182,7 @@ class Plugins extends Base {
 					$this->pluginName        = "<b>$this->pluginName</b>";
 					$this->pluginActivateUrl = \Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'checkPluginAndActivate', 'plugin' => $this->pluginSlug, 'csrf' => $this->session->get('csrf')]);
 					$successMessage          = sprintf(__('Plugin %s was successfully installed!'), $this->pluginName, $this->pluginActivateUrl);
-					$successMessage .= "<a class='btn btn-primary btn-sm m-2'  href='{$this->pluginActivateUrl}'>" . __('Activate plugin') . '</a>';
+					$successMessage         .= '<button type="submit" name="plugin" value="' . $this->themeSlug . '" class="btn btn-primary btn-sm ms-2" onclick="document.getElementById(\'action\').value=\'checkPluginAndActivate\';">' . __('Activate plugin') . '</button>';
 					$this->view->success[]   = $successMessage;
 				} else {
 					$errorMessage            = sprintf(__('Failed to install %s plugin!'), $this->pluginName);
@@ -150,7 +202,7 @@ class Plugins extends Base {
 		$this->plugin   = $this->request->post['plugin'] ?? $this->request->get['plugin'] ?? null;
 		$csrf           = $this->request->post['csrf'] ?? $this->request->get['csrf'] ?? false;
 
-		if ($csrf != $this->session->get('csrf')) {
+		if (! defined('CLI') && $csrf != $this->session->get('csrf')) {
 			die('Invalid csrf!');
 		}
 
