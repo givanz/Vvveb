@@ -64,12 +64,20 @@
 		-- allow only table fields and set defaults for missing values
 		:subscription_plan_data  = @FILTER(:subscription_plan, subscription_plan)
 		
-		
 		INSERT INTO subscription_plan 
 			
 			( @KEYS(:subscription_plan_data) )
 			
 	  	VALUES ( :subscription_plan_data ) RETURNING subscription_id;
+
+		-- allow only table fields and set defaults for missing values
+		:subscription_plan_content = @FILTER(:subscription_plan, subscription_plan_content)
+
+		INSERT INTO subscription_plan_content 
+			
+			( @KEYS(:subscription_plan_content), language_id, subscription_plan_id )
+			
+	  	VALUES ( :subscription_plan_content, :language_id, @result.subscription_plan );
 
 	END
 	
@@ -78,19 +86,28 @@
 	CREATE PROCEDURE edit(
 		IN subscription_plan ARRAY,
 		IN subscription_plan_id INT,
+		IN language_id INT,
 		OUT affected_rows
 	)
 	BEGIN
 
 		-- allow only table fields and set defaults for missing values
-		@FILTER(:subscription_plan, subscription_plan)
+		:subscription_plan_data = @FILTER(:subscription_plan, subscription_plan)
 
 		UPDATE subscription_plan
 			
-			SET @LIST(:subscription_plan) 
+			SET @LIST(:subscription_plan_data) 
 			
-		WHERE subscription_plan_id = :subscription_plan_id
+		WHERE subscription_plan_id = :subscription_plan_id;
 
+		-- allow only table fields and set defaults for missing values
+		:subscription_plan_content = @FILTER(:subscription_plan, subscription_plan_content)
+
+		UPDATE subscription_plan_content
+			
+			SET @LIST(:subscription_plan_content) 
+			
+		WHERE subscription_plan_id = :subscription_plan_id AND language_id = :language_id
 
 	END
 	
