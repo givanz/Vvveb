@@ -20,27 +20,15 @@ if(isset($this->_component['posts']) && is_array($this->_component['posts'][$_po
 	//$pagination = $this->posts[$_posts_idx]['pagination'];
 	foreach ($this->_component['posts'][$_posts_idx]['post'] as $index => $post) {?>
 	
-	@post [data-v-name]     = $post['name']
-	@post [data-v-content]  = $post['content']
-	@post [data-v-excerpt]  = <?php echo $post['excerpt'] ? $post['excerpt'] : substr(strip_tags($post['content']), 0, 50);?>
-	@post [data-v-warranty] = $post['warranty']
-	@post [data-v-stock]    = $post['stock']
-	@post [data-v-sku]      = $post['sku']
-	@post [data-v-weight]   = $post['weight']
-	@post [data-v-sales]    = $post['sales']
-	@post [data-v-id]       = $post['id']
-
-	@post [data-v-price]             = $post['price']
-	@post [data-v-promotional_price] = $post['promotional_price']
-	@post [data-v-selling_price]     = $post['selling_price']
+	@post [data-v-post-url-text]	= $post['url']	
+	@post a[data-v-post-*]|href   	= $post['@@__data-v-post-(*)__@@']	
+	@post a[data-v-post-url]|href	= $post['url']	
+	@post [data-v-post-url]|title	= $post['name']	
 
 	@post [data-v-img]|src = $post['images'][0]
 	
 	@post [data-v-url]|href  = <?php echo htmlspecialchars(Vvveb\url('content/post/index', $post));?>
 	@post [data-v-url]|title = $post['title']	
-	
-	@post [data-v-category]     = $post['category'];
-	@post [data-v-manufacturer] = $post['manufacturer'];
 	
 	@post|after = <?php 
 	} 
