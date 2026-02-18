@@ -46,22 +46,22 @@ define('DEFAULT_LANG', 'en_US');
 #[\AllowDynamicProperties]
 class Index extends Base {
 	private $config = ['engine' => 'mysqli', 'host' => '127.0.0.1', 'database'  => 'vvveb', 'user'  => 'root', 'password'  => '', 'port'  => null, 'prefix'  => ''];
-	
+
 	private $subdir = '';
 
 	function __construct() {
-		if (! ($lang = sess('language'))) {
+		if (! ($lang = sess('install_language'))) {
 			$lang = userPreferedLanguage();
 
 			if ($lang) {
-				sess(['language' => $lang, 'language_id' => 1]);
+				sess(['install_language' => $lang, 'language_id' => 1]);
 			}
 		}
 
 		if ($lang) {
 			setLanguage($lang);
 		}
-		
+
 		$this->subdir = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : \Vvveb\detectSubDir());
 
 		if (\Vvveb\is_installed()) {
@@ -80,7 +80,7 @@ class Index extends Base {
 			}
 
 			if ($admin && isset($admin['status']) && $admin['status'] == '1') {
-				header('Location: ' . $this->subdir. '/');
+				$this->redirect($this->subdir . '/');
 
 				die(__('Already installed! To reinstall remove config/db.php') . "\n");
 			} else {
@@ -186,7 +186,7 @@ class Index extends Base {
 			//$import->db->close();
 			$this->writeConfig($data);
 
-			header('Location: ' . ($_SERVER['REQUEST_URI'] ?? 'localhost') . '?action=install');
+			$this->redirect(($_SERVER['REQUEST_URI'] ?? 'localhost') . '?action=install');
 		} catch (\Exception $e) {
 			$this->view->errors[] = sprintf(__('Db error: "%s" Error code: "%s"'), $e->getMessage(), $e->getCode());
 		}
@@ -218,7 +218,7 @@ class Index extends Base {
 		if ($this->request->post) {
 			if (isset($this->request->post['language'])) {
 				$lang = $this->request->post['language'];
-				sess(['language' => $lang, 'language_id' => 1]);
+				sess(['install_language' => $lang, 'language_id' => 1]);
 				setLanguage($lang);
 			} else {
 				$this->import($noimport);
@@ -236,7 +236,7 @@ class Index extends Base {
 
 		if (! defined('CLI')) {
 			$this->view->languagesList    = $languages;
-			$this->view->currentLanguage  = sess('language') ?? DEFAULT_LANG;
+			$this->view->currentLanguage  = sess('install_language') ?? DEFAULT_LANG;
 		}
 	}
 
@@ -255,7 +255,7 @@ class Index extends Base {
 
 		if (! defined('CLI')) {
 			$this->view->languagesList    = $languagesList;
-			$this->view->currentLanguage  = sess('language') ?? DEFAULT_LANG;
+			$this->view->currentLanguage  = sess('install_language') ?? DEFAULT_LANG;
 		}
 
 		if ($this->request->post) {
@@ -285,7 +285,7 @@ class Index extends Base {
 			if (is_array($settings) && is_array($siteSettings)) {
 				$hasSiteSettings = true;
 				$data            = json_decode($siteSettings['settings'], true) ?? [];
-				$settings        = $settings + $data;
+				$settings        = array_replace_recursive($data, $settings);
 			}
 
 			$settings['admin-email']   = $user['email'];
@@ -298,8 +298,7 @@ class Index extends Base {
 			$site = [
 				'host'     => $hostname ?? '*.*.*', //$_SERVER['HTTP_HOST']
 				'site_id'  => 1,
-				'id'       => 1,
-				'name'     => 'Default',
+				'name'     => $settings['description'][1]['title'] ?? 'Default',
 				'theme'    => $theme,
 				'settings' => json_encode($settings),
 			];
@@ -327,6 +326,7 @@ class Index extends Base {
 					'name'        => 'English',
 					'code'        => 'en_US',
 					'locale'      => 'en-us',
+					'slug'        => 'en',
 					'status'      => 1,
 					'default'     => 1,
 				]]);
@@ -335,18 +335,20 @@ class Index extends Base {
 			unset($site['settings']);
 			@\Vvveb\setConfig('sites.* * *', $site);
 
-			$lang = $language ?? sess('language') ?? 'en_US';
+			$lang = $language ?? sess('install_language') ?? 'en_US';
 
 			//set default language
 			if ($lang && $lang != 'en_US') {
 				$languageModel      = new LanguageSQL();
 				$language           = $languagesList[$lang];
+				$language['name']   = preg_replace('/$(\w+).*/', '$1', $language['name']);
+				$language['slug']   = preg_replace('/$(\w+).*/', '$1', $language['code']);
 				$language['locale'] = $language['code'];
 				$language['code']   = $lang;
 				$language['status'] = 1;
 				//$installed              = $languageModel->get(['code' => $lang]);
 				$result = $languageModel->edit(['language' => $language, 'language_id' => 1]);
-				sess(['language' => $lang, 'language_id' => 1]);
+				sess(['language' => $language['slug'], 'code' => $language['code'], 'language_id' => 1]);
 				setLanguage($lang);
 			}
 
@@ -396,7 +398,7 @@ class Index extends Base {
 						$menus->editMenuItem(['menu_item' => $data,  'menu_item_id' => $menuItem['menu_item_id']]);
 					}
 				}
-				
+
 				//try to set subdir in env.php and .htaccess
 				$this->replaceInFile(DIR_ROOT . 'env.php', "define('V_SUBDIR_INSTALL', false" , "define('V_SUBDIR_INSTALL', '{$subdir}'");
 				$this->replaceInFile(DIR_ROOT . '.htaccess', 'RewriteRule ^ index.php [L]' , "RewriteRule ^ {$subdir}/index.php [L]");
@@ -406,13 +408,22 @@ class Index extends Base {
 				$this->view->error[] = $error;
 			}
 
+			//admin auto login
+			if (! defined('CLI')) {
+				$adminInfo = Admin::get(['admin_id' => 1]);
+
+				if ($adminInfo) {
+					\Vvveb\session(['admin' => $adminInfo]);
+				}
+			}
+
 			$success               = __('Installation succesful!');
 			$this->view->success[] = $success;
 			$admin_path            = \Vvveb\adminPath();
 			$admin_path            = str_replace($this->subdir, '', $admin_path);
-			$location              = preg_replace('@/install.*$@', $admin_path . "/index.php?success=$success&errors=$error", ($_SERVER['REQUEST_URI'] ?? ''));
+			$location              = preg_replace('@/install.*$@', $admin_path . "/index.php?module=settings/site&site_id=1&success=$success&errors=$error#description", ($_SERVER['REQUEST_URI'] ?? ''));
 
-			header("Location: $location");
+			$this->redirect($location);
 		}
 
 		$this->view->template('install.html');
