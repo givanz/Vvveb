@@ -25,29 +25,37 @@ namespace Vvveb\Controller\Content;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use Vvveb\Sql\CategorySQL;
+use Vvveb\System\Images;
 
 class Category extends Base {
 	protected $type = 'category';
 
 	function index() {
-		$category_name             = $this->request->get['slug'] ?? '';
-		$type                      = $this->request->get['type'] ?? '';
-		$this->view->category_name = $category_name;
+		$slug                      = $this->request->get['slug'] ?? '';
+		$type                      = $this->request->get['type'] ?? 'post';
+		$this->view->category_name = $slug;
 
-		if ($category_name) {
+		if ($slug) {
 			$categorySql = new CategorySQL();
-			$options     = $this->global + ['slug' => $category_name];
-
-			if ($type) {
-				$options['post_type'] = $type;
-			}
-
-			$category    = $categorySql->getCategory($options);
+			$options     = $this->global + ['slug' => $slug/*, 'post_type' => $type*/];
+			$category    = $categorySql->getCategoryBySlug($options);
 
 			if ($category) {
+				$this->request->get['category_id'] = $this->request->request['taxonomy_item_id'] = $category['taxonomy_item_id'];
+				$this->request->get['name']        = $category['name'];
+
+				if (isset($category['image']) && $category['image']) {
+					$category['image_url'] = Images::image($category['image'], 'product', 'medium');
+				}
+
+				$category['title'] = $category['name'];
+				if (isset($this->global['site']['description']['title'])) {
+					$category['title'] = $category['title'] . ' - ' . $this->global['site']['description']['title'];
+				}
+
 				$this->request->get['taxonomy_item_id'] = $category['taxonomy_item_id'];
 				$this->request->get['slug']             = $category['slug'];
-				$this->view->category_name              = $category['name'];
+				$this->view->category                   = $category;
 			} else {
 				$message = sprintf(__('%s not found!'), ucfirst(__($this->type)));
 				$this->notFound(true, ['message' => $message, 'title' => $message]);

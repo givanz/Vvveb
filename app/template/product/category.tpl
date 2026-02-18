@@ -1,5 +1,5 @@
 import(common.tpl)
 
-head > title = <?php echo htmlspecialchars(ucfirst($this->category_name));?>
-
-[data-v-category-name] = <?php echo htmlspecialchars(ucfirst($this->category_name));?>
+head > title                  = $this->category['title']
+[data-v-category-*]|innerText = $this->category['@@__data-v-category-(*)__@@']
+img[data-v-category-*]|src    = $this->category['@@__data-v-category-(*)__@@']

@@ -25,6 +25,7 @@ namespace Vvveb\Controller\Product;
 use \Vvveb\Sql\ManufacturerSQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\System\Images;
 
 class Manufacturer extends Base {
 	function index() {
@@ -37,6 +38,18 @@ class Manufacturer extends Base {
 			$manufacturer    = $manufacturerSql->get($options);
 
 			if ($manufacturer) {
+				$this->request->get['name']        = $manufacturer['name'];
+
+				if (isset($manufacturer['image'])) {
+					$manufacturer['image_url'] = Images::image($manufacturer['image'], 'manufacturer');
+				}
+
+
+				$manufacturer['title'] = $manufacturer['name'];
+				if (isset($this->global['site']['description']['title'])) {
+					$manufacturer['title'] = $manufacturer['title'] . ' - ' . $this->global['site']['description']['title'];
+				}
+
 				$this->request->request['manufacturer_id'] = $manufacturer['manufacturer_id'];
 				$this->view->manufacturer                  = $manufacturer;
 				$this->view->manufacturer_name             = $manufacturer['name'];

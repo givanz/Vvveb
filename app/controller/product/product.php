@@ -62,7 +62,8 @@ class Product extends Base {
 
 			list($content, $language, $slug) = Event :: trigger(__CLASS__,__FUNCTION__, $content, $language, $slug);
 
-			$error = __('Product not found!');
+			$error           = __('Product not found!');
+			$languageContent = [];
 
 			if ($content) {
 				if (isset($content[$language])) {
@@ -103,13 +104,18 @@ class Product extends Base {
 					$this->notFound(true, ['message' => $error, 'title' => $error]);
 				}
 
+				$languageContent['title'] = $languageContent['name'];
+				if (isset($this->global['site']['description']['title'])) {
+					$languageContent['title'] = $languageContent['title'] . ' - ' . $this->global['site']['description']['title'];
+				}
+
 				list($content, $languageContent, $language, $slug) = Event :: trigger(__CLASS__,__FUNCTION__ . ':after', $content, $languageContent, $language, $slug);
 			} else {
 				$this->notFound(true, ['message' => $error, 'title' => $error]);
 			}
 
-			$this->view->product 	  = $languageContent;
-			$this->view->content    = $content;
+			$this->view->product = $languageContent;
+			$this->view->content = $content;
 		}
 	}
 }

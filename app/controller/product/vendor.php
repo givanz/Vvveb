@@ -38,8 +38,14 @@ class Vendor extends Base {
 			$vendor      = $vendorSql->get($options);
 
 			if ($vendor) {
+				$this->request->get['name']        = $vendor['name'];
 				if (isset($vendor['image'])) {
 					$vendor['image_url'] = Images::image($vendor['image'], 'vendor');
+				}
+
+				$vendor['title'] = $vendor['name'];
+				if (isset($this->global['site']['description']['title'])) {
+					$vendor['title'] = $vendor['title'] . ' - ' . $this->global['site']['description']['title'];
 				}
 
 				$this->request->request['vendor_id'] = $vendor['vendor_id'];
