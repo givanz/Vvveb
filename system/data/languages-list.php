@@ -22,6 +22,85 @@
 
 return
 [
+	//languages with translations first
+	'zh_CN' => [
+		'name'     => '简体中文 (Chinese)',
+		'charset'  => 'UTF-8',
+		'code'     => 'zh-cn',
+		'emoji'    => '🇨🇳',
+		'pack'	    => true,
+	],
+	'ar' => [
+		'name'    => 'Arabic',
+		'charset' => 'ISO-8859-6',
+		'code'    => 'ar',
+		'rtl'     => true,
+		'emoji'   => '🇦🇷',
+		'pack'	   => true,
+	],
+	'de_DE' => [
+		'name'    => 'German (Germany)',
+		'charset' => 'ISO-8859-1',
+		'code'    => 'de-de',
+		'emoji'   => '🇩🇪',
+		'pack'	   => true,
+	],
+	'en_US' => [
+		'name'    => 'English (United States)',
+		'charset' => 'UTF-8',
+		'code'    => 'en-us',
+		'emoji'   => '🇺🇸',
+	],
+	'fr_FR' => [
+		'name'    => 'French (France)',
+		'charset' => 'UTF-8',
+		'code'    => 'fr-fr',
+		'emoji'   => '🇫🇷',
+		'pack'	   => true,
+	],
+	'it_IT' => [
+		'name'    => 'Italian (Italy)',
+		'charset' => 'ISO-8859-1',
+		'code'    => 'it-it',
+		'emoji'   => '🇮🇹',
+		'pack'	   => true,
+	],
+	'pt_BR' => [
+		'name'     => 'Portuguese (Brazil)',
+		'charset'  => 'ISO-8859-1',
+		'code'     => 'pt-br',
+		'emoji'    => '🇵🇹',
+		'pack'     => true,
+	],
+	'ro_RO' => [
+		'name'    => 'Romanian (Romania)',
+		'charset' => 'UTF-8',
+		'code'    => 'ro-ro',
+		'emoji'   => '🇷🇴',
+		'pack'	   => true,
+	],
+	'ru_RU' => [
+		'name'    => 'Russian (Russia)',
+		'charset' => 'UTF-8',
+		'code'    => 'ru-ru',
+		'emoji'   => '🇷🇺',
+		'pack'	   => true,
+	],
+	'es_ES' => [
+		'name'    => 'Spanish (Spain)',
+		'charset' => 'UTF-8',
+		'code'    => 'es-es',
+		'emoji'   => '🇪🇸',
+		'pack'	   => true,
+	],
+	'tr_TR' => [
+		'name'    => 'Turkish (Turkey)',
+		'charset' => 'ISO-8859-9',
+		'code'    => 'tr-tr',
+		'emoji'   => '🇹🇷',
+		'pack'	   => true,
+	],
+	//---
 	'af_NA' => [
 		'name'    => 'Afrikaans (Namibia)',
 		'charset' => 'UTF-8',
@@ -40,6 +119,7 @@ return
 		'code'    => 'af',
 		'emoji'   => '🇦🇫',
 	],
+
 	'ak_GH' => [
 		'name'    => 'Akan (Ghana)',
 		'charset' => 'UTF-8',
@@ -190,14 +270,6 @@ return
 		'code'    => 'ar-ye',
 		'rtl'     => true,
 		'emoji'   => '🇦🇷',
-	],
-	'ar' => [
-		'name'    => 'Arabic',
-		'charset' => 'ISO-8859-6',
-		'code'    => 'ar',
-		'rtl'     => true,
-		'emoji'   => '🇦🇷',
-		'pack'	   => true,
 	],
 	'hy_AM' => [
 		'name'    => 'Armenian (Armenia)',
@@ -472,13 +544,6 @@ return
 		'code'     => 'zh',
 		'emoji'    => '🇨🇳',
 	],
-	'zh_CN' => [
-		'name'     => '简体中文 (Chinese)',
-		'charset'  => 'UTF-8',
-		'code'     => 'zh-cn',
-		'emoji'    => '🇨🇳',
-		'pack'	    => true,
-	],
 	'zh_TW' => [
 		'name'     => '繁體中文 (Chinese)',
 		'charset'  => 'UTF-8',
@@ -719,12 +784,6 @@ return
 		'code'    => 'en-gb',
 		'emoji'   => '🇺🇸',
 	],
-	'en_US' => [
-		'name'    => 'English (United States)',
-		'charset' => 'UTF-8',
-		'code'    => 'en-us',
-		'emoji'   => '🇺🇸',
-	],
 	'en_ZW' => [
 		'name'    => 'English (Zimbabwe)',
 		'charset' => 'UTF-8',
@@ -890,13 +949,6 @@ return
 		'code'    => 'fr-gq',
 		'emoji'   => '🇫🇷',
 	],
-	'fr_FR' => [
-		'name'    => 'French (France)',
-		'charset' => 'UTF-8',
-		'code'    => 'fr-fr',
-		'emoji'   => '🇫🇷',
-		'pack'	   => true,
-	],
 	'fr_GA' => [
 		'name'    => 'French (Gabon)',
 		'charset' => 'UTF-8',
@@ -1052,13 +1104,6 @@ return
 		'charset' => 'ISO-8859-1',
 		'code'    => 'de-be',
 		'emoji'   => '🇩🇪',
-	],
-	'de_DE' => [
-		'name'    => 'German (Germany)',
-		'charset' => 'ISO-8859-1',
-		'code'    => 'de-de',
-		'emoji'   => '🇩🇪',
-		'pack'	   => true,
 	],
 	'de_LI' => [
 		'name'    => 'German (Liechtenstein)',
@@ -1235,12 +1280,6 @@ return
 		'charset' => 'ISO-8859-1',
 		'code'    => 'ga',
 		'emoji'   => '🇬🇦',
-	],
-	'it_IT' => [
-		'name'    => 'Italian (Italy)',
-		'charset' => 'ISO-8859-1',
-		'code'    => 'it-it',
-		'emoji'   => '🇮🇹',
 	],
 	'it_CH' => [
 		'name'    => 'Italian (Switzerland)',
@@ -1751,13 +1790,6 @@ return
 		'code'    => 'pl',
 		'emoji'   => '🇵🇱',
 	],
-	'pt_BR' => [
-		'name'     => 'Portuguese (Brazil)',
-		'charset'  => 'ISO-8859-1',
-		'code'     => 'pt-br',
-		'emoji'    => '🇵🇹',
-		'pack'     => true,
-	],
 	'pt_GW' => [
 		'name'    => 'Portuguese (Guinea-Bissau)',
 		'charset' => 'ISO-8859-1',
@@ -1818,13 +1850,6 @@ return
 		'code'    => 'ro-md',
 		'emoji'   => '🇷🇴',
 	],
-	'ro_RO' => [
-		'name'    => 'Romanian (Romania)',
-		'charset' => 'UTF-8',
-		'code'    => 'ro-ro',
-		'emoji'   => '🇷🇴',
-		'pack'	   => true,
-	],
 	'ro' => [
 		'name'    => 'Romanian',
 		'charset' => 'UTF-8',
@@ -1856,13 +1881,6 @@ return
 		'charset' => 'UTF-8',
 		'code'    => 'ru-md',
 		'emoji'   => '🇷🇺',
-	],
-	'ru_RU' => [
-		'name'    => 'Russian (Russia)',
-		'charset' => 'UTF-8',
-		'code'    => 'ru-ru',
-		'emoji'   => '🇷🇺',
-		'pack'	   => true,
 	],
 	'ru_UA' => [
 		'name'    => 'Russian (Ukraine)',
@@ -2178,13 +2196,6 @@ return
 		'code'    => 'es-pr',
 		'emoji'   => '🇪🇸',
 	],
-	'es_ES' => [
-		'name'    => 'Spanish (Spain)',
-		'charset' => 'UTF-8',
-		'code'    => 'es-es',
-		'emoji'   => '🇪🇸',
-		'pack'	   => true,
-	],
 	'es_US' => [
 		'name'    => 'Spanish (United States)',
 		'charset' => 'UTF-8',
@@ -2383,13 +2394,6 @@ return
 		'charset' => 'UTF-8',
 		'code'    => 'to',
 		'emoji'   => '🇹🇴',
-	],
-	'tr_TR' => [
-		'name'    => 'Turkish (Turkey)',
-		'charset' => 'ISO-8859-9',
-		'code'    => 'tr-tr',
-		'emoji'   => '🇹🇷',
-		'pack'	   => true,
 	],
 	'tr' => [
 		'name'    => 'Turkish',
