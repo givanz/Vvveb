@@ -12,11 +12,12 @@ if(isset($this->users) && is_array($this->users)) {
 	foreach ($this->users as $index => $user) { 
 		$url = Vvveb\url(['module' => $module, $id => $user[$id]]);
 		$status = $user['status_text'];
-		$status_class = $user['status'] == 1 ?  'bg-success' :($user['status'] == 0 ? 'bg-body-secondary text-muted' : $user['status']);
+		$status_class = ($user['status'] == 3 ? 'bg-danger' : ($user['status'] == 1 ? 'bg-success' :($user['status'] == 0 ? 'bg-body-secondary text-muted' : $user['status'])));
 	?>
 	
 	@user [data-v-*]|innerText     = $user['@@__data-v-(*)__@@']
 	@user input[data-v-*]|value    = $user['@@__data-v-(*)__@@']
+	@user button[data-v-*]|value   = $user['@@__data-v-(*)__@@']
 	@user img[data-v-*]|src        = $user['@@__data-v-(*)__@@']
 	@user [data-v-url]|href        = $url
 	@user a[data-v-*]|href         = $user['@@__data-v-(*)__@@']	

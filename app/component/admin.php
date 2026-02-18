@@ -63,6 +63,7 @@ class Admin extends ComponentBase {
 				}
 			}
 
+			$results['website'] = $results['website'] ?? $results['url'];
 			$results['url'] = url('content/user/index', ['username' => $results['username']]);
 		} else {
 			$results = [];

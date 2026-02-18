@@ -5,6 +5,7 @@
 	//$admin = \Vvveb\session('admin');
 ?>
 
+[data-v-component-admin] [data-v-admin-bio] = <?php echo $admin['bio'] ?? '';?>
 [data-v-component-admin] [data-v-admin-*]|innerText = $admin['@@__data-v-admin-(*)__@@']
 [data-v-component-admin] a[data-v-admin-*]|href = $admin['@@__data-v-admin-(*)__@@']
 [data-v-component-admin] img[data-v-admin-*]|src = <?php

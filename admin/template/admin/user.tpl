@@ -31,14 +31,14 @@ import(common.tpl)
 ?>
 
 
-[data-v-user] select[data-v-user-*] option|addNewAttribute = <?php if (isset($this->user) && $this->user['status'] == '@@__value__@@') echo 'selected';?>
+[data-v-user] select[data-v-user-*] option|addNewAttribute = <?php if (isset($this->user['status']) && $this->user['status'] == '@@__value__@@') echo 'selected';?>
 
 [data-v-role-list] [data-v-role]|before = <?php 
 	foreach ($this->roles as $i => $role) { ?>
 				
 		[data-v-role-list] [data-v-role] = $role['display_name']
 		[data-v-role-list] [data-v-role]|value = $role['role_id']
-		[data-v-role-list] [data-v-role]|addNewAttribute = <?php if (isset($this->user) && ($role['role_id'] == $this->user['role_id'])) echo 'selected';?>
+		[data-v-role-list] [data-v-role]|addNewAttribute = <?php if (isset($this->user['role_id']) && ($role['role_id'] == $this->user['role_id'])) echo 'selected';?>
 
 [data-v-role-list] [data-v-role]|after = <?php 
 	}

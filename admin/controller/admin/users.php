@@ -23,9 +23,20 @@
 namespace Vvveb\Controller\Admin;
 
 use Vvveb\Controller\User\Users as UsersBase;
+use Vvveb\System\User\Admin;
 
 class Users extends UsersBase {
 	protected $type = 'admin';
 
 	protected $module = 'admin/users';
+
+	function index($options = []) {
+		if (Admin::hasCapability('view_other_admin')) {
+			unset($options['admin_id']);
+		} else {
+			$options['admin_id'][] = $this->global['admin_id'];
+		}
+
+		parent::index($options);
+	}
 }

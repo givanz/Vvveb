@@ -25,11 +25,11 @@ namespace Vvveb\Controller\User;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use function Vvveb\model;
+use function Vvveb\sanitizeHTML;
 use Vvveb\System\Core\View;
 use Vvveb\System\Images;
+use Vvveb\System\Sites;
 use Vvveb\System\User\Admin;
-use Vvveb\System\User\Auth;
-use Vvveb\System\User\User as UserLogin;
 use Vvveb\System\User\User as UserSystem;
 use Vvveb\System\Validator;
 
@@ -41,14 +41,26 @@ class User extends Base {
 
 		$user_id = (int)($this->request->get[$this->type . '_id'] ?? false);
 
+
 		if ($user_id) {
 			$options = [$this->type . '_id' => (int)$user_id];
+
+			if ($this->type == 'admin') {
+				if (Admin::hasCapability('view_other_admin')) {
+				} else {
+					if ($user_id != $this->global['admin_id']) {
+						$message = __('Permission denied!');
+						$view->errors[] = $message;
+						$this->notFound($message, 403, true);
+					}
+				}
+			}
 
 			$users      = model($this->type);
 			$user       = $users->get($options);
 
 			if (! $user) {
-				return $this->notFound(true, __('User not found!'));
+				return $this->notFound(__('User not found!'));
 			}
 
 			if (isset($user['password'])) {
@@ -70,10 +82,27 @@ class User extends Base {
 			$view->user = $user;
 		}
 
+		$view->type      = $this->type;
 		$admin_path      = \Vvveb\adminPath();
 		$controllerPath  = $admin_path . 'index.php?module=media/media';
 		$view->scanUrl   = "$controllerPath&action=scan";
 		$view->uploadUrl = "$controllerPath&action=upload";
+		$view->themeCss  = '';
+
+		$theme = Sites::getTheme($this->global['site_id']) ?? 'default';
+		if (file_exists(DIR_THEMES . "$theme/css/admin-post-editor.css")) {
+			$view->themeCss .= PUBLIC_PATH . "themes/$theme/css/admin-post-editor.css";
+		} else {
+			if (file_exists(DIR_THEMES . "$theme/css/style.css")) {
+				$view->themeCss .= PUBLIC_PATH . "themes/$theme/css/style.css";
+			}
+		}
+
+		foreach (['custom.css', 'fonts.css'] as $css) {
+			if (file_exists(DIR_THEMES . "$theme/css/$css")) {
+				$view->themeCss .= ',' . PUBLIC_PATH . "themes/$theme/css/$css";
+			}
+		}
 
 		if ($this->type == 'user') {
 			$userGroup           = model('user_group');
@@ -88,7 +117,7 @@ class User extends Base {
 		if ($user_id) {
 			$view      = View :: getInstance();
 
-			$userInfo = UserLogin::get(['user_id' => $user_id]);
+			$userInfo = UserSystem::get(['user_id' => $user_id]);
 
 			if ($userInfo) {
 				\Vvveb\session(['user' => $userInfo]);
@@ -112,15 +141,26 @@ class User extends Base {
 		$user_id = (int)($this->request->get[$this->type . '_id'] ?? false);
 		$user    = $this->request->post[$this->type] ?? [];
 
+		if ($this->type == 'admin') {
+			$editCapability = 'edit_other_admin';
+			if (Admin::hasCapability($editCapability)) {
+			} else {
+				if (! $user_id || $user_id != $this->global['admin_id']) {
+					$view->errors[] = __('Permission denied!');
+					return;
+				}
+			}
+		}
+
+
 		if (($errors = $validator->validate($user)) === true) {
-			$users      = model($this->type);
-			$user       = $this->request->post[$this->type] ?? [];
+			$users = model($this->type);
+			$user  = $this->request->post[$this->type] ?? [];
 
 			//if no password provided don't change
 			if (empty($user['password'])) {
 				unset($user['password']);
 			} else {
-				$user['password'] = Auth :: password($user['password']);
 			}
 
 			if (isset($user['site_access'])) {
@@ -134,9 +174,14 @@ class User extends Base {
 			}
 
 			$user['updated_at'] = date('Y-m-d H:i:s');
+			$user['bio'] = sanitizeHTML($user['bio']);
 
 			if ($user_id) {
-				$result  = $users->edit([$this->type . '_id' => $user_id, $this->type => $user]);
+				if ($this->type == 'admin') {
+					$result = Admin::update($user, [$this->type . '_id' => $user_id]);
+				} else {
+					$result = UserSystem::update($user, [$this->type . '_id' => $user_id]);
+				}
 
 				if ($result >= 0) {
 					$this->view->success[] = ucfirst($this->type) . __(' saved!');

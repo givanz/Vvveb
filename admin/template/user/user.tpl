@@ -1,5 +1,13 @@
 import(crud.tpl, {"type":"user"})
 
+[data-v-user] input[data-v-user-*]|value = 
+<?php
+	 if (isset($_POST['user']['@@__data-v-user-(*)__@@'])) 
+		echo htmlspecialchars($_POST['user']['@@__data-v-user-(*)__@@']); 
+	 else if (isset($this->user['@@__data-v-user-(*)__@@'])) 
+		echo htmlspecialchars($this->user['@@__data-v-user-(*)__@@']);
+?>
+
 [data-v-user] select[data-v-user-*] option|addNewAttribute = <?php if (isset($this->user) && $this->user['status'] == '@@__value__@@') echo 'selected';?>
 
 /* Avatar */

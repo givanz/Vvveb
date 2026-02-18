@@ -41,8 +41,13 @@ class User extends UserBase {
 		$roles             = $roles->getAll($options);
 		$sites             = new SiteSQL();
 
+		if (! isset($this->view->user['site_access'])) {
+			//set default site access to current site for new user
+			$this->view->user['site_access'] = [$this->global['site_id']];
+		}
+
 		$this->view->admin_auth_token_url = \Vvveb\url(['module' => 'admin/auth-token', 'admin_id' => $this->request->get['admin_id'] ?? '']);
-		$this->view->sitesList = $sites->getAll()['site'] ?? [];
-		$this->view->roles     = $roles ? $roles['role'] : [];
+		$this->view->sitesList            = $sites->getAll()['site'] ?? [];
+		$this->view->roles                = array_reverse($roles ? $roles['role'] : []);
 	}
 }

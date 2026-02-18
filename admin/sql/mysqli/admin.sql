@@ -5,9 +5,10 @@
 	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
-        IN status INT,
+		IN status INT,
 		IN search CHAR,
 		IN email CHAR,
+		IN admin_id ARRAY,
 		IN phone_number CHAR,
 		
 		-- return array of admin 
@@ -20,24 +21,29 @@
         SELECT * FROM admin WHERE 1 = 1 
 
 
-            @IF isset(:status) AND !empty(:status)
-			THEN 
-				AND admin.status = :status 
+        	@IF isset(:status) AND !empty(:status)
+        	THEN 
+			AND admin.status = :status 
         	END @IF	
 
-			@IF isset(:email) AND !empty(:email)
-			THEN 
-				AND admin.email = :email 
+        	@IF isset(:email) AND !empty(:email)
+        	THEN 
+			AND admin.email = :email 
         	END @IF	
 
-			@IF isset(:phone_number) AND !empty(:phone_number)
-			THEN 
-				AND admin.phone_number = :phone_number 
+        	@IF isset(:phone_number) AND !empty(:phone_number)
+        	THEN 
+			AND admin.phone_number = :phone_number 
+        	END @IF	
+			
+        	@IF isset(:admin_id) AND !empty(:admin_id) AND is_array(:admin_id)
+        	THEN 
+			AND admin.admin_id IN (:admin_id)
         	END @IF	
 
-            -- search
-            @IF isset(:search) AND !empty(:search)
-			THEN 
+            	-- search
+        	@IF isset(:search) AND !empty(:search)
+        	THEN 
 				AND admin.username LIKE CONCAT('%',:search,'%') || admin.first_name LIKE CONCAT('%',:search,'%') || admin.last_name LIKE CONCAT('%',:search,'%')
         	END @IF	       
             
@@ -97,7 +103,7 @@
 			AND _.email = :email OR _.username = :username
 		END @IF		
 
-		@IF isset(:admin_id)
+		@IF isset(:admin_id) && :admin_id
 		THEN 
 			AND _.admin_id = :admin_id 
 		END @IF			
@@ -167,26 +173,26 @@
 			
 		WHERE 
 
-        @IF isset(:email)
+		@IF isset(:email)
 		THEN 
 			email = :email 
-        END @IF			
+		END @IF			
 
-        @IF isset(:admin_id)
+		@IF isset(:admin_id)
 		THEN 
 			admin_id = :admin_id 
-        END @IF					
+		END @IF					
 
 		@IF isset(:username)
 		THEN 
 			username = :username 
-       	 END @IF
+	       	END @IF
 	END
 
 	-- delete admin
 
 	PROCEDURE delete(
-		IN  admin_id ARRAY,
+		IN admin_id ARRAY,
 		OUT affected_rows
 	)
 	BEGIN

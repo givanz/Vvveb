@@ -48,7 +48,7 @@ class AuthToken extends Listing {
 		$this->options['limit']    =1000;
 
 		if (! $this->options['admin_id']) {
-			return $this->notFound(true, __('User not found!'));
+			return $this->notFound(__('User not found!'));
 		}
 
 		$this->view->user_url = url(['module' => 'admin/user', 'admin_id' => $this->options['admin_id']]);
