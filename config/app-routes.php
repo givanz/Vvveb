@@ -73,7 +73,7 @@ return [
 	//catalog
 	'/shop'                                 => ['module' => 'product/index'],
 	'/shop/#page#'                          => ['module' => 'product/index'],
-	'/shop/#page#/filters-{filters}'        => ['module' => 'product/category/index'],
+	'/shop/#page#/filters-{filters}'        => ['module' => 'product/index'],
 	'/shop/{slug}'                          => ['module' => 'product/category/index'],
 	'/shop/{slug}/#page#'                   => ['module' => 'product/category/index'],
 	'/shop/{slug}/#page#/filters-{filters}' => ['module' => 'product/category/index'],
@@ -173,6 +173,24 @@ return [
 	'/{language{2,5}}/#year{4,4}#/#month{2,2}#'=> ['module' => 'content/archive/index'],
 	//archive day
 	//'/#year#/#month#/#day#'=> ['module' => 'content/archive/index'],
+
+	//custom post
+	'/{type}'                   => ['module' => 'content'],
+	'/{type}/#page#'            => ['module' => 'content'],
+	'/{type}/cat/{slug}'        => ['module' => 'content/category/index'],
+	'/{type}/cat/{slug}/#page#' => ['module' => 'content/category/index'],
+	'/{type}/tag/{slug}'        => ['module' => 'content/tag/index'],
+	'/{type}/tag/{slug}/#page#' => ['module' => 'content/tag/index'],
+	'/{type}/author/{username}' => ['module' => 'content/user/index'],
+	'/{type}/{slug}'            => ['module' => 'content/post/index', 'edit'=>'?module=content/post&slug={slug}&type=post'],
+
+	//custom product
+	'/{type}'                                     => ['module' => 'product/index', 'type' => '{type}'],
+	'/{type}/#page#'                              => ['module' => 'product/index', 'type' => '{type}'],
+	'/{type}/cat/{slug}'                          => ['module' => 'product/category/index', 'type' => '{type}'],
+	'/{type}/cat/{slug}/#page#'                   => ['module' => 'product/category/index', 'type' => '{type}'],
+	'/{type}/cat/{slug}/#page#/filters-{filters}' => ['module' => 'product/category/index', 'type' => '{type}'],
+	'/{type}/{slug}'                              => ['module' => 'product/product/index', 'type' => '{type}', 'edit'=>'?module=product/product&type={type}&slug={slug}'],
 
 	//Cron
 	'/run-cron/{key}' => ['module' => 'cron/index'],
