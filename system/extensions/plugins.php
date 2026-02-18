@@ -125,22 +125,25 @@ class Plugins extends Extensions {
 			$publicSrc  = DIR_PLUGINS . "$pluginName/public";
 			$publicDest = DIR_PUBLIC . "plugins/$pluginName";
 
+			if (is_link($publicDest)) {
+				return true;
+			}
+
 			if (! file_exists($publicDest)) {
 				//try symlink first
-				if(symlink($publicSrc, $publicDest)){
+				if (symlink($publicSrc, $publicDest)) {
 					return true;
 				} else {
 					return rcopy($publicSrc, $publicDest);
 				}
 			} else {
-				return false;
+				return rcopy($publicSrc, $publicDest);
 			}
 		}
 	}
 
 	static function install($zipFile, $slug = false, $validate = true) {
 		if ($pluginName = parent :: install($zipFile, $validate)) {
-
 			if (self :: copyPublicDir($pluginName)) {
 				self :: clearPluginsCache();
 
@@ -155,7 +158,16 @@ class Plugins extends Extensions {
 		$pluginDir  = DIR_PLUGINS . "$pluginName";
 		$publicDir  = DIR_PUBLIC . "plugins/$pluginName";
 
-		rrmdir($publicDir);
+		if (file_exists($publicDir)) {
+			if (is_link($publicDir)) {
+				unlink($publicDir);
+			} else {
+				if (is_dir($publicDir)) {
+					rrmdir($publicDir);
+				}
+			}
+		}
+
 		$success = rrmdir($pluginDir);
 
 		$key    = "plugins.$site_id.$pluginName";
