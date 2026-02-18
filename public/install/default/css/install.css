@@ -17,7 +17,7 @@ body {
 #logo
 {
 	display:block;
-	margin:0rem auto 2rem;
+	margin:0rem auto 3rem;
 }
 
 [data-v-error-text] {
@@ -201,7 +201,7 @@ input.form-control
 
 #color-theme-switch {
 		color:var(--bs-gray-500);
-		font-size:2.4rem;
+		font-size:2rem;
 		text-decoration:none;
 		/*
 		width: 11px;
@@ -210,21 +210,22 @@ input.form-control
 		border: 1px solid var(--bs-gray-500);
 		border-radius: 50px;
 		*/
-		padding: 3px;
+		padding:0.25rem;
 		cursor:pointer;
 }			
 
 #color-theme-switch i {
 	font-style:normal;
+	font-family:'ionicons' !important;
 }
 
 
 .la-sun::before {
-	content:"☼";
+	content:"\eda8";
 }
 
 .la-moon::before {
-	content:"☽";
+	content:"\ec5b";
 }
 
 [data-bs-theme="dark"] #logo {

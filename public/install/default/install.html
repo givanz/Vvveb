@@ -114,7 +114,7 @@
 									 <div class="mb-3 row">
 										<label for="title" class="col-sm-3 col-form-label">Website name</label>
 										<div class="col-sm-9">
-										  <input type="text" class="form-control" id="title" placeholder="Website name" name="settings[title]" value="" required>
+										  <input type="text" class="form-control" id="title" placeholder="Website name" name="settings[description][1][title]" value="" required>
 										</div>
 									  </div>
 									  <div class="mb-3 row">
@@ -261,7 +261,7 @@
 		}
 	}			
 		
- 	function randomPassword(length, chars = "abcdefghijklmnopqrstuvwxyz!@#$%^&*()-+<>ABCDEFGHIJKLMNOP1234567890") {
+ 	function randomPassword(length, chars = "abcdefghijklmnopqrstuvwxyz!@#$%^&*()-+<>ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890") {
 		var pass = "";
 		for (var x = 0; x < length; x++) {
 			var i = Math.floor(Math.random() * chars.length);
@@ -271,11 +271,11 @@
 	}
 	
 	function randomizePassword() {
-		document.getElementById("password").value = randomPassword(42);   
+		document.getElementById("password").value = randomPassword(49);   
 	}
 	
 	function randomizeAdminPath() {
-		document.getElementById("admin-path").value = 'vadmin-' + randomPassword(8, "abcdefghijklmnopqrstuvwxyz1234567890"); 
+		document.getElementById("admin-path").value = 'vadmin-' + randomPassword(32, "abcdefghijklmnopqrstuvwxyz!@<>ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"); 
 	};
 
 	randomizePassword();
