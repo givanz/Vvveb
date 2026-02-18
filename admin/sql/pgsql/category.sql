@@ -65,12 +65,12 @@
 			@IF isset(:post_id) THEN
 			
 				@IF :type == "tags"
-			THEN 
-			
-				INNER JOIN post_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.post_id = :post_id)  
-			@ELSE		
-			
-				LEFT JOIN post_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.post_id = :post_id)  
+				THEN 
+				
+					INNER JOIN post_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.post_id = :post_id)  
+				@ELSE		
+				
+					LEFT JOIN post_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.post_id = :post_id)  
 					
 				END @IF		
 				
@@ -107,7 +107,7 @@
 				AND t.type = :type 
 				
 			END @IF				
-			
+
 			@IF isset(:post_type)
 			THEN 
 			
@@ -167,6 +167,7 @@
 		IN parent_id INT,
 		IN search CHAR,
 		IN type CHAR,
+		IN post_type CHAR,
 		
 		-- pagination
 		IN start INT,
@@ -196,7 +197,23 @@
 				FROM post_content pc 
 					LEFT JOIN post p ON (pc.post_id = p.post_id)  
 					LEFT JOIN post_to_taxonomy_item ptt ON (ptt.taxonomy_item_id = categories.taxonomy_item_id AND ptt.post_id = p.post_id)  
-				WHERE ptt.taxonomy_item_id = categories.taxonomy_item_id ORDER BY p.sort_order
+				WHERE ptt.taxonomy_item_id = categories.taxonomy_item_id 
+
+				@IF isset(:post_type)
+				THEN 
+				
+					AND p.type = :post_type 
+					
+				END @IF				
+
+				
+				ORDER by p.sort_order
+				
+				@IF isset(:posts_limit) && !empty(:posts_limit)
+				THEN 
+					@SQL_LIMIT(:posts_start, :posts_limit)
+				END @IF
+				
 			) AS post
 		
 			FROM taxonomy_item AS categories
@@ -261,7 +278,7 @@
 		THEN 
 			@SQL_LIMIT(:start, :limit)
 		END @IF							
-		;		
+		;
 		
 		SELECT count(*) FROM (
 			
@@ -316,7 +333,7 @@
 					
 				END @IF	
 				
-		WHERE 
+			WHERE 
 			1 = 1
 
 			@IF isset(:taxonomy_item_id)
@@ -332,7 +349,7 @@
 				AND _.post_type = :post_type 
 				
 			END @IF				
-			
+	
 			@IF isset(:post_id)
 			THEN 
 				,pt.post_id as checked  
@@ -363,6 +380,7 @@
 		IN taxonomy_item_id INT,
 		IN parent_id INT,
 		IN language_id INT,
+		IN site_id INT,
 		IN post_type CHAR,
 		IN slug CHAR,
 		OUT fetch_row
@@ -374,6 +392,12 @@
 			FROM taxonomy_item_content AS _
 			LEFT JOIN taxonomy_item as ti ON (_.taxonomy_item_id = ti.taxonomy_item_id)  
 			LEFT JOIN taxonomy t ON (ti.taxonomy_id = t.taxonomy_id)  
+		
+			@IF isset(:site_id)
+			THEN 
+				LEFT JOIN taxonomy_to_site tt ON (tt.taxonomy_item_id = ti.taxonomy_item_id)  
+			END @IF				
+
 		WHERE 1 = 1
 
 		@IF isset(:taxonomy_item_id)
@@ -409,9 +433,16 @@
 		
 			AND t.post_type = :post_type 
 			
+		END @IF			
+		
+		@IF isset(:site_id)
+		THEN 
+		
+			AND tt.site_id = :site_id 
+			
 		END @IF				
 
-		
+
 		LIMIT 1;
 		
 		-- images

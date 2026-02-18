@@ -55,9 +55,11 @@ class Categories extends Base {
 		die(0);
 	}
 
-	function add() {
+	function save() {
 		$data                = $this->request->post;
 		$data['taxonomy_id'] = $data['taxonomy_id'] ?? $this->request->get['taxonomy_id'];
+		$data['taxonomy_item']['taxonomy_id'] = $data['taxonomy_id'];
+		$data['taxonomy_item']['sort_order'] = $data['sort_order'] ?? 0;
 
 		$categories  = new categorySQL();
 

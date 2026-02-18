@@ -12,6 +12,7 @@ if(isset($this->categories) && is_array($this->categories)) {
 	@tag [data-v-*]|title = $tag['@@__data-v-(*)__@@']
 	@tag [data-v-*]|innerText = $tag['@@__data-v-(*)__@@']
 	@tag input[data-v-*]|value = $tag['@@__data-v-(*)__@@']	
+	@tag button[data-v-*]|value = $tag['@@__data-v-(*)__@@']	
 	
 	@tag a[data-v-*]|href = $tag['@@__data-v-(*)__@@']	
 	@tag img[data-v-image_url]|src = $tag['image_url']	

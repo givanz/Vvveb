@@ -31,6 +31,12 @@ if ($_categories) {
 	@taxonomy_item|before = <?php 
 
 	foreach($_categories as $id => $taxonomy_item) {
+		$taxonomy_id    = 'taxonomy-' . $taxonomy_item['taxonomy_item_id'];
+		$taxonomy_input = "taxonomy-{$taxonomy_item['taxonomy_item_id']}-input";
+
+		$taxonomy_hash    = "#$taxonomy_id";
+		$taxonomy_input_hash = "#$taxonomy_input";
+		
 		$uniq = Vvveb\System\Functions\Str::random(5);
 		if ($taxonomy_item['parent_id'] == $parent) {?>
 
@@ -39,6 +45,21 @@ if ($_categories) {
 		
 		@taxonomy_item [data-v-taxonomy_item-url]|href = <?php echo htmlspecialchars(Vvveb\url('post/taxonomy_item/index', $taxonomy_item));?>
 		@taxonomy_item [data-v-taxonomy_item-img]|src = $taxonomy_item['images'][0]
+		
+		@taxonomy_item [data-v-image]         = $taxonomy_item['image']
+		@taxonomy_item [data-v-image-src]|src = $taxonomy_item['image_url']
+		@taxonomy_item [data-v-image-src]|id  = $taxonomy_id
+		
+		@taxonomy_item [data-v-image-src]|data-target-input = $taxonomy_input_hash
+		@taxonomy_item [data-v-image-src]|data-target-thumb = $taxonomy_hash
+		
+		@taxonomy_item [data-v-image-btn]|data-target-input = $taxonomy_input_hash
+		@taxonomy_item [data-v-image-btn]|data-target-thumb = $taxonomy_hash
+		
+		
+		@taxonomy_item .taxonomy_input = $taxonomy_item['image']
+		@taxonomy_item .taxonomy_input|data-target-input = $taxonomy_input_hash
+		@taxonomy_item .taxonomy_input|id = $taxonomy_input		
 				
 		@taxonomy_item|append = <?php 
 		 $generate_menu($taxonomy_item['taxonomy_item_id'], $_categories);
@@ -86,4 +107,3 @@ foreach ($languages as $key => $language) {
 $_i++;
 }
 ?>
-
