@@ -18,126 +18,78 @@
  *
  */
  
-import {ServerComponent} from '../server-component.js';
-
-let template = `
-<div class="card categories-widget" data-v-categories data-v-type="categories">
-	<h6 class="card-header">Categories</h6>
-	<div class="card-body">
-	  <ul data-v-cats>                    
-		  <li data-v-cat>
-			  <a href="/cat/toys" data-v-cat-url data-v-cat-name>Toys</a>
-			</li>                                        
-			
-		  <li data-v-cat>
-			  <a href="/cat/computers" data-v-cat-url data-v-cat-name>Computers</a>
-			</li>                                        
-			
-		  <li data-v-cat>
-			  <a href="/cat/electronics" data-v-cat-url data-v-cat-name>Electronics</a>
-			</li>                                        
-			
-		  <li data-v-cat>
-			  <a href="/cat/tablets" data-v-cat-url data-v-cat-name>Tablets</a>
-			</li>                                        
-			
-		  <li data-v-cat>
-			  <a href="/cat/home-kitchen" data-v-cat-url data-v-cat-name>Home and Kitchen</a>
-			</li>                                        
-			
-		  <li data-v-cat>
-			  <a href="/cat/books" data-v-cat-url data-v-cat-name>Books</a>
-			</li>                                        
-			
-		  <li data-v-cat>
-			  <a href="/cat/category-1" data-v-cat-url data-v-cat-name>category 1</a>
-			</li>                                        
-	  </ul>
-	</div>        
-</div>			  
+import {CategoriesComponent} from '../categories.js';
+ 
+let template = 
+`
+<div data-v-component-product-categories>
+<ul class="list-unstyled" data-v-cats>                  
+	<li data-v-cat>
+		<a href="/shop/computers" data-v-cat-url>
+		  <span data-v-cat-name>Computers</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/electronics" data-v-cat-url>
+		  <span data-v-cat-name>Electronics</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/tablets" data-v-cat-url>
+		  <span data-v-cat-name>Tablets</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/toys" data-v-cat-url>
+		  <span data-v-cat-name>Toys</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/home-kitchen" data-v-cat-url>
+		  <span data-v-cat-name>Home and Kitchen</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/books" data-v-cat-url>
+		  <span data-v-cat-name>Books</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/category-1" data-v-cat-url>
+		  <span data-v-cat-name>category 1</span>
+		</a>
+	  </li>                                    
+	  
+	<li data-v-cat>
+		<a href="/shop/category-2" data-v-cat-url>
+		  <span data-v-cat-name>category 2</span>
+		</a>
+	  </li>                                    
+</ul>
+</div>
 `;
 
-class CategoriesComponent extends ServerComponent{
+class ContentCategoriesComponent extends CategoriesComponent {
 	constructor ()
 	{
 		super();
 
-		this.name = "Categories";
-		this.attributes = ["data-v-component-categories"],
+		this.name = "Content Categories";
+		this.attributes = ["data-v-component-content-categories"],
 
 		this.image ="icons/categories.svg";
 		this.html = template;
-		
-		this.properties = [{
-			name: false,
-			key: "source",
-			inputtype: RadioButtonInput,
-			htmlAttr:"data-v-source",
-			data: {
-				inline: true,
-				extraclass:"btn-group-fullwidth",
-				options: [{
-					value: "autocomplete",
-					text: "Autocomplete",
-					title: "Autocomplete",
-					icon:"la la-search",
-					extraclass:"btn-sm",
-					checked:true,
-				},{
-					value: "automatic",
-					icon:"la la-cog",
-					text: "Configuration",
-					title: "Configuration",
-					extraclass:"btn-sm",
-				}],
-			},
-			setGroup: group => {
-				document.querySelectorAll('.mb-2[data-group]').forEach(e => e.classList.add("d-none"));
-				document.querySelectorAll('.mb-2[data-group="'+ group + '"].d-none').forEach((el, i) => {
-					el.classList.remove("d-none");
-				});				
-				//return element;
-			},		
-			onChange : function(element, value, input)  {
-				this.setGroup(input.value);
-				return element;
-			}, 
-			init: function (node) {
-				//this.setGroup(node.dataset.vSource);
-				//return 'autocomplete';
-				return node.dataset.vSource;
-			},            
-		},{
-			name: "Categories",
-			key: "categories",
-			group:"autocomplete",
-			htmlAttr:"data-v-post_id",
-			inline:false,
-			col:12,
-			inputtype: AutocompleteList,
-			data: {
-				url: window.location.pathname + "?module=editor/autocomplete&action=categories",
-			},
-		}];
-	}
-
-
-    init(node) {
-		document.querySelectorAll('.mb-2[data-group]').forEach((el, i) => {
-			el.classList.add("d-none");
-		});			
-		
-		let source = node.dataset.vSource;
-		if (!source) {
-			source = "automatic";
-		} 
-
-		document.querySelectorAll('.mb-2[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
 	}
 }
 
-let categoriesComponent = new CategoriesComponent;
+let contentCategoriesComponent = new ContentCategoriesComponent;
 
 export {
-  categoriesComponent
+  contentCategoriesComponent,ContentCategoriesComponent
 };

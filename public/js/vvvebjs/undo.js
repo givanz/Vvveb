@@ -89,11 +89,17 @@ Vvveb.Undo = {
 			case 'attributes':
 			  value = undo ? mutation.oldValue : mutation.newValue;
 
-			  if (value || value === false || value === 0)
-				mutation.target.setAttribute(mutation.attributeName, value);
-			  else
-				mutation.target.removeAttribute(mutation.attributeName);
-
+				if (mutation.attributeName == "innerHTML")  {
+					element = Vvveb.ContentManager.setHtml(mutation.target, value);
+				} else if (mutation.attributeName == "innerText")  {
+					element = Vvveb.ContentManager.setText(mutation.target, value);
+				} else {		
+				  if (value || value === false || value === 0)
+					mutation.target.setAttribute(mutation.attributeName, value);
+				  else
+					mutation.target.removeAttribute(mutation.attributeName);
+				}
+				
 			break;
 		}
 		

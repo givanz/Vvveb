@@ -23,7 +23,7 @@ import {ServerComponent} from '../server-component.js';
 let template = 
 `<div data-v-component-post="post" data-v-post_id="1">
    <h2 data-v-post-name>Post name</h2>
-	<img class="img-fluid" src="media/posts/6.jpg" alt="">   
+	<img class="img-fluid" src="media/demo/posts/6.jpg" alt="" data-v-post-image data-v-if="post.image">   
    <div data-v-post-content>Post content</div>
 </div>
 `;			
@@ -50,6 +50,31 @@ class PostComponent extends ServerComponent{
 				url: window.location.pathname + "?module=editor/autocomplete&action=posts&type=",
 			},
 
+		},{
+			name: "Image size",
+			key: "image_size",
+			col:6,
+			inline:false,
+			htmlAttr:"data-v-image_size",
+			inputtype: SelectInput,
+			data: {
+				options: [{
+					value: "",
+					text: "Default"
+				},{
+					value: "thumb",
+					text: "Thumb"
+				},{
+					value: "medium",
+					text: "Medium"
+				},{
+					value: "large",
+					text: "Large"
+				},{
+					value: "xlarge",
+					text: "Extra large"
+				}]
+			}		
 		}];
 	}
 

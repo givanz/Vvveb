@@ -17,6 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
+ 
+import {CategoriesComponent} from '../categories.js';
+ 
 let template = 
 `
 <div data-v-component-product-categories>
@@ -72,35 +75,21 @@ let template =
 </div>
 `;
 
-class CategoriesComponent {
+class ProductCategoriesComponent extends CategoriesComponent {
 	constructor ()
 	{
-		this.name = "Categories";
+		super();
+
+		this.name = "Product Categories";
 		this.attributes = ["data-v-component-product-categories"],
 
 		this.image ="icons/categories.svg";
 		this.html = template;
-		
-		this.properties = [];
-	}
-
-    init(node)
-	{
-		document.querySelectorAll('.mb-2[data-group]').forEach((el, i) => {
-			el.classList.add("d-none");
-		});			
-		
-		let source = node.dataset.vSource;
-		if (!source) {
-			source = "automatic";
-		} 
-
-		document.querySelectorAll('.mb-2[data-group="' + source + '"]').forEach(e => e.classList.remove("d-none"));
 	}
 }
 
-let categoriesComponent = new CategoriesComponent;
-
+let productCategoriesComponent = new ProductCategoriesComponent;
+console.log('prod cat');
 export {
-  categoriesComponent
+  productCategoriesComponent, ProductCategoriesComponent
 };

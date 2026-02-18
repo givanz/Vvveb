@@ -173,10 +173,11 @@ let SectionBackground = [{
 			let img   = node.querySelector(":scope > .background-container > img");
 			let video = node.querySelector(":scope > .background-container > video");
 			
-			if (img && (img.offsetParent || img.offsetHeight)) {
+			if (img && (img.offsetParent || img.offsetHeight || !img.classList.contains("d-none"))) {
 				selected = "bg-image";
 			}
-			if (video && (img.offsetParent || video.offsetHeight)) {
+			
+			if (video && (img.offsetParent || video.offsetHeight || !video.classList.contains("d-none"))) {
 				selected = "bg-video";
 			}
 			
@@ -624,14 +625,15 @@ function componentsInit(node) {
 		let separatorTop = node.querySelector(":scope > .separator.top");
 		let separatorBottom = node.querySelector(":scope > .separator.bottom");
 		let bg = "";
-		
-		if (img && (img.offsetParent || img.offsetHeight)) {
+	
+		if (img && (img.offsetParent || img.offsetHeight || !img.classList.contains("d-none"))) {
 			bg = "bg-image";
 		}
-		if (video && (img.offsetParent || video.offsetHeight)) {
-			bg = "bg-video";
-		}		
 		
+		if (video && (img.offsetParent || video.offsetHeight || !video.classList.contains("d-none"))) {
+			bg = "bg-video";
+		}	
+	
 		let showSection = function (section) {
 			document.querySelectorAll('.mb-2[data-group="' + section + '"]').forEach(e => e.classList.remove("d-none"));
 		}

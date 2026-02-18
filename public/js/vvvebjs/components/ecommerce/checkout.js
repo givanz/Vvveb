@@ -233,7 +233,7 @@ I agree to <a href="/page/terms-conditions" target="_blank" data-v-url="content/
 					<tr data-v-cart-product="" data-product_id="19">
 					  <td class="text-center">
 						<a href="/checkout?module=product&amp;product_id=19" data-v-cart-product-url="">
-						  <img src="/public/media/product/9-1.jpg" alt="iPhone" class="img-rounded" data-v-cart-product-image="" width="50">
+						  <img src="/public/media/demo/products/9-1.jpg" alt="iPhone" class="img-rounded" data-v-cart-product-image="" width="50">
 						</a>
 					  </td>
 					  <td class="text-center">
@@ -250,7 +250,7 @@ I agree to <a href="/page/terms-conditions" target="_blank" data-v-url="content/
 					</tr><tr data-v-cart-product="" data-product_id="18">
 					  <td class="text-center">
 						<a href="/checkout?module=product&amp;product_id=18" data-v-cart-product-url="">
-						  <img src="/public/media/product/8-1.jpg" alt="iPhone" class="img-rounded" data-v-cart-product-image="" width="50">
+						  <img src="/public/media/demo/products/8-1.jpg" alt="iPhone" class="img-rounded" data-v-cart-product-image="" width="50">
 						</a>
 					  </td>
 					  <td class="text-center">

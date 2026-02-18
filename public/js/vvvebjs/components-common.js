@@ -1126,7 +1126,7 @@ Vvveb.Components.add("config/bootstrap", {
 					//index: i - 1,
 					columnNode: this,
 					col:(value.type == "font" || value.type == "dimensions") ? 12 : 6,
-					inline:(value.type == "font" || value.type == "dimensions") ? false : true,
+					inline:(value.type == "font" || value.type == "dimensions") ? false : false,
 					section: advanced_section,
 					inputtype: input,
 					data: data,

@@ -30,7 +30,7 @@ let template =
 
 	  <article class="card">
 		<div class="card-img-top">
-		  <img src="../../media/posts/6.jpg" alt="" data-v-post-image="">
+		  <img src="../../media/demo/posts/6.jpg" alt="" data-v-post-image="">
 		</div>
 		
 		<div class="card-body">
@@ -55,7 +55,7 @@ let template =
 
 	  <article class="card">
 		<div class="card-img-top">
-		  <img src="../../media/posts/5.jpg" alt="" data-v-post-image="">
+		  <img src="../../media/demo/posts/5.jpg" alt="" data-v-post-image="">
 		</div>
 		
 		<div class="card-body">
@@ -80,7 +80,7 @@ let template =
 
 	  <article class="card">
 		<div class="card-img-top">
-		  <img src="../../media/posts/4.jpg" alt="" data-v-post-image="">
+		  <img src="../../media/demo/posts/4.jpg" alt="" data-v-post-image="">
 		</div>
 		
 		<div class="card-body">
@@ -107,7 +107,7 @@ let template =
 
 	  <article class="card">
 		<div class="card-img-top">
-		  <img src="../../media/posts/3.jpg" alt="" data-v-post-image="">
+		  <img src="../../media/demo/posts/3.jpg" alt="" data-v-post-image="">
 		</div>
 		
 		<div class="card-body">
@@ -212,6 +212,31 @@ class PostsComponent extends ServerComponent{
 				step: "1"
 			},
 		},{
+			name: "Image size",
+			key: "image_size",
+			col:6,
+			inline:false,
+			htmlAttr:"data-v-image_size",
+			inputtype: SelectInput,
+			data: {
+				options: [{
+					value: "",
+					text: "Default"
+				},{
+					value: "thumb",
+					text: "Thumb"
+				},{
+					value: "medium",
+					text: "Medium"
+				},{
+					value: "large",
+					text: "Large"
+				},{
+					value: "xlarge",
+					text: "Extra large"
+				}]
+			}		
+		},{
 			name: "Order by",
 			group:"automatic",
 			key: "order",
@@ -267,7 +292,41 @@ class PostsComponent extends ServerComponent{
 					value: "page",
 					text: "Page"
 				}]
-			}
+			}		
+		},{	
+			name: "Author",
+			group:"automatic",
+			key: "order",
+			col:6,
+			inline:false,
+			htmlAttr:"data-v-admin_id",
+			inputtype: SelectInput,
+			data: {
+				options: [{
+					value: "",//post - default
+					text: "Post"
+				},{
+					value: "page",
+					text: "Page"
+				}]
+			}		
+		},{	
+			name: "Sticky",
+			group:"automatic",
+			key: "order",
+			col:6,
+			inline:false,
+			htmlAttr:"data-v-sticky",
+			inputtype: SelectInput,
+			data: {
+				options: [{
+					value: "",//post - default
+					text: "Exclude"
+				},{
+					value: "true",
+					text: "Include"
+				}]
+			}		
 		},{
 			name: "Limit to categories",
 			group:"automatic",
@@ -280,17 +339,30 @@ class PostsComponent extends ServerComponent{
 				url: window.location.pathname + "?module=editor/autocomplete&action=categories",
 			},
 
-		},{
-			name: "Limit to manufacturers",
+		},{	
+			name: "Search",
 			group:"automatic",
-			key: "manufacturer",
-			htmlAttr:"data-v-manufacturer",
-			inline:false,
+			key: "search",
 			col:12,
-			inputtype: TagsInput,
-			data: {
-				url: window.location.pathname + "?module=editor/autocomplete&action=manufacturers",
-			}
+			inline:false,
+			htmlAttr:"data-v-search",
+			inputtype: TextInput,
+		},{	
+			name: "Date format",
+			group:"automatic",
+			key: "date_format",
+			col:6,
+			inline:false,
+			htmlAttr:"data-v-date_format",
+			inputtype: TextInput,
+		},{	
+			name: "Excerpt limit",
+			group:"automatic",
+			key: "excerpt_limit",
+			col:6,
+			inline:false,
+			htmlAttr:"data-v-excerpt_limit",
+			inputtype: NumberInput,
 		},{
 			name: "Posts",
 			key: "posts",

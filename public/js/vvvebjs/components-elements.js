@@ -29,7 +29,7 @@ Vvveb.ComponentsGroup['Elements'] = [
 "elements/accordion",
 "elements/flip-box",
 //"elements/counter",
-"elements/svg-icon",
+"elements/svg-image",
 "elements/figure",
 //"elements/testimonial",
 "elements/social-icons",
@@ -182,14 +182,19 @@ V.Resources.Icons =
 	text: "Flipbox"
 }];*/
 
-Vvveb.Components.extend("_base","elements/svg-icon", {
+Vvveb.Components.extend("_base","elements/svg-image", {
     nodes: ["svg"],
-    name: "Svg Icon",
+    name: "Svg Image",
     image: "icons/star.svg",
     html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="64" height="64">
 		<path d="M 30.335938 12.546875 L 20.164063 11.472656 L 16 2.132813 L 11.835938 11.472656 L 1.664063 12.546875 L 9.261719 19.394531 L 7.140625 29.398438 L 16 24.289063 L 24.859375 29.398438 L 22.738281 19.394531 Z"/>
     </svg>`,
     properties: [{
+        name: "Svg",
+        key: "svg",
+        htmlAttr: "innerHTML",
+        inputtype: SvgInput
+    }, {
 		name: "Icon",
 		key: "icon",
 		inline:true,
@@ -209,7 +214,7 @@ Vvveb.Components.extend("_base","elements/svg-icon", {
 			element.replaceWith(newElement);
 			return newElement;
 		},
-                data: {
+		data: {
 				url: Vvveb.baseUrl + "../../resources/svg/icons/{value}/index.html",
 				clickElement:"li",
 				insertElement:"svg",
@@ -332,16 +337,22 @@ Vvveb.Components.extend("_base","elements/svg-icon", {
 			max: 512,
 			min:1,
 			step:1
-		}			
+        }			
+   }, {
+        name: "Code",
+        key: "code",
+		inline:true,
+        htmlAttr: "outerHTML",
+        inputtype: TextareaInput
+   }, {
+        key: "svg_style_header",
+        inputtype: SectionInput,
+        name:false,
+        //sort: base_sort++,
+        section: style_section,
+        data: {header:"Svg colors"},
    },{
-		key: "svg_style_header",
-		inputtype: SectionInput,
-		name:false,
-		//sort: base_sort++,
-		section: style_section,
-		data: {header:"Svg colors"},
-	},{
-        name: "Fill Color",
+        name: "Fill",
         key: "fill",
         //sort: base_sort++,
         col:4,
@@ -367,7 +378,7 @@ Vvveb.Components.extend("_base","elements/svg-icon", {
         section: style_section,
         htmlAttr: "stroke",
         inputtype: ColorInput,
-  	}]
+   }]
 });   
 
 
@@ -421,46 +432,58 @@ Vvveb.Components.add("elements/gallery", {
     attributes: ["data-component-gallery"],
     name: "Gallery",
     image: "icons/images.svg",
-    html: `
-			<div class="gallery masonry has-shadow" data-component-gallery>
+    html: `<div class="gallery masonry has-shadow" data-component-gallery  id="gallery-RANDOM_ID">
 				<div class="item">
-					<a href="#">
-						<img src="../../media/posts/1.jpg">
-					</a>
+					<figure>
+					  <img class="img-fluid" src="../../media/demo/posts/1.jpg" data-aos="fade-up">
+					  <figcaption></figcaption>
+						<h3 class="title d-none"></h3>
+						<div class="description d-none"></div>
+					</figure>
 				</div>
 				<div class="item">
-					<a href="#">
-						<img src="../../media/posts/2.jpg">
-					</a>
+					<figure>
+					  <img class="img-fluid" src="../../media/demo/posts/2.jpg" data-aos="fade-up" data-aos-delay="100">
+					  <figcaption></figcaption>
+						<h3 class="title d-none"></h3>
+						<div class="description d-none"></div>
+					</figure>
 				</div>
 				<div class="item">
-					<a href="#">
-						<img src="../../media/posts/3.jpg">
-					</a>
+					<figure>
+					  <img class="img-fluid" src="../../media/demo/posts/3.jpg" data-aos="fade-up" data-aos-delay="200">
+					  <figcaption></figcaption>
+						<h3 class="title d-none"></h3>
+						<div class="description d-none"></div>
+					</figure>
 				</div>
 				<div class="item">
-					<a href="#">
-						<img src="../../media/posts/4.jpg">
-					</a>
+					<figure>
+					  <img class="img-fluid" src="../../media/demo/posts/4.jpg" data-aos="fade-up" data-aos-delay="300">
+					  <figcaption></figcaption>
+						<h3 class="title d-none"></h3>
+						<div class="description d-none"></div>
+					</figure>
 				</div>
 				<div class="item">
-					<a href="#">
-						<img src="../../media/posts/5.jpg">
-					</a>
+					<figure>
+					  <img class="img-fluid" src="../../media/demo/posts/5.jpg" data-aos="fade-up" data-aos-delay="400">
+					  <figcaption></figcaption>
+						<h3 class="title d-none"></h3>
+						<div class="description d-none"></div>
+					</figure>
 				</div>
 				<div class="item">
-					<a href="#">
-						<img src="../../media/posts/6.jpg">
-					</a>
-				</div>
-				<div class="item">
-					<a href="#">
-						<img src="../../media/posts/7.jpg">
-					</a>
+					<figure>
+					  <img class="img-fluid" src="../../media/demo/posts/6.jpg" data-aos="fade-up" data-aos-delay="500">
+					  <figcaption></figcaption>
+						<h3 class="title d-none"></h3>
+						<div class="description d-none"></div>
+					</figure>
 				</div>
 			</div>
 			`,
-		properties: [{
+		properties: [{		
 			name: "Masonry layout",
 			key: "masonry",
 			htmlAttr: "class",
@@ -470,9 +493,39 @@ Vvveb.Components.add("elements/gallery", {
 				on: "masonry",
 				off: "flex"
 			},
+
+			name: false,
+			key: "masonry",
+			inputtype: RadioButtonInput,
+			inline:false,
+			col:12,
+			htmlAttr:"class",
+			validValues: ["masonry", "flex", "grid"],
+			data: {
+				inline: true,
+				extraclass:"btn-group-fullwidth btn-group-sm",
+				options: [{
+					value: "masonry",
+					//icon:"la la-cog",
+					text: "Masonry",
+					title: "Masonry",
+					checked:true,
+				},{
+					value: "flex",
+					text: "Flex",
+					title: "Flex",
+					//icon:"la la-search",
+				},{
+					value: "grid",
+					text: "Grid",
+					title: "Grid",
+					//icon:"la la-search",
+				}],
+			},
+			
 			setGroup: group => {
 				document.querySelectorAll(".mb-2[data-group]").forEach(el => el.style.display = "none");
-				document.querySelector('.mb-2[data-group="'+ group + '"]').style.display = "";
+				document.querySelectorAll('.mb-2[data-group="'+ group + '"]').forEach(el => el.style.display = "");
 			}, 		
 			onChange : function(node, value, input)  {
 				this.setGroup(value);
@@ -486,6 +539,16 @@ Vvveb.Components.add("elements/gallery", {
 				}
 			},   			
 		},{
+			name: "Fit images",
+			key: "cover",
+			htmlAttr: "class",
+			validValues: [ "", "cover"],
+			inputtype: ToggleInput,
+			data: {
+				on: "cover",
+				off: ""
+			},
+		},{
 			name: "Image shadow",
 			key: "shadow",
 			htmlAttr: "class",
@@ -493,6 +556,26 @@ Vvveb.Components.add("elements/gallery", {
 			inputtype: ToggleInput,
 			data: {
 				on: "has-shadow",
+				off: ""
+			},
+		},{
+			name: "Equal rows",
+			key: "grid-auto-rows",
+			group:"grid",
+			htmlAttr: "style",
+			inputtype: ToggleInput,
+			data: {
+				on: "1fr",
+				off: ""
+			},
+		},{
+			name: "Hover effect",
+			key: "hover-effect",
+			htmlAttr: "class",
+			validValues: [ "", "hover-effect"],
+			inputtype: ToggleInput,
+			data: {
+				on: "hover-effect",
 				off: ""
 			},
 		},{
@@ -547,19 +630,94 @@ Vvveb.Components.add("elements/gallery", {
 				
 				return value;
 			}  			
-	   },{
-			name: "",
-			key: "addChild",
-			inputtype: ButtonInput,
-			data: {text:"Add image", icon:"la la-plus"},
-			onChange: function(node) {
-				 node.append(generateElements('<div class="item"><a href="#"><img src="../../media/posts/1.jpg"></a></div>')[0]);
-				 
-				 //render component properties again to include the new image
-				 //Vvveb.Components.render("ellements/gallery");
-				 
-				 return node;
+	   },{		
+			name: "Images per row grid",
+			group:"grid",
+			key: "grid-template-columns",
+			//child: ".item",
+			htmlAttr: "style",
+			inputtype: RangeInput,
+			data:{
+				max: 12,
+				min:1,
+				step:1
+			},
+			onChange: function(node, value, input, component, inputElement) {
+				return 'repeat(' + value + ', minmax(0, 1fr))';
+			}  			
+		},{		
+			name: "Images",
+			key: "images",
+			inputtype: ListInput,
+			htmlAttr:"data-images",
+			inline:true,
+			data: {
+				selector:".item",
+				container:".gallery",
+				prefix:"Image ",
+				removeElement: true,//handle manually with removeSlide
+				newElement: `<div class="item">
+					<figure>
+					  <img class="img-fluid" src="../../media/demo/posts/1.jpg" data-aos="fade-up">
+					  <figcaption></figcaption>
+						<h3 class="title d-none"></h3>
+						<div class="description d-none"></div>
+					</figure>
+				</div>`,
+				elementProperties:[{
+					name: "Caption",
+					key: "caption",
+					child:"figcaption",
+					htmlAttr: "innerHTML",
+					inputtype: TextareaInput
+				},{
+					name: "Title",
+					key: "title",
+					child:".title",
+					htmlAttr: "innerHTML",
+					inputtype: TextInput
+				},{
+					name: "Description",
+					key: "description",
+					child:".description",
+					htmlAttr: "innerHTML",
+					inputtype: TextareaInput
+				},{
+					name: "Description position",
+					key: "position",
+					child:"img",
+					htmlAttr: "data-desc-position",
+					inline:false,
+					inputtype: SelectInput,
+					data: {
+						options: [{
+							value: "bottom",
+							text: "Bottom"
+						},{
+							value: "top",
+							text: "Top"
+						},{
+							value: "left",
+							text: "Left"
+						},{
+							value: "right",
+							text: "Right"
+						}]
+					}
+			}]
+		},
+        onChange: function(node, value, input, component, event) {
+			if (event.action) {
+				if (event.action == "add") {
+					//temporary solution to better update list
+					Vvveb.Components.render("elements/gallery");
+				}
+				if (event.action == "remove") {
+				} else if (event.action == "select") {
+				}
 			}
+			return node;
+		},		
 	}],
     init(node)	{
 
@@ -833,7 +991,7 @@ Vvveb.Components.add("elements/flip-box", {
 		  <div class="flip-box-inner">
 			<div class="flip-box-front">
 				  <div class="card">
-				  <img src="../../media/posts/1.jpg" class="card-img-top" alt="Post">
+				  <img src="../../media/demo/posts/1.jpg" class="card-img-top" alt="Post">
 				  <div class="card-body">
 					<h5 class="card-title">Card title</h5>
 					<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
@@ -845,7 +1003,7 @@ Vvveb.Components.add("elements/flip-box", {
 			<div class="flip-box-back">
 				<div class="d-flex align-items-center flex-column">
 				  <div class="flex-shrink-0">
-					<img src="../../media/posts/2.jpg" alt="Post">
+					<img src="../../media/demo/posts/2.jpg" alt="Post">
 				  </div>
 				  <div class="flex-grow-1 ms-3">
 					<p>
@@ -1089,10 +1247,10 @@ Vvveb.Components.add("elements/carousel", {
     html: `
 	  <div class="swiper" data-slides-per-view="3" data-draggable="true">
 		<div class="swiper-wrapper">
-		  <div class="swiper-slide"><img src="../../media/posts/1.jpg" class="img-fluid"><p>Slide 1</p></div>
-		  <div class="swiper-slide"><img src="../../media/posts/2.jpg" class="img-fluid"><p>Slide 2</p></div>
-		  <div class="swiper-slide"><img src="../../media/posts/3.jpg" class="img-fluid"><p>Slide 3</p></div>
-		  <div class="swiper-slide"><img src="../../media/posts/4.jpg" class="img-fluid"><p>Slide 4</p></div>
+		  <div class="swiper-slide"><img src="../../media/demo/posts/1.jpg" class="img-fluid"><p>Slide 1</p></div>
+		  <div class="swiper-slide"><img src="../../media/demo/posts/2.jpg" class="img-fluid"><p>Slide 2</p></div>
+		  <div class="swiper-slide"><img src="../../media/demo/posts/3.jpg" class="img-fluid"><p>Slide 3</p></div>
+		  <div class="swiper-slide"><img src="../../media/demo/posts/4.jpg" class="img-fluid"><p>Slide 4</p></div>
 		</div>
 		<div class="swiper-pagination"></div>
 
@@ -1129,7 +1287,7 @@ Vvveb.Components.add("elements/carousel", {
 			container:".swiper-wrapper",
 			prefix:"Slide ",
 			removeElement: false,//handle manually with removeSlide
-			//"newElement": `<div class="swiper-slide"><img src="../../media/posts/1.jpg" class="img-fluid"><p>Slide 1</p></div>`
+			//"newElement": `<div class="swiper-slide"><img src="../../media/demo/posts/1.jpg" class="img-fluid"><p>Slide 1</p></div>`
 		},
         onChange: function(node, value, input, component, event) {
 			let element = node;
@@ -1142,7 +1300,7 @@ Vvveb.Components.add("elements/carousel", {
 				if (event.action == "add") {
 					let random = Math.floor(Math.random() * 6) + 1;
 					let index = element.swiper.slides.length + 1;
-					element.swiper.appendSlide(generateElements(`<div class="swiper-slide"><img src="../../media/posts/${random}.jpg" class="img-fluid"><p>Slide ${index}</p></div>`)[0]);
+					element.swiper.appendSlide(generateElements(`<div class="swiper-slide"><img src="../../media/demo/posts/${random}.jpg" class="img-fluid"><p>Slide ${index}</p></div>`)[0]);
 					element.swiper.slideTo(index);
 					//temporary solution to better update list
 					Vvveb.Components.render("elements/carousel");
@@ -1197,65 +1355,65 @@ Vvveb.Components.add("elements/carousel", {
 		htmlAttr:"data-simulate-touch",
 		inputtype: CheckboxInput,
 		inline:true,
-        col:4
+        col:6
     },{	
 		name: "Autoplay",
         key: "autoplay",
 		htmlAttr:"data-autoplay",
 		inputtype: CheckboxInput,
 		inline:true,
-        col:4
+        col:6
 	},{
 		name: "Auto height",
         key: "autoHeight",
 		htmlAttr:"data-auto-height",
 		inputtype: CheckboxInput,
 		inline:true,
-        col:4
+        col:6
 	},{
 		name: "Centered slides",
         key: "centeredSlides",
 		htmlAttr:"data-centered-slides",
 		inputtype: CheckboxInput,
 		inline:true,
-        col:4
+        col:6
 	},{	name: "Center insufficient",
         key: "centerInsufficientSlides",
 		htmlAttr:"data-center-insufficient-slides",
 		inputtype: CheckboxInput,
 		inline:true,
-        col:4
+        col:6
 	},{	name: "Loop",
         key: "loop",
 		htmlAttr:"data-loop",
 		inputtype: CheckboxInput,
 		inline:true,
-        col:4
+        col:6
 	},{	name: "Mouse wheel",
         key: "mousewheel",
 		htmlAttr:"data-mousewheel",
 		inputtype: CheckboxInput,
 		inline:true,
-        col:4
+        col:6
 	},{	
         name: "Pagination",
         key: "pagination",
 		htmlAttr:"data-pagination",
 		inputtype: CheckboxInput,
 		inline:true,
-        col:4
+        col:6
 	},{	name: "Rewind",
         key: "rewind",
 		htmlAttr:"data-rewind",
 		inputtype: CheckboxInput,
 		inline:true,
-        col:4
+        col:6
 	},{	name: "Scrollbar",
         key: "scrollbar",
 		htmlAttr:"data-scrollbar",
 		inputtype: CheckboxInput,
 		inline:true,
-        col:4
+        col:6
 	},/*{
         name: "direction",
         key: "direction",
@@ -1288,10 +1446,10 @@ Vvveb.Components.add("elements/slider", {
      html: `
 	  <div class="swiper" data-slides-per-view="1" data-draggable="true" data-navigation='{"nextEl": ".swiper-button-next","prevEl": ".swiper-button-prev"}'>
 		<div class="swiper-wrapper">
-		  <div class="swiper-slide"><img src="../../media/posts/1.jpg" class="img-fluid"><p>Slider 1</p></div>
-		  <div class="swiper-slide"><img src="../../media/posts/2.jpg" class="img-fluid"><p>Slider 2</p></div>
-		  <div class="swiper-slide"><img src="../../media/posts/3.jpg" class="img-fluid"><p>Slider 3</p></div>
-		  <div class="swiper-slide"><img src="../../media/posts/4.jpg" class="img-fluid"><p>Slider 4</p></div>
+		  <div class="swiper-slide"><img src="../../media/demo/posts/1.jpg" class="img-fluid"><p>Slider 1</p></div>
+		  <div class="swiper-slide"><img src="../../media/demo/posts/2.jpg" class="img-fluid"><p>Slider 2</p></div>
+		  <div class="swiper-slide"><img src="../../media/demo/posts/3.jpg" class="img-fluid"><p>Slider 3</p></div>
+		  <div class="swiper-slide"><img src="../../media/demo/posts/4.jpg" class="img-fluid"><p>Slider 4</p></div>
 		</div>
 		<div class="swiper-pagination"></div>
 

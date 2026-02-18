@@ -21,7 +21,7 @@
 
 import {productComponent} from './ecommerce/products.js';
 import {productsComponent} from './ecommerce/products.js';
-import {categoriesComponent} from './ecommerce/categories.js';
+import {productCategoriesComponent} from './ecommerce/categories.js';
 import {manufacturersComponent} from './ecommerce/manufacturers.js';
 import {cartComponent} from './ecommerce/cart.js';
 import {checkoutComponent} from './ecommerce/checkout.js';
@@ -30,7 +30,7 @@ import {filtersComponent} from './ecommerce/filters.js';
 Vvveb.Components.add("ecommerce/product", productComponent);
 Vvveb.Components.add("ecommerce/products", productsComponent);
 Vvveb.Components.add("ecommerce/productGallery", productGalleryComponent);
-Vvveb.Components.add("ecommerce/categories", categoriesComponent);
+Vvveb.Components.add("ecommerce/categories", productCategoriesComponent);
 Vvveb.Components.add("ecommerce/manufacturers", manufacturersComponent);
 Vvveb.Components.add("ecommerce/cart", cartComponent);
 Vvveb.Components.add("ecommerce/checkout", checkoutComponent);

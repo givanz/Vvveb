@@ -24,7 +24,7 @@ GoogleFontsManager = {
 	activeFonts: [],	
 
 	updateFontList: function () {
-		let googleFontsLink = Vvveb.Builder.frameHead.querySelector("google-fonts-link");
+		let googleFontsLink = Vvveb.Builder.frameHead.querySelector("#google-fonts-link");
 
 		if (this.activeFonts.length == 0) {
 			googleFontsLink.remove();

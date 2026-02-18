@@ -54,12 +54,22 @@ function getElements() {
 	
 	for (let i = 0; i < nodes.length; i++) {
 	  let node = nodes[i];
-	  let type = "data-v-" + node.dataset.vType + "-";
-      let name = "";
-      let componentName = node.dataset.vComponent ?? node.dataset.vType;
+	  let componentName = node.dataset.vComponent ?? node.dataset.vType;
+	  if (!componentName) {
+		  for (attribute of node.attributes) {
+			  if (attribute.name.startsWith("data-v-component-")) {
+				  componentName = attribute.name.replace("data-v-component-","");
+				  break;
+			  }
+		  }
+	  }
+
+	  let type = "data-v-" + componentName + "-";
+	  let name = "";
 
 	  let fields = []; 
 	  let fieldsNodes = getElementByXpath(".//*[ @*[starts-with(name(), 'data-v-')] ]",  node);
+	  let duplicateFiels = [];
 
 	  for (let j = 0; j < fieldsNodes.length; j++) {
 		  let fieldNode = fieldsNodes[j];
@@ -99,7 +109,10 @@ function getElements() {
 		  
 		  
 		  if (field) {
-			  fields.push(field);
+			  if (!duplicateFiels.includes(field.name)) {//don't add duplicate or children fields
+				fields.push(field);
+				duplicateFiels.push(field.name);
+			  }
 		  }
 	  }
 	  

@@ -67,8 +67,15 @@ Vvveb.Components.extend("_base", "html/heading", {
                 value: "6",
                 text: "Heading 6"
             }]
-       },
-    }]
+		}
+   	},{
+		name: "Text",
+		key: "innerHTML",
+		inline:false,
+		sort:3,
+		htmlAttr: "innerHTML",
+		inputtype: TextareaInput
+	}]
 });    
 
 
@@ -88,6 +95,7 @@ let linkComponentProperties = [
 		inputtype: AutocompleteInput,
 		data: {
 			url: linkUrl,
+			validSelection: false,
 			allowFreeText: true,
 			useKeyAsValue: true,
 		}
@@ -97,6 +105,12 @@ let linkComponentProperties = [
 		sort:3,
 		htmlAttr: "rel",
 		inputtype: LinkInput
+   	},{
+		name: "Text",
+		key: "innerHTML",
+		sort:3,
+		htmlAttr: "innerHTML",
+		inputtype: TextareaInput
 	}, {
 		name: "Target",
 		key: "target",
@@ -862,8 +876,8 @@ Vvveb.Components.extend("_base", "html/button", {
 Vvveb.Components.extend("_base", "html/paragraph", {
     nodes: ["p"],
     name: "Paragraph",
-	image: "icons/paragraph.svg",
-	html: '<p>Lorem ipsum</p>',
+    image: "icons/paragraph.svg",
+    html: '<p>Lorem ipsum</p>',
     properties: [{
         name: "Text align",
         key: "p-text-align",
@@ -872,7 +886,7 @@ Vvveb.Components.extend("_base", "html/paragraph", {
         validValues: ["", "text-start", "text-center", "text-end"],
         inputtype: RadioButtonInput,
         data: {
-			extraclass:"btn-group-sm btn-group-fullwidth",
+            extraclass:"btn-group-sm btn-group-fullwidth",
             options: [{
                 value: "",
                 icon:"la la-times",
@@ -899,6 +913,13 @@ Vvveb.Components.extend("_base", "html/paragraph", {
                 checked:false,
             }],
         },
+	},{
+		name: "Text",
+		key: "innerHTML",
+		sort:3,
+		inline:false,
+		htmlAttr: "innerHTML",
+		inputtype: TextareaInput
 	}]
 });
 

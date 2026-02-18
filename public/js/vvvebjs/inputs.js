@@ -806,7 +806,24 @@ let ListInput = { ...Input, ...{
 		data.elements = elements;
 		this.data = data;
 
-		return this.render("listinput", data);
+		let list = this.render("listinput", data);
+		let items = list.querySelectorAll(".section-item");
+		let i = 0;
+		for (const item of items) {
+			const container = item.querySelector(".tree") ?? item;
+			let properties = {};
+			if (data.elementProperties) {
+				for (let prop in data.elementProperties) {
+					properties[prop] = Object.assign({}, data.elementProperties[prop]);
+					properties[prop].element = elements[i];
+				}
+			}
+			
+			Vvveb.Components.renderProperties(null, properties, null, container);
+			i++;
+		}
+
+		return list;
 	},
   }
 }
@@ -815,6 +832,7 @@ let AutocompleteInput = { ...Input, ...{
 
     events: [
         ["autocomplete.change", "onAutocompleteChange", "input"],
+        ["input", "onAutocompleteChange", "input"],
 	 ],
 
 	onAutocompleteChange: function(event, node, input) {
@@ -853,7 +871,7 @@ let AutocompleteList = { ...Input, ...{
 	setValue: function(value) {
 		if (this.element && value) {
 			let input = this.element.querySelectorAll('input').forEach(e => e.value = value);
-		}		
+		}	
 	},
 
 	init: function(data) {
