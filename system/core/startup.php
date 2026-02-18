@@ -75,13 +75,13 @@ if (! $error_log || $error_log == '/dev/null') {
 
 include DIR_SYSTEM . 'session.php';
 
-include DIR_SYSTEM . '/component/component.php';
+include DIR_SYSTEM . 'component/component.php';
 
-require_once DIR_SYSTEM . '/core/frontcontroller.php';
+require_once DIR_SYSTEM . 'core/frontcontroller.php';
 
-require_once DIR_SYSTEM . '/core/view.php';
+require_once DIR_SYSTEM . 'core/view.php';
 
-require_once DIR_SYSTEM . '/functions.php';
+require_once DIR_SYSTEM . 'functions.php';
 
 require_once DIR_SYSTEM . 'event.php';
 
@@ -373,11 +373,20 @@ if (defined('DB_ENGINE')) {
 function start() {
 	//start session
 	//Session :: getInstance();
-	$site = Sites :: getSiteData();
+	$site_id = false;
+	if (isset($_GET['site_id'])) {
+		//check if admin user to allow site id override for editor
+		if ($admin = \Vvveb\System\User\Admin :: current()) {
+			$site_id = (int)$_GET['site_id'];
+		}
+	}
+
+	$site = Sites :: getSiteData($site_id);
+
 
 	if ($site) {
 		define('SITE_URL', $site['host']);
-		define('SITE_ID', $site['id'] ?? 1);
+		define('SITE_ID', $site['site_id'] ?? 1);
 
 		//load plugins first for APP
 		if (APP != 'admin') {
