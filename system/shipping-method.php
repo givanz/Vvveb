@@ -31,7 +31,7 @@ abstract class ShippingMethod {
 
 	abstract public function init();
 
-	abstract public function getMethod($checkoutInfo = []);
+	abstract public function getMethod(&$checkoutInfo = [], $options = []);
 
 	abstract public function setMethod();
 
