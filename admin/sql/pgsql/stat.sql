@@ -22,7 +22,10 @@
 
 			SELECT COUNT(*) AS orders, DATE(created_at) as date FROM "order" AS orders
 			
-				LEFT JOIN order_status AS os ON (orders.order_status_id = os.order_status_id AND os.language_id = :language_id) 
+				@IF isset(:order_status)
+				THEN 
+					LEFT JOIN order_status AS os ON (orders.order_status_id = os.order_status_id AND os.language_id = :language_id) 
+				END @IF		
 				
 			WHERE 1 = 1 
 			
@@ -31,6 +34,11 @@
 				@IF isset(:order_status)
 				THEN 
 					AND os.name = :order_status
+				END @IF					
+				
+				@IF isset(:order_status_id)
+				THEN 
+					AND os.name = :order_status_id
 				END @IF		
 				
 				@IF isset(:start_date) AND !empty(:start_date)
