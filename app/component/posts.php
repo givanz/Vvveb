@@ -22,8 +22,11 @@
 
 namespace Vvveb\Component;
 
+use function Vvveb\__;
 use function Vvveb\availableLanguages;
 use function Vvveb\get;
+use function Vvveb\getSetting;
+use function Vvveb\siteSettings;
 use Vvveb\Sql\PostSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
@@ -61,6 +64,9 @@ class Posts extends ComponentBase {
 		'tags'               => null,
 		'taxonomy'           => null,
 		'username'           => null,
+		'date_format'        => null,
+		'sticky'             => null,
+		'404'                => null,
 	];
 
 	public $options = [];
@@ -72,7 +78,7 @@ class Posts extends ComponentBase {
 
 		switch ($module) {
 			case 'content/post':
-			break;
+				break;
 
 			case 'content/category':
 				if (isset($this->options['taxonomy_item_id']) && $this->options['taxonomy_item_id'] == 'page') {
@@ -83,7 +89,7 @@ class Posts extends ComponentBase {
 					$this->options['taxonomy_item_slug'] = get('slug');
 				}
 
-			break;
+				break;
 		}
 	}
 
@@ -130,6 +136,11 @@ class Posts extends ComponentBase {
 			$this->options['search'] .= '*';
 		}
 
+		if (! isset($this->options['sticky'])) {
+			$stickyPosts = getSetting('posts', 'sticky');
+			$this->options['sticky'] = $stickyPosts;
+		}
+
 		//if only one taxonomy_item_id is provided then add it to array
 		if (isset($this->options['taxonomy_item_id']) && ! is_array($this->options['taxonomy_item_id'])) {
 			$this->options['taxonomy_item_id'] = [$this->options['taxonomy_item_id']];
@@ -139,8 +150,28 @@ class Posts extends ComponentBase {
 		//$languages = availableLanguages();
 		$this->options['type'] = $this->options['type'] ?: 'post';
 
+		if (! isset($this->options['date_format'])) {
+			$site = siteSettings();
+			$this->options['date_format'] = $site['date_format'];
+		}
+
 		if ($results && isset($results['post'])) {
+			if ($this->options['sticky']) {
+				$stickyOptions = $this->options;
+				$stickyOptions['post_id'] = $this->options['sticky'];
+				$stickyOptions['start'] = 0;
+				unset($stickyOptions['limit']);
+				$sticky = $posts->getAll($stickyOptions);
+
+				if ($sticky && isset($sticky['post'])) {
+					//$count = count($sticky['post']);
+					$results['post'] = $sticky['post'] + $results['post'];
+				}
+			}
+
 			$this->posts($results['post'], $this->options);
+		} else {
+			$results['post'] = [];
 		}
 
 		//if archive then pass year and month
@@ -156,8 +187,29 @@ class Posts extends ComponentBase {
 		$results['start']  = $this->options['start'];
 		$results['search'] = $this->options['search'] ?? '';
 
+		if (! $results['post'] &&
+			isset($this->options['page']) &&
+			($this->options['page'] > 1) &&
+			(isset($this->options['404']) && $this->options['404']) &&
+			! $_SERVER['QUERY_STRING']) {
+				$results['404'] = true;
+		}
+
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 
 		return $results;
+	}
+
+	//called on each request
+	function request(&$results, $index = 0) {
+		if (isset($results['post']) && $results['post']) {
+			foreach ($results['post'] as &$post) {
+				if ($post['password']) {
+					$post['content']  = ''; //__('Password protected!');
+					$post['excerpt']  = ''; //__('Password protected!');
+					$post['image']  = PUBLIC_PATH . 'media/locked.svg';
+				}
+			}
+		}
 	}
 }

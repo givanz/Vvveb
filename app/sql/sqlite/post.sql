@@ -46,14 +46,14 @@
 			AND pd.slug = :slug 
         	END @IF			
 
-            @IF isset(:post_id)
-			THEN
-                AND _.post_id = :post_id
+        	@IF isset(:post_id)
+        	THEN
+			AND _.post_id = :post_id
         	END @IF			
 			
-			@IF isset(:type)
-			THEN
-                AND _.type = :type
+        	@IF isset(:type)
+        	THEN
+			AND _.type = :type
         	END @IF			
 
         LIMIT 1; 
@@ -75,7 +75,7 @@
 	)
 	BEGIN
 
-		SELECT post.*,_.post_id,_.slug,_.name,_.meta_keywords,_.meta_description,_.language_id,post.template,language.code,language.code as array_key
+		SELECT post.*,_.post_id,_.slug,_.name,_.content,_.meta_keywords,_.meta_description,_.language_id,post.template,language.code,language.slug as language,language.slug as array_key
 			FROM post_content AS _
 			LEFT JOIN language ON (language.language_id = _.language_id)
 			LEFT JOIN post ON (post.post_id = _.post_id)

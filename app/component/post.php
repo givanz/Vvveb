@@ -25,15 +25,17 @@ namespace Vvveb\Component;
 use function Vvveb\__;
 use function Vvveb\model;
 use function Vvveb\sanitizeHTML;
+use function Vvveb\siteSettings;
 use Vvveb\Sql\PostSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Core\Request;
 use Vvveb\System\Event;
-use Vvveb\System\Images;
+use Vvveb\System\Traits\Post as PostTrait;
 use Vvveb\System\User\Admin;
-use function Vvveb\url;
 
 class Post  extends ComponentBase {
+	use PostTrait;
+
 	public static $defaultOptions = [
 		'post_id'        => 'url',
 		'language_id'    => null,
@@ -42,6 +44,8 @@ class Post  extends ComponentBase {
 		'status'         => 'publish',
 		'comment_count'  => 1,
 		'comment_status' => 1,
+		'type'           => null,
+		'image_size'     => 'large',
 		//'type' => 'post',
 	];
 
@@ -53,31 +57,15 @@ class Post  extends ComponentBase {
 
 		$results = $post->get($this->options);
 
-		//comments translations
-		if (isset($results['comment_count'])) {
-			$results['comment_text'] = sprintf(__('%d comment', '%d comments', (int)$results['comment_count']), $results['comment_count']);
+		//$languages = availableLanguages();
+		if (! isset($this->options['date_format'])) {
+			$site = siteSettings();
+			$this->options['date_format'] = $site['date_format'];
 		}
 
-		if (isset($results['image'])) {
-			$results['image'] = Images::image($results['image'], 'post');
+		if ($results) {
+			$this->post($results, $this->options);
 		}
-
-		if (isset($results['avatar'])) {
-			$results['avatar_url'] = Images::image($results['avatar'], 'admin');
-		}
-
-		//comments translations
-		$results['comment_count'] = $results['comment_count'] ?? 0;
-		$results['comment_text']  = sprintf(__('%d comment', '%d comments', (int)$results['comment_count']), $results['comment_count']);
-
-		//url
-		$results['url']          = url('content/post/index', $results);
-		$results['author-url']   = url('content/user/index', $results);
-		$results['comments-url'] = $results['url'] . '#comments';
-
-		//rfc
-		$results['pubDate'] = date('r', strtotime($results['created_at']));
-		$results['modDate'] = date('r', strtotime($results['updated_at']));
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 
@@ -86,8 +74,23 @@ class Post  extends ComponentBase {
 
 	//called on each request
 	function request(&$results, $index = 0) {
-		$request    = Request::getInstance();
-		$created_at = $request->get['created_at'] ?? ''; //revision preview
+		$created_at = $this->request->get['created_at'] ?? ''; //revision preview
+
+		if ($results['password']) {
+			if (isset($this->request->post['password'])) {
+				if ($results['password'] == $this->request->post['password']) {
+					$results['password'] = '';
+					return $results;
+				} else {
+					$results['content'] = '<p>' . __('Invalid password!') . '</p>';
+					$results['image']   = '';
+					return $results;
+				}
+			}
+
+			$results['content']  = '';
+			$results['image']  = '';
+		}
 
 		if ($created_at && $results['post_id']) {
 			//check if admin user to allow revision preview

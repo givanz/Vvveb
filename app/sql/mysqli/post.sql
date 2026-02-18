@@ -70,12 +70,12 @@
 	CREATE PROCEDURE getContent(
 		IN post_id INT,
 		IN site_id INT,
-                IN slug CHAR,
+		IN slug CHAR,
 		OUT fetch_all,
 	)
 	BEGIN
 
-		SELECT post.*,_.post_id,_.slug,_.name,_.meta_keywords,_.meta_description,_.language_id,post.template,language.code,language.code as array_key
+		SELECT post.*,_.post_id,_.slug,_.name,_.content,_.meta_keywords,_.meta_description,_.language_id,post.template,language.code,language.slug as language,language.slug as array_key
 			FROM post_content AS _
 			LEFT JOIN language ON (language.language_id = _.language_id)
 			LEFT JOIN post ON (post.post_id = _.post_id)
@@ -90,17 +90,17 @@
 		@IF isset(:slug) && !(isset(:post_id) && :post_id) 
 		THEN 
 			AND _.post_id = (SELECT post_id FROM post_content WHERE slug = :slug LIMIT 1)
-		END @IF			
+        	END @IF			
 
 		@IF isset(:post_id) && :post_id > 0
 		THEN
-           	  AND _.post_id = :post_id
-		END @IF			
+			AND _.post_id = :post_id
+        	END @IF			
 
 		@IF isset(:site_id)
 		THEN
-            AND pt.site_id = :site_id
-		END @IF			
+            	    AND pt.site_id = :site_id
+        	END @IF			
 	END
 
 	-- Get categories

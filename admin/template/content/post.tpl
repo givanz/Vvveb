@@ -11,3 +11,9 @@ import(content/edit.tpl, {"type":"post"})
 [data-v-type-name]           = $this->type_name
 [data-v-type]                = $this->type
 [data-v-posts-list-url]|href = $this->posts_list_url
+
+
+[name="password_protected"]|addNewAttribute = <?php if (isset($this->post['password']) && $this->post['password']) echo 'checked';?>
+[name="sticky"]|addNewAttribute = <?php if (isset($this->post['sticky']) && $this->post['sticky'])  echo 'checked';?>
+#postPassword|addNewAttribute = <?php if (!isset($this->post['password']) || !$this->post['password']) echo 'style="display:none"';?>
+#postPassword|addNewAttribute = <?php if (!isset($this->post['password']) || !$this->post['password']) echo 'style="display:none"';?>
