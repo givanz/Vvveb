@@ -23,7 +23,9 @@
 namespace Vvveb\Controller\Settings;
 
 use function Vvveb\__;
+use function Vvveb\availableCurrencies;
 use Vvveb\Controller\Base;
+use function Vvveb\friendlyDate;
 use Vvveb\Sql\CountrySQL;
 use Vvveb\Sql\regionSQL;
 use Vvveb\Sql\SiteSQL;
@@ -140,13 +142,28 @@ class Site extends Base {
 				}
 			}
 
+			foreach ($this->view->languagesList as $slug => $lng) {
+				if ($lng['language_id'] == $settings['language_id']) {
+					$settings['language'] = $slug;
+					break;
+				}
+			}
+
+			$currencies = availableCurrencies();
+			foreach ($currencies as $currency_id => $currency) {
+				if ($currency['currency_id'] == $settings['currency_id']) {
+					$settings['currency'] = $currency_id;
+					break;
+				}
+			}
+
 			//array_walk_recursive($settings['description'], '\Vvveb\sanitizeHTML');
 
 			if (isset($this->request->get['site_id']) && ($site_id = $this->request->get['site_id'])) {
 				$data['site_id']  = (int)$site_id;
 				$site['settings'] = json_encode($settings);
 				$data['site']     = $site;
-				$site['id']       = $data['site_id'];
+				$site['site_id']  = $data['site_id'];
 				$result           = $sites->edit($data);
 
 				//Sites::saveSite($site);
@@ -161,7 +178,7 @@ class Site extends Base {
 					CacheManager::delete();
 					$message              = __('Site saved!');
 					$view->success['get'] = $message;
-				//$this->redirect(['module'=>'settings/sites', 'success'=> $message]);
+					//$this->redirect(['module'=>'settings/sites', 'success'=> $message]);
 				} else {
 					$this->view->errors = [$sites->error];
 				}
@@ -171,7 +188,7 @@ class Site extends Base {
 				$return                   = $sites->add($data);
 				$site_id                  = $return['site'];
 				$site['state']            = 'live';
-				$site['id']               = $site_id;
+				$site['site_id']               = $site_id;
 				Sites::saveSite($site);
 
 				list($site, $settings, $site_id, $data) = Event :: trigger(__CLASS__,__FUNCTION__, $site, $settings, $site_id, $data);
@@ -223,8 +240,8 @@ class Site extends Base {
 			}
 		}
 
-		$data                       = $siteSql->getData(($setting ?? []) + $this->global);
-		$data['complete_status_id'] = $data['processing_status_id'] = ($data['order_status_id'] ?? 1);
+		$data                       = $siteSql->getData(['language_id' => $this->global['language_id']] + ($setting ?? []) + $this->global);
+		$data['complete_status_id'] = $data['processing_status_id'] = ($data['order_status_id'] ?? []);
 
 		$data['timezone'] = [];
 
@@ -251,6 +268,8 @@ class Site extends Base {
 			$data['date_format'][$format] = date($format);
 		}
 
+		$data['date_format']['human'] = friendlyDate(time() - 360000);
+
 		foreach ($time_format as $format) {
 			$data['time_format'][$format] = date($format);
 		}
@@ -269,14 +288,15 @@ class Site extends Base {
 
 			$view->set($data);
 			//$site['full-url']   = $site ? ('//' . Sites::url($site['host']) . (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '')  . ($site['path'] ?? '' ? '/' . $site['path'] : '')) : '';
-			$site['full-url']   = $site ? ('//' . $site['url']) : '';
-			$view->site         = $site + $setting;
-			$view->setting      = $setting;
-			$view->resize       = ['cs' => __('Crop & Resize'), 's' => __('Stretch'), 'c' => __('Crop')];
-			$view->formats      = Image::formats();
-			$view->themeList    = $themeList;
-			$view->subdir       = V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '';
-			$view->templateList = \Vvveb\getTemplateList(false, ['email']);
+			$site['full-url']    = $site ? ('//' . $site['url']) : '';
+			$view->site          = $site + $setting;
+			$view->setting       = $setting;
+			$view->resize        = ['cs' => __('Crop & Resize'), 's' => __('Stretch'), 'c' => __('Crop')];
+			$view->formats       = Image::formats();
+			$view->themeList     = $themeList;
+			$view->subdir        = V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '';
+			$view->templateList  = \Vvveb\getTemplateList(false, ['email']);
+			$view->currenciesList = availableCurrencies();
 
 			$controllerPath  = $admin_path . 'index.php?module=media/media';
 			$view->scanUrl   = "$controllerPath&action=scan";
