@@ -118,7 +118,7 @@ if (! function_exists('printAdminBarMenu')) {
 				</li>
 			</ul>
 		</li>
-		<li><a href="<?php echo $admin_path; ?>"><i class="icon-pulse-outline"></i><?php echo __('Admin'); ?></a>
+		<li><a href="<?php echo $admin_path; ?>"><i class="icon-settings-outline"></i><?php echo __('Admin'); ?></a>
 			<ul>
 				<?php printAdminBarMenu($menu); ?>
 			</ul>
@@ -217,5 +217,12 @@ if (! function_exists('printAdminBarMenu')) {
 		</li>
 	</ul>
 	
-	<link href="<?php echo Vvveb\publicUrlPath();?>admin/default/css/admin-bar.css" rel="stylesheet">
+<link href="<?php echo Vvveb\publicUrlPath(); ?>admin/default/css/admin-bar.css" rel="stylesheet">
+<script>
+window.addEventListener("load", (event) => {
+	if (VvvebTheme.ajax.siteContainer) {
+		VvvebTheme.ajax.siteContainer.push("#vvveb-admin");
+	}
+});
+</script>	
 </div>
