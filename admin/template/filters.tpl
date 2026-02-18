@@ -1,6 +1,8 @@
-input[name="module"]|value = <?php echo htmlspecialchars(Vvveb\get('module'));?>
-input[name="action"]|value = <?php echo htmlspecialchars(Vvveb\get('action'));?>
-input[name="type"]|value   = <?php echo htmlspecialchars(Vvveb\get('type'));?>
+#filters input[name="module"]|value  = <?php echo htmlspecialchars(Vvveb\get('module'));?>
+#filters input[name="action"]|before = <?php $action = Vvveb\get('action');if ($action) {?>
+#filters input[name="action"]|value  = <?php echo htmlspecialchars(Vvveb\get('action'));?>
+#filters input[name="action"]|after  = <?php } ?>
+#filters input[name="type"]|value    = <?php echo htmlspecialchars(Vvveb\get('type'));?>
 
 #filters|addClass = <?php if ($this->filter) echo 'show';?>
 #filters input[type="text"],#filters input[type="search"]|value = <?php 
