@@ -123,9 +123,6 @@ VvvebTheme.Ajax = {
 			if (element.hasAttribute("button")) {
 				element.removeAttribute("disabled");
 			}
-			
-			//add events for new actions that have different handlers than click/submit
-			//VvvebTheme.Gui.init();
 		})
 		.catch(error => {
 			console.log(error);
@@ -314,7 +311,7 @@ VvvebTheme.Search = {
 		parameters['action'] = parameters['action'] ?? action;
 		parameters['component'] = parameters['component'] ?? this.component;
 		parameters['component_id'] = parameters['component_id'] ?? this.component_id;
-
+		
 		VvvebTheme.Ajax.call("/search", parameters, element, selector, callback);
 	},
 	
@@ -442,7 +439,7 @@ VvvebTheme.Gui = {
 			}
 		}
 
-		VvvebTheme.Cart.add(id, options, element, ['.mini-cart', '[data-v-notifications]'], function() {
+		VvvebTheme.Cart.add(id, options, element, ['[data-v-component-cart]', '[data-v-notifications]'], function() {
 			let src = img.getAttribute("src");
 			VvvebTheme.Alert.show(`
 			<div class="clearfix">
@@ -491,7 +488,7 @@ VvvebTheme.Gui = {
 			}
 		}
 		
-		let updatElements = ['.mini-cart', '[data-v-notifications]'];
+		let updatElements = ['[data-v-component-cart]', '[data-v-notifications]'];
 		//if on cart page update also cart page elements
 		for (selector of ['[data-v-cart]', '.cart-right-column']) {
 			if (document.querySelector(selector)) {
@@ -812,7 +809,7 @@ function loadAjax(url, selector, callback = null, params = {}, method = "get") {
 				}
 			}
 			
-			if (callback) callback();
+			if (callback) callback(response);
 		}		
 
 		if (VvvebTheme.ajax.progressStatus) {
@@ -847,16 +844,18 @@ if (!isEditor()) {
 			if (!url || (url.indexOf("//") != -1) || element.target //external url
 				|| (VvvebTheme.ajax.skipUrl.length && (VvvebTheme.ajax.skipUrl.includes(url) || VvvebTheme.ajax.skipUrl.includes(window.location.pathname)))
 			) return;
-			
+
 			let selector = element.dataset.selector || VvvebTheme.ajax.siteContainer;
 
-			loadAjax(url, selector, () => { 
+			loadAjax(url, selector, (response) => { 
 				//if (element.dataset.scroll) {
-					let target          = document.querySelector(VvvebTheme.ajax.scrollContainer);
-					let scrollTo        = element.dataset.scroll || (selector == VvvebTheme.ajax.siteContainer ? "start" : "start");
+					let title = response.title;
+					document.title = title;
+					let target     = document.querySelector(VvvebTheme.ajax.scrollContainer);
+					let scrollTo   = element.dataset.scroll || (selector == VvvebTheme.ajax.siteContainer ? "start" : "start");
 					target.scrollIntoView({behavior: "smooth", block: scrollTo, inline: scrollTo});
 				//}
-				window.history.pushState({url, selector}, null, url); 
+				window.history.pushState({url, selector, title}, null, url); 
 			});
 			
 			e.preventDefault();
@@ -869,6 +868,7 @@ addEventListener("popstate", checkState);
 function checkState(e) {
     if (e.state && e.state.url) {
         loadAjax(e.state.url, e.state.selector);
+		if (e.state.title) document.title = e.state.title;
     }
 }
 
