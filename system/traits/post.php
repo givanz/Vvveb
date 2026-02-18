@@ -23,6 +23,7 @@
 namespace Vvveb\System\Traits;
 
 use function Vvveb\__;
+use function Vvveb\friendlyDate;
 use Vvveb\System\Images;
 use function Vvveb\url;
 
@@ -36,7 +37,7 @@ trait Post {
 	}
 
 	function post(&$post, &$options = []) {
-		$type            = $options['type'] ?? 'post';
+		$type = $post['type'] ?? $options['type'] ?? 'post';
 
 		if (isset($post['images'])) {
 			$post['images'] = json_decode($post['images'], 1);
@@ -78,7 +79,12 @@ trait Post {
 		}
 
 		//comments translations
-		$post['comment_text'] = sprintf(__('%d comment', '%d comments', (int)$post['comment_count']), $post['comment_count']);
+		if (isset($post['comment_count'])) {
+			$post['comment_text'] = sprintf(__('%d comment', '%d comments', (int)$post['comment_count']), $post['comment_count']);
+		} else {
+			$post['comment_text'] = '';
+			$post['comment_count'] = 0;
+		}
 
 		//date formatting that can be used for url parameters
 		$date = date_parse($post['created_at']);
@@ -99,15 +105,30 @@ trait Post {
 		}
 
 		//rfc
-		$post['pubDate'] = date('r', strtotime($post['created_at']));
-		$post['modDate'] = date('r', strtotime($post['updated_at']));
-		$post['lastMod'] = date('Y-m-d\TH:i:sP', strtotime($post['updated_at']));
+		$createdTime = strtotime($post['created_at']);
+		$updatedTime = strtotime($post['updated_at']);
+
+		$post['pubDate'] = date('r', $createdTime);
+		$post['modDate'] = date('r', $updatedTime);
+		$post['lastMod'] = date('Y-m-d\TH:i:sP', $updatedTime);
+
+		if (! isset($options['date_format']) || $options['date_format'] == 'human') {
+			$post['created_at_formatted'] = friendlyDate($createdTime);
+		} else {
+			$post['created_at_formatted'] = date($options['date_format'], $createdTime);
+		}
 
 		//url
-		$url                  =  ['slug' => $post['slug'], 'post_id' => $post['post_id']] + $language;
+		$url                  = ['slug' => $post['slug'], 'post_id' => $post['post_id']] + $language;
+
+		if ($post['type'] != 'post') {
+			$url['type'] = $post['type'];
+		}
+
 		$post['url']          = url("content/$type/index", $url);
 		$post['full-url']     = url("content/$type/index", $url + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http']);
-		$post['author-url']   = url('content/user/index', $post);
+		$post['author-url']   = url('content/user/index', ['username' => $post['username']]);
+
 		$post['comments-url'] = $post['url'] . '#comments';
 
 		return $post;
