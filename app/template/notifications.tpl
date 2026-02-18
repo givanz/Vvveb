@@ -1,10 +1,12 @@
 /* notifications */
+[data-v-notifications]|addClass = <?php if (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) echo 'vvveb-hidden';?>
+
 @error = [data-v-notifications] [data-v-notification-error]
 @error|before = <?php 
 $type = '@@__data-v-type__@@';
 if (isset($this->errors) && is_array($this->errors)) {
 	foreach($this->errors as $id => $list) {
-		if (!empty($type) && $id != $type) continue;
+		if (!empty($type) && $id != $type && !$vvveb_is_page_edit) continue;
 		
 		if (!is_array($list)) {
 			$list = [$list];
@@ -26,7 +28,7 @@ if (isset($this->errors) && is_array($this->errors)) {
 $type = '@@__data-v-type__@@';
 if (isset($this->success) && is_array($this->success)) {
 	foreach($this->success as $id => $list) {
-		if (!empty($type) && $id != $type) continue;
+		if (!empty($type) && $id != $type && !$vvveb_is_page_edit) continue;
 		
 		if (!is_array($list)) {
 			$list = [$list];
@@ -45,13 +47,25 @@ if (isset($this->success) && is_array($this->success)) {
 
 @info = [data-v-notifications] [data-v-notification-info]
 @info|before = <?php 
-if (isset($this->info) && is_array($this->info)) foreach($this->info as $message) {?>
+$type = '@@__data-v-type__@@';
+if (isset($this->info) && is_array($this->info)) {
+	foreach($this->info as $id => $list) {
+		if (!empty($type) && $id != $type && !$vvveb_is_page_edit) continue;
+		
+		if (!is_array($list)) {
+			$list = [$list];
+		}
+		foreach ($list as $message) {
+?>
 	
 	@info [data-v-notification-text] = <?php echo($message);?>
 	
 @info|after = <?php 
+		}
 	}
+}
 ?>
+
 
 @message = [data-v-notifications] [data-v-notification-message]
 @message|before = <?php 
