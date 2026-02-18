@@ -1,3 +1,5 @@
 INSERT INTO `setting` (`site_id`, `namespace`, `key`, `value`) VALUES
 (1,	'site', 'description',	'Vvveb CMS'),
-(1,	'site', 'title',	'Vvveb');
+(1,	'site', 'title',	'Vvveb'),
+(1,	'shipping',	'0',	'{"region_group_id":"0","shipping_status_id":"1","sort_order":"1","lang":{"1":{"title":"Fast courier","description":"Fast courier","free_message":""},"3":{"title":"","description":"","free_message":""}},"tax_type_id":"0","cost":"3.00","base-weight":"5","free_shipping":"0.00","weight":{"#":{"above_weight":"5","price":"1.00"}}}'),
+(1,	'payment',	'0',	'{"region_group_id":"0","payment_status_id":"1","sort_order":"1","lang":{"1":{"title":"Cash on delivery","description":"Cash on delivery"},"6":{"title":"Cash on delivery","description":"Cash on delivery"},"3":{"title":"Cash on delivery","description":"Cash on delivery"},"4":{"title":"Cash on delivery","description":"Cash on delivery"},"5":{"title":"Cash on delivery","description":"Cash on delivery"},"7":{"title":"Cash on delivery","description":"Cash on delivery"}},"tax_type_id":"0","cost":"0.00"}');

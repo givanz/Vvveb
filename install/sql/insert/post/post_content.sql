@@ -19,7 +19,7 @@ INSERT INTO `post_content` VALUES
 </p>
 	
 <p>
-	<img class="img-fluid" src="http://place-hold.it/1200x300">
+	<img class="img-fluid" src="//placeholdit.com/1200x300">
 	Neither can I be angry with my brother or fall foul of him; for he and I were born to work together, like a man`s two hands, feet or eyelids, or the upper and lower rows of his teeth. 
 </p>
 
@@ -28,7 +28,7 @@ INSERT INTO `post_content` VALUES
 </p>
 
 <div>
-	<img class="img-fluid align-center" src="http://place-hold.it/1200x300">
+	<img class="img-fluid align-center" src="//placeholdit.com/1200x300">
 </div>
 
 <p>
@@ -36,7 +36,7 @@ INSERT INTO `post_content` VALUES
 </p>
 
 <p>
-	<img class="img-fluid align-right" src="http://place-hold.it/150x150">
+	<img class="img-fluid align-right" src="//placeholdit.com/150x150">
 </p>
 
 <p>
@@ -47,7 +47,7 @@ INSERT INTO `post_content` VALUES
 </p>
 
 <p>
-	<img class="img-fluid align-left" src="http://place-hold.it/150x150">
+	<img class="img-fluid align-left" src="//placeholdit.com/150x150">
 </p>
 
 <p>
@@ -144,17 +144,17 @@ INSERT INTO `post_content` VALUES
 
 
             
-(7,1,'Contact us','contact','<p class="lead">
+(7,1,'Contact us','contact','<p>
             Powerful and easy to use drag and drop website builder for blogs, presentation or ecommerce stores.
           </p>
 
-          <p class="lead">
+          <p>
             The html for sections blocks and components and this template are built using Bootstrap 5.
           </p>
 
 
-          	<p class="mt-5">
-			  <b><i class="la la-lg la-envelope"></i> Email:</b>
+          	<p class="mt-2">
+			  <b><!-- <i class="la la-lg la-envelope"></i> -->Email:</b>
 			  <span>
 				<a href="mailto:contact@mysite.com">
 					<span>contact@mysite.com</span>
@@ -162,7 +162,7 @@ INSERT INTO `post_content` VALUES
 			  </span>
 			</p>
 			<p class="">
-			  <b><i class="la la-lg la-phone"></i> Phone:</b> 
+			  <b><!-- <i class="la la-lg la-phone"></i> -->Phone:</b> 
 			  <a href="tel:5511112377">
 				<span>+55 (111) 123 777</span>
 			  </a>

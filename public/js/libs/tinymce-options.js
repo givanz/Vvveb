@@ -101,7 +101,7 @@ if (typeof themeFonts !== 'undefined' && themeFonts) {
 	}
 }
 
-let tinyMceOptions = {
+var tinyMceOptions = {
   selector: "textarea.html",
   body_class: "container",
   init_instance_callback : make_wysiwyg,
@@ -180,7 +180,7 @@ let tinyMceOptions = {
         icon: 'gallery',
         onAction: function () {
 			let galleryHTML = `<div class="gallery masonry has-shadow" data-component-gallery="">
-				<div class="item"><a href="#"><img src="../../media/posts/1.jpg"> </a></div>
+				<div class="item"><a href="#"><img src="../../media/demo/posts/1.jpg"> </a></div>
 			</div>`;
 			
 			editor.insertContent(galleryHTML);
@@ -230,7 +230,7 @@ let tinyMceOptions = {
 			tooltip: 'Add',
 			icon: 'plus',
 			onAction: function() {
-				let galleryItemHTML = `<div class="item"><a href="#"><img src="../../media/posts/1.jpg"></a></div>`;
+				let galleryItemHTML = `<div class="item"><a href="#"><img src="../../media/demo/posts/1.jpg"></a></div>`;
 				let node = editor.selection.getNode();
 				let gallery = node.closest('[data-component-gallery]');
 				editor.selection.setCursorLocation(gallery, gallery.children.length);
@@ -497,10 +497,13 @@ let tinyMceOptions = {
 		
 		editor.on('change', function(ed, e)  {
 			// text changed set has_changes flag to save revision
-			ed.target.container.parentNode.querySelector(".has_changes").value = "1";
-			delay(() => {
-				if (typeof contentElement !== "undefined") contentElement.innerHTML = editor.getContent(); 
-			}, 500);
+			let hasChanges = ed.target.container.parentNode.querySelector(".has_changes");
+			if (hasChanges) hasChanges.value = "1";
+			if (typeof contentElement !== "undefined") {
+				delay(() => {
+					contentElement.innerHTML = editor.getContent(); 
+				}, 500);
+			}
 		});
 
 		window.dispatchEvent(new CustomEvent("tinymce.setup", {detail: editor}));
@@ -887,7 +890,7 @@ let tinyMceOptions = {
   toolbar_mode: 'wrap',
   contextmenu: 'link image editimage table',
   skin: tinyMceSkin,//'oxide',
-  content_css: vvvebThemeCss,
+  content_css: vvvebThemeCss ?? "",
   //content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
   content_style: "body {padding: 10px}",
   images_reuse_filename: true,
