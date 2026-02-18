@@ -78,6 +78,11 @@ return [
 	'attribute_group',
 	'attribute_group_content',
 
+	//product related
+	'vendor',
+	'manufacturer',
+	'manufacturer_to_site',
+
 	//product
 	'product',
 	'product_attribute',
@@ -116,8 +121,6 @@ return [
 	'length_type',
 	'length_type_content',
 	'location',
-	'manufacturer',
-	'manufacturer_to_site',
 
 	//order
 	'order',
