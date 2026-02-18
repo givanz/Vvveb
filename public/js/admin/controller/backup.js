@@ -1,6 +1,6 @@
 class BackupController {
 
-	action(url, btn) {
+	action(url, params, btn) {
 		let next = url;
 		document.getElementById("progress").classList.remove("d-none");
 		
@@ -20,7 +20,7 @@ class BackupController {
 			return fetch(next, {method: "POST",   headers: {
 				"X-Requested-With": "XMLHttpRequest",
 				"Content-Type": "application/x-www-form-urlencoded",
-			  }, body: new URLSearchParams({csrf: document.querySelector('[name=csrf]')?.value})})
+			  }, body: new URLSearchParams({...params, csrf: document.querySelector('[name=csrf]')?.value})})
 			.then((response) => {
 				next = false;
 				if (!response.ok) {
@@ -123,13 +123,13 @@ class BackupController {
 		ajaxStack.add(request);		
 	}
 	
-	make(url, btn = false) {
+	make(url, params = {}, btn = false) {
 		url = url ?? (window.location.pathname + '?module=tools/backup&action=save');
-		return this.action(url, btn);
+		return this.action(url, params, btn);
 	}
 
-	restore(url, btn = false) {
-		return this.action(url, btn);
+	restore(url, params = {}, btn = false) {
+		return this.action(url, params, btn);
 	}
 	
 }
