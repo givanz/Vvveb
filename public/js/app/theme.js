@@ -139,7 +139,8 @@ function productPage() {
 	document.querySelectorAll('div.zoom').forEach(e => e.addEventListener('mousemove', zoom));
 	
 	let productOptionsContainer = document.getElementById("product-options");
-	if (typeof productVariants !== "undefined" && productVariants && productOptionsContainer) {
+	if (productOptionsContainer/* && ((typeof productVariants !== "undefined" && productVariants) || 
+		(typeof productOptions !== "undefined" && productOptions))*/) {
 			productOptionsContainer.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
 				let id = radio.name.match(/(\d+)/)[1] ?? false;
 				if (id) {
@@ -155,34 +156,59 @@ function productPage() {
 					if (id) {
 						selectedProductOptions[id] = element.value;
 					}
-					let variantId = JSON.stringify(selectedProductOptions).replaceAll(/[^\d:,]+/g,'');
+					
+					
+					let productOptionId, optionId, isStock = true;
 
-					let variant = productVariants[variantId];
-					let isStock = variant && variant.stock_quantity > 0 ? true : false;
-
-					if (variant) {
-						productOptionsContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
-							const currentOptions = Object.assign({}, selectedProductOptions);
-							let id = radio.name.match(/(\d+)/)[1] ?? false;
-							if (id) {
-								currentOptions[id] = radio.value;
-								let currentVariantId = JSON.stringify(currentOptions).replaceAll(/[^\d:,]+/g,'');
-								let variant = productVariants[currentVariantId];
-								let isStock = variant && variant.stock_quantity > 0 ? true : false;
-								let text = radio.parentNode.querySelector("[data-v-value-name]");
-
+					for (const optionId in selectedProductOptions) {
+						pOptionId   = selectedProductOptions[optionId]
+						let values = productOptions[optionId]["values"];
+						
+						for (const oId in values) {
+							let value = values[oId];
+							
+							if (value["product_option_value_id"] == pOptionId) {
 								if (isStock) {
-									text.style.textDecoration = "";
-									text.style.opacity = "";
-								} else {
-									text.style.textDecoration = "line-through";
-									text.style.opacity = 0.5;
+									isStock = value && value.stock_quantity > 0 ? true : false;
 								}
+								break;
 							}
-						});
+						}
 					}
 
-					document.querySelector("[data-v-product-price_tax_formatted]").innerText = variant ? variant.price_formatted : "";
+					let variant;
+					
+					if (Object.keys(productVariants).length > 0) {// have variants
+						let variantId = JSON.stringify(selectedProductOptions).replaceAll(/[^\d:,]+/g,'');
+
+						variant = productVariants[variantId];
+
+						if (variant) {
+							isStock = variant && variant.stock_quantity > 0 ? true : false;
+							productOptionsContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
+								const currentOptions = Object.assign({}, selectedProductOptions);
+								let id = radio.name.match(/(\d+)/)[1] ?? false;
+								if (id) {
+									currentOptions[id] = radio.value;
+									let currentVariantId = JSON.stringify(currentOptions).replaceAll(/[^\d:,]+/g,'');
+									let variant = productVariants[currentVariantId];
+									let hasStock = variant && variant.stock_quantity > 0 ? true : false;
+									let text = radio.parentNode.querySelector("[data-v-value-name]");
+
+									if (hasStock) {
+										text.style.textDecoration = "";
+										text.style.opacity = "";
+									} else {
+										text.style.textDecoration = "line-through";
+										text.style.opacity = 0.5;
+									}
+								}
+							});
+							
+							document.querySelector("[data-v-product-price_tax_formatted]").innerText = variant.price_formatted;
+						}
+					}
+
 					document.querySelector("#button-cart").disabled = !isStock;
 					document.querySelector("#buynow").disabled = !isStock;
 					const product_variant_id = variant ? variant.product_variant_id : "";
@@ -289,9 +315,9 @@ VvvebTheme.ajax.skipUrl = (VvvebTheme.ajax.skipUrl && VvvebTheme.ajax.skipUrl?.l
 
 //image lightbox
 if (typeof GLightbox !== 'undefined') {
-const lightbox = GLightbox();
+var glightbox = GLightbox();
 //let gloptions = {selector:".gallery a, .carousel-item a,a img, img"};	
-document.addEventListener("click", function(event) {
+if (!isEditor()) document.addEventListener("click", function(event) {
 	let element = event.target.closest("img");
 	
 	if (element) {
@@ -309,8 +335,17 @@ document.addEventListener("click", function(event) {
 						index = count;
 					}
 					
+					let result = {'type': 'image', href};
+					let description = img?.parentNode?.querySelector(".description")?.innerHTML;
+					if (description) result.description = description;
+					let title = img?.parentNode?.querySelector(".title")?.innerHTML;
+					if (title) result.title = title;
+					if (img.dataset.descPosition) {
+						result.descPosition = img.dataset.descPosition;
+					}
+				
 					count++;
-					return {'type': 'image', href}
+					return result;
 		}
 		
 		if (gallery) {
@@ -324,22 +359,34 @@ document.addEventListener("click", function(event) {
 		
 		if (elements.length == 0) {
 			if (element.parentNode && element.parentNode.tagName == "A") {
+				let title = element.parentNode.querySelector(".title");
+				let description = element.parentNode.querySelector(".description");
+				let descPosition = element.dataset.descPosition;
+				let el = {};
+				
 				if (element.parentNode.href == "" || element.parentNode.href == "#") {
-					elements = [{"href": element.src}];
+					el = {"href": element.src};
+					elements = [el];
 				}
 				
 				if (element.parentNode.href.split('.').pop() == element.src.split('.').pop()) {
-					elements = [{"href": element.parentNode.href}];
+					el = {"href": element.parentNode.href};
+					elements = [el];
 				}
+				
+				if (title) Object.assign(el , title);
+				if (description) Object.assign(el , title);
+				if (descPosition) Object.assign(el , title);
+				
 			} else {
 				//elements = [{"href": element.src}];
 			}
 		}
 		
 		if (elements && elements.length) {
-			lightbox.setElements(elements);
-			//lightbox.open();
-			lightbox.openAt(index);
+			glightbox.setElements(elements);
+			//glightbox.open();
+			glightbox.openAt(index);
 			event.preventDefault();
 		}
 	}

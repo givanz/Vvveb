@@ -502,7 +502,6 @@ iframe.wait-autoplay {
 
 .glightbox-clean .gslide-description {
   background: var(--bs-body-color);
-  color: var(--bs-body-bg);
 }
 
 .glightbox-clean .gdesc-inner {
