@@ -256,12 +256,6 @@ function env($key, $default = null) {
 	}
 }
 
-if (! function_exists('nggetext')) {
-	function nggetext($singular, $plural, $number) {
-		return ($number > 1) ? $plural : $singular;
-	}
-}
-
 function friendlyDate($date) {
 	$fileformats = [
 		1          => function ($i) { return __('%d second', '%d seconds', $i); },
@@ -505,8 +499,8 @@ function slugify($text, $divider = '-') {
 	return $text;
 }
 
-if (function_exists('_')) {
-	function __($text, $plural = false, $count = false) {
+if ((!defined('GETTEXT') || GETTEXT == true) && function_exists('_')) {
+	function __($text, $plural = false, $count = false, $nocache = false) {
 
 		if ($plural) {
 			$translation = ngettext($text, $plural, $count);
@@ -517,8 +511,51 @@ if (function_exists('_')) {
 		return $translation;
 	}
 } else {
-	function __($text, $plural = false, $count = false) {
-		return $text;
+	function __($text, $plural = false, $count = false, $nocache = false) {
+		static $translations;
+
+		if ($translations === null || $nocache) {
+			$translations = [];
+			$lang = getLanguage();
+
+			$cacheFile = DIR_CACHE . $lang . '-translations.php';
+
+			if (file_exists($cacheFile)) {
+				$translations = require $cacheFile;
+			} else {
+				$folder = DIR_ROOT . 'locale' . DS . $lang . DS . 'LC_MESSAGES' . DS;
+				if (is_dir($folder)) {
+					require_once DIR_SYSTEM . 'functions' . DS . 'php-mo.php';
+
+					foreach (['vvveb', 'user'] as $domain) {
+						$poFile = $folder . $domain . '.po';
+						if (file_exists($poFile) && ($t = phpmo_parse_po_file($poFile) ?: []) && is_array($t)) {
+							$translations = array_merge($translations, $t);
+						}
+					}
+
+					foreach ($translations as $id => &$msg) {
+						$msg = $msg['msgstr'];
+					}
+
+					file_put_contents($cacheFile, '<?php return ' . var_export($translations, true) . ';');
+				}
+			}
+		}
+		
+		if (isset($translations[$text])) {
+			if ($count && $plural) {
+				$translation = $translations[$text][1] ?? $translations[$text][0] ?? $text;
+			} else {
+				$translation = $translations[$text][0] ?? $text;
+			}
+		} else {
+			$translation = $text;
+		}
+		
+		//list($text, $plural, $count, $translation) = System\Event::trigger(__NAMESPACE__, '__', $text, $plural, $count, $translation);
+		
+		return $translation;
 	}
 }
 
@@ -897,7 +934,7 @@ function getThemeFolderList($theme = false) {
 	$skipFolders    = ['src', 'source', 'backup', 'sections', 'blocks', 'inputs', 'css', 'scss', 'fonts', 'img', 'import', 'node_modules', 'screenshots', 'video', 'js'];
 
 	if (! $theme) {
-		$theme = \Vvveb\System\Sites::getTheme() ?? 'default';
+		$theme = \Vvveb\System\Sites::getTheme(SITE_ID) ?? 'default';
 	}
 
 	$themeFolder = DIR_THEMES . $theme;
@@ -918,6 +955,160 @@ function getThemeFolderList($theme = false) {
 	}
 
 	return $pages;
+}
+
+function getFieldTypes() {
+	return
+	[
+		'basic' => [
+			'text' => [
+				'name' => __('Text'),
+				'icon' => 'icon-text-outline',
+			],
+			'textarea' => [
+				'name' => __('Textarea'),
+				'icon' => 'icon-document-text-outline',
+			],
+			'number' => [
+				'name' => __('Number'),
+				'icon' => 'icon-document-text-outline',
+			],
+			'range' => [
+				'name' => __('Range'),
+				'icon' => 'icon-git-commit-outline',
+			],
+			'email' => [
+				'name' => __('Email'),
+				'icon' => 'icon-mail-outline',
+			],
+			'url' => [
+				'name' => __('Url'),
+				'icon' => 'icon-link-outline',
+			],
+			'tel' => [
+				'name' => __('Telephone'),
+				'icon' => 'icon-call-outline',
+			],
+			'password' => [
+				'name' => __('Password'),
+				'icon' => 'icon-lock-open-outline',
+			],
+			'select' => [
+				'name' => __('Select'),
+				'icon' => 'icon-chevron-down-circle-outline',
+			],
+		],
+		'content' => [
+			'image'   => [
+				'name' => __('Image'),
+				'icon' => 'icon-image-outline',
+			],
+			'file'    => [
+				'name' => __('File'),
+				'icon' => 'icon-document-outline',
+			],
+			'wysiwyg' => [
+				'name' => __('Wysiwyg Editor'),
+				'icon' => 'icon-create-outline',
+			],
+			'oembed'  => [
+				'name' => __('oEmbed'),
+				'icon' => 'icon-videocam-outline',
+			],
+			'gallery'    => [
+				'name' => __('Gallery'),
+				'icon' => 'icon-images-outline',
+			],
+		],
+		'choice' => [
+			'select' => [
+				'name' => __('Select'),
+				'icon' => 'icon-chevron-down-circle-outline',
+			],
+			'checkbox' => [
+				'name' => __('Checkbox'),
+				'icon' => 'icon-checkbox-outline',
+			],
+			'radio' => [
+				'name' => __('Radio Button'),
+				'icon' => 'icon-checkmark-circle-outline',
+			],
+			'toggle' => [
+				'name' => __('Toggle'),
+				'icon' => 'icon-toggle-outline',
+			],
+		],
+		'relational' => [
+			'link' => [
+				'name' => __('Link'),
+				'icon' => 'icon-link-outline',
+			],
+			'post' => [
+				'name' => __('Post'),
+				'icon' => 'icon-document-text-outline',
+			],
+			'product' => [
+				'name' => __('Product'),
+				'icon' => 'icon-cube-outline',
+			],
+			'relationship' => [
+				'name' => __('Relationship'),
+				'icon' => 'icon-link-outline',
+			],
+			'taxonomy' => [
+				'name' => __('Taxonomy'),
+				'icon' => 'icon-apps-outline',
+			],
+			'user' => [
+				'name' => __('User'),
+				'icon' => 'icon-person-outline',
+			],
+		],
+		'widgets' => [
+			'google_map' => [
+				'name' => __('Google Map'),
+				'icon' => 'icon-map-outline',
+			],
+			'color' => [
+				'name' => __('Color'),
+				'icon' => 'icon-color-palette-outline',
+			],
+			'time' => [
+				'name' => __('Time'),
+				'icon' => 'icon-time-outline',
+			],
+			'date' => [
+				'name' => __('Date'),
+				'icon' => 'icon-today-outline',
+			],
+			'date_time' => [
+				'name' => __('Date time'),
+				'icon' => 'icon-calendar-clear-outline',
+			],
+			'month' => [
+				'name' => __('Month'),
+				'icon' => 'icon-calendar-outline',
+			],
+			'week' => [
+				'name' => __('week'),
+				'icon' => 'icon-calendar-number-outline',
+			],
+		],
+		'advanced' => [
+			'message' => [
+				'name' => __('Message'),
+				'icon' => 'icon-chevron-down-circle-outline',
+			],
+			'accordion' => [
+				'name' => __('Accordion'),
+				'icon' => 'icon-chevron-down-circle-outline',
+			],
+			'tab' => [
+				'name' => __('Tab'),
+				'icon' => 'icon-chevron-down-circle-outline',
+			],
+		],
+	];
 }
 
 function getDefaultTemplateList() {
@@ -962,7 +1153,7 @@ function getTemplateList($theme = null, $skip = []) {
 	$skipFolders    = array_merge(['src', 'source', 'backup', 'sections', 'blocks', 'inputs', 'css', 'scss', 'screenshots', 'locale', 'node_modules'], $skip);
 
 	if (! $theme) {
-		$theme = \Vvveb\System\Sites::getTheme() ?? 'default';
+		$theme = \Vvveb\System\Sites::getTheme(SITE_ID) ?? 'default';
 	}
 	$pages       = [];
 	$themeFolder = DIR_THEMES . $theme;
@@ -974,7 +1165,7 @@ function getTemplateList($theme = null, $skip = []) {
 		$file     = preg_replace('@^.*[\\\/]themes[\\\/][^\\\/]+[\\\/]@', '', $file);
 		$filename = basename($file);
 
-		$folder   = \Vvveb\System\Functions\Str::match('@(\w+)/.*?$@', $file) ?? '/';
+		$folder   = \Vvveb\System\Functions\Str::match('@(\w+)/.*?$@', $file) ?? DS;
 		$path     = \Vvveb\System\Functions\Str::match('@(\w+)/.*?$@', $file);
 
 		if (in_array($folder, $skipFolders)) {
@@ -982,7 +1173,7 @@ function getTemplateList($theme = null, $skip = []) {
 		}
 		$name        = $title       = str_replace('.html', '', $filename);
 		$description = '';
-		$name        = (! empty($folder) && $folder != '/') ? "$folder-$name" : $name;
+		$name        = (! empty($folder) && $folder != DS) ? "$folder-$name" : $name;
 
 		if (isset($friendlyNames[$name])) {
 			if (isset($friendlyNames[$name]['description'])) {
@@ -1006,19 +1197,21 @@ function getTemplateList($theme = null, $skip = []) {
 	return $pages;
 }
 
-function sanitizeFileName($file) {
+function sanitizeFileName($file, $normalizePath = true) {
 	if (! $file) {
 		return $file;
 	}
 
-	//remove null bytes 
+	//remove null bytes
 	$file = str_replace(chr(0), '', $file);
 	//sanitize, remove double dot .. and remove get parameters if any
 	$file = preg_replace('@\?.*$|\.{2,}|[^\/\\a-zA-Z0-9\-\._]@' , '', $file);
 	$file = preg_replace('@[^\/\w\s\d\.\-_~,;:\[\]\(\)\\]|[\.]{2,}@', '', $file);
 	//replace directory separators with OS specific separator
-	$file = str_replace(['\\', '/'], DS, $file);
-
+	if ($normalizePath) {
+		$file = str_replace(['\\', '/'], DS, $file);
+	}
+	
 	return $file;
 }
 
@@ -1038,22 +1231,22 @@ function parseQuantity($string) {
 	if (function_exists('\ini_parse_quantity')) {
 		return \ini_parse_quantity($string);
 	}
-	
+
 	$string     = trim($string);
 	$multiplier = lcfirst($string[strlen($string) - 1]);
 	$number     = intval($string);
-	
+
 	switch ($multiplier) {
 		case 'k':
-			return $number * 1024;		
+			return $number * 1024;
 
 		case 'm':
-			return $number * 1048576;		
+			return $number * 1048576;
 
 		case 'g':
 			return $number * 1073741824;
 	}
-	
+
 	return $number;
 }
 
@@ -1081,6 +1274,17 @@ function controller($name) {
 	$controllerClass = 'Vvveb\Controller\\' . ucwords($name);
 
 	return new $controllerClass();
+}
+
+function fieldTypeClass($fieldType) {
+	$field      = ucfirst($fieldType);
+	$fieldClass = "Vvveb\System\Fields\\$fieldType";
+
+	if (! class_exists($fieldClass)) {
+		return;
+	}
+
+	return $fieldClass;
 }
 
 function postTypes($type) {
@@ -1120,7 +1324,10 @@ function postTypes($type) {
 	$default               = $defaultTypes[$type] ?? [];
 	$typeName              = ucfirst($type);
 	list($pluginTypes)     = System\Event::trigger('Vvveb\postTypes', "custom$typeName", []);
-	array_walk($pluginTypes, function (&$type,$key) {$type['source'] = 'plugin'; $type['name'] = ucfirst($key); });
+	array_walk($pluginTypes, function (&$type,$key) {
+		$type['source'] = 'plugin';
+		$type['name'] = ucfirst($key);
+	});
 
 	$userTypes = getSetting($type, 'types', []);
 
@@ -1179,7 +1386,7 @@ function decrypt($key, $value, $cipher = 'aes256', $digest = 'sha256', $tag = nu
 
 function camelToUnderscore($string, $us = '-') {
 	return strtolower(preg_replace(
-	'/(?<=\d)(?=[A-Za-z])|(?<=[A-Za-z])(?=\d)|(?<=[a-z])(?=[A-Z])/', $us, $string));
+		'/(?<=\d)(?=[A-Za-z])|(?<=[A-Za-z])(?=\d)|(?<=[a-z])(?=[A-Z])/', $us, $string));
 }
 
 function arrayKeysToUnderscore(&$array, $us = '-') {
@@ -1259,6 +1466,11 @@ function sanitizeHTML($string) {
 }
 
 function availableLanguages() {
+	static $languages = [];
+	if ($languages != []) {
+		return $languages;
+	}
+
 	$cache     = System\Cache::getInstance();
 	$languages = $cache->cache(APP,'languages',function () {
 		$languages             = new Sql\LanguageSQL();
@@ -1271,12 +1483,17 @@ function availableLanguages() {
 		return [];
 	}, 259200);
 
-	return $languages ?: [];
+	return $languages;
 }
 
 function availableCurrencies() {
+	static $currencies = [];
+	if ($currencies != []) {
+		return $currencies;
+	}
+
 	$cache     = System\Cache::getInstance();
-	$languages = $cache->cache(APP,'currency',function () {
+	$currencies = $cache->cache(APP,'currency',function () {
 		$currency             = new Sql\CurrencySQL();
 		$result = $currency->getAll(['status' => 1]);
 
@@ -1287,7 +1504,7 @@ function availableCurrencies() {
 		return [];
 	}, 259200);
 
-	return $languages;
+	return $currencies;
 }
 
 function installedLanguages() {
@@ -1342,6 +1559,7 @@ function userPreferedLanguage() {
  * @return mixed 
  */
 function setLanguage($langCode = 'en_US', $domain = 'vvveb') {
+	//global $vvvebTranslationDomains;
 	//setlocale(LC_TIME, "");
 	//\putenv('LOCPATH=' . DIR_ROOT. "locale");
 
@@ -1351,6 +1569,11 @@ function setLanguage($langCode = 'en_US', $domain = 'vvveb') {
 	}
 
 	if (function_exists('bindtextdomain')) {
+		/*
+		foreach ($vvvebTranslationDomains as $tdomain) {
+			bindtextdomain($tdomain, DIR_ROOT . 'locale');
+		}
+		*/
 		bindtextdomain($domain, DIR_ROOT . 'locale');
 		textdomain($domain);
 		bind_textdomain_codeset($domain, 'UTF-8');
@@ -1400,15 +1623,19 @@ function clearLanguageCache($langCode = 'en_US', $domain = 'vvveb') {
 }
 
 function getLanguage() {
-	return session('language', 'en_US');
+	return session('code') ?? 'en_US';
+}
+
+function setLanguageCode($code) {
+	return session(['code' => $code]);
 }
 
 function getLanguageId() {
-	return session('language_id', 1);
+	return session('language_id') ?? 1;
 }
 
 function getCurrency() {
-	return session('currency', 'USD');
+	return session('currency') ?? 'USD';
 }
 
 function siteSettings($site_id = SITE_ID, $language_id = false) {
@@ -1475,7 +1702,7 @@ function truncateWords($text, $limit) {
  * @param null|mixed $app
  * @return bool 
  */
-function email($to, $subject, $template, $data = [], $config = [], $app = null) {
+function email($to, $subject, $template, $data = [], $config = [], $app = null, $site_id = SITE_ID) {
 	$email = System\Email::getInstance();
 
 	if (is_array($template)) {
@@ -1499,7 +1726,7 @@ function email($to, $subject, $template, $data = [], $config = [], $app = null) 
 	}
 
 	//get site contact email for sender and reply to
-	$site   = siteSettings(SITE_ID, session('language_id') ?? 1);
+	$site   = siteSettings($site_id, session('language_id') ?? 1);
 	$sender = $config['sender'] ?? $site['description']['title'];
 	$from   = $config['from'] ?? $site['contact-email'];
 	$reply  = $config['reply'] ?? $site['contact-email'];
@@ -1653,7 +1880,10 @@ function download($url) {
 			curl_setopt($ch, CURLOPT_FAILONERROR, true);
 			curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT'] ?? 'Vvveb ' . V_VERSION);
 			$result = curl_exec($ch);
-			curl_close($ch);
+
+			if (PHP_MAJOR_VERSION < 8) {
+				curl_close($ch);
+			}
 		}
 	} else {
 		if (ini_get('allow_url_fopen') == '1') {
@@ -1717,7 +1947,9 @@ function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception 
 				}
 			}
 
-			curl_close($ch);
+			if (PHP_MAJOR_VERSION < 8) {
+				curl_close($ch);
+			}
 		} else {
 			//try with file get contents
 			if (ini_get('allow_url_fopen') == '1') {
@@ -1866,6 +2098,7 @@ function globBrace($path, $glob, $filename = '') {
 function isSecure() {
 	return
 	(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+	|| (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
 	|| ($_SERVER['SERVER_PORT'] ?? 80) == 443;
 }
 
@@ -2096,7 +2329,7 @@ function reconstructJson(&$array, $removeAttrs = false) {
 
 		if (substr_compare($key, '--boolean', -9, 9) === 0) {
 			$key   = substr($key, 0, -9);
-			$value = (boolean)$value;
+			$value = (bool)$value;
 		}
 
 		if (substr_compare($key, '--null', -6, 6) === 0) {
