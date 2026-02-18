@@ -25,33 +25,35 @@ namespace Vvveb\System\Traits;
 use function Vvveb\__;
 use function Vvveb\fileUploadErrMessage;
 use function Vvveb\parseQuantity;
+use function Vvveb\rrmdir;
 use function Vvveb\sanitizeFileName;
+use Vvveb\System\Event;
 
 trait Media {
-	protected $uploadDenyExtensions = ['php', 'svg', 'js', 'exe'];
+	public $uploadDenyExtensions = ['php', 'svg', 'js', 'exe'];
 
-	protected $uploadDenyMime    = ['image/svg', 'image/svg+xml', 'application/javascript', 'application/x-msdownload'];
+	public $uploadDenyMime    = ['image/svg', 'image/svg+xml', 'application/javascript', 'application/x-msdownload'];
 
-	protected $stripMetadataMime = ['image/jpg', 'image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+	public $stripMetadataMime = ['image/jpg', 'image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 
 	//protected $uploadAllowExtensions = ['ico','jpg','jpeg','png','gif','webp', 'mp4', 'mkv', 'mov'];
 
-	function dirForType($type) {
+	protected function dirForType($type) {
 		switch ($type) {
 			case 'public':
 				$scandir = DIR_MEDIA;
 
-			break;
+				break;
 
 			case 'plugins':
 				$scandir = DIR_PLUGINS;
 
-			break;
+				break;
 
 			case 'themes':
 				$scandir = DIR_THEMES;
 
-			break;
+				break;
 
 			default:
 				return false;
@@ -60,7 +62,7 @@ trait Media {
 		return $scandir;
 	}
 
-	function setMediaEndpoints($controllerPath) {
+	protected function setMediaEndpoints($controllerPath) {
 		$this->view->mediaUrl          = $controllerPath;
 		$this->view->scanUrl           = "$controllerPath&action=scan";
 		$this->view->uploadUrl         = "$controllerPath&action=upload";
@@ -77,6 +79,8 @@ trait Media {
 		$return     = '';
 		$message    = '';
 		$response   = [];
+
+		list($files) = Event::trigger(__CLASS__, __FUNCTION__ , $files, $this);
 
 		if ($files) {
 			$length = count($files['name'] ?? []);
@@ -157,13 +161,37 @@ trait Media {
 	}
 
 	function delete() {
-		$file        = sanitizeFileName($this->request->post['file']);
+		$file        = $this->request->post['file'];
+		$message     = ['success' => false, 'message' => __('Error deleting file!')];
 		$themeFolder = $this->dirMedia;
 
-		if ($file && @unlink($themeFolder . DS . $file)) {
-			$message = ['success' => true, 'message' => __('File deleted!')];
-		} else {
-			$message = ['success' => false, 'message' => __('Error deleting file!')];
+		if ($file) {
+			if (is_array($file)) {
+				foreach ($file as $f) {
+					$f = sanitizeFileName($f);
+					$path = $themeFolder . DS . $f;
+
+					if (@unlink($path)) {
+						$message = ['success' => true, 'message' => __('File deleted!')];
+					} else {
+						$message = ['success' => false, 'message' => sprintf(__('Error deleting %s!'), $f)];
+						break;
+					}
+				}
+			} else {
+				$file        = sanitizeFileName($this->request->post['file']);
+				$path        = $themeFolder . DS . $file;
+
+				if (is_dir($path)) {
+					if (@rrmdir($path)) {
+						$message = ['success' => true, 'message' => __('File deleted!')];
+					}
+				} else {
+					if (@unlink($path)) {
+						$message = ['success' => true, 'message' => __('File deleted!')];
+					}
+				}
+			}
 		}
 
 		$this->response->setType('json');
@@ -172,14 +200,21 @@ trait Media {
 
 	function rename() {
 		$file        = sanitizeFileName($this->request->post['file']);
-		$newfile     = sanitizeFileName($this->request->post['newfile']);
+		$newfile     = sanitizeFileName($this->request->post['newfile'] ?? '');
+		$newname     = sanitizeFileName($this->request->post['newname'] ?? '');
 		$duplicate   =  $this->request->post['duplicate'] ?? false;
 		$dirMedia    = $this->dirMedia;
 
 		$currentFile = $dirMedia . DS . $file;
-		$targetFile  = $dirMedia . DS . $newfile;
+		if ($newfile) {
+			$targetFile  = $dirMedia . DS . $newfile;
+		}
 
-		$extension = strtolower(substr($newfile, strrpos($newfile, '.') + 1));
+		if ($newname) {
+			$targetFile  = dirname($currentFile) . DS . $newname;
+		}
+
+		$extension = strtolower(substr($targetFile, strrpos($targetFile, '.') + 1));
 
 		if (isset($this->uploadDenyExtensions) && in_array($extension, $this->uploadDenyExtensions)) {
 			$message .= __('File type not allowed!');
