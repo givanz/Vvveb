@@ -50,8 +50,8 @@ class Backup extends Base {
 			$tableName = pregMatch('/TRUNCATE TABLE [`"\']?([^`"\';]+)[`"\']?;?/ms', $sql, 1);
 
 			$sql = preg_replace('/TRUNCATE TABLE [`"\']?([^`"\';]+)[`"\']?;?/ms',
-			"DELETE FROM '\\1';\nDELETE FROM SQLITE_SEQUENCE WHERE name='\\1';",
-			$sql);
+				"DELETE FROM '\\1';\nDELETE FROM SQLITE_SEQUENCE WHERE name='\\1';",
+				$sql);
 
 			if ($tableName == 'post_content') {
 				//$sql .= ';DELETE FROM \'post_content_search\';DELETE FROM SQLITE_SEQUENCE WHERE name=\'post_content_search\';';
@@ -70,7 +70,7 @@ class Backup extends Base {
 			if (DB_ENGINE == 'pgsql') {
 				$sql = preg_replace('/TRUNCATE TABLE [`"\']?([^`"\';]+)[`"\']?;?/ms',
 					'TRUNCATE TABLE "\1";',
-				$sql);
+					$sql);
 			}
 		}
 
@@ -202,7 +202,6 @@ class Backup extends Base {
 	}
 
 	function nextRestore() {
-		$page      = $this->request->get['page'] ?? 1;
 		$position  = $this->request->get['position'] ?? 0;
 		$file      = $this->request->get['file'];
 		$filename  =  DIR_BACKUP . $file;
@@ -304,7 +303,7 @@ class Backup extends Base {
 	}
 
 	function delete() {
-		$file = sanitizeFileName($this->request->get['file'] ?? '');
+		$file = sanitizeFileName($this->request->post['file'] ?? '');
 
 		if ($file) {
 			$file = DIR_BACKUP . $file;
@@ -324,7 +323,7 @@ class Backup extends Base {
 	}
 
 	function restore() {
-		$file = sanitizeFileName($this->request->get['file'] ?? '');
+		$file = sanitizeFileName($this->request->post['file'] ?? '');
 		$url  = ['module'=>'tools/backup', 'action' => 'nextRestore', 'file' => $file];
 
 		if ($file) {
@@ -351,7 +350,7 @@ class Backup extends Base {
 	}
 
 	function download() {
-		$filename = sanitizeFileName($this->request->get['file'] ?? '');
+		$filename = sanitizeFileName($this->request->post['file'] ?? '');
 
 		if ($filename) {
 			$file = DIR_BACKUP . $filename;
@@ -402,12 +401,13 @@ class Backup extends Base {
 				'size_bytes'   => $size,
 				'size'         => formatBytes($size),
 				'created_at'   => date('Y/m/d H:i:s', filemtime($file)),
-				'restore-url'  => url(['module'=>'tools/backup', 'action' => 'restore', 'file' => $name]),
-				'download-url' => url(['module'=>'tools/backup', 'action' => 'download', 'file' => $name]),
-				'delete-url'   => url(['module'=>'tools/backup', 'action' => 'delete', 'file' => $name]),
+				'restore-url'  => url(['module'=>'tools/backup', 'action' => 'restore']),
+				'download-url' => url(['module'=>'tools/backup', 'action' => 'download']),
+				'delete-url'   => url(['module'=>'tools/backup', 'action' => 'delete']),
 			];
 		}
 
-		$view->backups = $backups ?? [];
+		$view->backupUrl = url(['module'=>'tools/backup', 'action' => 'save']);
+		$view->backups  = $backups ?? [];
 	}
 }
