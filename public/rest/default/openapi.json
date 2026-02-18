@@ -23,11 +23,18 @@
   ],
   "security": [
     {
+      "bearerAuth": [],
       "basicAuth": []
     }
   ],
   "components": {
 	"securitySchemes":  {
+		"bearerAuth": {
+			"type": "http", 
+			"scheme": "bearer",
+			"in": "header",
+			"description": "Use api auth token as credential"
+		},		
 		"basicAuth": {
 			"type": "http", 
 			"scheme": "basic",
