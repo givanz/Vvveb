@@ -158,7 +158,7 @@ class Smtp {
 
 		if ($handle) {
 			if (substr(PHP_OS, 0, 3) != 'WIN') {
-				socket_set_timeout($handle, $this->option['timeout'], 0);
+				stream_set_timeout($handle, $this->option['timeout'], 0);
 			}
 
 			while ($line = fgets($handle, 515)) {
