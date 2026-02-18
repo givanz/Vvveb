@@ -36,9 +36,12 @@ class Crud extends Base {
 
 		$this->view->{$this->type}  = $this->data;
 
-		if ($this->data_id && (! $this->data || (! isset($this->data[$this->type . '_id'])))) {
+		$this->type_id = $this->type_id ?? $this->type . '_id';
+
+		if ($this->data_id && (! $this->data || (! isset($this->data[$this->type_id])))) {
 			return $this->notFound(sprintf(__('%s not found!'), humanReadable(__($this->type))));
 		}
+
 
 		$admin_path          = \Vvveb\adminPath();
 		$controllerPath      = $admin_path . 'index.php?module=media/media';
