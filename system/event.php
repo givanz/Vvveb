@@ -64,7 +64,7 @@ class Event {
 		}
 
 		//$params can be changed by events and be empty, set flag so that we know to return it
-		if (isset($params[0])) {
+		if ($params || isset($params[0])) {
 			$hasParams = true;
 		}
 
