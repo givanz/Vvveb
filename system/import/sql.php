@@ -198,6 +198,8 @@ class Sql {
 		foreach ($files as $filename) {
 			$sql      = file_get_contents($filename);
 			$filename = str_replace($this->sqlPath, '', $filename);
+			//remove comments
+			$sql = preg_replace('/-- .+/', '', $sql);
 
 			if (DB_ENGINE == 'mysqli' || DB_ENGINE == 'pgsql') {
 				$this->multiQuery($sql, $filename);
