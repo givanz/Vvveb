@@ -20,7 +20,7 @@
 		WHERE 1 = 1
 		
 		-- site_id
-		@IF isset(:site_id) && !empty(:site_id)
+		@IF isset(:site_id) && !empty(:site_id) && is_array(:site_id)
 		THEN
 			AND site.site_id IN (:site_id)
 		END @IF

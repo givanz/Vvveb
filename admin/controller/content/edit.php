@@ -24,17 +24,22 @@ namespace Vvveb\Controller\Content;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use function Vvveb\getSetting;
 use function Vvveb\humanReadable;
 use function Vvveb\model;
 use function Vvveb\sanitizeHTML;
+use function Vvveb\setSetting;
 use function Vvveb\slugify;
 use Vvveb\Sql\CategorySQL;
+use Vvveb\Sql\Field_GroupSQL;
+use Vvveb\Sql\FieldSQL;
 use Vvveb\System\Cache;
 use Vvveb\System\CacheManager;
 use Vvveb\System\Core\View;
 use Vvveb\System\Event;
 use Vvveb\System\Images;
 use Vvveb\System\Sites;
+use Vvveb\System\Traits\FieldGroup;
 use Vvveb\System\User\Admin;
 use Vvveb\System\Validator;
 
@@ -45,10 +50,68 @@ class Edit extends Base {
 
 	protected $revisions = true;
 
-	use TaxonomiesTrait, AutocompleteTrait, SitesTrait;
+	use TaxonomiesTrait, AutocompleteTrait, SitesTrait, FieldGroup;
 
 	function getThemeFolder() {
-		return DIR_THEMES . Sites::getTheme() ?? 'default';
+		return DIR_THEMES . Sites::getTheme($this->global['site_id']) ?? 'default';
+	}
+
+	function fields() {
+		$field_group_id = 1;
+		$options        = ['type' => $this->object, 'subtype' => $this->type, 'limit' => 1000];
+		$fieldGroup     = new Field_GroupSQL();
+		$fieldGroups    = $fieldGroup->getAll($options + $this->global)['field_group'] ?? [];
+
+		$langsFields    = [];
+		$field_group_id = [];
+
+		foreach ($fieldGroups as $group) {
+			$field_group_id[$group['field_group_id']] = $group['field_group_id'];
+		}
+
+		if ($field_group_id) {
+			$post_id = $this->request->get[$this->object . '_id'] ?? false;
+
+			$field       = new FieldSQL();
+			$fields	     = $field->getAll(['field_group_id' => $field_group_id, $this->object . '_id' => $post_id, 'limit' => 1000] + $this->global);
+			$langsFields = [];
+
+			if ($fields['count'] > 0) {
+				foreach ($fields['field'] as &$field) {
+					$input['settings']     = json_decode($field['settings'], true);
+					$input['validation']   = json_decode($field['validation'], true);
+					$input['presentation'] = json_decode($field['presentation'], true);
+
+					$field['class']        = 'row mb-3';
+					$field['label-class']  = 'form-label';
+					$field['label']        = $input['settings']['label'] ?? '';
+					$field['instructions'] = $input['presentation']['instructions'] ?? '';
+					$field['placeholder']  = $input['settings']['placeholder'] ?? '';
+
+					foreach (['value', 'default'] as $key) {
+						if (isset($field[$key]) && $field[$key]) {
+							if ($field[$key][0] == '{') {
+								$field[$key] = json_decode($field[$key], true);
+							}
+
+							$field['value'] = $field[$key];
+
+							break;
+						}
+					}
+
+					foreach ($this->view->languagesList as $code => $lang) {
+						$field['name']   = 'field[' . $lang['language_id'] . '][' . $field['field_id'] . ']';
+						$field['field']  = $this->renderFields2([$field]);
+
+						$groupName                                       = $fieldGroups[$field['field_group_id']]['name'];
+						$langsFields[$lang['language_id']][$groupName][] = $field;
+					}
+				}
+			}
+		}
+		$this->view->fields = $langsFields;
+		$this->view->count  = $fields['count'] ?? 0;
 	}
 
 	function index() {
@@ -63,7 +126,7 @@ class Edit extends Base {
 		$view->scanUrl   = "$controllerPath&action=scan";
 		$view->uploadUrl = "$controllerPath&action=upload";
 		$view->linkUrl   = $admin_path . 'index.php?module=content/post&action=urlAutocomplete';
-		$theme           = Sites::getTheme() ?? 'default';
+		$theme           = Sites::getTheme($this->global['site_id']) ?? 'default';
 		$view->themeCss  = '';
 
 		if (file_exists(DIR_THEMES . "$theme/css/admin-post-editor.css")) {
@@ -153,6 +216,9 @@ class Edit extends Base {
 			$route      = "content/{$this->type}/index";
 			$altRoute   = "content/{$this->object}/index";
 			$controller = 'content';
+			$stickyPosts = getSetting('posts', 'sticky') ?? [];
+			//$post['sticky'] = in_array($post['post_id'], $stickyPosts);
+			$post['sticky'] = isset($post['post_id']) && isset($stickyPosts[$post['post_id']]);
 		}
 
 		if ($this->revisions) {
@@ -223,7 +289,7 @@ class Edit extends Base {
 		$design_url = '';
 
 		if (isset($post['url'])) {
-			$design_url         = \Vvveb\url(['module' => 'editor/editor', 'name' => urlencode($name),  'url' => $post['relative-url'], 'template' => $template, 'host' => $this->global['host']], false);
+			$design_url         = \Vvveb\url(['module' => 'editor/editor', 'name' => urlencode($name),  'url' => $post['relative-url'], 'template' => $template], false);
 			$post['design_url'] = $design_url;
 		}
 
@@ -255,7 +321,7 @@ class Edit extends Base {
 
 		$object          = $this->object;
 		$view->$object   = $post;
-		$view->status    = ['publish' => 'Publish', 'draft' => 'Draft', 'pending' => 'Pending', 'private' => 'Private', 'password' => 'Password', 'future' => 'Future'];
+		$view->status    = ['publish' => 'Publish', 'draft' => 'Draft', 'pending' => 'Pending', 'private' => 'Private', 'scheduled' => 'Scheduled'];
 
 		$view->templates = Cache::getInstance()->cache(APP, 'template-list-' . $theme, function () use ($theme) {
 			return \Vvveb\getTemplateList($theme, ['email']);
@@ -275,6 +341,8 @@ class Edit extends Base {
 
 			return $names;
 		}, 604800);
+
+		$this->fields();
 
 		//$validator                 = new Validator([$this->object]);
 		//$view->validatorJson       = $validator->getJSON();
@@ -377,19 +445,19 @@ class Edit extends Base {
 			$new  = false;
 
 			if ($post_id) {
-				/*
-				$viewCapability = 'edit_other_posts';
+				$editCapability = 'edit_other_posts';
 
 				if ($this->object == 'product') {
-					$viewCapability = 'edit_other_products';
+					$editCapability = 'edit_other_products';
 				}
 
-				if (Admin::hasCapability($viewCapability)) {
-					unset($postOptions['admin_id']);
+				if (Admin::hasCapability($editCapability)) {
+					//unset($data['admin_id']);
 				} else {
-					$postOptions['admin_id'] = $this->global['admin_id'];
+					//$data['admin_id'] = $this->global['admin_id'];
+					$view->errors[] = __('Permission denied!');
+					return;
 				}
-				*/
 
 				$post[$this->object . '_id'] = (int)$post_id;
 				$data                        = [
@@ -405,6 +473,20 @@ class Edit extends Base {
 
 				if ($result >= 0) {
 					$this->view->success['get'] = ucfirst($this->type) . ' ' . __('saved') . '!';
+
+					$stickyPosts = getSetting('posts', 'sticky') ?? [];
+
+					if (isset($post['sticky']) && ! isset($stickyPosts[$post_id])) {
+						$stickyPosts[$post_id] = $post_id;
+						setSetting('posts', 'sticky', $stickyPosts);
+					}
+
+					if (isset($stickyPosts[$post_id]) && ! isset($post['sticky'])) {
+						unset($stickyPosts[$post_id]);
+						setSetting('posts', 'sticky', $stickyPosts);
+					}
+
+
 
 					if ($this->revisions) {
 						$revisions = model($this->object . '_content_revision');
@@ -452,6 +534,12 @@ class Edit extends Base {
 
 					$message              = ucfirst($this->type) . ' ' . __('saved') . '!';
 					$view->success['get'] = $message;
+
+					if (isset($post['sticky'])) {
+						$stickyPosts = getSetting('posts', 'sticky');
+						$stickyPosts[$post_id] = $post_id;
+						setSetting('posts', 'sticky', $stickyPosts);
+					}
 				}
 			}
 

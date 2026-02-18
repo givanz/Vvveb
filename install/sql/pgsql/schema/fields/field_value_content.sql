@@ -5,5 +5,6 @@ CREATE TABLE field_value_content (
   "language_id" int NOT NULL,
   "field_id" int NOT NULL,
   "name" varchar(128) NOT NULL,
-  PRIMARY KEY ("field_value_id","language_id")
+  "content" text NOT NULL,
+  PRIMARY KEY("field_value_id","language_id")
 );

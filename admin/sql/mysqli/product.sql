@@ -764,6 +764,8 @@
 		IN manufacturer_id ARRAY,
 		IN vendor_id ARRAY,
 		IN option_value_id ARRAY,
+		IN attribute_id ARRAY,
+		IN field_id ARRAY,
 		IN related INT,
 		IN variant INT,
 		IN status INT,
@@ -1024,7 +1026,13 @@
 				LEFT JOIN admin ad ON (product.admin_id = ad.admin_id)  
 			END @IF			
 
-			WHERE p2s.site_id = :site_id
+			WHERE 1 = 1
+			
+			-- site_id
+			@IF isset(:site_id) && !empty(:site_id)
+			THEN 
+				AND p2s.site_id = :site_id
+			END @IF     
 
 			-- search
 			@IF isset(:search) && !empty(:search)

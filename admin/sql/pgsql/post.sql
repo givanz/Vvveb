@@ -38,7 +38,7 @@
 	)
 	BEGIN
 
-		SELECT pd.*,post.*,ad.username,ad.display_name,ad.admin_id,ad.email, ad.avatar, ad.bio, ad.first_name, ad.last_name
+		SELECT pd.*,post.*,ad.username,ad.display_name,ad.admin_id,ad.email, ad.avatar, ad.bio, ad.first_name, ad.last_name, post.post_id as array_key
 			@IF isset(:comment_count)
 			THEN
 				,(SELECT COUNT(c.comment_id) 
@@ -93,8 +93,6 @@
 			@IF isset(:status) && !empty(:status)
 			THEN
 				AND post.status = :status
-			@ELSE
-				AND post.status = 'publish'
 			END @IF
 			
 			-- username/author
@@ -132,7 +130,7 @@
 				
 			END @IF		
 
-			@IF isset(:site_id)
+			@IF isset(:site_id) && !empty(:site_id)
 			THEN
 				AND ps.site_id = :site_id
 			END @IF
@@ -252,7 +250,7 @@
             @IF isset(:post_id) && :post_id > 0
 			THEN
                 AND _.post_id = :post_id
-        	END @IF			
+        	END @IF		
 			
             @IF isset(:admin_id)
 			THEN
@@ -292,6 +290,7 @@
 		IN post ARRAY,
 		IN post_content ARRAY,
 		IN taxonomy_item_id ARRAY,
+		IN post_field_value ARRAY,
 		IN site_id ARRAY,
 		OUT fetch_one,
 		OUT fetch_one,
@@ -327,6 +326,14 @@
 			
 			VALUES ( :each, @result.post)
 			ON CONFLICT ("taxonomy_item_id", "post_id") DO UPDATE SET "taxonomy_item_id" = :each;
+
+		@EACH(:post_field_value) 
+			INSERT INTO post_field_value 
+		
+				( @KEYS(:each), post_id )
+			
+			VALUES ( :each, @result.post)
+			ON CONFLICT ("field_id", "post_id","language_id") DO UPDATE SET "value" = :each;
 			
 		@EACH(:site_id) 
 		INSERT INTO post_to_site 
@@ -343,6 +350,7 @@
 		IN post ARRAY,
 		IN post_content ARRAY,
 		IN taxonomy_item_id ARRAY,
+		IN post_field_value ARRAY,
 		IN post_id INT,
 		IN site_id ARRAY,
 		OUT fetch_one,
@@ -378,6 +386,14 @@
 				VALUES ( :each, :post_id)
 				ON CONFLICT ("taxonomy_item_id", "post_id") DO UPDATE SET "taxonomy_item_id" = :each;
 				
+		@EACH(:post_field_value) 
+			INSERT INTO post_field_value 
+		
+				( @KEYS(:each), post_id )
+			
+			VALUES ( :each, @result.post)
+			ON CONFLICT ("field_id", "post_id","language_id") DO UPDATE SET "value" = :each;
+
 		@IF isset(:site_id) 
 		THEN
 			DELETE FROM post_to_site WHERE post_id = :post_id

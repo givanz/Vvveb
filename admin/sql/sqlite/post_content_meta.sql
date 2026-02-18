@@ -50,7 +50,7 @@
 	)
 	BEGIN
 
-		INSERT INTO post_content_meta
+            INSERT INTO post_content_meta
 		(post_id, language_id, namespace, `key`, value )
         
 		VALUES (:post_id, :language_id, :namespace, :key , :value )

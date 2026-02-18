@@ -163,4 +163,6 @@ foreach ($revisions as $revision) {
 
 import(content/sites.tpl)
 
+import(content/fields.tpl)
+
 import(content/post_taxonomy.tpl)

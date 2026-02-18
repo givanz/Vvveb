@@ -14,7 +14,7 @@
 	)
 	BEGIN
 		-- product_option_value
-		SELECT product_option_value.*, 
+		SELECT product_option_value.*, product_option_value.quantity as stock_quantity,  
 			   option_value.image, ovc.name, oc.name as `option`,
 			   product_option_value.product_option_value_id as array_key
 			FROM product_option_value

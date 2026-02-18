@@ -1019,7 +1019,13 @@
 				LEFT JOIN admin ad ON (product.admin_id = ad.admin_id)  
 			END @IF	
 
-			WHERE p2s.site_id = :site_id
+			WHERE 1 = 1
+			
+			-- site_id
+			@IF isset(:site_id) && !empty(:site_id)
+			THEN 
+				AND p2s.site_id = :site_id
+			END @IF   
 
 			-- search
 			@IF isset(:search) && !empty(:search)

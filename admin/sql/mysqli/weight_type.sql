@@ -1,4 +1,4 @@
--- Currencies
+-- Weight type
 
 	-- get all weight types
 

@@ -14,7 +14,7 @@
 	)
 	BEGIN
 		-- digital_asset
-		SELECT UNIQUE digital_asset.digital_asset_id, digital_asset.*, digital_asset_content.name
+		SELECT DISTINCT digital_asset.digital_asset_id, digital_asset.*, digital_asset_content.name
 			-- user_id 
 			@IF isset(:user_id)
 			THEN	

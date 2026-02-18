@@ -3,7 +3,9 @@ DROP TABLE IF EXISTS `field_group_content`;
 CREATE TABLE `field_group_content` (
 `field_group_id` INT NOT NULL,
 `language_id` INT NOT NULL,
-`name` TEXT NOT NULL
+`name` TEXT NOT NULL,
+`slug` TEXT NOT NULL,
+`content` TEXT NOT NULL
 --PRIMARY KEY (`field_group_id`,`language_id`)
 );
 

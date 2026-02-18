@@ -13,7 +13,7 @@
 	)
 	BEGIN
 
-		SELECT product.*, _.product_id,_.slug,_.name,_.meta_keywords,_.meta_description,_.language_id,product.template,language.code,language.code as array_key
+		SELECT product.*, _.product_id,_.slug,_.name,_.content,_.meta_keywords,_.meta_description,_.language_id,product.template,language.code,language.slug,language.slug as array_key
 			FROM product_content AS _
 			LEFT JOIN language ON (language.language_id = _.language_id)
 			LEFT JOIN product ON (product.product_id = _.product_id)

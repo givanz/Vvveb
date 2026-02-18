@@ -6,12 +6,14 @@
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN type CHAR,
+		IN subtype CHAR,
 		OUT fetch_all, 
 		OUT fetch_one,
 	)
 	BEGIN
 		-- field_group
-		SELECT *
+		SELECT *, field_group.field_group_id as array_key
 			FROM field_group
 		INNER JOIN field_group_content	ON field_group_content.field_group_id = field_group.field_group_id
 		WHERE 1 = 1
@@ -19,6 +21,16 @@
 		@IF !empty(:language_id) 
 		THEN			
 			AND field_group_content.language_id = :language_id
+		END @IF
+
+		@IF !empty(:type) 
+		THEN			
+			AND field_group.type = :type
+		END @IF
+		
+		@IF !empty(:subtype) 
+		THEN			
+			AND field_group.subtype = :subtype OR field_group.subtype = ''
 		END @IF
 		
 		@SQL_LIMIT(:start, :limit);
