@@ -194,7 +194,47 @@ class Base {
 		$response = Response::getInstance();
 		http_response_code($statusCode);
 
-		$response->output(is_array($message) ? $message : ['message' => $message, 'code' => $statusCode]);
+		$output = [
+			'openapi' => '3.1.0',
+			'info' => [
+				'title' => 'Vvveb',
+				'description' => 'Vvveb',
+				'version' => '1',
+				'contact' => [
+				],
+			],
+			'servers' => [['url' => '/rest']],
+			'tags' => [['name' => 'v1', 'description' => '']],
+			'security' => [['bearerAuth' => [], 'basicAuth' => []]],
+			'components' => [
+				'securitySchemes' => [
+					'bearerAuth' => [
+						'type' => 'http',
+						'scheme' => 'bearer',
+						'in' => 'header',
+						'description' => 'Use api auth token as credential',
+					],
+					'basicAuth' => [
+						'type' => 'http',
+						'scheme' => 'basic',
+						'in' => 'header',
+						'username' => '',
+						'password' => '',
+						'description' => 'Use admin user and password as credentials',
+					],
+				],
+				'schemas' => [],
+			],
+			'code' => $statusCode,
+		];
+
+		if (is_array($message)) {
+			$output = $output + $message;
+		} else {
+			$output['message'] = $message;
+		}
+
+		$response->output($output);
 
 		die();
 	}
