@@ -55,13 +55,13 @@ class Users extends Base {
 		return $this->index();
 	}
 
-	function index() {
+	function index($options = []) {
 		$type         = $this->type;
 		$view         = $this->view;
 		$users        = model($type);
 		$this->filter = $this->request->get['filter'] ?? [];
 
-		$options    =  [
+		$options     += [
 			'type'         => $this->type,
 		] + $this->global + $this->filter;
 
@@ -73,14 +73,14 @@ class Users extends Base {
 					$user['avatar']= Images::image($user['avatar'], 'admin');
 				}
 
-				$user['status_text']      = $user['status'] == '1' ? __('active') : __('inactive');
+				$user['status_text']      = $user['status'] == '3' ? __('delete request') : ($user['status'] == '1' ? __('active') : __('inactive'));
 				$user['image']            = Images::image($type, $user['image'] ?? '');
 				$user['delete-url']       = \Vvveb\url(['module' => $this->module, 'action' => 'delete'] + ["{$type}_id[]" => $user["{$type}_id"]]);
 			}
 		}
 
 		$view->filter = $this->filter;
-		$view->status = [1 => 'Active', 0 => 'Inactive'];
+		$view->status = [1 => __('active'), 0 => __('inactive'), 3 => __('delete request')];
 		$view->users  = $results[$type];
 		$view->count  = $results['count'];
 		$view->limit  = $options['limit'];
