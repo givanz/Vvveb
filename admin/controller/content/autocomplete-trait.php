@@ -115,7 +115,7 @@ trait AutocompleteTrait {
 		$pages  = [
 			'index/index'             => __('Home'),
 			'product/index'           => __('Shop'),
-			'content/index'           => __('Blog'),
+			'content'                 => __('Blog'),
 			'user/index'              => __('User'),
 			'user/login/index'        => __('Login'),
 			'user/signup/index'       => __('Signup'),
