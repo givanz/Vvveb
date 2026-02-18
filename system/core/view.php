@@ -80,12 +80,12 @@ class View {
 		$relativePath = PUBLIC_PATH . 'themes/';
 
 		if ($this->app == 'app') {
-			$this->theme        = Sites::getTheme() ?? 'default';
-			$themePath = DIR_ROOT . join(DS, ['public', 'themes']) . DS . $this->theme . DS;
+			$this->theme        = Sites::getTheme(SITE_ID) ?? 'default';
+			$themePath          = DIR_ROOT . join(DS, ['public', 'themes']) . DS . $this->theme . DS;
 		} else {
 			$this->theme  = config($this->app . '.theme', 'default');
 			$relativePath = PUBLIC_PATH . $this->app . '/';
-			$themePath = DIR_ROOT . DS . 'public' . DS . $this->app . DS . $this->theme . DS;
+			$themePath    = DIR_ROOT . DS . 'public' . DS . $this->app . DS . $this->theme . DS;
 		}
 
 		if (isEditor()) {
@@ -127,6 +127,7 @@ class View {
 			$this->isEditor = true;
 			$template->removeVattrs(false);
 		} else {
+			//$template->removeVattrs(true);
 			$template->setRelativePath($relativePath . $this->theme . '/');
 		}
 
@@ -150,17 +151,17 @@ class View {
 
 		if (! $theme) {
 			if ($this->app == 'app') {
-				$this->theme = Sites::getTheme() ?? 'default';
-				$themePath = DIR_ROOT . join(DS, ['public', 'themes']) . DS . $this->theme . DS;
+				$this->theme = Sites::getTheme(SITE_ID) ?? 'default';
+				$themePath   = DIR_ROOT . join(DS, ['public', 'themes']) . DS . $this->theme . DS;
 			} else {
 				$this->theme  = config($this->app . '.theme', 'default');
 				$relativePath = PUBLIC_PATH . $this->app . '/';
-				$themePath = DIR_ROOT . DS . 'public' . DS . $this->app . DS . $this->theme . DS;
+				$themePath    = DIR_ROOT . DS . 'public' . DS . $this->app . DS . $this->theme . DS;
 			}
 		} else {
 			$theme       = \Vvveb\filter('/[a-z0-9_-]*/', $theme, 30);
-			$themePath   = DIR_ROOT . join(DS, ['public', 'themes']) . DS . $this->theme . DS;
 			$this->theme = $theme;
+			$themePath   = DIR_ROOT . join(DS, ['public', 'themes']) . DS . $this->theme . DS;
 		}
 
 		$this->htmlPath       = $themePath;
@@ -213,8 +214,8 @@ class View {
 		$html              = DIR_ROOT . APP . DS . 'template' . DS . $this->tplFile;
 
 		//absolute path
-		if ($this->template[0] == '/') {
-			$templatePath = dirname($this->template) . '/';
+		if ($this->template[0] == DS) {
+			$templatePath = dirname($this->template) . DS;
 			$template     = basename($this->template);
 			$templateFile = $this->template;
 		} else {
@@ -309,7 +310,7 @@ class View {
 		}
 
 		//if no template defined use the default
-		if ($this->tplFile[0] == '/') {
+		if ($this->tplFile[0] == DS) {
 			$this->tplFile = DIR_ROOT . APP . DS . 'template' . DS . 'common.tpl';
 			$this->templateEngine->loadTemplateFile($this->tplFile);
 		} else {
@@ -328,12 +329,12 @@ class View {
 
 				//$this->tplFile = $pluginName . DS . $this->app . DS . 'template' . DS . $nameSpace;
 				$this->templateEngine->loadTemplateFile($this->tplFile);
-			/*
-			if ($this->app == 'admin') {
-				$this->tplFile = $pluginName . DS . $this->app ."/template/$nameSpace";
-			} else {
-				$this->tplFile = "$pluginName/admin/template/$nameSpace";
-			}*/
+				/*
+				if ($this->app == 'admin') {
+					$this->tplFile = $pluginName . DS . $this->app ."/template/$nameSpace";
+				} else {
+					$this->tplFile = "$pluginName/admin/template/$nameSpace";
+				}*/
 			} else {
 				if (! file_exists(DIR_ROOT . APP . DS . 'template' . DS . $this->tplFile)) {
 					$this->tplFile = 'common.tpl';
@@ -449,16 +450,19 @@ class View {
 
 			if ($this->compiledTemplate) {
 				if (! file_exists($this->compiledTemplate)) {
-					return FrontController::notFound();
+					return FrontController::notFound(true, [
+						'message' => __('Compiled template not found!'),
+						'file'    => $templatePath . $template,
+					]);
 				}
 
 				try {
 					if ($output) {
-						include_once $this->compiledTemplate;
+						include $this->compiledTemplate;
 					} else {
 						ob_start();
 
-						include_once $this->compiledTemplate;
+						include $this->compiledTemplate;
 						$return = ob_get_contents();
 						ob_end_clean();
 
@@ -467,7 +471,7 @@ class View {
 				} catch (\ParseError | \Error $e) {
 					$data = \Vvveb\System\Core\exceptionToArray($e, $this->compiledTemplate);
 
-					return \Vvveb\System\Core\FrontController :: notFound(false, $data, 500);
+					return FrontController :: notFound(false, $data, 500);
 				}
 			}
 		}
