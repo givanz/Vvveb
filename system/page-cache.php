@@ -60,7 +60,10 @@ class PageCache {
 
 	function __construct($host = null) {
 		$this->cacheFolder = $this->cacheFolder($host);
-		$this->fileName    = $this->fileName();
+		$this->uri         = $this->uri();
+		if ($this->uri) {
+			$this->fileName    = $this->cacheFolder . $this->uri;
+		}
 		//$this->canSaveCache    = $this->canSaveCache();
 	}
 
@@ -71,8 +74,8 @@ class PageCache {
 		return DIR_PUBLIC . self :: CACHE_DIR . ($hostWp ?? 'default');
 	}
 
-	function fileName() {
-		$uri = $_SERVER['REQUEST_URI'] ?? '/';
+	function uri($url = null) {
+		$uri = $url ?? $_SERVER['REQUEST_URI'] ?? '/';
 
 		if (strlen($uri) > 300) {
 			return false;
@@ -82,9 +85,7 @@ class PageCache {
 			$uri .= 'index.html';
 		}
 
-		$this->uri = $uri;
-
-		return $file_cache = $this->cacheFolder . $uri;
+		return $uri;
 	}
 
 	function isGenerating() {
@@ -164,7 +165,7 @@ class PageCache {
 			isset($_COOKIE['user']) || //cookie set by login
 			isset($_COOKIE['admin']) || //cookie set by admin login
 			! $this->validUrl($this->uri) //valid url
-			) {
+		) {
 			return $this->canCache = false;
 		}
 
@@ -219,9 +220,9 @@ class PageCache {
 
 			//remove all empty created folders
 			while (
-			($dir = dirname($this->fileName)) &&
-			(strpos($dir, $this->cacheFolder . DS) !== false) && //don't go above site cache folder
-			@rmdir($dir) //try to remove empty folder
+				($dir = dirname($this->fileName)) &&
+				(strpos($dir, $this->cacheFolder . DS) !== false) && //don't go above site cache folder
+				@rmdir($dir) //try to remove empty folder
 			) {
 				//go one level up
 				$this->fileName = $dir;
