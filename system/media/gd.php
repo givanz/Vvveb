@@ -94,16 +94,18 @@ class Image {
 
 		if (is_object($this->image) || is_resource($this->image)) {
 			if ($extension == 'jpeg' || $extension == 'jpg') {
-				$result = imagejpeg($this->image, $file, $quality);
+				$result = @imagejpeg($this->image, $file, $quality);
 			} elseif ($extension == 'png') {
-				$result = imagepng($this->image, $file, 8, PNG_ALL_FILTERS);
+				$result = @imagepng($this->image, $file, 8, PNG_ALL_FILTERS);
 			} elseif ($extension == 'gif') {
-				$result = imagegif($this->image, $file);
+				$result = @imagegif($this->image, $file);
 			} elseif ($extension == 'webp') {
-				$result = imagewebp($this->image, $file, $quality);
+				$result = @imagewebp($this->image, $file, $quality);
 			}
 
-			imagedestroy($this->image);
+			if (PHP_MAJOR_VERSION < 8) {
+				imagedestroy($this->image);
+			}
 
 			return $result;
 		}
@@ -112,19 +114,29 @@ class Image {
 	public function resize($width, $height = 0, $method = 's') {
 		switch ($method) {
 			case 's':
-			return $this->stretch($width, $height);
+				return $this->stretch($width, $height);
 
 			case 'c':
-			return $this->crop($width, $height);
+				return $this->crop($width, $height);
 
 			case 'cs':
-			return $this->cropsize($width, $height);
+				return $this->cropsize($width, $height);
 		}
 	}
 
 	public function stretch($width, $height = 0) {
 		if (! $this->width || ! $this->height || ! $this->image) {
 			return;
+		}
+
+		$ratio = $newRatio =  $this->width / $this->height;
+
+		if ($width && $height) {
+			$newRatio = $width / $height;
+		}
+
+		if (! $height) {
+			$height = $width * $newRatio;
 		}
 
 		if ($width && $height) {
@@ -171,28 +183,40 @@ class Image {
 			return;
 		}
 
-		$width  = $width ?: $height;
-		$height = $height ?: $width;
+		$ratio = $newRatio =  $this->width / $this->height;
 
-		$newRatio = $width / $height;
-		$ratio    =  $this->width / $this->height;
+		if ($width && $height) {
+			$newRatio = $width / $height;
+		}
+
+		if (! $height) {
+			$height = $width / $newRatio;
+		}
 
 		if ($newRatio > $ratio) {
 			$newWidth  = $width;
 			$newHeight = floor($width / $this->width * $this->height);
 			$crop_x    = 0;
 			$crop_y    = intval(($newHeight - $height) / 2);
-		} else {
+		} else if ($newRatio < $ratio) {
 			$newWidth  = floor($height / $this->height * $this->width);
-			$newHeight = $height;
+			$newHeight = intval($height);
 			$crop_x    = intval(($newWidth - $width) / 2);
 			$crop_y    = 0;
+		} else {
+			$newWidth  = intval($width);
+			$newHeight = intval($height);
 		}
 
-		$image = imagescale($this->image, $newWidth, $newHeight, IMG_BICUBIC_FIXED);
+		$image = false;
+		if ($this->width != $newWidth && $this->height != $newHeight) {
+			$image = imagescale($this->image, $newWidth, $newHeight);
+		}
 
 		if ($image) {
-			$image = imagecrop($image, ['x' => 0, 'y' => 0, 'width' => $width, 'height' => $height]);
+			if ($width != $newWidth || $newHeight != $height) {
+				$image = imagecrop($image, ['x' => 0, 'y' => 0, 'width' => $width, 'height' => $height]);
+			}
 
 			if ($image) {
 				$this->image = $image;

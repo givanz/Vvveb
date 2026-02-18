@@ -41,6 +41,14 @@ class Image {
 			$this->width  = $this->image->getImageWidth();
 			$this->height = $this->image->getImageHeight();
 			$this->mime   = $this->image->getFormat();
+			//if (STRIP_EXIF) {
+			$profiles = $this->image->getImageProfiles('icc', true);
+			$this->image->stripImage();
+
+			if (! empty($profiles)) {
+				$this->image->profileImage('icc', $profiles['icc']);
+			}
+			//}
 		} else {
 			//throw new \Exception("Could not load image $file");
 		}
@@ -88,19 +96,29 @@ class Image {
 
 		switch ($method) {
 			case 's':
-			return $this->stretch($width, $height);
+				return $this->stretch($width, $height);
 
 			case 'c':
-			return $this->crop($width, $height);
+				return $this->crop($width, $height);
 
 			case 'cs':
-			return $this->cropsize($width, $height);
+				return $this->cropsize($width, $height);
 		}
 	}
 
 	public function stretch($width, $height = 0) {
 		//$this->width  = $this->image->getImageWidth();
 		//$this->height = $this->image->getImageHeight();
+
+		$ratio = $newRatio =  $this->width / $this->height;
+
+		if ($width && $height) {
+			$newRatio = $width / $height;
+		}
+
+		if (! $height) {
+			$height = $width / $newRatio;
+		}
 
 		if ($width && $height) {
 			$scaleW = $width / $this->width;
@@ -136,27 +154,40 @@ class Image {
 	}
 
 	public function cropsize($width, $height = 0) {
-		$width  = $width ?: $height;
-		$height = $height ?: $width;
+		$ratio = $newRatio =  $this->width / $this->height;
 
-		$newRatio = $width / $height;
+		if ($width && $height) {
+			$newRatio = $width / $height;
+		}
+
+		if (! $height) {
+			$height = $width / $newRatio;
+		}
+
 		$ratio    =  $this->width / $this->height;
 
 		if ($newRatio > $ratio) {
-			$new_width  = $width;
-			$new_height = floor($width / $this->width * $this->height);
+			$newWidth  = $width;
+			$newHeight = floor($width / $this->width * $this->height);
 			$crop_x     = 0;
-			$crop_y     = intval(($new_height - $height) / 2);
-		} else {
-			$new_width  = floor($height / $this->height * $this->width);
-			$new_height = $height;
-			$crop_x     = intval(($new_width - $width) / 2);
+			$crop_y     = intval(($newHeight - $height) / 2);
+		} else if ($newRatio < $ratio) {
+			$newWidth  = floor($height / $this->height * $this->width);
+			$newHeight = $height;
+			$crop_x     = intval(($newWidth - $width) / 2);
 			$crop_y     = 0;
+		} else {
+			$newWidth  = intval($width);
+			$newHeight = intval($height);
 		}
 
-		$this->image->resizeImage($new_width, $new_height, \Imagick::FILTER_LANCZOS, 1, true);
+		if ($this->width != $newWidth && $this->height != $newHeight) {
+			$this->image->resizeImage($newWidth, $newHeight, \Imagick::FILTER_LANCZOS, 1, true);
+		}
 
-		$this->image->cropImage($width, $height, $crop_x, $crop_y);
+		if ($width != $newWidth || $newHeight != $height) {
+			$this->image->cropImage($width, $height, $crop_x, $crop_y);
+		}
 	}
 
 	public static function formats($format = false) {
