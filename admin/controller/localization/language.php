@@ -27,6 +27,7 @@ use Vvveb\Controller\Crud;
 use function Vvveb\download;
 use function Vvveb\filter;
 use function Vvveb\installedLanguages;
+use function Vvveb\model;
 use Vvveb\System\CacheManager;
 
 class Language extends Crud {
@@ -41,14 +42,29 @@ class Language extends Crud {
 	protected $listUrl = 'https://www.vvveb.com/page/contribute#language';
 
 	function save() {
-		CacheManager::clearObjectCache(APP, 'languages');
+		//$this->redirect = false;
+		$this->model = model('language');
+		//check if a default language is set
+		$default = $this->model->get(['default' => 1]);
 
-		return parent::save();
+		//if language set as default set other default language as false
+		if (isset($this->request->post['language']['default']) && $this->request->post['language']['default'] == '1') {
+			$this->model->edit(['language' => ['default' => 0]]);
+		} else {
+			//if no default language set then set this language as default
+			if (! $default) {
+				$this->request->post['language']['default']  = 1;
+			}
+		}
+
+		parent::save();
+		CacheManager::clearObjectCache(APP, 'languages');
+		$this->index();
 	}
 
 	function install() {
-		$code = filter('/[-\w]+/', $this->request->post['code']);
-		$url = str_replace('{code}', $code, $this->installUrl);
+		$code      = filter('/[-\w]+/', $this->request->post['code']);
+		$url       = str_replace('{code}', $code, $this->installUrl);
 		$available = false;
 
 		require DIR_SYSTEM . 'functions' . DS . 'php-mo.php';
@@ -58,8 +74,8 @@ class Language extends Crud {
 
 			if ($translations) {
 				$available = true;
-				$folder = DIR_ROOT . 'locale' . DS . $code . DS . 'LC_MESSAGES';
-				$poFile = $folder . DS . $file;
+				$folder    = DIR_ROOT . 'locale' . DS . $code . DS . 'LC_MESSAGES';
+				$poFile    = $folder . DS . $file;
 				@mkdir($folder, 0755 & ~umask(), true);
 
 				if (file_put_contents($poFile, $translations)) {
@@ -79,8 +95,8 @@ class Language extends Crud {
 				break;
 			}
 		}
-		
-		if (!$available) {
+
+		if (! $available) {
 			$this->view->errors[] = __('Language pack not available!');
 			$this->view->info[]   = sprintf(__('Check available translations at %s'), '<a href="' . $this->listUrl . '" target="_blank">' . $this->listUrl . '</a>');
 		}
