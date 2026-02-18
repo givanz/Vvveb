@@ -29,7 +29,6 @@ if (APP == 'admin') {
 }
 
 $admin_path .= strpos($admin_path, 'index.php') === false ? 'index.php' : '';
-$homeUrl     = Vvveb\Url('index/index');
 
 return
  [
@@ -38,11 +37,11 @@ return
  		'url'    => $admin_path,
  		'module' => 'index',
  		'action' => 'index',
- 		'icon'   => 'icon-pulse-outline',
+ 		'icon'   => 'icon-pie-chart-outline',
  	],
  	'edit' => [
  		'name'   => __('Edit website'),
- 		'url'    => $admin_path . "?module=editor/editor&url=$homeUrl&template=index.html",
+ 		'url'    => $admin_path . '?module=editor/editor',
  		'module' => 'editor/editor',
  		'action' => 'index',
  		'icon'   => 'icon-color-wand-outline',
@@ -252,7 +251,7 @@ return
  		'url'    => $admin_path . '?module=media/media',
  		'module' => 'media/media',
  		'action' => 'index',
- 		'icon'   => 'icon-images-outline',
+ 		'icon'   => 'icon-image-outline',
  	],
  	'users' => [
  		'name'   => __('Users'),
