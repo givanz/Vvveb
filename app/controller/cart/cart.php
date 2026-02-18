@@ -40,7 +40,7 @@ class Cart extends Base {
 		parent::init();
 
 		$options = array_intersect_key($this->global['site'],
-		array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
+			array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
 
 		$cart_id = false;
 
@@ -59,8 +59,9 @@ class Cart extends Base {
 		$payment    = Payment::getInstance();
 		$shipping   = Shipping::getInstance();
 
-		$this->view->payment  = $payment->getMethods([]);
-		$this->view->shipping = $shipping->getMethods([]);
+		$checkoutInfo = [];
+		$this->view->payment  = $payment->getMethods($checkoutInfo);
+		$this->view->shipping = $shipping->getMethods($checkoutInfo);
 
 		$product_id = $this->request->post['product_id'] ?? $this->request->get['product_id'] ?? false;
 		$module     = $this->request->get['module'] ?? $this->request->post['module'] ?? '';
@@ -103,17 +104,17 @@ class Cart extends Base {
 				case 'add':
 					$this->cart->add($productId, $quantity, $option, $productVariantId, $subscriptionPlanId);
 
-				break;
+					break;
 
 				case 'update':
 					$this->cart->update($key, $quantity);
 
-				break;
+					break;
 
 				case 'remove':
 					$this->cart->remove($key);
 
-				break;
+					break;
 			}
 			//$this->view->success = $this->cart->$action($productId, $quantity);
 		}

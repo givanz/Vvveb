@@ -17,13 +17,13 @@ if(isset($this->_component['sites']) && $this->_component['sites'][$_sites_idx])
 			$state = $site['state'] ?? 'live';
 		?>
 		
-		@site .dropdown-item|addClass = <?php if (isset($site['id']) && ($site['id'] == $sites['site_id'])) echo 'active'?>
+		@site .dropdown-item|addClass = <?php if (isset($site['site_id']) && ($site['site_id'] == $sites['site_id'])) echo 'active'?>
 		
 		@site [data-v-site-name] = $site['name']
 		@site [data-v-site-icon]|addClass = <?php echo $sites['states'][$state]['icon'];?>
 		@site a[data-v-site-url]|href = <?php echo '//' . $site['url'];?>
 		
-		@site button[data-v-site-site_id]|value = $site['id']
+		@site button[data-v-site-site_id]|value = $site['site_id']
 		
 		@site|after = <?php 
 		} 

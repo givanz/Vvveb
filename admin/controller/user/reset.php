@@ -95,7 +95,7 @@ class Reset {
 					$os = 'UnKnown';
 				}
 
-				$site = Sites :: getSiteData();
+				$site = Sites :: getSiteData($this->global['site_id']);
 
 				$reset_url = url(['module' => 'user/reset', 'action' => 'reset', 'token' => $token, 'user' => $adminData['username'], 'host' => $site['host'] ?? false]);
 

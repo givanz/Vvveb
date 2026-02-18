@@ -97,7 +97,7 @@ class Reset extends Base {
 						$os = 'UnKnown';
 					}
 
-					$site = Sites :: getSiteData();
+					$site = Sites :: getSiteData(SITE_ID);
 
 					$reset_url = url('user/reset/reset', [
 						'token'  => $token,

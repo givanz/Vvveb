@@ -90,7 +90,7 @@ class Sites {
 		$sites = self :: getSites();
 
 		foreach ($sites as $site_key => $site) {
-			if ($site['id'] == $site_id) {
+			if ($site['site_id'] == $site_id) {
 				$site['key'] = $site_key;
 
 				return $site;
@@ -195,7 +195,7 @@ class Sites {
 	public static function setSiteDataById($site_id, $name, $value) {
 		$site = self :: getSiteById($site_id);
 
-		if ($site && ($site['id'] == $site_id)) {
+		if ($site && ($site['site_id'] == $site_id)) {
 			$key = "sites.{$site['key']}";
 
 			//key has changed replace site
@@ -213,6 +213,7 @@ class Sites {
 				$key .= ".$name";
 			}
 
+			self :: $sites = null;
 			return \Vvveb\setConfig($key, $value);
 		}
 
@@ -231,6 +232,7 @@ class Sites {
 				$key .= ".$name";
 			}
 
+			self :: $sites = null;
 			return \Vvveb\setConfig($key, $value);
 		}
 
@@ -252,12 +254,12 @@ class Sites {
 	}
 
 	public static function getSiteData($site_url = false) {
-		if (is_int($site_url)) {
+		if (is_numeric($site_url)) {
 			return self :: getSiteById($site_url);
 		}
 
 		if (! $site_url) {
-			$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+			$host = self :: getHost();
 		}
 
 		$cacheDriver = Cache :: getInstance();
@@ -272,7 +274,7 @@ class Sites {
 
 			$subdomain_wildcard    = '* ' . substr($host, $first);
 			$tld_wildcard          = substr($host, 0, $last) . ' *';
-			$domain_wildcard       = substr($host, 0, $first) . ' *';
+			$domain_wildcard       = substr($host, 0, $first) . ' * *';
 			$full_wildcard         = '* ' . trim(substr($host, $first, $last - $first)) . ' *';
 
 			$result = \Vvveb\config("sites.$host", null) ??
@@ -291,7 +293,7 @@ class Sites {
 						'host'     => 'localhost',
 						'theme'    => 'landing',
 						'template' => '',
-						'id'       => 1,
+						'site_id'       => 1,
 						'state'    => 'live',
 					];
 				}

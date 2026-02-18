@@ -75,7 +75,7 @@ class Signup extends \Vvveb\Controller\Base {
 						$this->request->request['user_id']  = $user_id;
 
 						$site     = siteSettings();
-						$siteData = Sites :: getSiteData();
+						$siteData = Sites :: getSiteData(SITE_ID);
 
 						$userInfo['website'] = url('user/index', [
 							'host'   => $siteData['host'] ?? false,
@@ -85,7 +85,7 @@ class Signup extends \Vvveb\Controller\Base {
 						try {
 							$error =  __('Error sending account creation mail!');
 
-							if (! email([$userInfo['email'], $site['admin-email']], __('Your account has been created!'), 'user/signup', $userInfo)) {
+							if (! email([$userInfo['email'], $site['admin-email']], __('Your account has been created!'), 'user/signup', ['user' => $userInfo] + $this->global)) {
 								$this->session->set('errors', ['login' => $error]);
 								$this->view->errors[] = $error;
 							}

@@ -197,10 +197,9 @@ select[data-v-setting]|before =
 } ?>
 */
 
-input[type="checkbox"][data-v-*]|addNewAttribute = <?php
+input[type="checkbox"][data-v-setting]|addNewAttribute = <?php
 	if (isset($this->setting[$_setting])) echo 'checked';
 ?>
-
 
 
 
@@ -244,3 +243,46 @@ $_i++;
 	if (isset($this->site['description'][$language['language_id']][$desc])) 
 		echo htmlspecialchars($this->site['description'][$language['language_id']][$desc]);
 ?>
+
+
+/* Languages */
+
+#all-languages-check|addNewAttribute = <?php if (!isset($this->site['languages']) || empty($this->site['languages'])) echo 'checked';?>
+
+[data-v-language-list] [data-v-language]|deleteAllButFirstChild
+
+[data-v-language-list] [data-v-language]|before = <?php
+$this->site['languages'] = (array)($this->site['languages'] ?? []);
+foreach ($this->languagesList as $lang) { ?>
+	
+	[data-v-language-list] [data-v-language] [data-v-*]|innerText                   = $lang['@@__data-v-(*)__@@']
+	[data-v-language-list] [data-v-language] input[type="checkbox"]|addNewAttribute = <?php if (isset($this->site['languages']) && in_array($lang['language_id'], $this->site['languages'])) echo 'checked';?>
+	
+	[data-v-language-list] [data-v-language] input[type="checkbox"]|name = <?php echo 'settings[languages]['. $lang['slug'] . ']';?>
+	[data-v-language-list] [data-v-language] input[type="checkbox"]|id   = <?php echo 'lang-'. $lang['language_id'];?>
+	[data-v-language-list] [data-v-language] label|for                   = <?php echo 'lang-'. $lang['language_id'];?>
+
+	
+	[data-v-language-list] [data-v-language]|after = <?php
+}?>
+
+/* Currencies */
+
+#all-currencies-check|addNewAttribute = <?php if (!isset($this->site['currencies']) || empty($this->site['currencies'])) echo 'checked';?>
+
+[data-v-currency-list] [data-v-currency]|deleteAllButFirstChild
+
+[data-v-currency-list] [data-v-currency]|before = <?php
+$this->site['currencies'] = (array)($this->site['currencies'] ?? []);
+foreach ($this->currenciesList as $code => $currency) { ?>
+	
+	[data-v-currency-list] [data-v-currency] [data-v-*]|innerText                   = $currency['@@__data-v-(*)__@@']
+	[data-v-currency-list] [data-v-currency] input[type="checkbox"]|addNewAttribute = <?php if (isset($this->site['currencies']) && in_array($currency['currency_id'], $this->site['currencies'])) echo 'checked';?>
+	
+	[data-v-currency-list] [data-v-currency] input[type="checkbox"]|name = <?php echo 'settings[currencies]['. $code . ']';?>
+	[data-v-currency-list] [data-v-currency] input[type="checkbox"]|id   = <?php echo 'currency-'. $currency['currency_id'];?>
+	[data-v-currency-list] [data-v-currency] label|for                   = <?php echo 'currency-'. $currency['currency_id'];?>
+
+	
+	[data-v-currency-list] [data-v-currency]|after = <?php
+}?>

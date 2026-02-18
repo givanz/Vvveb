@@ -48,11 +48,11 @@ class Order extends ComponentBase {
 
 		$request = Request::getInstance();
 
-		if ($this->options['order_id'] || $this->options['customer_order_id']) {
+		if (isset($this->options['order_id']) || isset($this->options['customer_order_id'])) {
 			$orders = new \Vvveb\Sql\OrderSQL();
 
 			$results = $orders->get($this->options);
-			$site    = Sites :: getSiteData();
+			$site    = Sites :: getSiteData(SITE_ID);
 			$scheme  = $_SERVER['REQUEST_SCHEME'] ?? 'http';
 			$url     = ['host' => SITE_URL, 'scheme' => $scheme];
 			$host    = $scheme . '://' . SITE_URL;

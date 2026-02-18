@@ -65,7 +65,7 @@ class Checkout extends Base {
 		parent::init();
 
 		$options = array_intersect_key($this->global['site'],
-		array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
+			array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
 
 		$cart_id = false;
 
@@ -123,8 +123,8 @@ class Checkout extends Base {
 
 	function index() {
 		//buy now product
-		if (isset($this->request->get['product_id'])) {
-			$productId          = $this->request->get['product_id'];
+		if (isset($this->request->request['product_id'])) {
+			$productId          = $this->request->request['product_id'];
 			$quantity           = $this->request->post['quantity'] ?? 1;
 			$option             = $this->request->post['option'] ?? [];
 			$subscriptionPlanId = $this->request->post['subscription_plan_id'] ?? false;
@@ -142,9 +142,10 @@ class Checkout extends Base {
 
 		$order    = Order::getInstance();
 
-		$checkoutInfo            = $this->session->get('checkout') ?? [];
+		$checkoutInfo            = $this->session->get('checkout') ?? ['user' => $this->global['user']];
 		$grandTotal              = $this->cart->getGrandTotal();
 		$hasShipping             = $this->cart->hasShipping();
+		$subscription            = $this->cart->getSubscription();
 		$hasPayment              = ($grandTotal > 0);
 		$this->view->hasShipping = $hasShipping;
 		$this->view->hasPayment  = $hasPayment;
@@ -295,6 +296,7 @@ class Checkout extends Base {
 								//check if user was added before automatic login
 								if ($userInfo) {
 									\Vvveb\session(['user' => $userInfo]);
+									$checkoutInfo['user'] = $userInfo;
 									$this->view->global['user_id'] = $userInfo['user_id'];
 								}
 							} else {
@@ -341,7 +343,7 @@ class Checkout extends Base {
 					//default order status
 					$checkoutInfo['order_status_id']  = 1;
 
-					$site = Sites :: getSiteData();
+					$site = Sites :: getSiteData(SITE_ID);
 
 					$order_url = url('user/orders', [
 						'host'   => $site['host'] ?? false,
