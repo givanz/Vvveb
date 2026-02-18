@@ -61,9 +61,10 @@ class Products extends ComponentBase {
 		'author'           => null, //[true, false] include author/admin info
 		'image_size'       => 'medium',
 		'filter'           => null, //[true, false] include variants
-		'order_by'         => NULL,
 		'variant_price'    => NULL,
+		'order_by'         => NULL,
 		'direction'        => ['desc', 'asc'], //'url','asc', 'desc'
+		'404'              => NULL,
 	];
 
 	private $tax;
@@ -141,7 +142,7 @@ class Products extends ComponentBase {
 			$this->options['search'] .= '*';
 		}
 
-		$results = $products->getAll($this->options) + $this->options;
+		$results = $products->getAll($this->options);
 
 		if ($results && isset($results['product'])) {
 			$this->products($results['product'], $this->options);
@@ -152,6 +153,14 @@ class Products extends ComponentBase {
 		$results['limit']  = $this->options['limit'];
 		$results['start']  = $this->options['start'];
 		$results['search'] = $this->options['search'] ?? '';
+
+		if (! $results['product'] &&
+			isset($this->options['page']) &&
+			($this->options['page'] > 1) &&
+			(isset($this->options['404']) && $this->options['404']) &&
+			! $_SERVER['QUERY_STRING']) {
+			$results['404'] = true;
+		}
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
 
