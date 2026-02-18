@@ -290,3 +290,18 @@ function generateElements(html) {
   template.innerHTML = html.trim();
   return template.content.children;
 }
+
+function togglePasswordInput(element, input) {
+	let password = document.getElementById(input);
+	if (password.type == "password") {
+		password.type = "text"; 
+		let i = element.querySelector("i")
+		i.classList.add("icon-eye-outline")
+		i.classList.remove("icon-eye-off-outline");
+	} else {
+		password.type = "password";
+		let i = element.querySelector("i")
+		i.classList.remove("icon-eye-outline")
+		i.classList.add("icon-eye-off-outline");
+	}
+}
