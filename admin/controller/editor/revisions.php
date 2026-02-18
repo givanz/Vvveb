@@ -30,7 +30,7 @@ use Vvveb\System\Sites;
 
 class Revisions extends Base {
 	function getThemeFolder() {
-		$theme = $this->request->get['theme'] ?? Sites::getTheme() ?? 'default';
+		$theme = $this->request->get['theme'] ?? Sites::getTheme($this->global['site_id']) ?? 'default';
 
 		return $theme;
 	}

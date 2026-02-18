@@ -35,6 +35,7 @@ use Vvveb\System\Cache;
 use Vvveb\System\CacheManager;
 use Vvveb\System\Core\View;
 use Vvveb\System\Event;
+use Vvveb\System\PageCache;
 use Vvveb\System\Sites;
 use function Vvveb\url;
 
@@ -50,9 +51,10 @@ class Editor extends Base {
 	private $skipFiles = [];
 
 	function init() {
+		$return = parent::init();
 		$this->loadThemeConfig();
 
-		return parent::init();
+		return $return;
 	}
 
 	function oEmbedProxy() {
@@ -68,7 +70,7 @@ class Editor extends Base {
 	}
 
 	private function getTheme() {
-		return $theme = sanitizeFileName($this->request->get['theme'] ?? Sites::getTheme() ?? 'default');
+		return $theme = sanitizeFileName($this->request->get['theme'] ?? Sites::getTheme($this->global['site_id']) ?? 'default');
 	}
 
 	private function getThemeFolder() {
@@ -90,9 +92,9 @@ class Editor extends Base {
 		$list = $this->themeConfig['pages'] ?? [];
 
 		$pages = $list + Cache::getInstance()->cache(APP, 'template-list-' . $theme,
-		function () use ($theme) {
-			return \Vvveb\getTemplateList($theme);
-		}, 604800);
+			function () use ($theme) {
+				return \Vvveb\getTemplateList($theme);
+			}, 604800);
 
 		list($pages) = Event::trigger(__CLASS__, __FUNCTION__, $pages);
 
@@ -130,31 +132,73 @@ class Editor extends Base {
 		$themeFolder = $this->getThemeFolder();
 		$view        = &$this->view;
 		$themeJs     = [];
+		$assets      = [];
 
-		foreach (['inputs', 'components', 'blocks', 'sections'] as $type) {
+		foreach (['inputs', 'components', 'blocks', 'sections', 'styles'] as $type) {
 			$$type = [];
 			$glob  = glob("$themeFolder/$type/*.js");
 
 			foreach ($glob as &$file) {
 				$base          = str_replace('.js', '', basename($file));
-				$$type[$base]  = str_replace($themeFolder, $view->themeBaseUrl, $file);
+				$assets[$type][$base]  = str_replace($themeFolder, $view->themeBaseUrl, $file);
 			}
 		}
-
-		list($inputs, $components, $blocks, $sections) =
-		Event::trigger(__CLASS__, __FUNCTION__, $inputs, $components, $blocks, $sections);
 
 		$vvvebJs = '/js/vvvebjs.js';
 
 		if (file_exists($themeFolder . $vvvebJs)) {
-			$themeJs['vvvebjs'] = $view->themeBaseUrl . $vvvebJs;
+			$assets['js']['vvvebjs'] = $view->themeBaseUrl . $vvvebJs;
+		}
+		
+		list($assets) =
+		Event::trigger(__CLASS__, __FUNCTION__, $assets);
+		
+		foreach ($assets as $type => $files) {
+			$name = 'theme' . ucfirst($type);//themeSections
+			$view->$name = $files;
+		}
+	}
+
+	function proxy() {
+	}
+
+	protected function pages($theme = false, $urlParams = '') {
+		$view               = View::getInstance();
+		$view->pages = $view->pages ?? $this->loadTemplateList($theme);
+
+		$this->posts   = new PostSQL();
+		$options       = [
+			'type'  => 'page',
+			'limit' => 100,
+		] + $this->global;
+
+		$results = $this->posts->getAll($options);
+		$posts   = [];
+
+		if ($results && isset($results['post'])) {
+			foreach ($results['post'] as $post) {
+				//skip posts without translations
+				if (! isset($post['slug']) || ! isset($post['name'])) {
+					continue;
+				}
+				$slug = htmlspecialchars($post['slug']);
+				$url  = url('content/page/index',['slug' => $slug, 'post_id' => $post['post_id']]);
+
+				$posts["$slug-page"] = [
+					'name'      => "$slug-page",
+					'file'      => $post['template'] ? $post['template'] : 'content/page.html',
+					'url'       => $url . ($theme ? '?theme=' . $theme : '') . $urlParams,
+					'title'     => htmlspecialchars($post['name']),
+					'post_id'   => $post['post_id'],
+					'folder'    => '',
+					'className' => 'page',
+				];
+			}
 		}
 
-		$view->themeInputs     = $inputs;
-		$view->themeComponents = $components;
-		$view->themeSections   = $sections;
-		$view->themeBlocks     = $blocks;
-		$view->themeJs         = $themeJs;
+		if ($posts) {
+			$view->pages = $posts + $view->pages;
+		}
 	}
 
 	function index() {
@@ -163,7 +207,6 @@ class Editor extends Base {
 		$view               = View::getInstance();
 		$view->themeBaseUrl = PUBLIC_PATH . 'themes/' . $theme . '/';
 		$view->themeName    = $theme;
-		$view->pages        = $this->loadTemplateList($theme);
 
 		$view->themeFonts   = Cache::getInstance()->cache(APP,'fonts-list-' . $theme, function () use ($theme) {
 			$fonts = \Vvveb\System\Media\Font::themeFonts($theme);
@@ -181,157 +224,164 @@ class Editor extends Base {
 		}, 604800);
 
 		$this->loadThemeAssets();
-
-		$this->posts   = new PostSQL();
-		$options       = [
-			'type'  => 'page',
-			'limit' => 100,
-		] + $this->global;
-
-		$results = $this->posts->getAll($options);
-		$posts   = [];
-
-		foreach ($results['post'] as $post) {
-			//skip posts without translations
-			if (! isset($post['slug']) || ! isset($post['name'])) {
-				continue;
-			}
-			$slug = htmlspecialchars($post['slug']);
-			$url  = url('content/page/index',['slug' => $slug, 'post_id' => $post['post_id']]);
-
-			$posts["$slug-page"] = [
-				'name'      => "$slug-page",
-				'file'      => $post['template'] ? $post['template'] : 'content/page.html',
-				'url'       => $url . ($theme ? '?theme=' . $theme : ''),
-				'title'     => htmlspecialchars($post['name']),
-				'post_id'   => $post['post_id'],
-				'folder'    => '',
-				'className' => 'page',
-			];
+		$urlParams = '';
+		//if admin host is different than site host (for multi site install) use full url including host
+		if ($_SERVER['HTTP_HOST'] !== $this->global['site_url']) {
+			//$urlPrefix = '//' . $this->global['site_url'];
+			$urlParams = '&site_id=' . $this->global['site_id'];
 		}
 
-		if ($posts) {
-			$view->pages = $posts + $view->pages;
+		$this->pages($theme, $urlParams);
+
+		$homeUrl      = V_SUBDIR_INSTALL ?: '/';
+		$url          = sanitizeFileName($this->request->get['url'] ?? $homeUrl, false);
+		$name         = $this->request->get['name'] ?? '';
+		$template     = $this->request->get['template'] ?? ''; //\Vvveb\getUrlTemplate($url) ?? 'index.html';
+		$folder       = $this->request->get['folder'] ?? false;
+		$route        = \Vvveb\getUrlRoute($url);
+		$className    = 'url';
+		$current_page = [];
+
+		$site_name = '';
+		if ($url == $homeUrl && ! $template) {
+			$site = Sites :: getSiteData($this->global['site_id']);
+			$template  = $site['template'] ?: 'index.html';
+			$site_name = $site['name'];
 		}
 
-		if (isset($this->request->get['url'])) {
-			$url          = $this->request->get['url'];
-			$name         = $this->request->get['name'] ?? '';
-			$template     = $this->request->get['template'] ?? ''; //\Vvveb\getUrlTemplate($url) ?? 'index.html';
-			$folder       = $this->request->get['folder'] ?? false;
-			$route        = \Vvveb\getUrlRoute($url);
-			$file         = $template;
-			$className    = 'url';
-			$current_page = [];
+		$file         = $template;
 
-			//check if url and template is relative
-			if (strpos($url, '//') !== false && strpos($template, '..') !== false) {
-				$this->notFound();
+		//check if url and template is relative
+		if (strpos($url, '//') !== false && strpos($template, '..') !== false) {
+			$this->notFound();
 
-				exit();
-			}
+			exit();
+		}
 
-			//check if the url has extension and is a html file and exists in the theme folder
-			if (strpos($url, '.') !== false) {
-				if (substr_compare($url, '.html', -5 ,5) === 0) {
-					if (! file_exists(DIR_THEMES . $theme . DS . $url)) {
-						$this->notFound();
-
+		//check if the url has extension and is a html file and exists in the theme folder
+		if (strpos($url, '.') !== false) {
+			if (substr_compare($url, '.html', -5 ,5) === 0) {
+				//check if plugin template exists
+				if (substr_compare($url, '/plugins/', 0 ,9) === 0) {
+					$pluginFile = substr($url, 9);
+					$pluginFile = preg_replace('@^(.+/)@', '$1/public/',$pluginFile);
+					if (! file_exists(DIR_PLUGINS . $pluginFile)) {
+						$this->notFound(sprintf(__('%s does not exist!'), $pluginFile));
 						exit();
 					}
 				} else {
-					$this->notFound();
-
-					exit();
+					//check if theme template exists
+					if (! file_exists(DIR_THEMES . $theme . DS . $url)) {
+						$this->notFound(sprintf(__('%s does not exist!'), $url));
+						exit();
+					}
 				}
+			} else {
+				$this->notFound(sprintf(__('%s does not exist!'), $url));
+				exit();
 			}
+		}
 
-			//check if template belongs to theme and is a html file
-			if (substr_compare($template, '.html', -5 ,5) === 0) {
-				if (! file_exists(DIR_THEMES . $theme . DS . $template)) {
-					$this->notFound();
-
+		//check if template belongs to theme and is a html file
+		if (substr_compare($template, '.html', -5 ,5) === 0) {
+			//check if plugin template exists
+			if (substr_compare($template, '/plugins/', 0 ,9) === 0) {
+				$pluginFile = substr($template, 9);
+				$pluginFile = preg_replace('@^(.+/)@', '$1/public/', $pluginFile);
+				if (! file_exists(DIR_PLUGINS . $pluginFile)) {
+					$this->notFound(sprintf(__('%s does not exist!'), $pluginFile));
 					exit();
 				}
 			} else {
-				$this->notFound();
-
-				exit();
-			}
-
-			if ($route && isset($route['module'])) {
-				switch ($route['module']) {
-					case 'product/product/index':
-						$className                  = 'product';
-
-						if (isset($route['product_id'])) {
-							$current_page['product_id'] = $route['product_id'];
-						} else {
-							if (isset($this->request->get['product_id'])) {
-								$current_page['product_id'] = $this->request->get['product_id'];
-							} else {
-								if (isset($route['slug'])) {
-									$current_page['slug'] = htmlspecialchars($route['slug']);
-								}
-							}
-						}
-
-					break;
-
-					case 'content/post/index':
-					case 'content/page/index':
-						$className               = 'page';
-
-						if (isset($route['post_id'])) {
-							$current_page['post_id'] = $route['post_id'];
-						} else {
-							if (isset($this->request->get['post_id'])) {
-								$current_page['post_id'] = $this->request->get['post_id'];
-							} else {
-								if (isset($route['slug'])) {
-									$current_page['slug'] = htmlspecialchars($route['slug']);
-								}
-							}
-						}
-
-					break;
+				//check if theme template exists
+				if (! file_exists(DIR_THEMES . $theme . DS . $template)) {
+					$this->notFound(sprintf(__('%s does not exist!'), $template));
+					exit();
 				}
 			}
-
-			$key  = slugify($url);
-			$slug = slugify(str_replace('.html', '', $template));
-
-			if ($url == '/') {
-				$key = $slug = 'index';
-			}
-
-			if (! $name) {
-				//if in page list get pretty name
-				if (isset($view->pages[$slug])) {
-					$name = $view->pages[$slug]['title'];
-				} else {
-					$name = \Vvveb\humanReadable($url);
-				}
-			}
-
-			$global = false;
-
-			if ($file == 'index.html') {
-				$global = true;
-			}
-
-			$current_page += [
-				'name'      => $key,
-				'file'      => $file,
-				'url'       => $url . ($theme ? '?theme=' . $theme : ''),
-				'title'     => $name,
-				'folder'    => '',
-				'className' => $className,
-				'global'    => $global,
-			];
-
-			$view->pages = [$key => $current_page] + $view->pages;
+		} else {
+			$this->notFound();
+			exit();
 		}
+
+		if ($route && isset($route['module'])) {
+			switch ($route['module']) {
+				case 'product/product/index':
+					$className                  = 'product';
+
+					if (isset($route['product_id'])) {
+						$current_page['product_id'] = $route['product_id'];
+					} else {
+						if (isset($this->request->get['product_id'])) {
+							$current_page['product_id'] = $this->request->get['product_id'];
+						} else {
+							if (isset($route['slug'])) {
+								$current_page['slug'] = htmlspecialchars($route['slug']);
+							}
+						}
+					}
+
+					break;
+
+				case 'content/post/index':
+				case 'content/page/index':
+					$className               = 'page';
+
+					if (isset($route['post_id'])) {
+						$current_page['post_id'] = $route['post_id'];
+					} else {
+						if (isset($this->request->get['post_id'])) {
+							$current_page['post_id'] = $this->request->get['post_id'];
+						} else {
+							if (isset($route['slug'])) {
+								$current_page['slug'] = htmlspecialchars($route['slug']);
+							}
+						}
+					}
+
+					break;
+			}
+		}
+
+		$key  = slugify($url);
+		$slug = slugify(str_replace('.html', '', $template));
+
+		if (! $name) {
+			//if in page list get pretty name
+			if (isset($view->pages[$slug])) {
+				$name = $view->pages[$slug]['title'];
+			} else {
+				$name = \Vvveb\humanReadable($url);
+				if (! $name) {
+					$name = $slug;
+				}
+			}
+		}
+
+		if ($url == $homeUrl) {
+			$key = $slug = 'index';
+			if ($site_name) {
+				$name .= ' - ' . $site_name;
+			}
+		}
+
+		$global = false;
+
+		if ($file == 'index.html') {
+			$global = true;
+		}
+
+		$current_page += [
+			'name'      => $key,
+			'file'      => $file,
+			'url'       => $url . ($theme ? '?theme=' . $theme : '') . $urlParams,
+			'title'     => $name,
+			'folder'    => '',
+			'className' => $className,
+			'global'    => $global,
+		];
+
+		$view->pages = [$key => $current_page] + $view->pages;
 
 		$admin_path                    = \Vvveb\adminPath();
 		$mediaControllerPath           = $admin_path . 'index.php?module=media/media';
@@ -644,19 +694,21 @@ class Editor extends Base {
 	function save() {
 		$file             = $this->request->post['file'] ?? '';
 		$folder           = $this->request->post['folder'] ?? '';
-		$startTemplateUrl = $this->request->post['startTemplateUrl'] ?? '';
+		$startTemplateUrl = $this->request->post['startTemplateUrl'] ?? null;
 		$name             = $this->request->post['name'] ?? '';
 		$content          = $this->request->post['content'] ?? 'Lorem ipsum';
 		$image            = $this->request->post['image'] ?? '';
 		$type             = $this->request->post['type'] ?? false;
-		$templateType     = $this->request->post['template-type'] ?? false;
+		$templateType     = $this->request->post['template-type'] ?? 'global';
 		$addMenu          = $this->request->post['add-menu'] ?? false;
 		$menu_id          = $this->request->post['menu_id'] ?? false;
+		$uri              = $this->request->post['url'] ?? '/';
 		$theme            = $this->getTheme();
 		$url              = '';
 
 		$file             = sanitizeFileName(str_replace('.html', '', $file)) . '.html';
 		$folder           = trim(sanitizeFileName($folder), '/');
+		$startTemplateUrl = sanitizeFileName($startTemplateUrl);
 
 		if ($type && $name) {
 			$slug    = slugify($name);
@@ -665,13 +717,13 @@ class Editor extends Base {
 			switch ($type) {
 				case 'page':
 				case 'post':
-					$file             = $templateType == 'global' ? "content/$type.html" : "content/$slug.html";
-					$file             = sanitizeFileName($file);
-					$startTemplateUrl = sanitizeFileName($startTemplateUrl ?: "content/$type.html");
+					$default          = $templateType == 'global' ? "content/$type.html" : "content/$slug.html";
+					$default          = sanitizeFileName($default);
+					$template         = $templateType == 'global' && isset($startTemplateUrl) ? $startTemplateUrl : $default;
 					$post             = new PostSQL();
 					$result           = $post->add([
 						'post' => [
-							'template'     => $file,
+							'template'     => $template,
 							'type'         => $type,
 							'image'        => $image,
 						] + $this->global,
@@ -691,20 +743,20 @@ class Editor extends Base {
 						$url        = \Vvveb\url($route, ['slug'=> $slug, 'post_id'=> $post_id]);
 					}
 
-				break;
+					break;
 
 				case 'product':
-					$file             = $templateType == 'global' ? "content/$type.html" : "product/$slug.html";
-					$file             = sanitizeFileName($file);
-					$startTemplateUrl = sanitizeFileName($startTemplateUrl ?: "product/$type.html");
-					$price            =  $this->request->post['price'] ?? 0;
+					$default          = $templateType == 'global' ? "product/$type.html" : "product/$slug.html";
+					$default          = sanitizeFileName($default);
+					$template         = $templateType == 'global' && isset($startTemplateUrl) ? $startTemplateUrl : $default;
+					$price            = $this->request->post['price'] ?? 0;
 					$product          = new ProductSQL();
 					$result           = $product->add([
 						'product' => [
 							'model'           => '',
 							'image'           => $image,
 							'status'          => 1, //active
-							'template'        => $file,
+							'template'        => $template,
 							'price'           => $price,
 						] + $this->global,
 						'product_content' => [[
@@ -723,7 +775,7 @@ class Editor extends Base {
 						$url        = \Vvveb\url($route, ['slug' => $slug, 'product_id'=> $product_id]);
 					}
 
-				break;
+					break;
 			}
 		}
 
@@ -736,18 +788,14 @@ class Editor extends Base {
 		$success      = false;
 		$text      		 = '';
 
-		$baseUrl      = '/themes/' . $theme . '/' . ($folder ? $folder . '/' : '');
+		$baseUrl      = PUBLIC_PATH . 'themes/' . $theme . '/' . ($folder ? $folder . '/' : '');
 		$themeFolder  = $this->getThemeFolder();
 		$relativeBase = '';
 		$pos          = 0;
 
-		//if file saved in folder set base one level upp
-		if ($folder) {
-			$relativeBase .= '../';
-		}
-
 		//if more than one level deep add one level up for each level
-		while ($pos = strpos($folder, '/', $pos)) {
+		$fileBase = ($folder ? $folder . '/' : '') . $file;
+		while (($pos = strpos($fileBase, '/', $pos + 1)) !== false) {
 			$relativeBase .= '../';
 		}
 
@@ -785,7 +833,9 @@ class Editor extends Base {
 		$isPlugin = false;
 
 		if (strncmp($file, '/plugins/', 9) === 0) {
-			$fileName = DIR_PUBLIC . DS . ($folder ? $folder . DS : '') . $file;
+			$pluginFile = substr($file, 9);
+			$pluginFile = preg_replace('@^(.+/)@', '$1/public/', $pluginFile);
+			$fileName = DIR_PLUGINS . /*($folder ? $folder . DS : '') .*/ $pluginFile;
 			$isPlugin = true;
 		} else {
 			$fileName = $themeFolder . DS . ($folder ? $folder . DS : '') . $file;
@@ -830,6 +880,8 @@ class Editor extends Base {
 			//reset base href so that html file can be loaded properly in browser directly from folder
 			//$html = preg_replace('@<base href[^>]+>@', '', $html);
 			$html = preg_replace('@<base href[^>]+>@', '<base href="' . $relativeBase . '">', $html);
+			//remove empty value for data attributes
+			$html = preg_replace('/(data-[\w\-]+)="\s*"/','$1', $html);
 
 			if (@file_put_contents($fileName, $html)) {
 				$globalOptions = [];
@@ -843,6 +895,7 @@ class Editor extends Base {
 				$success = true;
 				$text .= __('File saved!');
 			} else {
+				$success = false;
 				if (! is_writable($fileName)) {
 					$text .= sprintf(__('%s is not writable!'), $file);
 				} else {
@@ -864,7 +917,11 @@ class Editor extends Base {
 			}
 		}
 
-		if (CacheManager::clearCompiledFiles('app') && CacheManager::delete()) {
+		if (CacheManager::clearCompiledFiles('app', $this->global['site_id'], $theme)) {
+			$pageCache = new PageCache();
+			$uri       = preg_replace('/\?.+/', '', $uri);
+			$path      = $pageCache->uri($uri);
+			$pageCache->purge($path);
 		}
 
 		$data += ['success' => $success, 'message' => $text];

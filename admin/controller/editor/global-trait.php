@@ -76,10 +76,14 @@ trait GlobalTrait {
 			$toDocument->xmlStandalone       = true;
 
 			foreach ($elements as $element) {
+				if (! $element->hasChildNodes()) {
+					continue;
+				}//skip empty elements
+
 				$attribute = $element->getAttribute('data-v-save-global');
 
 				if (strpos($attribute, ',') !== false) {
-					list($file, $selector) = explode(',',$attribute);
+					list($file, $selector) = explode(',', $attribute);
 
 					$file     = html_entity_decode($file);
 					$selector = html_entity_decode($selector);
@@ -88,8 +92,8 @@ trait GlobalTrait {
 					$toDocument->loadHTMLFile($file);
 
 					$toXpath = new \DOMXpath($toDocument);
-
-					$toElements = $toXpath->query(\Vvveb\cssToXpath($selector));
+					$xpath = \Vvveb\cssToXpath($selector);
+					$toElements = $toXpath->query($xpath);
 
 					$count  = 0;
 
@@ -100,21 +104,26 @@ trait GlobalTrait {
 							$importedNode = $toDocument->importNode($element, true);
 
 							if ($parent) {
+								/*
 								if ($count) {
 									$parent->appendChild($importedNode);
 								} else {
 									$parent->replaceChild($importedNode, $externalNode);
+								}*/
+								if (!$parent->replaceChild($importedNode, $externalNode)) {
+									$externalNode->replaceWith($importedNode);
 								}
+								
 								$externalNode = $importedNode;
 								$parent       = $externalNode->parentNode;
 								$count++;
 							}
 						}
 
-						$html= $toDocument->saveHTML();
+						$html = $toDocument->saveHTML();
 
 						if (is_writable($file)) {
-							if (@file_put_contents($file, $html)) {
+							if (file_put_contents($file, $html)) {
 							}
 						}
 					}

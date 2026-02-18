@@ -55,7 +55,7 @@ Vvveb.BlocksGroup['Reusable'].push("reusable/{name}");
 TPL;
 
 	private function getThemeFolder() {
-		return DIR_THEMES . ($this->request->get['theme'] ?? Sites::getTheme() ?? 'default');
+		return DIR_THEMES . ($this->request->get['theme'] ?? Sites::getTheme($this->global['site_id']) ?? 'default');
 	}
 
 	private function regenerate($type) {
