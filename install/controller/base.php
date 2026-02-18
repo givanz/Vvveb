@@ -33,9 +33,13 @@ class Base {
 	}
 
 	function redirect($url = '/') {
-		session_write_close();
+		if (defined('CLI')) {
+			return;
+		}
 
-		return die(header("Location: $url"));
+		session_write_close();
+		header("Location: $url");
+		die();
 	}
 
 	function notFound($service = false, $message = null,  $statusCode = 404) {
