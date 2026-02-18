@@ -23,10 +23,12 @@
 namespace Vvveb\System\Component;
 
 use function Vvveb\session as sess;
+use function Vvveb\siteSettings;
 use Vvveb\System\Core\Request;
-use Vvveb\System\User\User;
 use Vvveb\System\Core\View;
+use Vvveb\System\Event;
 use Vvveb\System\Session;
+use Vvveb\System\User\User;
 
 #[\AllowDynamicProperties]
 class ComponentBase {
@@ -47,20 +49,39 @@ class ComponentBase {
 
 		if (! self :: $global) {
 			$user                                  = User::current();
+			$site                                  = siteSettings();
 			self :: $global['start']               = 0;
 			self :: $global['site_id']             = (APP == 'admin') ? sess('site_id') ?? SITE_ID : (defined('SITE_ID') ? SITE_ID : 0);
+			//self :: $global['site']                = siteSettings();
 			self :: $global['user_id']             = $user['user_id'] ?? null;
 			self :: $global['user_group_id']       = $user['user_group_id'] ?? 1;
-			self :: $global['language_id']         = (isset($request->request['language_id']) && is_numeric($request->request['language_id'])) ?
-								$request->request['language_id'] : sess('language_id') ?? 1;
-			self :: $global['language']            = (isset($request->request['language']) && is_string($request->request['language'])) ?
-								$request->request['language'] : sess('language') ?? 'en_US';
-			self :: $global['default_language']    = sess('default_language') ?? 'en_US';
-			self :: $global['default_language_id'] = sess('default_language_id') ?? 1;
-			self :: $global['currency_id']         = sess('currency_id') ?? 1;
+			self :: $global['languages']           = $site['languages'] ?? [];
+			self :: $global['default_language']    = sess('default_language') ?? $site['language'] ?? 'en';
+			self :: $global['default_language_id'] = sess('default_language_id') ?? $site['language_id'] ?? 1;
+			self :: $global['currency_id']         = sess('currency_id') ?? $site['currency_id'] ?? 1;
+			self :: $global['currency']            = sess('currency') ?? $site['currency'] ?? 'usd';
+			self :: $global['currencies']          = $site['currencies'] ?? [];
+			self :: $global['language']            = ($site['language'] ?? '') ?: 'en';
+			self :: $global['language_id']         = ($site['language_id'] ?? '') ?: 1;
+
+			if ($language = sess('language')) {
+				self :: $global['language'] = $language;
+			}
+
+			if ($language_id = sess('language_id')) {
+				self :: $global['language_id'] = $language_id;
+			}
+
+			if (isset($request->request['language']) && is_string($request->request['language'])) {
+				self :: $global['language'] = $request->request['language'];
+			}
+
+			if (isset($request->request['language_id']) && is_string($request->request['language_id'])) {
+				self :: $global['language_id'] = $request->request['language_id'];
+			}
 		}
 
-		static :: $defaultOptions = array_merge(self :: $global, static :: $defaultOptions);
+		static :: $defaultOptions += self :: $global;
 
 		foreach (['site_id', 'language_id', 'currency_id', 'user_id', 'user_group_id'] as $key) {
 			if (! isset(static :: $defaultOptions[$key]) || empty(static :: $defaultOptions[$key])) {
@@ -102,13 +123,15 @@ class ComponentBase {
 					$key = substr($value, $dot + 1);
 				}
 
-				$value = (isset($request->request[$key]) ? $request->request[$key] : (isset($request->get[$key]) ? $request->get[$key] : null));
+				$value = ($request->request[$key] ?? ($request->get[$key] ?? null));
 			}
 
 			if ($value === null) {
 				unset($this->options[$key]);
 			}
 		}
+
+		list($this->options) = Event :: trigger(get_class($this), __FUNCTION__, $this->options);
 
 		$this->di($this);
 	}
@@ -128,7 +151,7 @@ class ComponentBase {
 		}
 
 		$className      = strtolower(str_replace(['Vvveb\Plugins\\', 'Vvveb\Component\\', '\Component\\'], '',get_class($this)));
-		$this->cacheKey = $className . '.' . md5(serialize($this->options));
+		$this->cacheKey = str_replace('\\','-', $className) . '.' . md5(serialize($this->options));
 
 		return $this->cacheKey;
 	}
@@ -144,7 +167,7 @@ class ComponentBase {
 			//$intersect = array_intersect_key($options, static :: $defaultOptions);
 			//$diff = array_diff_key(static :: $defaultOptions, $options);
 			//return $options = $intersect + $diff;
-			return array_merge(static :: $defaultOptions, $options);
+			return $options + static :: $defaultOptions;
 		} else {
 			return static :: $defaultOptions;
 		}

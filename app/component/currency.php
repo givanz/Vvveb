@@ -26,11 +26,14 @@ use function Vvveb\availableCurrencies;
 use function Vvveb\session;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
-use Vvveb\System\Session;
 
 class Currency extends ComponentBase {
 	public static $defaultOptions = [
-		'status' => 1,
+		'start'   => 1,
+		'limit'   => 1000,
+		'status'  => 1,
+		'site_only' => true, //show only site available currencies otherwise show all active
+		'default' => null,
 	];
 
 	function cacheKey() {
@@ -41,16 +44,20 @@ class Currency extends ComponentBase {
 	function results() {
 		$results             = [];
 		$results['active']   = false;
-		$results['current']  = false;
+		$results['current']  = self :: $global['currency'];
 		$results['currency'] = availableCurrencies();
 
 		if (isset($results['currency']) && $results['currency']) {
-			$code     = session('currency');
-			$currency = $results['currency'][$code] ?? [];
+			if (isset($this->options['site_only']) && $this->options['site_only'] && self :: $global['currencies']) {
+				$results['currency'] = array_intersect_key($results['currency'], self :: $global['currencies']);
+			}
 
-			if ($currency) {
+			$code     = session('currency') ?? self :: $global['currency'];
+
+			if ($code && isset($results['currency'][$code])) {
+				$currency = $results['currency'][$code] ?? [];
 				$results['current']    = $code;
-				$results['active']     = ['name' => $currency['name'], 'code' => $currency['code'], 'id' => $currency['currency_id']];
+				$results['active']     = $currency;
 			}
 		}
 

@@ -23,8 +23,10 @@
 namespace Vvveb\Controller;
 
 #[\AllowDynamicProperties]
-class Error500/* extends Base */
-{
+class Error500 {/* extends Base */
+	function getGlobal() {
+	}
+
 	function index() {
 	}
 }

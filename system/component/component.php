@@ -28,15 +28,15 @@ use Vvveb\System\Cache;
 use Vvveb\System\Core\View;
 
 if (! defined('COMPONENT_CACHE_FLAG_LOCK')) {
-	define('COMPONENT_CACHE_FLAG_LOCK', PHP_INT_MIN + 1);
-	define('COMPONENT_CACHE_FLAG_REGENERATE', PHP_INT_MIN + 2);
+	define('COMPONENT_CACHE_FLAG_LOCK', -10001);
+	define('COMPONENT_CACHE_FLAG_REGENERATE', -10002);
 
 	//time
 	define('COMPONENT_CACHE_EXPIRE_DELAY', 5); //real expiration time +5 seconds
 	define('COMPONENT_CACHE_WAIT', 1); //wait for cache generation
 	define('COMPONENT_CACHE_MAX_WAIT_RETRY', 3); //wait for cache generation
 	define('COMPONENT_CACHE_LOCK_EXPIRE', 20); //lock can not be set more than COMPONENT_CACHE_LOCK_EXPIRE seconds
-	define('COMPONENT_CACHE_EXPIRE', 20);
+	define('COMPONENT_CACHE_EXPIRE', 20  * 3600);
 }
 
 class Component {
@@ -201,6 +201,7 @@ class Component {
 					if (! isset($data[$cacheExpireKey]) || ! isset($data[$cacheKey]) ||
 						($data[$cacheExpireKey] && ($data[$cacheExpireKey] > 0) &&
 						($data[$cacheExpireKey] + COMPONENT_CACHE_EXPIRE_DELAY) < $_SERVER['REQUEST_TIME'])) {
+						ignore_user_abort();
 						$cacheDriver->set($namespace, $cacheExpireKey, COMPONENT_CACHE_FLAG_LOCK, COMPONENT_CACHE_LOCK_EXPIRE); //set lock
 						$data[$cacheExpireKey] = COMPONENT_CACHE_FLAG_REGENERATE; //set regeneration flag
 					}
@@ -233,7 +234,7 @@ class Component {
 
 							if ($results !== null) {
 								$saveCache[$key]            = $results;
-								$saveCache[$cacheExpireKey] = $_SERVER['REQUEST_TIME'] + $objects[$id]->cacheExpire;
+								$saveCache[$cacheExpireKey] = $objects[$id]->cacheExpire;
 							}
 
 							if (isset($results['404']) && $results['404'] == true) {
@@ -259,10 +260,10 @@ class Component {
 					}
 
 					if ($wait) {
-						error_log('wait cache ' . $_SERVER['REQUEST_URI'] . print_r($cache,1));
+						error_log('wait cache ' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . print_r($cache,1));
 						//get
 						@sleep(COMPONENT_CACHE_WAIT);
-						$data = $cacheDriver->getMulti($namespace, $cache);
+						$data = $cacheDriver->getMulti($namespace, $cache, SITE_ID);
 					}
 				}
 
@@ -272,7 +273,7 @@ class Component {
 			}
 
 			if (! empty($saveCache)) {
-				$cacheDriver->setMulti($namespace, $saveCache, /*$_SERVER['REQUEST_TIME'] + */COMPONENT_CACHE_EXPIRE * 3600, SITE_ID);
+				$cacheDriver->setMulti($namespace, $saveCache, /*$_SERVER['REQUEST_TIME'] + */COMPONENT_CACHE_EXPIRE, SITE_ID);
 			}
 		}
 
@@ -357,7 +358,7 @@ class Component {
 
 			if ($this->documentType == 'html') {
 				@$document->loadHTMLFile($template,
-							LIBXML_NOWARNING | LIBXML_NOERROR);
+					LIBXML_NOWARNING | LIBXML_NOERROR);
 			} else {
 				$content = file_get_contents($template);
 
@@ -370,7 +371,7 @@ class Component {
 					@$document->loadXML($xml);
 				} else {
 					@$document->loadXML($content,
-							LIBXML_NOWARNING | LIBXML_NOERROR);
+						LIBXML_NOWARNING | LIBXML_NOERROR);
 				}
 			}
 		}
@@ -441,7 +442,7 @@ class Component {
 
 				if (strpos($nodeName, 'data-v-component-') === 0) {
 					$component = str_replace('data-v-component-', '', $nodeName);
-				//$classes = explode(' ', trim($attr->nodeValue));
+					//$classes = explode(' ', trim($attr->nodeValue));
 				} else {
 					if (strpos($nodeName, 'data-v-') === 0) {
 						$option        = str_replace('data-v-', '', $nodeName);

@@ -35,6 +35,10 @@ if($currencies)  {
     @currency [data-v-currency-url] = <?php 
         echo Vvveb\url(['module' => 'currency/currency', 'currency_id' => $currency['currency_id']]);
     ?>
+
+	[data-v-component-currency] option[data-v-currency]       = $currency['name']
+	[data-v-component-currency] option[data-v-currency]|value = $currency['code']
+	[data-v-component-currency] option[data-v-currency]|addNewAttribute = <?php if ($code == $current) echo 'selected';?>
 	
 	@currency|after = <?php 
 	} 

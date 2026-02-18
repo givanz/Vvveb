@@ -25,14 +25,11 @@ namespace Vvveb\Component;
 use function Vvveb\availableLanguages;
 use function Vvveb\getCurrentUrl;
 use function Vvveb\isSecure;
-use function Vvveb\session;
-use Vvveb\Sql\LanguageSQL;
 use Vvveb\System\Cache;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Core\Request;
 use Vvveb\System\Core\View;
 use Vvveb\System\Event;
-use Vvveb\System\Session;
 use function Vvveb\url;
 
 class Language extends ComponentBase {
@@ -40,7 +37,8 @@ class Language extends ComponentBase {
 		'start'   => 1,
 		'limit'   => 1000,
 		'status'  => 1,
-		'default' => 'en_US',
+		'site_only' => true, //show only site available languages otherwise show all active
+		'default' => null, //'en',
 	];
 
 	function cacheKey() {
@@ -53,36 +51,32 @@ class Language extends ComponentBase {
 		$results = [];
 
 		$options = $this->options;
-		/*
-		$cache   = Cache::getInstance();
-		//manually cache language db query
-		$results = $cache->cache(APP,'languages',function () use ($options) {
-			$languages             = new LanguageSQL();
-
-			return $languages->getAll($options);
-		}, 259200);
-		*/
 		$results['language'] = availableLanguages();
 
 		$publicPath = \Vvveb\publicUrlPath();
 		$request    = Request::getInstance();
 		$view       = View::getInstance();
 
-		if ($results) {
-			$results['current']    = $code = $request->request['language'] ?? session('language', 'en_US');
+		if ($results['language']) {
+			if (isset($options['site_only']) && $options['site_only'] && self :: $global['languages']) {
+				$results['language'] = array_intersect_key($results['language'], self :: $global['languages']);
+			}
+
+			$results['current']    = $code = self :: $global['language'];
 			$language              = $results['language'][$code] ?? [];
 
-			if (! $language) {
+			if (! $language && isset($options['default'])) {
 				$language = $results['language'][$options['default']] ?? [];
 			}
 
 			$code                  = $language['code'] ?? '';
+			$slug                  = $language['slug'] ?? '';
 			$shortcode             = \Vvveb\filter('/[a-z]+/',$code);
 			$img                   = "{$publicPath}img/flags/$shortcode.png";
 			$results['active'] 	   = [];
 
 			if ($language) {
-				$results['active']     = ['name' => $language['name'], 'code' => $language['code'], 'id' => $language['language_id'], 'img' => $img];
+				$results['active']     = ['name' => $language['name'], 'code' => $language['code'], 'slug' => $language['slug'], 'id' => $language['language_id'], 'img' => $img];
 			}
 
 			$hreflang = [];
@@ -91,17 +85,17 @@ class Language extends ComponentBase {
 
 			foreach ($results['language'] as $code => &$language) {
 				$shortcode       = \Vvveb\filter('/[a-z]+/',$code);
-				$content 		      = [];
-				$lang	 		        = [];
+				$content         = [];
+				$lang            = [];
 				$language['img'] = "{$publicPath}img/flags/$shortcode.png";
 
 				if (! $language['default']) {
-					$lang = ['language' => $code];
+					$lang = ['language' => $language['slug']];
 				}
 
 				//if post or product page check if content available
 				if (isset($view->content)) {
-					$content = $view->content[$code] ?? [];
+					$content = $view->content[$language['slug']] ?? [];
 				}
 
 				$get = $request->get;

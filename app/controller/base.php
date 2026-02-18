@@ -42,12 +42,14 @@ use Vvveb\System\User\User;
 class Base {
 	protected $global;
 
-	protected function language($defaultLanguage = false, $defaultLanguageId = false, $defaultLocale = false) {
-		$languages = availableLanguages();
+	protected function language($defaultLanguage = false, $defaultLanguageId = false, $defaultLocale = false,  $defaultCode = false, $languages = null) {
+		$languages = $languages ?? availableLanguages();
 
 		$default_language    = $this->session->get('default_language');
 		$default_language_id = $this->session->get('default_language_id');
 		$default_locale      = $this->session->get('default_locale');
+		$default_code        = $this->session->get('default_code');
+		$default_rtl         = false;
 		$site_language       = false;
 
 		if (($lang = ($this->request->post['language'] ?? $this->request->get['language'] ?? false)) && ! is_array($lang)) {
@@ -57,6 +59,7 @@ class Base {
 				$this->session->set('language', $language);
 				$this->session->set('language_id', $languages[$language]['language_id']);
 				$this->session->set('locale', $languages[$language]['locale']);
+				$this->session->set('code', $languages[$language]['code']);
 				$this->session->set('rtl', $languages[$language]['rtl'] ?? false);
 				$default_language = false; //recheck default language
 				//clearLanguageCache($language);
@@ -70,6 +73,7 @@ class Base {
 					$site_language    = $code;
 					$site_language_id = $lang['language_id'];
 					$site_locale      = $lang['locale'];
+					$site_code        = $lang['code'];
 				}
 
 				//set global default language
@@ -77,8 +81,8 @@ class Base {
 					$default_language    = $code;
 					$default_language_id = $lang['language_id'];
 					$default_locale      = $lang['locale'];
-
-					break;
+					$default_code        = $lang['code'];
+					$default_rtl         = $lang['rtl'] ?? false;
 				}
 			}
 
@@ -86,33 +90,40 @@ class Base {
 				$default_language    = $site_language;
 				$default_language_id = $site_language_id;
 				$default_locale      = $site_locale;
+				$default_code        = $site_code;
 			}
 
 			//no valid default site or global language? set english as default
 			if (! $default_language) {
-				$default_language    = 'en_US';
+				$default_language    = 'en';
 				$default_language_id = 1;
 				$default_locale      = 'en-us';
+				$default_code       = 'en_US';
+				$default_rtl        = false;
 			}
 
 			$this->session->set('default_language', $default_language);
 			$this->session->set('default_language_id', $default_language_id);
 			$this->session->set('default_locale', $default_locale);
+			$this->session->set('default_code', $default_code);
 		}
 
 		$language    = $this->session->get('language') ?? $default_language;
 		$language_id = $this->session->get('language_id') ?? $default_language_id;
 		$locale      = $this->session->get('locale') ?? $default_locale;
+		$code        = $this->session->get('code') ?? $default_code;
 		$rtl         = $this->session->get('rtl') ?? false;
 
 		//if no default language configured then set first language as current language
 		if (! isset($languages[$language])) {
+			$language = null;
 			$default_language    = key($languages);
 			$lang                = $languages[$default_language] ?? [];
 
 			if ($lang) {
 				$default_language_id = $lang['language_id'] ?? $defaultLanguageId;
 				$default_locale      = $lang['locale'] ?? $defaultLocale;
+				$default_code        = $lang['code'] ?? $defaultCode;
 				$default_rtl         = $lang['rtl'] ?? false;
 			}
 		}
@@ -122,22 +133,26 @@ class Base {
 			$language    = $default_language;
 			$language_id = $default_language_id;
 			$locale      = $default_locale;
+			$code        = $default_code;
 			$rtl         = $default_rtl;
+
 			$this->session->set('language', $language);
 			$this->session->set('language_id', $language_id);
 			$this->session->set('locale', $locale);
+			$this->session->set('code', $code);
 			$this->session->set('rtl', $rtl);
 		}
 
 		$this->global['language']            = $language;
 		$this->global['locale']              = $locale;
+		$this->global['code']                = $code;
 		$this->global['language_id']         = $language_id;
 		$this->global['rtl']                 = $rtl;
 		$this->global['default_language']    = $default_language;
 		$this->global['default_locale']      = $default_locale;
 		$this->global['default_language_id'] = $default_language_id;
 
-		setLanguage($language);
+		setLanguage($code);
 	}
 
 	protected function currency($defaultCurrency = false, $defaultCurrencyId = false) {
@@ -191,28 +206,30 @@ class Base {
 		$tax->setRegionRules($countryId, $regionId, 'store');
 	}
 
+	function getGlobal() {
+		return $this->global;
+	}
+
 	function init() {
 		if (! $this->session->get('csrf')) {
 			$this->session->set('csrf', Str::random());
 		}
+
+		$admin = Admin::current();
 
 		//check if theme preview
 		$theme = $this->request->get['theme'] ?? false;
 
 		if ($theme) {
 			//check if admin user to allow theme preview
-			$admin = Admin::current();
-
 			if ($admin) {
 				$this->view->setTheme($theme);
 			}
 		}
 
-		$siteData = Sites :: getSiteData();
+		$siteData = Sites :: getSiteData(SITE_ID);
 
 		if (isset($siteData['state']) && $siteData['state'] != 'live') {
-			$admin = Admin::current();
-
 			if (! $admin) {
 				$template = Sites::getStates()[$siteData['state']]['template'];
 				$this->view->template($template);
@@ -232,7 +249,6 @@ class Base {
 			$user['avatar_url'] = Images::image($user['avatar'], 'user');
 		}
 
-		$admin = Admin::current();
 
 		if ($admin && isset($admin['avatar'])) {
 			$admin['avatar_url'] = Images::image($admin['avatar'], 'admin');
@@ -253,7 +269,10 @@ class Base {
 		$this->global['admin']         = $admin ?? [];
 		$this->global['current_year']  = date('Y');
 
-		$this->language($site['language'] ?? false, $site['language_id'] ?? false);
+		$languages = availableLanguages();
+		$language  = $languages[$site['language'] ?? 'en'] ?? ['slug' => 'en', 'language_id' => 1, 'locale' => 'en', 'code' => 'en_US', $languages];
+
+		$this->language($language['slug'], $language['language_id'], $language['locale'], $language['code']);
 		$this->currency($site['currency'] ?? false, $site['currency_id'] ?? false);
 
 		$language_id = $this->global['language_id'];
@@ -322,7 +341,7 @@ class Base {
 	 */
 	protected function requireLogin() {
 		$view = view :: getInstance();
-		$view :: template('/login.html');
+		$view :: template(DS . 'login.html');
 
 		die(view :: getInstance()->render());
 	}

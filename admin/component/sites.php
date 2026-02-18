@@ -22,7 +22,6 @@
 
 namespace Vvveb\Component;
 
-use function Vvveb\session as sess;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Sites as SitesList;
@@ -49,7 +48,7 @@ class Sites extends ComponentBase {
 
 		$results['sites']    = SitesList::getSites();
 		$results['states']   = SitesList::getStates();
-		$results['site_id']  = sess('site_id');
+		$results['site_id']  = self :: $global['site_id'];
 		$results['active']   = SitesList::getSiteById($results['site_id']);
 		$results['count']    = count($results['sites']);
 
@@ -58,7 +57,7 @@ class Sites extends ComponentBase {
 
 			if ($site_access) {
 				foreach ($results['sites'] as $key => $site) {
-					if (! in_array($site['id'], $site_access)) {
+					if (! in_array($site['site_id'], $site_access)) {
 						unset($results['sites'][$key]);
 					}
 				}

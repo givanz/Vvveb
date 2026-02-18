@@ -31,7 +31,7 @@ class Index extends Base {
 	 *
 	 */
 	function index() {
-		$site = Sites :: getSiteData();
+		$site = Sites :: getSiteData(SITE_ID);
 
 		if (isset($site['template']) && $site['template']) {
 			$this->view->template($site['template']);

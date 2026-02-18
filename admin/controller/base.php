@@ -31,6 +31,7 @@ use function Vvveb\filter;
 use function Vvveb\setLanguage;
 use Vvveb\Sql\taxonomySQL;
 use Vvveb\System\Cache;
+use Vvveb\System\CacheManager;
 use Vvveb\System\Core\FrontController;
 use Vvveb\System\Core\Request;
 use Vvveb\System\Core\View;
@@ -66,15 +67,14 @@ class Base {
 			$site = Sites::getDefault();
 		}
 
-		$site_id = $site['id'];
 		$this->session->set('site', $site);
 		$this->session->set('site_id', $site_id);
 		$this->session->set('site_url', $site['url']);
-		$this->session->set('site', $site['id']);
+		$this->session->set('site', $site['site_id']);
 		$this->session->set('host', $site['host']);
 		$this->session->set('state', $site['state'] ?? 'live');
 
-		return $site_id;
+		return $site['site_id'];
 	}
 
 	protected function getTaxonomies() {
@@ -222,12 +222,14 @@ class Base {
 		return $products_menu;
 	}
 
-	protected function language($defaultLanguage = false, $defaultLanguageId = false, $defaultLocale = false) {
-		$languages = availableLanguages();
+	protected function language($defaultLanguage = false, $defaultLanguageId = false, $defaultLocale = false,  $defaultCode = false, $languages = null) {
+		$languages = $languages ?? availableLanguages();
 
 		$default_language    = $this->session->get('default_language');
 		$default_language_id = $this->session->get('default_language_id');
 		$default_locale      = $this->session->get('default_locale');
+		$default_code        = $this->session->get('default_code');
+		$default_rtl         = false;
 		$site_language       = false;
 
 		if (($lang = ($this->request->post['language'] ?? false)) && ! is_array($lang)) {
@@ -237,6 +239,7 @@ class Base {
 				$this->session->set('language', $language);
 				$this->session->set('language_id', $languages[$language]['language_id']);
 				$this->session->set('locale', $languages[$language]['locale']);
+				$this->session->set('code', $languages[$language]['code']);
 				$this->session->set('rtl', $languages[$language]['rtl'] ?? false);
 				$default_language = false; //recheck default language
 				clearLanguageCache($language);
@@ -250,6 +253,7 @@ class Base {
 					$site_language    = $code;
 					$site_language_id = $lang['language_id'];
 					$site_locale      = $lang['locale'];
+					$site_code        = $lang['code'];
 				}
 
 				//set global default language
@@ -257,6 +261,8 @@ class Base {
 					$default_language    = $code;
 					$default_language_id = $lang['language_id'];
 					$default_locale      = $lang['locale'];
+					$default_code        = $lang['code'];
+					$default_rtl         = $lang['rtl'] ?? false;
 
 					break;
 				}
@@ -266,33 +272,41 @@ class Base {
 				$default_language    = $site_language;
 				$default_language_id = $site_language_id;
 				$default_locale      = $site_locale;
+				$default_code        = $site_code;
 			}
 
 			//no valid default site or global language? set english as default
 			if (! $default_language) {
-				$default_language    = 'en_US';
+				$default_language    = 'en';
 				$default_language_id = 1;
 				$default_locale      = 'en-us';
+				$default_code       = 'en_US';
+				$default_rtl        = false;
 			}
 
 			$this->session->set('default_language', $default_language);
 			$this->session->set('default_language_id', $default_language_id);
 			$this->session->set('default_locale', $default_locale);
+			$this->session->set('default_code', $default_code);
 		}
 
-		$language    = $this->session->get('language') ?? $default_language;
+		$sessLang    = $this->session->get('language');
+		$language    = $sessLang ?? $default_language;
 		$language_id = $this->session->get('language_id') ?? $default_language_id;
 		$locale      = $this->session->get('locale') ?? $default_locale;
+		$code        = $this->session->get('code') ?? $default_code;
 		$rtl         = $this->session->get('rtl') ?? false;
 
 		//if no default language configured then set first language as current language
 		if (! isset($languages[$language])) {
+			$language = null;
 			$default_language    = key($languages);
 			$lang                = $languages[$default_language] ?? [];
 
 			if ($lang) {
 				$default_language_id = $lang['language_id'] ?? $defaultLanguageId;
 				$default_locale      = $lang['locale'] ?? $defaultLocale;
+				$default_code        = $lang['code'] ?? $defaultCode;
 				$default_rtl         = $lang['rtl'] ?? false;
 			}
 		}
@@ -302,22 +316,34 @@ class Base {
 			$language    = $default_language;
 			$language_id = $default_language_id;
 			$locale      = $default_locale;
+			$code        = $default_code;
 			$rtl         = $default_rtl;
+
 			$this->session->set('language', $language);
 			$this->session->set('language_id', $language_id);
 			$this->session->set('locale', $locale);
+			$this->session->set('code', $code);
 			$this->session->set('rtl', $rtl);
 		}
 
 		$this->global['language']            = $language;
 		$this->global['locale']              = $locale;
+		//$this->global['code']                = $code;
 		$this->global['language_id']         = $language_id;
 		$this->global['rtl']                 = $rtl;
 		$this->global['default_language']    = $default_language;
 		$this->global['default_locale']      = $default_locale;
 		$this->global['default_language_id'] = $default_language_id;
 
-		setLanguage($language);
+		if (! $sessLang) {
+			$this->session->set('language', $language);
+			$this->session->set('language_id', $language_id);
+			$this->session->set('locale', $locale);
+			$this->session->set('code', $code);
+			$this->session->set('rtl', $rtl);
+		}
+
+		setLanguage($code);
 
 		if (! defined('CLI')) {
 			$view                = $this->view;
@@ -394,13 +420,18 @@ class Base {
 			$this->session->set('csrf', Str::random());
 		}
 
+		$this->language();
+		$this->currency();
+
 		$admin = Admin::current();
 
 		if (! $admin) {
 			return $this->requireLogin();
 		}
 
-		$this->checkCsrf();
+		if (!$this->checkCsrf()) {
+			return;
+		}
 
 		if (($site_id = ($this->request->post['site'] ?? false)) && is_numeric($site_id)) {
 			$this->setSite($site_id);
@@ -409,11 +440,9 @@ class Base {
 		$site_id = $this->session->get('site_id');
 
 		if (! $site_id) {
-			$site_id = $this->setSite();
+			$site_id = $this->setSite(SITE_ID);
 		}
 
-		$this->language();
-		$this->currency();
 		$adminPath = \Vvveb\adminPath();
 
 		//change site status (live, under maintenance etc)
@@ -421,7 +450,8 @@ class Base {
 			if (Admin::hasPermission('settings/site/save')) {
 				if (Sites::setSiteDataById($site_id, 'state', $state)) {
 					$this->session->set('state', $state);
-					PageCache::getInstance()->purge();
+					CacheManager::clearObjectCache('site');
+					CacheManager::clearPageCache();
 				}
 			} else {
 				$message               = __('Your role does not have permission to access this action!');
@@ -514,8 +544,10 @@ class Base {
 		$this->view->modulePermissions = $this->modulePermissions ?? [];
 
 		$view->adminPath  = $adminPath;
+		$view->publicPath = PUBLIC_PATH;
 		$view->mediaPath  = PUBLIC_PATH . 'media';
-		$view->publicPath = PUBLIC_PATH . 'media';
+
+		Event::trigger(__CLASS__, __FUNCTION__);
 	}
 
 	protected function redirect($url = '/', $parameters = [], $stop = true) {
@@ -547,7 +579,7 @@ class Base {
 		$this->view->redir     = $_SERVER['REQUEST_URI'] ?? '';
 		$this->view->adminPath = $admin_path;
 		$this->view->action    = "{$admin_path}index.php?module=user/login";
-		$this->view->template('user/login.html');
+		$this->view->template('user' . DS . 'login.html');
 
 		$this->view->render();
 
@@ -563,7 +595,10 @@ class Base {
 			(($method = $this->request->getMethod()) == 'post') &&
 			(! ($csrf = $this->session->get('csrf')) || ! ($postCsrf = ($this->request->post['csrf'] ?? false)) || ($csrf != $postCsrf))) {
 			$this->notFound('Invalid csrf!', 403);
+			return false;
 		}
+		
+		return true;
 	}
 
 	/**
@@ -574,7 +609,7 @@ class Base {
 	 * @param mixed $service
 	 * @param mixed $message
 	 */
-	protected function notFound($message = false, $statusCode = 404, $service = false) {
+	protected function notFound($message = false, $statusCode = 404, $service = true) {
 		return FrontController::notFound($service, $message, $statusCode);
 	}
 
