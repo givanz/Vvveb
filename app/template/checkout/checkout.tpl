@@ -87,7 +87,7 @@ input[name="different_shipping_address"]|addNewAttribute =
 	if ($shipping_method == $shipping['name']) echo ' checked';
 ?>
 
-@country = [data-v-countries] option
+@country = [data-v-countries] option[data-v-option]
 @country|deleteAllButFirstChild
 
 [data-v-countries]|before = <?php
@@ -114,7 +114,7 @@ if(isset($this->countries) && is_array($this->countries)) {
 }?>
 
 
-@region = [data-v-regions] option
+@region = [data-v-regions] option[data-v-option]
 @region|deleteAllButFirstChild
 
 [data-v-regions]|before = <?php
