@@ -75,7 +75,7 @@ if (isset($this->global) && $name
 }
 ?>
 
-[data-v-year]= $this->global['current_year']
+[data-v-global-current_year]= $this->global['current_year']
 
 head > link[hreflang]|deleteAllButFirst
 
