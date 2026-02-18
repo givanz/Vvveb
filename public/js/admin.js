@@ -26,6 +26,7 @@ import {Plugins} from './admin/controller/plugins.js';
 import {Table} from './admin/controller/table.js';
 import {Cache} from './admin/controller/cache.js';
 import {HeartBeat} from './admin/heartbeat.js';
+import {Search} from './admin/controller/search.js';
 
 if (window.Vvveb === undefined) window.Vvveb = {};
 
@@ -33,6 +34,7 @@ window.themes = Themes;
 window.plugins = Plugins;
 window.table = Table;
 window.cache = Cache;
+window.search = Search;
 
 Router.init();
 
