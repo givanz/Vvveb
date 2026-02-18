@@ -25,7 +25,6 @@ namespace Vvveb\Component;
 use function Vvveb\availableLanguages;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
-use Vvveb\System\Session;
 
 class Languages extends ComponentBase {
 	public static $defaultOptions = [
@@ -48,11 +47,12 @@ class Languages extends ComponentBase {
 		$results['language'] = availableLanguages();
 
 		if ($results['language']) {
-			$results['current'] = $code = Session::getInstance()->get('language') ?? 'en_US';
+			$results['current'] = $code = self :: $global['language'];
 
 			if (! isset($results['language'][$code])) {
-				$results['current'] = $code	= key($results['language']);
+				$results['current'] = $code = key($results['language']);
 			}
+
 			$language           = $results['language'][$code] ?? [];
 			$results['active']  = [];
 
@@ -61,6 +61,7 @@ class Languages extends ComponentBase {
 				$results['active'] = [
 					'name' => $language['name'],
 					'code' => $language['code'],
+					'slug' => $language['slug'],
 					'id'   => $language['language_id'],
 				];
 			} else {

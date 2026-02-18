@@ -12,7 +12,7 @@
 	)
 	BEGIN
 		-- language
-		SELECT *, code as array_key
+		SELECT *, slug as array_key
 			FROM language WHERE 1 = 1
 			
 			@IF isset(:status) 
@@ -40,6 +40,8 @@
 	PROCEDURE get(
 		IN language_id INT,
 		IN code CHAR,
+		IN default INT,
+		IN status INT,
 		OUT fetch_row, 
 	)
 	BEGIN
@@ -56,6 +58,16 @@
 			@IF isset(:code) 
 			THEN
 				AND code = :code
+			END @IF
+
+			@IF isset(:default) 
+			THEN
+				AND `default` = :default
+			END @IF
+			
+			@IF isset(:status) 
+			THEN
+				AND status = :status
 			END @IF
 
 		LIMIT 1;
@@ -98,6 +110,9 @@
 	CREATE PROCEDURE edit(
 		IN language ARRAY,
 		IN language_id INT,
+		IN code CHAR,
+		IN default INT,
+		IN status INT,
 		OUT affected_rows
 	)
 	BEGIN
@@ -110,6 +125,25 @@
 			
 			SET @LIST(:language) 
 			
-		WHERE language_id = :language_id
+		WHERE 1 = 1 
 
+			@IF isset(:language_id) 
+			THEN
+				AND language_id = :language_id
+			END @IF
+			
+			@IF isset(:code) 
+			THEN
+				AND code = :code
+			END @IF
+			
+			@IF isset(:default) 
+			THEN
+				AND `default` = :default
+			END @IF
+			
+			@IF isset(:status) 
+			THEN
+				AND status = :status
+			END @IF
 	END

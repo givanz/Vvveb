@@ -17,11 +17,11 @@ $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : f
 $language['language'] = empty($language['language']) ? $_default : $language['language'];
 
 	if (is_array($language['language'])) {
-		foreach ($language['language'] as $index => $lang) {?>
+		foreach ($language['language'] as $index => $lang) { ?>
 		
 		@language .dropdown-item|addClass = <?php 
-			if (isset($lang['code']) && isset($language['active']['code']) && 
-				($lang['code'] == $language['active']['code']) && 
+			if (isset($lang['slug']) && isset($language['active']['slug']) && 
+				($lang['slug'] == $language['active']['slug']) && 
 				!$vvveb_is_page_edit) {
 					echo 'active';
 				}
@@ -33,10 +33,14 @@ $language['language'] = empty($language['language']) ? $_default : $language['la
 		
 		@language button|formaction =$lang['url']
 		
-		@language [data-v-language-code]|value = $lang['code']
-		@language a[data-v-language-code]|href = $lang['code']
+		@language [data-v-language-code]|value = $lang['slug']
+		@language a[data-v-language-code]|href = $lang['slug']
 		@language [data-v-language-url]|href = $lang['url']
 		@language [data-v-language-language_id]|value = $lang['language_id']
+		
+		[data-v-component-language] option[data-v-language]       = $lang['name']
+		[data-v-component-language] option[data-v-language]|value = $lang['slug']
+		[data-v-component-language] option[data-v-language]|addNewAttribute = <?php if ($lang['slug'] == $language['active']['slug']) echo 'selected';?>
 		
 		@language|after = <?php 
 		} 

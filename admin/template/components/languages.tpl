@@ -14,12 +14,12 @@ if(isset($this->_component['languages']) && $this->_component['languages'][$_lan
 	if (is_array($languages['language'])) {
 		foreach ($languages['language'] as $index => $language) {?>
 		
-		@language .dropdown-item|addClass = <?php if ($language['code'] == $languages['active']['code']) echo 'active'?>
+		@language .dropdown-item|addClass = <?php if ($language['slug'] == $languages['active']['slug']) echo 'active'?>
 		
 		@language [data-v-language-name] = $language['name']
 		@language [data-v-language-url]|href = <?php echo '//' . $language['url'];?>
 		
-		@language button[data-v-language-code]|value = $language['code']
+		@language button[data-v-language-code]|value = $language['slug']
 		@language button[data-v-language-language_id]|value = $language['language_id']
 		
 		@language|after = <?php 

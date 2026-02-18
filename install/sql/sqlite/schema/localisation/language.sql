@@ -5,6 +5,7 @@ CREATE TABLE `language` (
 `name` TEXT NOT NULL,
 `code` TEXT NOT NULL,
 `locale` TEXT NOT NULL,
+`slug` TEXT NOT NULL,
 `rtl` TINYINT NOT NULL DEFAULT 0,
 `sort_order` INTEGER NOT NULL DEFAULT 0,
 `status` TINYINT NOT NULL,
