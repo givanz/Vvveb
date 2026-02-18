@@ -5,6 +5,7 @@
 @category|deleteAllButFirstChild
 
 [data-v-component-categories]|prepend = <?php
+$vvveb_is_page_edit = Vvveb\isEditor();
 //make sure that the instance is unique even if the component is added into a loop inside a compomonent like data-v-posts
 $line = __LINE__;
 if (isset($_categories_idx)){
@@ -31,14 +32,15 @@ $_categories = $categories['categories'] ?? [];
 
 $_pagination_count = $categories['count'] ?? 0;
 $_pagination_limit = isset($categories['limit']) ? $categories['limit'] : 5;
-$parent            = $categories[key($_categories)]['parent_id'] ?? 0;
+
+$parent            = 0;	
 $generate_menu     = false;
 ?>
 	
 @categories|before = <?php
 
 if ($_categories) {
-$generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
+$generate_menu = function ($parent) use (&$_categories, &$generate_menu, $vvveb_is_page_edit) {
 ?>
 	@category|before = <?php 
 
@@ -68,8 +70,10 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu) {
 	@categories|after = <?php 
 }; 
 
-if ($_categories) {
-reset($_categories);
-	$generate_menu($parent, $_categories); }
+	if ($_categories) {
+		reset($_categories);
+		$parent = $_categories[key($_categories)]['parent_id'] ?? 0;
+		$generate_menu($parent, $_categories); 
+	}
 }
 ?>

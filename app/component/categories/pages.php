@@ -24,19 +24,22 @@ namespace Vvveb\Component\Categories;
 
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use Vvveb\System\Images;
 use function Vvveb\url;
 
 class Pages extends ComponentBase {
 	public static $defaultOptions = [
-		'start'                    => 0,
-		'limit'                    => 7,
-		'posts_start'              => 0,
-		'posts_limit'              => NULL,
-		'site_id'                  => NULL,
-		'order'                    => ['url', 'price asc'],
-		'taxonomy_item_id'         => NULL,
-		'page'                     => 1,
-		'parent_id'                => false,
+		'start'            => 0,
+		'limit'            => 7,
+		'posts_start'      => 0,
+		'posts_limit'      => NULL,
+		'type'             => 'categories',
+		'post_type'        => 'post',
+		'site_id'          => NULL,
+		'order'            => ['url', 'price asc'],
+		'taxonomy_item_id' => NULL,
+		'page'             => 1,
+		'parent_id'        => NULL,
 	];
 
 	function results() {
@@ -59,6 +62,10 @@ class Pages extends ComponentBase {
 					if (is_array($category['post'])) {
 						if (isset($this->options['posts_limit'])) {
 							$category['post'] = array_slice($category['post'], 0 , $this->options['posts_limit']);
+
+							if (isset($category['image'])) {
+								$category['image'] = Images::image($category['image'], 'post', $this->options['image_size'] ?? 'medium');
+							}
 						}
 
 						$category['posts_count'] = count($category['post']);
@@ -66,6 +73,10 @@ class Pages extends ComponentBase {
 				}
 
 				$category['url'] = url('product/category/index', $category);
+
+				if (isset($category['image'])) {
+					$category['image_url'] = Images::image($category['image'], 'taxonomy_item');
+				}
 
 				if ($parent_id > 0 && isset($results['categories'][$parent_id])) {
 					$parent = &$results['categories'][$parent_id];

@@ -25,7 +25,7 @@ $_pagination_limit = isset($categories_pages['limit']) ? $categories_pages['limi
 $_categories = $categories_pages['categories'] ?? [];
 
 if ($_categories) {
-$generate_menu = function ($parent) use (&$_categories, &$generate_menu, &$index) {
+$generate_menu = function ($parent) use (&$_categories, &$generate_menu, &$index, $vvveb_is_page_edit) {
 ?>
 	@category|before = <?php 
 
@@ -66,6 +66,10 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu, &$index
 
 	@categories|after = <?php 
 }; 
-reset($_categories);
-$generate_menu($_categories[key($_categories)]['parent_id'], $_categories, $_categories_pages_idx); }
+
+	if ($_categories) {
+		reset($_categories);
+		$generate_menu($_categories[key($_categories)]['parent_id'], $_categories, $_categories_pages_idx); 
+	}
+}
 ?>

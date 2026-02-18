@@ -64,7 +64,12 @@ class Categories extends ComponentBase {
 					$category['type'] = $this->options['post_type'];
 				}
 
-				$category['url'] = url('product/category/index', $category);
+				$url = ['slug' => $category['slug']];
+				if ($category['type'] != 'product') {
+					$url['post_type'] = $category['type'];
+				}
+
+				$category['url'] = url('product/category/index', $url);
 
 				if (isset($category['image'])) {
 					$category['image_url'] = Images::image($category['image'], 'taxonomy_item');
@@ -96,7 +101,7 @@ class Categories extends ComponentBase {
 			case 'product/category':
 				$categoryId = $this->request->get['category_id'] ?? '';
 
-			break;
+				break;
 		}
 
 		if (isset($results['categories']) && $categoryId) {
