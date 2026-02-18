@@ -23,7 +23,6 @@
 namespace Vvveb\System\Core;
 
 use function Vvveb\__;
-use Vvveb\System\Component\Component;
 use Vvveb\System\Event;
 use Vvveb\System\PageCache;
 use Vvveb\System\Routes;
@@ -38,10 +37,6 @@ class FrontController {
 
 	static private $actionName;
 
-	static private $app = 'app';
-
-	static public $rewrite;
-
 	static private $status = 200;
 
 	/**
@@ -51,14 +46,6 @@ class FrontController {
 	 */
 	static function getModuleName() {
 		return self :: $moduleName;
-	}
-
-	static function app($app = null) {
-		if ($app) {
-			self :: $app = $app;
-		}
-
-		return self :: $app;
 	}
 
 	/**
@@ -97,92 +84,36 @@ class FrontController {
 
 	static function notFound($service = false, $message = false, $statusCode = 404) {
 		self :: $status = $statusCode;
-		//@header(' ', true, $statusCode);
-		/*
-				$view = View :: getInstance();
-				//$view = new View();
-				$view->setTheme();
 
-				if (is_string($message)) {
-					$message = ['message' => $message];
-				}
-
-				$view->set($message);
-
-				PageCache::getInstance()->cleanUp();
-				self :: redirect('Error' . $statusCode, 'index');
-
-				die(0);*/
-
-		if (include_once DIR_APP . DS . 'controller' . DS . "error$statusCode.php") {
+		$file = DIR_APP . DS . 'controller' . DS . "error$statusCode.php";
+		if (file_exists($file)) {
 			$controller         = 'Vvveb\Controller\Error' . $statusCode;
 			self :: $moduleName = $moduleName = 'error' . $statusCode;
 			$controller         = 'Vvveb\Controller\Error' . $statusCode;
-			//header("HTTP/1.1 $statusCode" /* . substr(str_replace(($message ?? ''), "\n", ' '), 100)*/);
-			http_response_code($statusCode);
+			//http_response_code($statusCode);
+			$view = View::getInstance();
+			$view->set($message);
+			self :: call($controller, 'index', $file);
+			PageCache::getInstance()->cleanUp();
+			die();
+			return;
 		} else {
 			//header(' ', true, $statusCode);
-			http_response_code($statusCode);
+			PageCache::getInstance()->cleanUp();
 
+			http_response_code($statusCode);
 			die("Http error $statusCode");
 		}
-
-		//$view = View :: getInstance();
-		$response = Response::getInstance();
-
-		if ($service) {
-			$view = View::getInstance();
-		} else {
-			$view = new View();
-		}
-
-		$view->setTheme();
-
-		if (is_string($message)) {
-			$message = ['message' => $message];
-		}
-
-		$view->set($message);
-		$view->template(self :: $moduleName . '.html'); //default html
-
-		$controller           = new $controller();
-		$controller->response = $response;
-		$controller->view     = $view;
-		$template             = call_user_func([$controller, 'index']);
-
-		if ($template === false) {
-			$view->template(false);
-		} else {
-			if (is_array($template)) {
-				return $response->output($template);
-			//echo json_encode($template);
-			} else {
-				if ($template) {
-					$view->template($template);
-				}
-			}
-		}
-		/*
-		if ($service === true) {
-			$component = Component :: getInstance();
-		}
-		 */
-		//header(' ', true, $statusCode);
-		PageCache::getInstance()->cleanUp();
-
-		$view->setType($response->getType());
-		$view->render();
-
-		die();
-		//return $response->output();
-		//self :: closeConnections();
-		//$view->render($service, true, $service);
 	}
 
 	static function closeConnections() {
+		if (function_exists('fastcgi_finish_request')) {
+			//fastcgi_finish_request();
+		}
+		/*
 		if (defined('DB_ENGINE') && ($instance = \Vvveb\System\Db::getInstance())) {
 			$instance->close();
-		}
+		}*/
 	}
 
 	/**
@@ -257,24 +188,25 @@ class FrontController {
 			}
 		}
 
-		$response   = Response::getInstance();
-		$template   = str_replace('/', DS, strtolower(self :: $moduleName));
-		$theme 	    = $controller->view->getTheme();
-		$path       = DIR_THEME . $theme . DS;
-		$pluginName = false;
+		$response = Response::getInstance();
+		$template = str_replace('/', DS, strtolower(self :: $moduleName));
+		$theme 	  = $controller->view->getTheme();
+		$path     = DIR_THEME . $theme . DS;
+		$isPlugin = strncmp($template, 'plugins/', 8) === 0;
 
 		if ($actionName && $actionName != 'index') {
-			$html = $path . $template . DS . strtolower($actionName) . '.html';
+			if ($isPlugin) {
+				$t          = str_replace('plugins' . DS, '', $template);
+				$p          = strpos($t, DS);
+				$pluginName = substr($t, 0, $p);
+				$nameSpace  = substr($t, $p + 1);
 
-			if (is_file($html)) {
-				if ($pluginName) {
-					$template .= 'plugins' . DS . $nameSpace . DS . strtolower($actionName);
-				} else {
-					$template .= DS . strtolower($actionName);
-				}
+				$html = DIR_PLUGINS . $pluginName . DS . 'public' . DS . APP . DS . $nameSpace . DS . strtolower($actionName) . '.html';
+			} else {
+				$html = $path . $template . DS . strtolower($actionName) . '.html';
 			}
 
-			if ($pluginName) {
+			if (is_file($html)) {
 				$template .= DS . strtolower($actionName);
 			}
 		}
@@ -285,6 +217,8 @@ class FrontController {
 
 		//$controller->view->template($template . '.html'); //default html
 		$template     = call_user_func([$controller, $actionName]);
+
+		list($template, $controller, $actionName) = Event::trigger(__CLASS__, __FUNCTION__, $template, $controller, $actionName);
 		$responseType = $response->getType();
 		$controller->view->setType($responseType);
 
@@ -293,15 +227,13 @@ class FrontController {
 		} else {
 			if (is_array($template)) {
 				$response->output($template);
-			//echo json_encode($template);
+				//echo json_encode($template);
 			} else {
 				if ($template) {
 					$controller->view->template($template);
 				}
 			}
 		}
-
-		//list($responseType) = Event :: trigger($controllerClass, "$actionName:after", $response->getType('json'));
 
 		$response->setStatus(self :: $status);
 		$return = $response->output();
@@ -342,8 +274,8 @@ class FrontController {
 			$nameSpace       = 'index';
 
 			if ($p !== false) {
-			$pluginName      = substr($dir, 0, $p);
-			$nameSpace       = substr($dir, $p + 1);
+				$pluginName      = substr($dir, 0, $p);
+				$nameSpace       = substr($dir, $p + 1);
 			}
 			//$className       = str_replace('Plugins\\', '', $className);
 			$file            = DIR_PLUGINS . $pluginName . DS . APP .
@@ -384,6 +316,7 @@ class FrontController {
 
 		if (V_SUBDIR_INSTALL) {
 			$uri = substr($uri, strlen(V_SUBDIR_INSTALL));
+			//$uri = str_replace(V_SUBDIR_INSTALL, '', $uri);
 		}
 
 		$uri   = preg_replace('/\?.*$/', '', $uri);
@@ -392,10 +325,10 @@ class FrontController {
 		if (! $module && (APP != 'admin' && APP != 'install' && (Routes::init(APP) && $route = Routes::match($uri)))) {
 			$_GET = array_merge($route, $_GET);
 		} else {
-			$module         = $module ?? ((APP == 'install' || APP == 'admin') ? 'index' : 'error404');
+			$module         = $module ?? ((APP == 'install' || APP == 'admin') ? 'index' : false);
 
 			if (! $module && APP == 'app') {
-				self :: $status = 404;
+				return self::notFound(false, ['message' => 'No route!']);
 			}
 		}
 
