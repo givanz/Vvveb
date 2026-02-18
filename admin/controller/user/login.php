@@ -24,6 +24,7 @@ namespace Vvveb\Controller\User;
 
 use \Vvveb\System\Functions\Str;
 use function Vvveb\__;
+use function Vvveb\availableLanguages;
 use function Vvveb\pregMatch;
 use function Vvveb\setLanguage;
 use Vvveb\Sql\Admin_Failed_LoginSQL;
@@ -38,6 +39,31 @@ class Login {
 	protected $failedTimeInterval = 'Y-m-d H:00:00'; //failed attemps per hour
 
 	protected $failedCount = 10; //the number of failures before account is locked
+
+	protected function language() {
+		$default_rtl = false;
+		if (! ($default_code = $this->session->get('code'))) {
+			$languages = availableLanguages();
+
+			foreach ($languages as $code => $lang) {
+				//set global default language
+				if ($lang['default']) {
+					$default_language    = $code;
+					$default_language_id = $lang['language_id'];
+					$default_locale      = $lang['locale'];
+					$default_code        = $lang['code'];
+					$default_rtl         = $lang['rtl'] ?? false;
+
+					break;
+				}
+			}
+		} else {
+		}
+
+		setLanguage($default_code);
+		$this->global['code'] = $default_code;
+		$this->global['rtl'] = $default_rtl;
+	}
 
 	protected function redirect($url = '/', $parameters = []) {
 		header("Location: $url");
@@ -54,6 +80,7 @@ class Login {
 			return Admin::logout();
 		}
 
+		$this->language();
 		//$this->checkAlreadyLoggedIn();
 		$admin      = Admin::current();
 
@@ -86,10 +113,6 @@ class Login {
 
 		$view->action    = $adminPath . 'index.php?module=user/login';
 		$view->modal     = $this->request->get['modal'] ?? false;
-
-		//$this->session = Session::getInstance();
-		$language = $this->session->get('language') ?? 'en_US';
-		setLanguage($language);
 
 		if (isset($this->request->get['success'])) {
 			$view->success['get'] = htmlspecialchars($this->request->get['success']);
@@ -126,8 +149,8 @@ class Login {
 		$method = $this->request->getMethod();
 
 		if ($method == 'post') {
-			if ( !($csrf = $this->session->get('csrf')) || !($postCsrf = ($this->request->post['csrf'] ?? false)) || ($csrf != $postCsrf) )	{
-				$view->errors['get'] = 'Invalid csrf!';
+			if (! ($csrf = $this->session->get('csrf')) || ! ($postCsrf = ($this->request->post['csrf'] ?? false)) || ($csrf != $postCsrf)) {
+				$view->errors['get'] = __('Invalid csrf!');
 				return;
 				//$this->notFound('Invalid csrf!', 403);
 			}
@@ -172,7 +195,7 @@ class Login {
 						if (isset($this->request->post['redir']) && $this->request->post['redir'] && $_SERVER['REQUEST_URI'] != $this->request->post['redir']) {
 							$url = parse_url($this->request->post['redir']);
 							$this->redirect($url['path'] . '?' . ($url['query'] ?? '') . '#' . ($url['fragment'] ?? ''));
-						//$this->redirect($this->request->post['redirect']);
+							//$this->redirect($this->request->post['redirect']);
 						} else {
 							$this->redirect($adminPath);
 						}
