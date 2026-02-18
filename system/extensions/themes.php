@@ -27,6 +27,7 @@ use \Vvveb\System\Event;
 use \Vvveb\System\Sites;
 use function Vvveb\__;
 use function Vvveb\getDefaultTemplateList;
+use function Vvveb\slugify;
 use Vvveb\System\Functions\Str;
 
 class Themes extends Extensions {
@@ -41,6 +42,8 @@ class Themes extends Extensions {
 	static protected $categoriesFeedUrl = 'https://themes.vvveb.com/feed/categories';
 
 	static protected $themes = [];
+
+	static protected $imageExtensions = ['png', 'jpg', 'webp', 'jpeg'];
 
 	static protected $categories = [];
 
@@ -63,19 +66,8 @@ class Themes extends Extensions {
 		$activeTheme = Sites::getTheme($site_id) ?? 'default';
 
 		if ($cache && $themes = $cacheDriver->get('vvveb', $cacheKey)) {
-			foreach ($themes as &$theme) {
-				$theme['active'] = ($activeTheme == $theme['folder']);
-			}
-
-			if (isset($themes[$activeTheme])) {
-				$theme = $themes[$activeTheme];
-				unset($themes[$activeTheme]);
-				$themes = [$activeTheme => $theme] + $themes;
-			}
-
-			return $themes;
 		} else {
-			$list        = glob(DIR_ROOT . '/public/themes/*/index.html');
+			$list        = glob(DIR_ROOT . '/public/themes/*/index.html', GLOB_NOSORT);
 
 			$themes = [];
 
@@ -101,21 +93,40 @@ class Themes extends Extensions {
 				}
 
 				$theme['name']       = $theme['name'] ?? ucfirst($theme['folder']);
-				$theme['screenshot'] = $theme['screenshot'] ?? (file_exists($dir . DS . 'screenshot.png') ? PUBLIC_PATH . 'themes/' . $folder . '/screenshot.png' : '/../media/extension.svg');
+				$theme['screenshot'] = $theme['screenshot'] ?? (file_exists($dir . DS . 'screenshot.png') ? PUBLIC_PATH . 'themes/' . $folder . '/screenshot.png' : null);
+
+				if (! isset($theme['screenshot'])) {
+					$theme['screenshot'] =  PUBLIC_PATH . 'media/extension.svg';
+					if ($h = opendir($dir)) {
+						while (($file = readdir($h)) !== false) {
+							$extension = strtolower(substr($file, strrpos($file, '.') + 1));
+							if (in_array($extension, self :: $imageExtensions)) {
+								$theme['screenshot'] = PUBLIC_PATH . 'themes/' . $folder . '/' . $file;
+								break;
+							}
+						}
+						closedir($h);
+					}
+				}
 
 				$themes[$folder] = $theme;
-
-				if ($theme['active'] = ($activeTheme == $theme['folder'])) {
-					unset($themes[$activeTheme]);
-					$themes = [$activeTheme => $theme] + $themes;
-				}
 			}
 
-			static :: $extensions[static :: $extension] = $themes;
+			//show newest themes first
+			//$themes = array_reverse($themes);
 
 			if ($cache) {
 				$cacheDriver->set('vvveb', $cacheKey, $themes);
 			}
+
+			static :: $extensions[static :: $extension] = $themes;
+		}
+
+		if (isset($themes[$activeTheme])) {
+			$theme = $themes[$activeTheme];
+			$theme['active'] = true;
+			unset($themes[$activeTheme]);
+			$themes = [$activeTheme => $theme] + $themes;
 		}
 
 		return $themes;
@@ -128,7 +139,7 @@ class Themes extends Extensions {
 		//check templates in order
 		$defaultTemplate = '';
 
-		foreach (['content/page.html', 'blank.html', 'index.html'] as $page) {
+		foreach (['content' . DS . 'page.html', 'blank.html', 'index.html'] as $page) {
 			if (file_exists(DIR_THEMES . $slug . DS . $page)) {
 				$defaultTemplate = $page;
 
@@ -151,6 +162,22 @@ class Themes extends Extensions {
 
 					@copy(DIR_THEMES . $slug . DS . $defaultTemplate, $file);
 				}
+			}
+		}
+
+		//create missing folders
+		foreach (['backup', 'css'] as $folder) {
+			$dir = DIR_THEMES . $slug . DS . $folder;
+			if (! is_dir($dir)) {
+				@mkdir($dir);
+			}
+		}
+
+		//create missing files
+		foreach (['css' . DS . 'custom.css', 'css' . DS . 'fonts.css'] as $file) {
+			$path = DIR_THEMES . $slug . DS . $file;
+			if (! file_exists($path)) {
+				@touch($path);
 			}
 		}
 	}
@@ -181,16 +208,23 @@ class Themes extends Extensions {
 
 			if ($folder) {
 				if ($folder == 'index.html') {
-					$extractTo .= DS . $slug;
+					$extractTo .= $slug;
 				}
+
+
 
 				if ($zip->extractTo($extractTo)) {
 					$success = $slug;
+					if ($folder !== 'index.html') {
+						$folder = str_replace('/index.html', '', $folder);
+						$slug = slugify($folder);
+						rename($extractTo . $folder, $extractTo . $slug);
+					}
 				} else {
 					$success = false;
 				}
 			} else {
-				throw new \Exception(sprintf(__('No `%s` info found inside zip!', $fileCheck)));
+				throw new \Exception(sprintf(__('No `%s` info found inside zip!'), $fileCheck));
 			}
 
 			$zip->close();
