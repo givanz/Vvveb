@@ -3,8 +3,7 @@
 @post  = [data-v-component-posts] [data-v-post]
 
 //editor info
-@post|data-v-id = $post['post_id']
-@post|data-v-type = 'post'
+@post|data-v-id   = $post['post_id']
 
 //search
 @posts [data-v-search] = $posts['search']
@@ -31,8 +30,8 @@
 $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : [];
 $_posts = empty($posts['post']) ? $_default : $posts['post'];
 //$pagination = $this->posts[$_posts_idx]['pagination'];
-$count = 0;
-foreach ($_posts as $index => $post) {?>
+$index = 0;
+foreach ($_posts as $id => $post) {?>
 
 	//editor attributes
 
@@ -63,7 +62,7 @@ foreach ($_posts as $index => $post) {?>
 	@post [data-v-post-excerpt] = <?php if (isset($post['excerpt'])) echo($post['excerpt']);?>
 	
 	@post|after = <?php 
-	$count++;
+		$index++;
 }
 
 $current_component = $previous_component;

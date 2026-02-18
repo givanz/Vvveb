@@ -3,7 +3,6 @@
 
 
 @product|data-v-id = $product['product_id']
-@product|data-v-type = 'product'
 
 @product|before = <?php
 $vvveb_is_page_edit = Vvveb\isEditor();
@@ -20,7 +19,6 @@ $_pagination_limit = isset($product['limit']) ? $product['limit'] : 5;
 
 //editor attributes
 @product|data-v-id = $product['product_id']
-@product|data-v-type = 'product'
 
 //manual echo to avoid html escape
 @product [data-v-product-content] = <?php echo($product['content']);?>

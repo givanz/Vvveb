@@ -34,7 +34,7 @@
 @product|before = <?php
 
 if ($prods) {
-	foreach ($prods as $index => $prod) { $index++;?>
+	foreach ($prods as $id => $prod) { ?>
 	
 	@product [data-v-product-*]|innerText = $prod['@@__data-v-product-(*)__@@']
 	@product a[data-v-product-*]|href = $prod['@@__data-v-product-(*)__@@']
@@ -42,7 +42,6 @@ if ($prods) {
 
 	//editor attributes
 	@product|data-v-id = $prod['product_id']
-	@product|data-v-type = 'product'
 	
 	//title attributes
 	@product [data-v-product-alt]|alt = $prod['name']	
@@ -119,7 +118,8 @@ if ($prods) {
 	//echo description directly to avoid htmlspecialchars escape
 	@product [data-v-product-content] = <?php echo($prod['content']);?>	
 	
-	@product|after = <?php 
+	@product|after = <?php
+		$index++; 
 	}
 }
 

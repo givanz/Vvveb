@@ -3,7 +3,6 @@
 
 //editor info
 @post|data-v-id = $post['post_id']
-@post|data-v-type = 'post'
 
 @post|before = <?php
 
