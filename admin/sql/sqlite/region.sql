@@ -104,6 +104,27 @@
 		WHERE region_id = :region_id
 
 
+	END	
+	
+	-- multiple edit region
+
+	CREATE PROCEDURE multiEdit(
+		IN region ARRAY,
+		IN region_id ARRAY,
+		OUT affected_rows
+	)
+	BEGIN
+
+		-- allow only table fields and set defaults for missing values
+		@FILTER(:region, region)
+
+		UPDATE region 
+			
+			SET @LIST(:region) 
+			
+		WHERE region_id IN (:region_id);
+
+
 	END
 	
 	-- delete region
