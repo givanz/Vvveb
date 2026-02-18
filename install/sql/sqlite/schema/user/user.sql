@@ -19,6 +19,7 @@ CREATE TABLE `user` (
 `token` TEXT NOT NULL DEFAULT '',
 `secret` TEXT NOT NULL DEFAULT '',
 `subscribe` INT NOT NULL DEFAULT 0,
+`last_ip` TEXT NOT NULL DEFAULT '',
 `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- PRIMARY KEY (`user_id`)

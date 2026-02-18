@@ -12,6 +12,7 @@ CREATE TABLE `post` (
 `type` TEXT NOT NULL DEFAULT 'post',
 `template` TEXT NOT NULL DEFAULT '',
 `comment_count` INT NOT NULL DEFAULT '0',
+`views` INT NOT NULL DEFAULT '0',
 `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- PRIMARY KEY (`post_id`)

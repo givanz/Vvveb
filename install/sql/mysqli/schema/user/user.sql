@@ -20,6 +20,7 @@ CREATE TABLE `user` (
   `secret` varchar(32) NOT NULL DEFAULT '',
 --  `fields` text NOT NULL DEFAULT '',
   `subscribe` tinyint NOT NULL DEFAULT 0, 
+  `last_ip` varchar(40) NOT NULL DEFAULT '',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`),

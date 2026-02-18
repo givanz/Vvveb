@@ -5,7 +5,7 @@ CREATE TABLE `taxonomy` (
 `name` TEXT NOT NULL DEFAULT '',
 `post_type` TEXT NOT NULL DEFAULT '',
 `type` TEXT NOT NULL DEFAULT 'categories',
- `site_id` INT UNSIGNED NOT NULL DEFAULT 0
+`site_id` INT UNSIGNED NOT NULL DEFAULT 0
 -- PRIMARY KEY (`taxonomy_id`)
 );
 
