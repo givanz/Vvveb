@@ -87,7 +87,7 @@ function url($parameters, $mergeParameters = false, $useCurrentUrl = true) {
 			}
 		}
 
-		$result .= ($useCurrentUrl ? $url['path'] ?? '' : '') . ($parameters ? '?' . urldecode(http_build_query($parameters)) : '');
+		$result .= ($useCurrentUrl ? $url['path'] ?? '' : '') . ($parameters ? '?' . http_build_query($parameters) : '');
 	}
 
 	return  $result;
