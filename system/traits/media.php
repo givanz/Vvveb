@@ -30,7 +30,7 @@ use function Vvveb\sanitizeFileName;
 use Vvveb\System\Event;
 
 trait Media {
-	public $uploadDenyExtensions = ['php', 'svg', 'js', 'exe'];
+	public $uploadDenyExtensions = ['php', 'svg', 'js', 'exe', 'html'];
 
 	public $uploadDenyMime    = ['image/svg', 'image/svg+xml', 'application/javascript', 'application/x-msdownload'];
 
@@ -62,12 +62,12 @@ trait Media {
 		return $scandir;
 	}
 
-	protected function setMediaEndpoints($controllerPath) {
+	protected function setMediaEndpoints($controllerPath, $params = '') {
 		$this->view->mediaUrl          = $controllerPath;
-		$this->view->scanUrl           = "$controllerPath&action=scan";
-		$this->view->uploadUrl         = "$controllerPath&action=upload";
-		$this->view->deleteUrl         = "$controllerPath&action=delete";
-		$this->view->renameUrl         = "$controllerPath&action=rename";
+		$this->view->scanUrl           = "$controllerPath&action=scan$params";
+		$this->view->uploadUrl         = "$controllerPath&action=upload$params";
+		$this->view->deleteUrl         = "$controllerPath&action=delete$params";
+		$this->view->renameUrl         = "$controllerPath&action=rename$params";
 		$this->view->uploadMaxFilesize = parseQuantity(ini_get('upload_max_filesize'));
 		$this->view->postMaxSize       = parseQuantity(ini_get('post_max_size'));
 	}
