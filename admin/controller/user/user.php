@@ -150,12 +150,24 @@ class User extends Base {
 					return;
 				}
 			}
-		}
 
+			$admin = Admin::current();
+
+			if (isset($user['role_id'])) {
+				//don't allow role change for non admin roles
+				if (! in_array($admin['role'], ['super_admin', 'admin'])) {
+					unset($user['role_id']);
+				} else {
+					//admin role can not set himself super admin, make sure role id is lower than super_admin
+					if ($admin['role'] == 'admin') {
+						$user['role_id'] = max($user['role_id'], 2);
+					}
+				}
+			}
+		}
 
 		if (($errors = $validator->validate($user)) === true) {
 			$users = model($this->type);
-			$user  = $this->request->post[$this->type] ?? [];
 
 			//if no password provided don't change
 			if (empty($user['password'])) {
