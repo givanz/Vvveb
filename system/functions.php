@@ -1871,6 +1871,11 @@ function download($url) {
 	$result = false;
 
 	$url = html_entity_decode($url);
+	$url = validateUrl($url);
+
+	if (! $url) {
+		return;
+	}
 
 	if (function_exists('curl_init')) {
 		$ch = curl_init($url);
@@ -1901,10 +1906,44 @@ function download($url) {
 	return $result;
 }
 
+function validateUrl($url) {
+	if (strncmp($url, 'http', 4) === 0) {
+		if (preg_match('/https?:\/\/(.+?)\//', $url, $matches)) {
+			$host = $matches[1];
+
+			//don't allow port number
+			if (strpos($host, ':') !== false) {
+				return '';
+			}
+
+			//don't allow hostname without tld
+			if (strpos($host, '.') === false) {
+				return '';
+			}
+
+			//don't allow ip
+			if (preg_match('/^(\d+\.)+\d+$/', $url, $matches) || 
+				(false !== filter_var($url, FILTER_VALIDATE_IP))) {
+				return '';
+			}
+
+			return $url;
+		}
+	}
+
+	return '';
+}
+
 function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception = true) {
 	$cacheDriver  = System\Cache :: getInstance();
 	$cacheKey     = md5($url);
 	$result       = false;
+
+	$url = validateUrl($url);
+
+	if (! $url) {
+		return;
+	}
 
 	if ($cache && ($result = $cacheDriver->get('url', $cacheKey))) {
 		return $result;
