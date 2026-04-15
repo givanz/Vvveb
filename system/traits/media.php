@@ -205,6 +205,8 @@ trait Media {
 		$duplicate   =  $this->request->post['duplicate'] ?? false;
 		$dirMedia    = $this->dirMedia;
 
+		$this->response->setType('json');
+
 		$currentFile = $dirMedia . DS . $file;
 		if ($newfile) {
 			$targetFile  = $dirMedia . DS . $newfile;
@@ -217,8 +219,9 @@ trait Media {
 		$extension = strtolower(substr($targetFile, strrpos($targetFile, '.') + 1));
 
 		if (isset($this->uploadDenyExtensions) && in_array($extension, $this->uploadDenyExtensions)) {
-			$message .= __('File type not allowed!');
-			$success = false;
+			$message = ['success' => false, 'message' => __('File type not allowed!')];
+			$this->response->output($message);
+			return;
 		}
 
 		if ($duplicate) {
@@ -235,7 +238,6 @@ trait Media {
 			}
 		}
 
-		$this->response->setType('json');
 		$this->response->output($message);
 	}
 
