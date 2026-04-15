@@ -24,6 +24,7 @@ namespace Vvveb\Controller;
 
 use function Vvveb\__;
 use function Vvveb\installedLanguages;
+use function Vvveb\sanitizeFileName;
 use function Vvveb\session as sess;
 use function Vvveb\setLanguage;
 use Vvveb\Sql\LanguageSQL;
@@ -386,6 +387,7 @@ class Index extends Base {
 			$subdir = $this->request->post['subdir'] ?? $this->subdir ?? false;
 
 			if ($subdir) {
+				$subdir = sanitizeFileName($subdir);
 				$subdir = '/' . trim($subdir, '/ ');
 				//add subdir path to menu links
 				$menus  = new menuSQL();
