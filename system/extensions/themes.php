@@ -183,24 +183,20 @@ class Themes extends Extensions {
 	}
 
 	static function install($extensionZipFile, $slug = false, $validate = false) {
-		$extension   = static :: $extension;
 		$success     = true;
 		$extractTo   = static :: $baseDir;
 		$fileCheck   = 'index.html';
-		$folder 	    = false;
+		$folder      = false;
 
 		$zip = new \ZipArchive();
 
 		if ($zip->open($extensionZipFile) === true) {
-			$info       = false;
-			$folderName = $zip->getNameIndex(0);
-
 			//search for top level index.html
-			for ($i = $zip->numFiles; ($i > 0 && $success == true); $i--) {
+			for ($i = 0; (($i < $zip->numFiles) && $success == true); $i++) {
 				$file = $zip->getNameIndex($i);
 
 				if (strpos($file, $fileCheck) !== false) {
-					if (! $folder || strlen($file) < strlen($folder)) {
+					if (! $folder || (strlen($file) < strlen($folder))) {
 						$folder = $file;
 					}
 				}
@@ -211,13 +207,13 @@ class Themes extends Extensions {
 					$extractTo .= $slug;
 				}
 
-
-
+				$extractTo = preg_replace('@[\\\/]([^\\\/]+?)\.\w+$@', '', $extractTo);
 				if ($zip->extractTo($extractTo)) {
-					$success = $slug;
+					
 					if ($folder !== 'index.html') {
-						$folder = str_replace('/index.html', '', $folder);
+						$folder = preg_replace('@[\\\/]([^\\\/]+?)\.\w+$@', '', $folder);
 						$slug = slugify($folder);
+					
 						rename($extractTo . $folder, $extractTo . $slug);
 					}
 				} else {
@@ -232,7 +228,7 @@ class Themes extends Extensions {
 			throw new \Exception(__('File is not a valid zip archive!'));
 		}
 
-		Event :: trigger(__CLASS__, __FUNCTION__, $extensionZipFile, $success);
+		Event :: trigger(__CLASS__, __FUNCTION__, $extensionZipFile, $slug, $success);
 
 		return $success;
 	}
