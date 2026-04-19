@@ -19,7 +19,7 @@ $language['language'] = empty($language['language']) ? $_default : $language['la
 	if (is_array($language['language'])) {
 		foreach ($language['language'] as $index => $lang) { ?>
 		
-		@language .dropdown-item|addClass = <?php 
+		@language .dropdown-item, @language.dropdown-item|addClass = <?php 
 			if (isset($lang['slug']) && isset($language['active']['slug']) && 
 				($lang['slug'] == $language['active']['slug']) && 
 				!$vvveb_is_page_edit) {
@@ -30,6 +30,7 @@ $language['language'] = empty($language['language']) ? $_default : $language['la
 		@language [data-v-language-name] = $lang['name']
 		@language [data-v-language-img]|src = $lang['img']
 		@language [data-v-language-url]|href = $lang['url']
+		
 		
 		@language button|formaction =$lang['url']
 		
