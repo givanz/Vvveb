@@ -24,7 +24,6 @@ namespace Vvveb\Controller\User;
 
 use function Vvveb\__;
 use Vvveb\Sql\CountrySQL;
-use Vvveb\Sql\RegionSQL;
 use Vvveb\Sql\User_AddressSQL;
 use function Vvveb\url;
 
@@ -40,12 +39,38 @@ class Address extends Base {
 		$options           = $this->global;
 		$options['status'] = 1;
 		unset($options['limit']);
+		
 		$country	              = $countryModel->getAll($options);
-		$this->view->countries = $country['country'] ?? [];
+		$this->view->countries = $country['country'] ?? [];		
+		
+		$country	              = $countryModel->getAll($options);
+		$this->view->regions = $country['country'] ?? [];
 
 		$this->view->regionsUrl   = url(['module' => 'checkout/checkout', 'action' => 'regions']);
 	}
 
+	function delete() {
+		$user_address_id = $this->request->get['user_address_id'] ?? false;
+		$user_address    = [];
+
+		$addressModel = new User_AddressSQL();	
+		if ($user_address_id) {
+			if (is_numeric($user_address_id)) {
+				$user_address_id = [$user_address_id];
+			}
+			
+			$options      = ['user_address_id' => $user_address_id, 'user_id' => $this->global['user_id']];
+			$result       = $addressModel->delete($options);
+			
+			if (! $result) {
+				$this->view->errors = [$addressModel->error];
+			} else {
+				$message               =  __('Address deleted!');
+				$this->view->success[] = $message;
+			}
+		}
+	}
+		
 	function edit() {
 		$user_address_id = $this->request->get['user_address_id'] ?? false;
 		$user_address    = [];
