@@ -146,6 +146,13 @@ class Sites {
 			return $matches;
 		}
 
+		if ($url) {
+			$hasPort = strpos($url, ':') ?: null;
+			$hostWp  = substr($url, 0, strpos($url, ':') ?: null);
+
+			return ['domain' => $hostWp, 'tld'=> '', 'subdomain' => '', 'prefix' => ''];
+		}
+
 		return [];
 	}
 
@@ -214,6 +221,7 @@ class Sites {
 			}
 
 			self :: $sites = null;
+
 			return \Vvveb\setConfig($key, $value);
 		}
 
@@ -240,7 +248,7 @@ class Sites {
 	}
 
 	public static function setSiteData($site, $name, $value) {
-		if (is_int($site)) {
+		if (is_numeric($site)) {
 			return self :: setSiteDataById($site, $name, $value);
 		} else {
 			return self :: setSiteDataByKey($site, $name, $value);
@@ -253,19 +261,33 @@ class Sites {
 		return $host;
 	}
 
-	public static function getSiteData($site_url = false) {
-		if (is_numeric($site_url)) {
-			return self :: getSiteById($site_url);
+	public static function getSiteData($site = false,  $path = '') {
+		if (is_numeric($site)) {
+			return self :: getSiteById($site);
 		}
 
-		if (! $site_url) {
+		if (! $site) {
 			$host = self :: getHost();
+		}
+
+		if ($path) {
+			if (V_SUBDIR_INSTALL) {
+				$path = substr($path, strlen(V_SUBDIR_INSTALL));
+			}
+
+			if (preg_match('/(.+?)[$\/\?]/', $path, $matches)) {
+				$path = $matches[1] ?? '';
+			}
+		}
+
+		if ($path == '/') {
+			$path = '';
 		}
 
 		$cacheDriver = Cache :: getInstance();
 		$cacheKey    = $host;
 
-		if ($result = $cacheDriver->get('site', $cacheKey)) {
+		if (false && $result = $cacheDriver->get('site', $cacheKey)) {
 			return $result;
 		} else {
 			$host  = self :: siteKey($host);
@@ -276,16 +298,62 @@ class Sites {
 			$tld_wildcard          = substr($host, 0, $last) . ' *';
 			$domain_wildcard       = substr($host, 0, $first) . ' * *';
 			$full_wildcard         = '* ' . trim(substr($host, $first, $last - $first)) . ' *';
+			$hostPath        	   =  $host . $path;
 
-			$result = \Vvveb\config("sites.$host", null) ??
-					  \Vvveb\config("sites.$subdomain_wildcard", null) ??
-					  \Vvveb\config("sites.$domain_wildcard", null) ??
-					  \Vvveb\config("sites.$full_wildcard", null) ??
-					  \Vvveb\config("sites.$tld_wildcard", null) ??
-					  \Vvveb\config('sites.* * *', null);
+			$sites = \Vvveb\config('sites');
+			$match = '* * *';
+			$sub = '';
+			foreach ($sites as $id => $site) {
+				if ($path && ($id == $host . $path)) {
+					$match = $id;
+					$sub = $path;
+					break;
+				}
+
+				if ($path && ($id == '* * *' . $path)) {
+					$match = $id;
+					$sub = $path;
+					break;
+				}
+
+				if ($id == $host) {
+					$match = $id;
+					break;
+				}
+
+				if ($id == $subdomain_wildcard) {
+					$match = $id;
+					break;
+				}
+
+				if ($id == $domain_wildcard) {
+					$match = $id;
+					break;
+				}
+
+				if ($id == $full_wildcard) {
+					$match = $id;
+					break;
+				}
+
+				if ($id == $tld_wildcard) {
+					$match = $id;
+					break;
+				}
+			}
+
+			$result = $sites[$match] ?? [];
 
 			if ($result) {
-				$result['host'] = self :: url($result['host']);
+				$result['host']  = self :: url($result['host']);
+				$result['uri']   = $_SERVER['REQUEST_URI'] ?? '/';
+				$result['path']  = $sub;
+				if ($sub) {
+					$result['uri']  = substr($result['uri'] , strlen($sub)) ?: '/';
+					if ($result['uri'][0] != '/') {
+						$result['uri'] = '/' . $result['uri'];
+					}
+				}
 			} else {
 				if (APP !== 'app') {
 					//if site does not exist use fallback for admin, cli etc
@@ -293,8 +361,9 @@ class Sites {
 						'host'     => 'localhost',
 						'theme'    => 'landing',
 						'template' => '',
-						'site_id'       => 1,
+						'site_id'  => 1,
 						'state'    => 'live',
+						'uri'      => $_SERVER['REQUEST_URI'],
 					];
 				}
 			}

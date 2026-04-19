@@ -105,17 +105,26 @@ class Routes {
 		}
 	}
 
-	public static function init($app = 'app') {
+	public static function init($app = 'app', $site_id = null) {
 		$cacheDriver = Cache :: getInstance();
-		$cacheKey    = $app;
+		if ($site_id) { 
+			$cacheKey = $site_id;
+		} else {
+			$cacheKey = $app;
+		}
 
 		if ($result = $cacheDriver->get('routes', $cacheKey)) {
 			static::$routes  = $result['routes'];
 			static::$urls    = $result['urls'];
 			static::$modules = $result['modules'];
 		} else {
-			$routesConfig = DIR_ROOT . "/config/$app-routes.php";
-
+			$routesConfig = DIR_ROOT . '/config/';
+			if ($site_id) { 
+				$routesConfig .= "site-$site_id-routes.php";
+			} else {
+				$routesConfig .= "$app-routes.php";
+			}
+			
 			if (file_exists($routesConfig)) {
 				self :: $routes += include $routesConfig;
 			}
