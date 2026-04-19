@@ -79,8 +79,9 @@ class File {
 		}
 		$expire = time() + $expire;
 
-		$this->delete($namespace, $key);
-		$file = $this->cacheDir . $namespace . '.' . $this->cachePrefix . basename($key) . '.' . $expire;
+		//$this->delete($namespace, $key);
+		$file = $this->cacheDir . $namespace . '.' . $this->cachePrefix . basename($key);
+		touch($file, $expire);
 
 		$handle = fopen($file, 'w');
 
@@ -139,22 +140,26 @@ class File {
 				}
 
 				if (! @unlink($file)) {
-					clearstatcache(false, $file);
+					//clearstatcache(false, $file);
 				}
 			}
 		}
 	}
 
 	public function purgeExpired() {
-		$files = glob($this->cacheDir);
-
-		if (rand(1, 1000) == 1 && $files = (glob($this->cacheDir))) {
+		if ($files = (scandir($this->cacheDir))) {
 			foreach ($files as $file) {
-				$time = substr(strrchr($file, '.'), 1);
+				if ($file[0] == '.') {
+					continue;
+				}
 
-				if ($time < time()) {
-					if (! @unlink($file)) {
-						clearstatcache(false, $file);
+				if (file_exists($file)) {
+					$time = filemtime($file);
+
+					if ($time < time()) {
+						if (! @unlink($file)) {
+							clearstatcache(false, $file);
+						}
 					}
 				}
 			}
@@ -162,6 +167,8 @@ class File {
 	}
 
 	public function __destruct() {
-		$this->purgeExpired();
+		if (rand(1, 1000) == 1) {
+			$this->purgeExpired();
+		}
 	}
 }
