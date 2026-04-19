@@ -26,9 +26,9 @@ use function Vvveb\__;
 use Vvveb\Controller\Crud;
 use function Vvveb\download;
 use function Vvveb\filter;
-use function Vvveb\installedLanguages;
 use function Vvveb\model;
 use Vvveb\System\CacheManager;
+use Vvveb\System\Locale;
 
 class Language extends Crud {
 	protected $type = 'language';
@@ -107,7 +107,7 @@ class Language extends Crud {
 	function index() {
 		parent::index();
 		$languageList = include DIR_SYSTEM . 'data' . DS . 'languages-list.php';
-		$installed    = installedLanguages();
+		$installed    = Locale :: installedLanguages();
 
 		foreach ($installed as $l) {
 			$languageList[$l]['installed'] = true;

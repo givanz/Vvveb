@@ -22,9 +22,9 @@
 
 namespace Vvveb\Component;
 
-use function Vvveb\availableLanguages;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use Vvveb\System\Locale;
 
 class Languages extends ComponentBase {
 	public static $defaultOptions = [
@@ -44,7 +44,7 @@ class Languages extends ComponentBase {
 
 	function results() {
 		$results             = [];
-		$results['language'] = availableLanguages();
+		$results['language'] = Locale::availableLanguages();
 
 		if ($results['language']) {
 			$results['current'] = $code = self :: $global['language'];

@@ -23,7 +23,7 @@
 namespace Vvveb\Controller\Content;
 
 use Vvveb\Controller\Base;
-use function Vvveb\getLanguage;
+use Vvveb\System\Locale;
 
 class Archive extends Base {
 	function index() {
@@ -36,7 +36,7 @@ class Archive extends Base {
 			if (class_exists('\IntlDateFormatter')) {
 				$dt = new \DateTime();
 				$dt->setDate(0, $month, 0);
-				$df         = new \IntlDateFormatter(getLanguage(), \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, NULL, NULL, 'MMMM');
+				$df         = new \IntlDateFormatter(Locale::getLanguage(), \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, NULL, NULL, 'MMMM');
 				$month_name = ucfirst(datefmt_format($df, $dt));
 			}
 

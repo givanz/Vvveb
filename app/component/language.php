@@ -22,14 +22,13 @@
 
 namespace Vvveb\Component;
 
-use function Vvveb\availableLanguages;
-use function Vvveb\getCurrentUrl;
 use function Vvveb\isSecure;
 use Vvveb\System\Cache;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Core\Request;
 use Vvveb\System\Core\View;
 use Vvveb\System\Event;
+use Vvveb\System\Locale;
 use function Vvveb\url;
 
 class Language extends ComponentBase {
@@ -51,7 +50,7 @@ class Language extends ComponentBase {
 		$results = [];
 
 		$options = $this->options;
-		$results['language'] = availableLanguages();
+		$results['language'] = Locale::availableLanguages();
 
 		$publicPath = \Vvveb\publicUrlPath();
 		$request    = Request::getInstance();
@@ -89,26 +88,26 @@ class Language extends ComponentBase {
 				$lang            = [];
 				$language['img'] = "{$publicPath}img/flags/$shortcode.png";
 
-				if (! $language['default']) {
-					$lang = ['language' => $language['slug']];
-				}
-
 				//if post or product page check if content available
 				if (isset($view->content)) {
 					$content = $view->content[$language['slug']] ?? [];
+					//if translation is missing there is no slug
+					if (! isset($content['slug']) || ! $content['slug']) {
+						unset($content['slug']);
+					}
 				}
 
-				$get = $request->get;
-				unset($get['language']);
+				$params               = ['language' => $language['slug'], 'host' => $_SERVER['HTTP_HOST'] ?? '', 'scheme' => $scheme] + $content + $request->get;
 
-				//$url = getCurrentUrl();
-				if (true/* && $options['default'] != $code*/) {
-					$params               = $lang + $content + $get + ['host' => $_SERVER['HTTP_HOST'] ?? '', 'scheme' => $scheme];
-					$url                  = url($request->get['module'] ?? '', $params, false); //"/$shortcode" . getCurrentUrl();
-					$hreflang[$shortcode] = $url;
+
+				if ($language['language_id'] == $options['default_language_id']) {
+					unset($params['language']);
 				}
 
-				$language['url'] = $url;
+				$url                  = url($request->get['module'] ?? '', $params, false);
+
+				$language['url']      = $url;
+				$hreflang[$shortcode] = $url;
 			}
 
 			$view->hreflang = $hreflang;

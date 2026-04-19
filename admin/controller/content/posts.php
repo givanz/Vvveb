@@ -28,6 +28,7 @@ use function Vvveb\humanReadable;
 use Vvveb\Sql\PostSQL;
 use Vvveb\System\Cache;
 use Vvveb\System\Images;
+use Vvveb\System\locale;
 use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
@@ -136,7 +137,7 @@ class Posts extends Listing {
 
 		if (class_exists('\IntlDateFormatter')) {
 			$dt = new \DateTime();
-			$df = new \IntlDateFormatter(\Vvveb\getLanguage(), \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, NULL, NULL, 'MMMM');
+			$df = new \IntlDateFormatter(Locale::getLanguage(), \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, NULL, NULL, 'MMMM');
 		}
 
 		foreach ($archives['archives'] as $index => &$archive) {
@@ -217,6 +218,14 @@ class Posts extends Listing {
 			$options['admin_id'] = $this->filter['admin_id'];
 		}
 
+		if (isset($this->request->get['filter']['site_id'])) {
+			if ($this->request->get['filter']['site_id']) {
+				//$options['site_id'] = $this->filter['site_id'];
+			} else {
+				unset($options['site_id']);
+			}
+		}
+
 		if (isset($this->filter['archives']) && $this->filter['archives']) {
 			$archives         = explode('/', $this->filter['archives']);
 			$options['year']  = $archives[0];
@@ -245,7 +254,7 @@ class Posts extends Listing {
 				$post['admin-url']     = url(['module' => 'content/posts']) . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
 				$post['delete-url']    = url(['module' => 'content/posts', 'action' => 'delete'] + $url); // + ['post_id[]' => $post['post_id']]);
 				$post['duplicate-url'] = url(['module' => 'content/posts', 'action' => 'duplicate'] + $url); // + ['post_id' => $post['post_id']]);
-				$post['view-url']      = url("content/{$this->type}/index", $post + $url + ['host' => $this->global['host']]);
+				$post['view-url']      = url("content/{$this->type}/index", $post + $url + ['host' => $this->global['host'], 'path' => $this->global['path'] ? '/' . $this->global['path'] : null]);
 				$relativeUrl           = url("content/{$this->type}/index", $post + $url);
 				$post['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($post['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template], false);
 			}
@@ -259,7 +268,7 @@ class Posts extends Listing {
 			}, 259200);
 
 		$view->set($results);
-		$view->status           = ['publish' => 'Publish', 'pending' => 'Pending', 'draft' => 'Draft', 'private' => 'Private', 'password' => 'Password'];
+		$view->status           = ['publish' => __('Publish'), 'pending' => __('Pending'), 'draft' => __('Draft'), 'private' => __('Private'), 'password' => __('Password'), 'scheduled' => __('Scheduled')];
 		$view->archives         = $archives;
 		$view->filter           = $this->filter;
 		$view->limit            = $options['limit'];

@@ -24,7 +24,6 @@ namespace Vvveb\Controller\User;
 
 use function Vvveb\__;
 use function Vvveb\email;
-use function Vvveb\setLanguage;
 use Vvveb\System\Functions\Str;
 use Vvveb\System\Sites;
 use Vvveb\System\User\Admin;
@@ -73,7 +72,7 @@ class Reset {
 		$loginData  = [];
 
 		$language = $this->session->get('language') ?? 'en_US';
-		setLanguage($language);
+		Locale :: setLanguage($language);
 
 		if ($email) {
 			$loginData['email'] = $email;

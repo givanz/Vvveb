@@ -24,24 +24,25 @@ namespace Vvveb\Controller\Editor;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\System\Locale;
 
 class Translate extends Base {
 	function get() {
 		$text         = $this->request->post['text'];
-		$languages    = \Vvveb\availableLanguages();
+		$languages    = Locale::availableLanguages();
 		$translations = [];
-		$defaultLang  = \Vvveb\getLanguage();
+		$defaultLang  = Locale::getLanguage();
 
 		foreach ($languages as $lang) {
 			$code = $lang['code'];
-			\Vvveb\setLanguage($code);
-			\Vvveb\setLanguageCode($code);
+			Locale :: setLanguage($code);
+			Locale :: setLanguageCode($code);
 
 			$translations[$code] = __($text, false, false, true);
 		}
 		//restore language
-		\Vvveb\setLanguage($defaultLang);
-		\Vvveb\setLanguageCode($defaultLang);
+		Locale :: setLanguage($defaultLang);
+		Locale :: setLanguageCode($defaultLang);
 
 		$this->response->setType('json');
 		$this->response->output($translations);

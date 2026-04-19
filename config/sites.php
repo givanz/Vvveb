@@ -24,9 +24,10 @@
  	'* * *' => [
  		'name'     => 'Default site',
  		'host'     => '*.*.*',
+ 		'path'     => '',
  		'theme'    => 'landing',
- 		'state'    => 'live',
  		'template' => '',
+ 		'state'    => 'live',
  		'site_id'  => 1,
- 	],
- ];
+	]
+];

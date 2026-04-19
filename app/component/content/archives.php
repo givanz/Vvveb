@@ -22,9 +22,9 @@
 
 namespace Vvveb\Component\Content;
 
-use function Vvveb\getLanguage;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use Vvveb\System\Locale;
 
 class Archives extends ComponentBase {
 	public static $defaultOptions = [
@@ -49,7 +49,7 @@ class Archives extends ComponentBase {
 
 		if (class_exists('\IntlDateFormatter')) {
 			$dt = new \DateTime();
-			$df = new \IntlDateFormatter(getLanguage(), \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, NULL, NULL, 'MMMM');
+			$df = new \IntlDateFormatter(Locale::getLanguage(), \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, NULL, NULL, 'MMMM');
 		}
 
 		foreach ($results['archives'] as $index => &$archive) {

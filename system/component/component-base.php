@@ -27,6 +27,7 @@ use function Vvveb\siteSettings;
 use Vvveb\System\Core\Request;
 use Vvveb\System\Core\View;
 use Vvveb\System\Event;
+use Vvveb\System\Locale;
 use Vvveb\System\Session;
 use Vvveb\System\User\User;
 
@@ -57,27 +58,30 @@ class ComponentBase {
 			self :: $global['user_group_id']       = $user['user_group_id'] ?? 1;
 			self :: $global['languages']           = $site['languages'] ?? [];
 			self :: $global['default_language']    = sess('default_language') ?? $site['language'] ?? 'en';
-			self :: $global['default_language_id'] = sess('default_language_id') ?? $site['language_id'] ?? 1;
-			self :: $global['currency_id']         = sess('currency_id') ?? $site['currency_id'] ?? 1;
+			self :: $global['default_language_id'] = (int)(sess('default_language_id') ?? $site['language_id'] ?? 1);
+			self :: $global['language']            = ($site['language'] ?? '') ?: 'en';
+			self :: $global['language_id']         = (int)($site['language_id'] ?? '') ?: 1;
+			self :: $global['currency_id']         = (int)(sess('currency_id') ?? $site['currency_id'] ?? 1);
 			self :: $global['currency']            = sess('currency') ?? $site['currency'] ?? 'usd';
 			self :: $global['currencies']          = $site['currencies'] ?? [];
-			self :: $global['language']            = ($site['language'] ?? '') ?: 'en';
-			self :: $global['language_id']         = ($site['language_id'] ?? '') ?: 1;
 
-			if ($language = sess('language')) {
-				self :: $global['language'] = $language;
+			//don't set user session language for default language homepage
+			if (! isset($request->get['module']) || $request->get['module'] != 'index/index') {
+				self :: $global['language']            = (sess('language') ?? self :: $global['language']);
+				self :: $global['language_id']         = (sess('language_id') ?? self :: $global['language_id']);
 			}
 
-			if ($language_id = sess('language_id')) {
-				self :: $global['language_id'] = $language_id;
+			if ((isset($request->post['language']) && is_string($request->post['language']) && ($lang = $request->post['language'])) ||
+				(isset($request->get['language']) && is_string($request->get['language']) && ($lang = $request->get['language']))) {
+				$languages = Locale::availableLanguages();
+				if (isset($languages[$lang])) {
+					self :: $global['language'] = $lang;
+					self :: $global['language_id'] = $languages[$lang]['language_id'];
+				}
 			}
 
-			if (isset($request->request['language']) && is_string($request->request['language'])) {
-				self :: $global['language'] = $request->request['language'];
-			}
-
-			if (isset($request->request['language_id']) && is_string($request->request['language_id'])) {
-				self :: $global['language_id'] = $request->request['language_id'];
+			if (isset($request->post['language_id']) && is_string($request->post['language_id'])) {
+				self :: $global['language_id'] = $request->post['language_id'];
 			}
 		}
 

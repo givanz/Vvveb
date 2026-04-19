@@ -22,7 +22,6 @@
 
 namespace Vvveb\System\Cart;
 
-use function \Vvveb\getCurrency;
 use function \Vvveb\model;
 use function \Vvveb\url;
 use Vvveb\Sql\Product_Option_ValueSQL;
@@ -30,6 +29,7 @@ use Vvveb\Sql\Product_VariantSQL;
 use Vvveb\Sql\ProductSQL;
 use Vvveb\Sql\Subscription_PlanSQL;
 use Vvveb\System\Images;
+use Vvveb\System\Locale;
 use Vvveb\System\Session;
 
 class Cart {
@@ -171,7 +171,7 @@ class Cart {
 		$this->total_items = 0;
 
 		$results  = ['products' => [], 'count' => 0];
-		$currency = getCurrency();
+		$currency = Locale::getCurrency();
 
 		if (! empty($this->products)) {
 			$productIds           = [];
@@ -360,7 +360,7 @@ class Cart {
 			}
 		}
 
-		$this->addTotal('sub_total', 'Sub-total', $this->total);
+		$this->addTotal('total', 'sub_total', 'Sub-total', $this->total);
 
 		//set cart cookie to disable cache if products in cart
 		if ($this->total_items) {
@@ -479,7 +479,7 @@ class Cart {
 		$product_data = [];
 
 		foreach ($this->products as $value) {
-			if ($value['subscription']) {
+			if (isset($value['subscription'])) {
 				$product_data[] = $value;
 			}
 		}

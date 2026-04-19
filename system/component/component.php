@@ -59,6 +59,8 @@ class Component {
 	private $documentType = 'html';
 
 	private $cache = true;
+	
+	private $copyFromElements = [];
 
 	static function getInstance($view = false, $regenerate = false, $content = false, $app = null) {
 		if (self :: $instance === NULL) {
@@ -398,16 +400,21 @@ class Component {
 				if (preg_match('/([^\,]+)\,([^$,]+)/', $attribute , $from)) {
 					$file     = html_entity_decode(trim($from[1]));
 					$selector = html_entity_decode(trim($from[2]));
-
-					if ($this->documentType == 'html') {
-						$fromDocument->loadHTMLFile($view->getTemplatePath() . $file);
+					
+					if (isset($this->copyFromElements[$file][$selector])) {
+						$fromElements = $this->copyFromElements[$file][$selector];
 					} else {
-						$fromDocument->loadXML($view->getTemplatePath() . $file);
+						if ($this->documentType == 'html') {
+							$fromDocument->loadHTMLFile($view->getTemplatePath() . $file);
+						} else {
+							$fromDocument->loadXML($view->getTemplatePath() . $file);
+						}
+
+						$fromXpath = new \DOMXpath($fromDocument);
+
+						$fromElements = $fromXpath->query(\Vvveb\cssToXpath($selector));
+						$this->copyFromElements[$file][$selector] = $fromElements;
 					}
-
-					$fromXpath = new \DOMXpath($fromDocument);
-
-					$fromElements = $fromXpath->query(\Vvveb\cssToXpath($selector));
 
 					$count  = 0;
 					$parent = $element->parentNode;

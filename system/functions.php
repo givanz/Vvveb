@@ -41,14 +41,16 @@ function url($parameters, $mergeParameters = false, $useCurrentUrl = true) {
 			}
 		}
 
+		$path = $mergeParameters['path'] ?? SITE_PATH;
+
 		$url = System\Routes::url($parameters, $mergeParameters);
-		$result .= (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . ($url ?? '');
+		$result .= (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . $path . ($url ?? '');
 	} else {
 		static $url       = '';
 		static $urlParams = [];
 
 		if ($useCurrentUrl) {
-			$url = parse_url($_SERVER['REQUEST_URI'] ?? '');
+			$url = parse_url(SITE_URI ?? $_SERVER['REQUEST_URI'] ?? '');
 
 			if (isset($url['query'])) {
 				parse_str($url['query'], $urlParams);
@@ -72,6 +74,7 @@ function url($parameters, $mergeParameters = false, $useCurrentUrl = true) {
 		}
 
 		$result = '';
+		$path = $parameters['path'] ?? SITE_PATH;
 
 		if (isset($parameters['host'])) {
 			$result .= '//' . \Vvveb\System\Sites::url($parameters['host']);
@@ -83,7 +86,7 @@ function url($parameters, $mergeParameters = false, $useCurrentUrl = true) {
 			}
 		} else {
 			if (! $useCurrentUrl) {
-				$result .= (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
+				$result .= (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . $path;
 			}
 		}
 
@@ -514,9 +517,9 @@ if ((!defined('GETTEXT') || GETTEXT == true) && function_exists('_')) {
 	function __($text, $plural = false, $count = false, $nocache = false) {
 		static $translations;
 
-		if ($translations === null || $nocache) {
+		if (($translations === null || $nocache) && !isEditor()) {
 			$translations = [];
-			$lang = getLanguage();
+			$lang = System\Locale::getLanguage();
 
 			$cacheFile = DIR_CACHE . $lang . '-translations.php';
 
@@ -1184,6 +1187,7 @@ function getTemplateList($theme = null, $skip = []) {
 		}
 
 		$url = PUBLIC_PATH . "themes/$theme/$file";
+		$title = str_replace('index', 'home', $title);
 
 		$pages[$name]  = ['name' => $name, 'filename' => $filename, 'file' => $file, 'url' => $url, 'title' => humanReadable($title), 'folder' => $path, 'description' => $description, 'global' => $friendlyNames[$name]['global'] ?? false];
 
@@ -1464,178 +1468,6 @@ function sanitizeHTML($string) {
 	return $string;
 }
 
-function availableLanguages() {
-	static $languages = [];
-	if ($languages != []) {
-		return $languages;
-	}
-
-	$cache     = System\Cache::getInstance();
-	$languages = $cache->cache(APP,'languages',function () {
-		$languages             = new Sql\LanguageSQL();
-		$result = $languages->getAll(['status' => 1]);
-
-		if ($result && isset($result['language'])) {
-			return $result['language'];
-		}
-
-		return [];
-	}, 259200);
-
-	return $languages;
-}
-
-function availableCurrencies() {
-	static $currencies = [];
-	if ($currencies != []) {
-		return $currencies;
-	}
-
-	$cache     = System\Cache::getInstance();
-	$currencies = $cache->cache(APP,'currency',function () {
-		$currency             = new Sql\CurrencySQL();
-		$result = $currency->getAll(['status' => 1]);
-
-		if ($result && isset($result['currency'])) {
-			return $result['currency'];
-		}
-
-		return [];
-	}, 259200);
-
-	return $currencies;
-}
-
-function installedLanguages() {
-	$languages = glob(DIR_ROOT . 'locale/*', GLOB_ONLYDIR);
-
-	foreach ($languages as &$language) {
-		$language = basename($language);
-	}
-
-	return $languages;
-}
-
-function userPreferedLanguages() {
-	if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-		$languages = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
-
-		foreach ($languages as &$language) {
-			$language = \Vvveb\filter('/[-\w]+/', $language);
-			$language = str_replace('-', '_', $language);
-		}
-	}
-
-	return $languages ?? [];
-}
-
-function userPreferedLanguage() {
-	$languages = userPreferedLanguages();
-	$installed = installedLanguages();
-
-	foreach ($languages as $language) {
-		if (isset($installed[$language])) {
-			return $language;
-		}
-
-		foreach ($installed as $lang) {
-			if (strpos($lang, $language) === 0) {
-				//return $language;
-				return $lang;
-			}
-		}
-	}
-
-	return false;
-}
-
-/**
- * Change locale language for gettext.
- * 
- * @param string $langCode ['en_US'] 
- * @param string $domain ['vvveb'] 
- *
- * @return mixed 
- */
-function setLanguage($langCode = 'en_US', $domain = 'vvveb') {
-	//global $vvvebTranslationDomains;
-	//setlocale(LC_TIME, "");
-	//\putenv('LOCPATH=' . DIR_ROOT. "locale");
-
-	//translating theme text will change theme texts and break translation
-	if (isEditor()) {
-		return;
-	}
-
-	if (function_exists('bindtextdomain')) {
-		/*
-		foreach ($vvvebTranslationDomains as $tdomain) {
-			bindtextdomain($tdomain, DIR_ROOT . 'locale');
-		}
-		*/
-		bindtextdomain($domain, DIR_ROOT . 'locale');
-		textdomain($domain);
-		bind_textdomain_codeset($domain, 'UTF-8');
-
-		setlocale(LC_ALL,'C.UTF-8');
-
-		if (function_exists('putenv')) {
-			@\putenv("LC_ALL=$langCode");
-			@\putenv("LC_MESSAGES=$langCode");
-			@\putenv("LANG=$langCode");
-			@\putenv('LANGUAGE=' . $langCode);
-		}
-
-		if (defined('LC_MESSAGES')) {
-			setlocale(LC_MESSAGES, "$langCode.UTF-8");
-			setlocale(LC_CTYPE,"$langCode.UTF-8");
-		} else {
-			setlocale(5, "$langCode.UTF-8");
-			setlocale(6,"$langCode.UTF-8");
-			setlocale(LC_ALL, "$langCode.UTF-8");
-		}
-	}
-}
-
-function clearLanguageCache($langCode = 'en_US', $domain = 'vvveb') {
-	if (function_exists('bindtextdomain')) {
-		$locale  = DIR_ROOT . 'locale';
-		$nocache = DIR_CACHE . 'nocache';
-		$mo      = $locale . DS . $langCode . DS . 'LC_MESSAGES' . DS . "$domain.mo";
-		clearstatcache(false, $mo);
-
-		if (function_exists('opcache_reset')) {
-			opcache_invalidate($mo, true);
-			opcache_reset();
-		}
-
-		if (function_exists('symlink') && @symlink($locale, $nocache)) {
-			bindtextdomain($domain, $nocache);
-			textdomain($domain);
-			bind_textdomain_codeset($domain, 'different_codeset');
-			bindtextdomain($domain, $locale);
-		}
-
-		@unlink($nocache);
-		@rrmdir($nocache); //for windows if it copies folder instead of link
-	}
-}
-
-function getLanguage() {
-	return session('code') ?? 'en_US';
-}
-
-function setLanguageCode($code) {
-	return session(['code' => $code]);
-}
-
-function getLanguageId() {
-	return session('language_id') ?? 1;
-}
-
-function getCurrency() {
-	return session('currency') ?? 'USD';
-}
 
 function siteSettings($site_id = SITE_ID, $language_id = false) {
 	$cache     = System\Cache::getInstance();
@@ -1699,6 +1531,7 @@ function truncateWords($text, $limit) {
  * @param array $data
  * @param mixed $config
  * @param null|mixed $app
+ * @param mixed $site_id
  * @return bool 
  */
 function email($to, $subject, $template, $data = [], $config = [], $app = null, $site_id = SITE_ID) {
@@ -1883,11 +1716,14 @@ function download($url) {
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_FAILONERROR, true);
 			curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT'] ?? 'Vvveb ' . V_VERSION);
-			$result = curl_exec($ch);
+			$result   = curl_exec($ch);
+			$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
 			if (PHP_MAJOR_VERSION < 8) {
 				curl_close($ch);
 			}
+
+			if ($httpcode != 200) return;
 		}
 	} else {
 		if (ini_get('allow_url_fopen') == '1') {
@@ -1921,8 +1757,7 @@ function validateUrl($url) {
 			}
 
 			//don't allow ip
-			if (preg_match('/^(\d+\.)+\d+$/', $url, $matches) || 
-				(false !== filter_var($url, FILTER_VALIDATE_IP))) {
+			if (false !== filter_var($url, FILTER_VALIDATE_IP)) {
 				return '';
 			}
 
@@ -1963,9 +1798,13 @@ function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception 
 				$streamVerboseHandle = fopen('php://temp', 'w+');
 				curl_setopt($ch, CURLOPT_STDERR, $streamVerboseHandle);
 			}
+			
 			$result = curl_exec($ch);
 
 			if ($result) {
+				$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+				if ($httpcode != 200) return;
+
 				if ($cache) {
 					$cacheDriver->set('url', $cacheKey, $result);
 				}
@@ -2183,7 +2022,11 @@ function invoiceFormat($format, $data) {
 remove <?xml declaration to avoid issues with php short start tag
 */
 function xmlStripVersionDeclr($xmlString) {
-	return preg_replace('/<\?xml\s+version[^\?]+\?>\s*/', '', $xmlString ?? '');
+	$xmlString = preg_replace('/<\?xml\s+version[^\?]+\?>\s*/', '', $xmlString ?? '');
+	//xml stylesheet
+	$xmlString = str_replace('<?xml-', '<?php echo \'<?xml-\';?>', $xmlString);
+
+	return $xmlString;
 }
 
 function array2xml($array, $xml = false) {
@@ -2360,7 +2203,7 @@ function reconstructJson(&$array, $removeAttrs = false) {
 			$key   = substr($key, 0, -7);
 			$value = (array)$value;
 		} else {
-			if (! $value) {
+			if ($value === null) {
 				$value = '';
 			}
 		}

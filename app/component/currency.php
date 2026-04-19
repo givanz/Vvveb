@@ -22,10 +22,11 @@
 
 namespace Vvveb\Component;
 
-use function Vvveb\availableCurrencies;
 use function Vvveb\session;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use Vvveb\System\Locale;
+
 
 class Currency extends ComponentBase {
 	public static $defaultOptions = [
@@ -45,7 +46,7 @@ class Currency extends ComponentBase {
 		$results             = [];
 		$results['active']   = false;
 		$results['current']  = self :: $global['currency'];
-		$results['currency'] = availableCurrencies();
+		$results['currency'] = Locale::availableCurrencies();
 
 		if (isset($results['currency']) && $results['currency']) {
 			if (isset($this->options['site_only']) && $this->options['site_only'] && self :: $global['currencies']) {

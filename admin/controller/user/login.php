@@ -24,12 +24,11 @@ namespace Vvveb\Controller\User;
 
 use \Vvveb\System\Functions\Str;
 use function Vvveb\__;
-use function Vvveb\availableLanguages;
 use function Vvveb\pregMatch;
-use function Vvveb\setLanguage;
 use Vvveb\Sql\Admin_Failed_LoginSQL;
 use Vvveb\System\Event;
 use Vvveb\System\Extensions\Plugins;
+use Vvveb\System\Locale;
 use Vvveb\System\User\Admin;
 use Vvveb\System\Validator;
 
@@ -43,7 +42,7 @@ class Login {
 	protected function language() {
 		$default_rtl = false;
 		if (! ($default_code = $this->session->get('code'))) {
-			$languages = availableLanguages();
+			$languages = Locale::availableLanguages();
 
 			foreach ($languages as $code => $lang) {
 				//set global default language
@@ -60,7 +59,7 @@ class Login {
 		} else {
 		}
 
-		setLanguage($default_code);
+		Locale :: setLanguage($default_code);
 		$this->global['code'] = $default_code;
 		$this->global['rtl'] = $default_rtl;
 	}

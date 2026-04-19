@@ -28,9 +28,9 @@ use Vvveb\Controller\Base;
 //use Vvveb\System\Component\Component;
 use function Vvveb\model;
 use function Vvveb\postTypes;
-use function Vvveb\setLanguage;
 use Vvveb\System\Core\FrontController;
 use Vvveb\System\Event;
+use Vvveb\System\Locale;
 use Vvveb\System\User\Admin;
 
 class Post extends Base {
@@ -50,15 +50,38 @@ class Post extends Base {
 		$language   = $this->request->get['language'] ?? $this->global['language'] ?? $this->global['default_language'];
 		$post_id    = $this->request->get['post_id'] ?? '';
 		$slug       = $this->request->get['slug'] ?? '';
+		$type       = $this->request->get['type'] ?? null;
 		$created_at = $this->request->get['created_at'] ?? ''; //revision preview
+
+		//check for custom post or product
+		if ($type) {
+			$class     = '';
+			$postTypes = postTypes('post');
+
+			if (isset($postTypes[$type])) {
+			} else {
+				$postTypes = postTypes('product');
+
+				if (isset($postTypes[$type])) {
+					$class = 'Product';
+					FrontController::redirect($class, 'index');
+
+					die();
+				} else {
+					$error = sprintf(__('%s not found!'), ucfirst(__($this->type)));
+					return $this->notFound(true, ['message' => $error, 'title' => $error]);
+				}
+			}
+		}
 
 		if ($post_id || $slug) {
 			$contentSql = new PostSQL();
-			$options    = $this->global + ['post_id' => $post_id, 'slug' => $slug/*, 'type' => $this->type*/];
+			$options    = $this->global + ['post_id' => $post_id, 'slug' => $slug, 'type' => $type ?? $this->type];
 			$content    = $contentSql->getContent($options) ?? [];
 
 			$class                           = __NAMESPACE__ . '\\' . ucfirst($this->type); //__CLASS__ is always Post
 			list($content, $language, $slug) = Event :: trigger($class,__FUNCTION__, $content, $language, $slug);
+			$languageContent = [];
 
 			if ($content) {
 				if (isset($content[$language])) {
@@ -73,7 +96,7 @@ class Post extends Base {
 
 				if ($languageContent) {
 					if ($this->global['language'] != $languageContent['code']) {
-						setLanguage($languageContent['code']);
+						Locale :: setLanguage($languageContent['code']);
 					}
 
 					$this->global['language']    = $languageContent['code'];

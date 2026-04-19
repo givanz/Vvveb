@@ -22,8 +22,8 @@
 
 namespace Vvveb\System\Cart;
 
-use function Vvveb\availableCurrencies;
 use function Vvveb\session as sess;
+use Vvveb\System\Locale;
 
 class Currency {
 	private $currencies;
@@ -42,7 +42,7 @@ class Currency {
 
 	public function __construct($options = []) {
 		$this->options    = $options;
-		$this->currencies = availableCurrencies();
+		$this->currencies = Locale::availableCurrencies();
 	}
 
 	public function format($number, $currency = false, $format = true, $value = 0) {
@@ -50,7 +50,7 @@ class Currency {
 			$currency = $this->options['currency'] ?? sess('currency');
 		}
 
-		if (! isset($this->currencies[$currency])) {
+		if (! $currency || ! isset($this->currencies[$currency])) {
 			return '';
 		}
 

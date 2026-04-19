@@ -24,11 +24,7 @@ namespace Vvveb\Controller;
 
 use function Vvveb\__;
 use function Vvveb\arrayInsertArrayAfter;
-use function Vvveb\availableCurrencies;
-use function Vvveb\availableLanguages;
-use function Vvveb\clearLanguageCache;
 use function Vvveb\filter;
-use function Vvveb\setLanguage;
 use Vvveb\Sql\taxonomySQL;
 use Vvveb\System\Cache;
 use Vvveb\System\CacheManager;
@@ -39,6 +35,7 @@ use Vvveb\System\Event;
 use Vvveb\System\Extensions\Plugins;
 use Vvveb\System\Functions\Str;
 use Vvveb\System\Images;
+use Vvveb\System\Locale;
 use Vvveb\System\PageCache;
 use Vvveb\System\Session;
 use Vvveb\System\Sites;
@@ -72,6 +69,7 @@ class Base {
 		$this->session->set('site_url', $site['url']);
 		$this->session->set('site', $site['site_id']);
 		$this->session->set('host', $site['host']);
+		$this->session->set('path', $site['path'] ?? '');
 		$this->session->set('state', $site['state'] ?? 'live');
 
 		return $site['site_id'];
@@ -223,7 +221,7 @@ class Base {
 	}
 
 	protected function language($defaultLanguage = false, $defaultLanguageId = false, $defaultLocale = false,  $defaultCode = false, $languages = null) {
-		$languages = $languages ?? availableLanguages();
+		$languages = $languages ?? Locale::availableLanguages();
 
 		$default_language    = $this->session->get('default_language');
 		$default_language_id = $this->session->get('default_language_id');
@@ -242,7 +240,7 @@ class Base {
 				$this->session->set('code', $languages[$language]['code']);
 				$this->session->set('rtl', $languages[$language]['rtl'] ?? false);
 				$default_language = false; //recheck default language
-				clearLanguageCache($language);
+				Locale::clearLanguageCache($language);
 			}
 		}
 
@@ -343,7 +341,7 @@ class Base {
 			$this->session->set('rtl', $rtl);
 		}
 
-		setLanguage($code);
+		Locale::setLanguage($code);
 
 		if (! defined('CLI')) {
 			$view                = $this->view;
@@ -354,7 +352,7 @@ class Base {
 	protected function currency($defaultCurrency = false, $defaultCurrencyId = false) {
 		if (($currency = ($this->request->post['currency'] ?? false)) && ! is_array($currency)) {
 			$currency   = filter('/[A-Za-z_-]+/', $currency, 50);
-			$currencies = availableCurrencies();
+			$currencies = Locale::availableCurrencies();
 
 			if (isset($currencies[$currency])) {
 				$this->session->set('currency_id', $currencies[$currency]['currency_id']);
@@ -368,7 +366,7 @@ class Base {
 		$currency_id = $this->session->get('currency_id');
 
 		if (! $currency || ! $currency_id) {
-			$currencies = availableCurrencies();
+			$currencies = Locale::availableCurrencies();
 
 			if ($currencies) {
 				foreach ($currencies as $code => $c) {
@@ -429,7 +427,10 @@ class Base {
 			return $this->requireLogin();
 		}
 
-		if (!$this->checkCsrf()) {
+		//$className = get_class($this);
+		//$errorController = (strncmp($className, 'Vvveb\Controller\Error', 22) === 0);
+
+		if (/*!$errorController && */! $this->checkCsrf()) {
 			return;
 		}
 
@@ -460,11 +461,12 @@ class Base {
 			}
 		}
 
-		$page        = $this->request->get['page'] ?? 1;
-		$limit       = $this->request->get['limit'] ?? 10;
+		$page        = $this->request->get['page'] ?? 1 ?: 1;
+		$limit       = $this->request->get['limit'] ?? 10 ?: 10;
 
 		$this->global['site_id']  = $site_id;
 		$this->global['host']     = $this->session->get('host');
+		$this->global['path']     = $this->session->get('path');
 		$this->global['site_url'] = $this->session->get('site_url');
 		$this->global['admin_id'] = $admin['admin_id'];
 		$this->global['state']    = $state;
@@ -473,12 +475,10 @@ class Base {
 		$this->global['limit']    = $limit;
 
 		//Check permissions
-		$className = get_class($this);
-
-		if ($className != 'Vvveb\Controller\Error403') {
-			$this->permission();
-			$this->setPermissions();
-		}
+		//if (!$errorController) {
+		$this->permission();
+		$this->setPermissions();
+		//}
 
 		//load plugins for active site if safe mode is not selected
 		if (! isset($admin['safemode']) || ! $admin['safemode']) {
@@ -597,7 +597,7 @@ class Base {
 			$this->notFound('Invalid csrf!', 403);
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -609,7 +609,7 @@ class Base {
 	 * @param mixed $service
 	 * @param mixed $message
 	 */
-	protected function notFound($message = false, $statusCode = 404, $service = true) {
+	protected function notFound($message = false, $statusCode = 404, $service = false) {
 		return FrontController::notFound($service, $message, $statusCode);
 	}
 

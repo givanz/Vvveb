@@ -26,8 +26,12 @@ use \Vvveb\Sql\ProductSQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use Vvveb\Controller\Content\CommentTrait;
-use function Vvveb\setLanguage;
+use function Vvveb\model;
+use function Vvveb\postTypes;
+use Vvveb\System\Core\FrontController;
 use Vvveb\System\Event;
+use Vvveb\System\Locale;
+use Vvveb\System\User\Admin;
 
 class Product extends Base {
 	public $type = 'product';
@@ -54,15 +58,37 @@ class Product extends Base {
 		$language   = $this->request->get['language'] ?? $this->global['language'] ?? $this->global['default_language'];
 		$product_id = $this->request->get['product_id'] ?? '';
 		$slug       = $this->request->get['slug'] ?? '';
+		$type       = $this->request->get['type'] ?? '';
+		$created_at = $this->request->get['created_at'] ?? ''; //revision preview
 
-		if ($slug) {
+		//check for custom post or product
+		if ($type) {
+			$class     = '';
+			$postTypes = postTypes('product');
+
+			if (isset($postTypes[$type])) {
+			} else {
+				$postTypes = postTypes('post');
+
+				if (isset($postTypes[$type])) {
+					$class = 'Content';
+					FrontController::redirect($class, 'index');
+
+					die();
+				} else {
+					$error = sprintf(__('%s not found!'), ucfirst(__($this->type)));
+					return $this->notFound(true, ['message' => $error, 'title' => $error]);
+				}
+			}
+		}
+
+		if ($product_id || $slug) {
 			$contentSql = new ProductSQL();
-			$options    = $this->global + ['product_id' => $product_id, 'slug' => $slug, /*'type' => $this->type, */'status' => 1];
+			$options    = $this->global + ['product_id' => $product_id, 'slug' => $slug, 'type' => $type ?? $this->type, 'status' => 1];
 			$content    = $contentSql->getContent($options);
 
-			list($content, $language, $slug) = Event :: trigger(__CLASS__,__FUNCTION__, $content, $language, $slug);
-
-			$error           = __('Product not found!');
+			$class                           = __NAMESPACE__ . '\\' . ucfirst($this->type); //__CLASS__ is always Product
+			list($content, $language, $slug) = Event :: trigger($class,__FUNCTION__, $content, $language, $slug);
 			$languageContent = [];
 
 			if ($content) {
@@ -78,7 +104,7 @@ class Product extends Base {
 
 				if ($languageContent) {
 					if ($this->global['language'] != $languageContent['code']) {
-						setLanguage($languageContent['code']);
+						Locale :: setLanguage($languageContent['code']);
 					}
 
 					$this->global['language']    = $languageContent['code'];
@@ -88,6 +114,7 @@ class Product extends Base {
 					//$this->session->set('language_id', $languageContent['language_id']);
 
 					$this->request->get['product_id']      = $languageContent['product_id'];
+					$this->request->get['admin_id']        = $languageContent['admin_id'];
 					$this->request->request['product_id']  = $languageContent['product_id'];
 					$this->request->get['type']            = $languageContent['type'];
 					$this->request->get['name']            = $languageContent['name'];
@@ -95,13 +122,28 @@ class Product extends Base {
 					$this->request->request['code']        = $languageContent['code'];
 					$this->request->request['language_id'] = $languageContent['language_id'];
 
+					if ($created_at) {
+						//check if admin user to allow revision preview
+						$admin = Admin::current();
+
+						if ($admin) {
+							$revisions = model('product_content_revision');
+							$revision  = $revisions->get(['created_at' => $created_at, 'post_id' => $languageContent['post_id']] + $this->global);
+
+							if ($revision && isset($revision['content'])) {
+								$languageContent['content'] = $revision['content'];
+							}
+						}
+					}
+
 					if (isset($languageContent['template']) && $languageContent['template']) {
 						$this->view->template($languageContent['template']);
 						//force product template if a different html template is selected
 						$this->view->tplFile("product/{$this->type}.tpl");
 					}
 				} else {
-					$this->notFound(true, ['message' => $error, 'title' => $error]);
+					$error = sprintf(__('%s not found!'), ucfirst(__($this->type)));
+					return $this->notFound(true, ['message' => $error, 'title' => $error]);
 				}
 
 				$languageContent['title'] = $languageContent['name'];
@@ -109,9 +151,31 @@ class Product extends Base {
 					$languageContent['title'] = $languageContent['title'] . ' - ' . $this->global['site']['description']['title'];
 				}
 
-				list($content, $languageContent, $language, $slug) = Event :: trigger(__CLASS__,__FUNCTION__ . ':after', $content, $languageContent, $language, $slug);
+				list($content, $languageContent, $language, $slug) = Event :: trigger($class, __FUNCTION__ . ':after', $content, $languageContent, $language, $slug);
 			} else {
-				$this->notFound(true, ['message' => $error, 'title' => $error]);
+				//check for custom post or product
+				$class     = '';
+				$postTypes = postTypes('post');
+
+				if (isset($postTypes[$slug])) {
+					$class = 'Content';
+				} else {
+					$postTypes = postTypes('product');
+
+					if (isset($postTypes[$slug])) {
+						$class = 'Product';
+					}
+				}
+
+				if ($class) {
+					$this->request->get['type'] = $slug;
+					FrontController::redirect($class, 'index');
+
+					die();
+				} else {
+					$error = sprintf(__('%s not found!'), ucfirst(__($this->type)));
+					return $this->notFound(true, ['message' => $error, 'title' => $error]);
+				}
 			}
 
 			$this->view->product = $languageContent;
