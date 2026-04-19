@@ -195,145 +195,145 @@ Vvveb.Components.extend("_base","elements/svg-image", {
         htmlAttr: "innerHTML",
         inputtype: SvgInput
     }, {
-		name: "Icon",
-		key: "icon",
-		inline:true,
-		inputtype: HtmlListSelectInput,
-		onChange:function(element, value, input, component) {
-			let newElement = generateElements(value)[0];
-			let attributes = element.attributes;
-			
-			//keep old svg size and colors
-			for (let i = 0; i < attributes.length; i++) {
-				let attr = attributes[i];
-				if (attr.name && attr.name != "viewBox") {
-					newElement.setAttribute(attr.name, attr.value);
-				}
+	name: "Icon",
+	key: "icon",
+	inline:true,
+	inputtype: HtmlListSelectInput,
+	onChange:function(element, value, input, component) {
+		let newElement = generateElements(value)[0];
+		let attributes = element.attributes;
+		
+		//keep old svg size and colors
+		for (let i = 0; i < attributes.length; i++) {
+			let attr = attributes[i];
+			if (attr.name && attr.name != "viewBox") {
+				newElement.setAttribute(attr.name, attr.value);
 			}
-			
-			element.replaceWith(newElement);
-			return newElement;
-		},
-		data: {
-				url: Vvveb.baseUrl + "../../resources/svg/icons/{value}/index.html",
-				clickElement:"li",
-				insertElement:"svg",
-				elements: 'Loading ...',
-				options: [{
-					value: "eva-icons",
-					text: "Eva icons"
-				},{
-					value: "ionicons",
-					text: "IonIcons"
-				},{
-					value: "linea",
-					text: "Linea"
-				},{
-					value: "remix-icon",
-					text: "RemixIcon"
-				},{
-					value: "unicons",
-					text: "Unicons"
-				},{
-					value: "clarity-icons",
-					text: "Clarity icons"
-				},{
-					value: "jam-icons",
-					text: "Jam icons"
-				},{
-					value: "ant-design-icons",
-					text: "Ant design icons"
-				},{
-					value: "themify",
-					text: "Themify"
-				},{
-					value: "css.gg",
-					text: "Css.gg"
-				},{
-					value: "olicons",
-					text: "Olicons"
-				},{
-					value: "open-iconic",
-					text: "Open iconic"
-				},{
-					value: "boxicons",
-					text: "Box icons"
-				},{
-					value: "elegant-font",
-					text: "Elegant font"
-				},{
-					value: "dripicons",
-					text: "Dripicons"
-				},{
-					value: "feather",
-					text: "Feather"
-				},{
-					value: "coreui-icons",
-					text: "Coreui icons"
-				},{
-					value: "heroicons",
-					text: "Heroicons"
-				},{
-					value: "iconoir",
-					text: "Iconoir"
-				},{
-					value: "iconsax",
-					text: "Iconsax"
-				},{
-					value: "ikonate",
-					text: "Ikonate"
-				},{
-					value: "tabler-icons",
-					text: "Tabler icons"
-				},{
-					value: "octicons",
-					text: "Octicons"
-				},{
-					value: "system-uicons",
-					text: "System-uicons"
-				},{
-					value: "font-awesome",
-					text: "FontAwesome"
-				},{
-					value: "pe-icon-7-stroke",
-					text: "Pixeden icon 7 stroke"
-				},{
-					value: "77_essential_icons",
-					text: "77 essential icons"
-				},{
-					value: "150-outlined-icons",
-					text: "150 outlined icons"
-				},{
-					value: "material-design",
-					text: "Material Design"
-				}]
-            },
-	   },{
-		name: "Width",
-		key: "width",
-		htmlAttr: "width",
-		inputtype: RangeInput,
-		data:{
-			max: 640,
-			min:6,
-			step:1
 		}
+		
+		element.replaceWith(newElement);
+		return newElement;
+	},
+	data: {
+		url: Vvveb.baseUrl + "../../resources/svg/icons/{value}/index.html",
+		clickElement:"li",
+		insertElement:"svg",
+		elements: 'Loading ...',
+		options: [{
+			value: "eva-icons",
+			text: "Eva icons"
+		},{
+			value: "ionicons",
+			text: "IonIcons"
+		},{
+			value: "linea",
+			text: "Linea"
+		},{
+			value: "remix-icon",
+			text: "RemixIcon"
+		},{
+			value: "unicons",
+			text: "Unicons"
+		},{
+			value: "clarity-icons",
+			text: "Clarity icons"
+		},{
+			value: "jam-icons",
+			text: "Jam icons"
+		},{
+			value: "ant-design-icons",
+			text: "Ant design icons"
+		},{
+			value: "themify",
+			text: "Themify"
+		},{
+			value: "css.gg",
+			text: "Css.gg"
+		},{
+			value: "olicons",
+			text: "Olicons"
+		},{
+			value: "open-iconic",
+			text: "Open iconic"
+		},{
+			value: "boxicons",
+			text: "Box icons"
+		},{
+			value: "elegant-font",
+			text: "Elegant font"
+		},{
+			value: "dripicons",
+			text: "Dripicons"
+		},{
+			value: "feather",
+			text: "Feather"
+		},{
+			value: "coreui-icons",
+			text: "Coreui icons"
+		},{
+			value: "heroicons",
+			text: "Heroicons"
+		},{
+			value: "iconoir",
+			text: "Iconoir"
+		},{
+			value: "iconsax",
+			text: "Iconsax"
+		},{
+			value: "ikonate",
+			text: "Ikonate"
+		},{
+			value: "tabler-icons",
+			text: "Tabler icons"
+		},{
+			value: "octicons",
+			text: "Octicons"
+		},{
+			value: "system-uicons",
+			text: "System-uicons"
+		},{
+			value: "font-awesome",
+			text: "FontAwesome"
+		},{
+			value: "pe-icon-7-stroke",
+			text: "Pixeden icon 7 stroke"
+		},{
+			value: "77_essential_icons",
+			text: "77 essential icons"
+		},{
+			value: "150-outlined-icons",
+			text: "150 outlined icons"
+		},{
+			value: "material-design",
+			text: "Material Design"
+		}]
+       },
    },{
-		name: "Height",
-		key: "height",
-		htmlAttr: "height",
-		inputtype: RangeInput,
-		data:{
-			max: 640,
-			min:6,
-			step:1
-		}			
+        name: "Width",
+        key: "width",
+        htmlAttr: "width",
+        inputtype: RangeInput,
+        data:{
+		max: 640,
+		min:6,
+		step:1
+        }
    },{
-		name: "Stroke width",
-		key: "stroke-width",
-		htmlAttr: "stroke-width",
-		inputtype: RangeInput,
-		data:{
+        name: "Height",
+        key: "height",
+        htmlAttr: "height",
+        inputtype: RangeInput,
+        data:{
+		max: 640,
+		min:6,
+		step:1
+        }			
+   },{
+        name: "Stroke width",
+        key: "stroke-width",
+        htmlAttr: "stroke-width",
+        inputtype: RangeInput,
+        data:{
 			max: 512,
 			min:1,
 			step:1
@@ -1210,7 +1210,10 @@ function carouselAfterDrop(node) {
 				};
 				for (i in el.dataset) {
 					let param = el.dataset[i];
-					if (param[0] = '{') {
+					if (param == 'true') param = true;
+					if (param == 'false') param = false;
+					
+					if (param[0] == '{') {
 						param = JSON.parse(param);
 					}
 					params[i] = param;
@@ -1223,7 +1226,7 @@ function carouselAfterDrop(node) {
 		if (document.readyState !== 'loading') {
 			initSwiper();
 		  } else {
-			document.addEventListener('DOMContentLoaded', initSwiper);
+			document.addEventListener('DOMContentLoaded', e => initSwiper());
 		  }`;			
 		
 		body.appendChild(link);
@@ -1262,6 +1265,21 @@ Vvveb.Components.add("elements/carousel", {
 		<!-- <div class="swiper-scrollbar"></div> -->
 	  </div>	
 	`,
+	
+	beforeInit(node) {
+		if (node.dataset.breakpoints) {
+			breakpoints = JSON.parse(node.dataset.breakpoints);
+			
+			for (let prop of this.properties) {
+				if (prop.breakpoint && breakpoints[prop.breakpoint] && breakpoints[prop.breakpoint][prop.breakname]) {
+					prop.defaultValue = breakpoints[prop.breakpoint][prop.breakname];
+				}
+			}
+		} 
+
+		return node;
+	},
+	
 	afterDrop: carouselAfterDrop,
 	
     onChange: function (node, property, value) {
@@ -1270,9 +1288,46 @@ Vvveb.Components.add("elements/carousel", {
 			value = {"waitForTransition":true,"enabled":value,"delay":element.dataset.delay};
 		}
 
+		if (value == 'true') value= true;
+		if (value == 'false') value = false;
+
+		/*
 		element.swiper.params[property.key] = value;
 		element.swiper.originalParams[property.key] = value;
-		element.swiper.update();
+
+		if (property.key == 'effect') {
+			//Vvveb.Builder.iframe.contentWindow.cleanSwiper(element);
+			element.swiper.destroy();
+			Vvveb.Builder.iframe.contentWindow.initSwiper(true);
+		} else {
+			element.swiper.update();
+		}
+		*/
+		
+		if (property.group == "breakpoints") {
+				let breakpoints;
+				if (node.dataset.breakpoints) {
+					breakpoints = JSON.parse(node.dataset.breakpoints);
+				} else {
+					breakpoints = {};
+				}
+				
+				property.breakpoint = parseInt(property.breakpoint);
+				
+				if (!breakpoints[property.breakpoint]) {
+					breakpoints[property.breakpoint] = {};
+				}
+				
+				breakpoints[property.breakpoint][property.breakname] = parseInt(value);
+				
+				node.dataset.breakpoints = JSON.stringify(breakpoints);
+			
+			
+		}
+		
+		element.swiper.destroy();
+		Vvveb.Builder.iframe.contentWindow.initSwiper(true);
+
 		return node;
 	},
 
@@ -1345,85 +1400,112 @@ Vvveb.Components.add("elements/carousel", {
 		htmlAttr:"data-delay",
 		data: {step:100},
     },{
-		key: "carousel_options",
+        name: "Effect",
+        key: "effect",
+        inputtype: SelectInput,
+        htmlAttr:"data-effect",
+      
+        data:{
+            options: [{
+                value: "",
+                text: "None"
+            }, {
+                value: "fade",
+                text: "Fade"
+            }, {
+                value: "flip",
+                text: "Flip"
+            }, {
+                value: "cube",
+                text: "Cube"
+            }, {
+                value: "cards",
+                text: "Cards"
+            }, {
+                value: "creative",
+                text: "Creative"
+            }]
+	}
+    },{
+	key: "carousel_options",
         inputtype: SectionInput,
         name:false,
         data: {header:"Options"},
     },{	
-		name: "Simulate touch",
+	name: "Simulate touch",
         key: "simulateTouch",
-		htmlAttr:"data-simulate-touch",
-		inputtype: CheckboxInput,
-		inline:true,
+	htmlAttr:"data-simulate-touch",
+	inputtype: CheckboxInput,
+	inline:true,
         col:6
     },{	
-		name: "Autoplay",
+	name: "Autoplay",
         key: "autoplay",
-		htmlAttr:"data-autoplay",
-		inputtype: CheckboxInput,
-		inline:true,
+	htmlAttr:"data-autoplay",
+	inputtype: CheckboxInput,
+	inline:true,
         col:6
-	},{
-		name: "Auto height",
+    },{
+	name: "Auto height",
         key: "autoHeight",
-		htmlAttr:"data-auto-height",
-		inputtype: CheckboxInput,
-		inline:true,
+	htmlAttr:"data-auto-height",
+	inputtype: CheckboxInput,
+	inline:true,
         col:6
-	},{
-		name: "Centered slides",
+    },{
+	name: "Centered slides",
         key: "centeredSlides",
-		htmlAttr:"data-centered-slides",
-		inputtype: CheckboxInput,
-		inline:true,
+	htmlAttr:"data-centered-slides",
+	inputtype: CheckboxInput,
+	inline:true,
         col:6
-	},{	name: "Center insufficient",
+    },{	name: "Center insufficient",
         key: "centerInsufficientSlides",
-		htmlAttr:"data-center-insufficient-slides",
-		inputtype: CheckboxInput,
-		inline:true,
+	htmlAttr:"data-center-insufficient-slides",
+	inputtype: CheckboxInput,
+	inline:true,
         col:6
-	},{	name: "Loop",
+    },{	name: "Loop",
         key: "loop",
-		htmlAttr:"data-loop",
-		inputtype: CheckboxInput,
-		inline:true,
+	htmlAttr:"data-loop",
+	inputtype: CheckboxInput,
+	inline:true,
         col:6
-	},{	name: "Mouse wheel",
+    },{	name: "Mouse wheel",
         key: "mousewheel",
-		htmlAttr:"data-mousewheel",
-		inputtype: CheckboxInput,
-		inline:true,
+	htmlAttr:"data-mousewheel",
+	inputtype: CheckboxInput,
+	inline:true,
         col:6
-	},{	
+    },{	
         name: "Pagination",
         key: "pagination",
-		htmlAttr:"data-pagination",
-		inputtype: CheckboxInput,
-		inline:true,
+	htmlAttr:"data-pagination",
+	inputtype: CheckboxInput,
+	inline:true,
         col:6
-	},{	name: "Rewind",
+    },{	name: "Rewind",
         key: "rewind",
-		htmlAttr:"data-rewind",
-		inputtype: CheckboxInput,
-		inline:true,
+	htmlAttr:"data-rewind",
+	inputtype: CheckboxInput,
+	inline:true,
         col:6
-	},{	name: "Scrollbar",
+    },{	name: "Scrollbar",
         key: "scrollbar",
-		htmlAttr:"data-scrollbar",
-		inputtype: CheckboxInput,
-		inline:true,
+	htmlAttr:"data-scrollbar",
+	inputtype: CheckboxInput,
+	inline:true,
         col:6
-	},/*{
+    },{
         name: "direction",
         key: "direction",
-		htmlAttr:"data-direction",
-		section: style_section,
+	htmlAttr:"data-direction",
+	section: style_section,
         col:6,
         inline:false,
         inputtype: RadioButtonInput,
         data: {
-			extraclass:"btn-group-sm btn-group-fullwidth",
+            extraclass:"btn-group-sm btn-group-fullwidth",
             options: [{
                 value: "horizontal",
                 icon:"la la-arrow-down",
@@ -1434,9 +1516,84 @@ Vvveb.Components.add("elements/carousel", {
                 title: "Vertical",
                 icon:"la la-arrow-right",
                 checked:false,
-			}],
-		}
-    }*/]
+            }],
+	}
+    },{
+        key: "breakpoint_options",
+        inputtype: SectionInput,
+        name:false,
+        data: {header:"Breakpoints"},
+    },{
+        name: "Slides mobile",
+        group: "breakpoints",
+        key: "sm.view",
+        breakpoint: "320",
+        breakname: "slidesPerView",
+        inputtype: NumberInput,
+    },{
+        name: "Space mobile",
+        group: "breakpoints",
+        key: "sm.space",
+        breakpoint: "320",
+        breakname: "spaceBetween",
+        inputtype: NumberInput,
+    },{
+        name: "Slides tablet",
+        group: "breakpoints",
+        key: "md.view",
+        breakpoint: "480",
+        breakname: "slidesPerView",
+        inputtype: NumberInput,
+    },{
+        name: "Space tablet",
+        group: "breakpoints",
+        key: "md.space",
+        breakpoint: "480",
+        breakname: "spaceBetween",
+        inputtype: NumberInput,
+    },{
+        name: "Slides landscape",
+        group: "breakpoints",
+        key: "lg.view",
+        breakpoint: "768",
+        breakname: "slidesPerView",
+        inputtype: NumberInput,
+    },{
+        name: "Space landscape",
+        group: "breakpoints",
+        key: "lg.space",
+        breakpoint: "768",
+        breakname: "spaceBetween",
+        inputtype: NumberInput,
+    },{
+        name: "Slides laptop",
+        group: "breakpoints",
+        key: "xl.view",
+        breakpoint: "1024",
+        breakname: "slidesPerView",
+        inputtype: NumberInput,
+    },{
+        name: "Space laptop",
+        group: "breakpoints",
+        key: "xl.space",
+        breakpoint: "1024",
+        breakname: "spaceBetween",
+        inputtype: NumberInput,
+    },{
+        name: "Slides desktop",
+        group: "breakpoints",
+        key: "xxl.view",
+        breakpoint: "1200",
+        breakname: "slidesPerView",
+        inputtype: NumberInput,
+    },{
+        name: "Space desktop",
+        group: "breakpoints",
+        key: "xxl.space",
+        breakpoint: "1200",
+        breakname: "spaceBetween",
+        inputtype: NumberInput,
+    }]
 });
 
 //Slider

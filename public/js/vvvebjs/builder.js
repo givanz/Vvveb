@@ -2766,6 +2766,9 @@ Vvveb.Gui = {
 			breakpoint = null;
 		}
 		
+		Vvveb.Builder.documentFrame.style.width = "";
+		Vvveb.Builder.documentFrame.style.height = "";
+		
 		if (breakpoint) {
 			document.getElementById("canvas").classList.add("responsive");
 			document.getElementById("iframe-wrapper").style.width = Vvveb.StyleManager.breakpoints[breakpoint].replace(".98", "");
@@ -2979,7 +2982,7 @@ Vvveb.Gui = {
 			document.getElementById("toggle-tree-list").classList.remove("active");
 		}
 	},
-	
+
 	treeListRight: function () {
 		let treeList = document.getElementById("tree-list");
 		let btnIcon = document.querySelector("[data-vvveb-action='treeListRight'] i");
@@ -2991,16 +2994,30 @@ Vvveb.Gui = {
 			treeList.style.width = "";
 			btnIcon.className = "icon-stop-outline";
 		} else {
-			treeList.style.height = "100vh";
-			treeList.style.height = "calc(100vh - 35px)";
+			treeList.style.height = "100%";
 			treeList.style.right = "0";
-			treeList.style.top = "35px";
+			treeList.style.top = "0";
 			treeList.style.left = "auto";
 			treeList.style.width = "300px";
 			btnIcon.className = "icon-remove-outline";
 		}
 	},
-
+	
+	treeListPanel: function () {
+		let treeList = document.getElementById("tree-list");
+		let canvas = document.getElementById("canvas");
+		let filemanager = document.getElementById("filemanager");
+		let btnIcon = document.querySelector("[data-vvveb-action='treeListPanel'] i");
+		
+		if (treeList.parentNode == canvas) {
+			filemanager.after(treeList);
+			btnIcon.className = "icon-chevron-forward-outline";
+		} else {
+			canvas.append(treeList);
+			btnIcon.className = "icon-chevron-back-outline";
+		}
+	},
+	
 	zoomChange: function () {
 		let wrapper = document.getElementById("iframe-wrapper");
 		let scale = "";
@@ -3360,10 +3377,13 @@ function getNodeTree (node, parent, allowedComponents, idToNode = {}) {
 						continue;
 					}
 				
-					let title = "";
-					//if (matchChild.type === "elements/section") {
-						title = child.id ? child.id : (child.title ? child.title : child.ariaLabel ?? "");
-					//}
+					let title;
+					for (const attr of ["id", "title", "aria-label"]) {
+						title = child.getAttribute(attr);
+						if (title) {
+							break;
+						}
+					}
 
 					element = {
 						name: matchChild.name,
@@ -3374,7 +3394,7 @@ function getNodeTree (node, parent, allowedComponents, idToNode = {}) {
 						id: id + '-' + j,
 						children: []
 					};
-					
+
 					element.children = [];
 					parent.push(element);
 					idToNode[id + '-' + j] = child;
@@ -3408,7 +3428,7 @@ function drawComponentsTree(tree) {
 			if (!id) {
 				id = prefix + '-' + j + '-' + i; 
 			}
-			
+		
 			let title = (node.title ? friendlyName(node.title.substr(0, 21)) : "");
 			if (title) {
 				title = ` - <span class="text-secondary">${title}</span>`;
@@ -3997,7 +4017,22 @@ Vvveb.FileManager = {
 			let element = event.target.closest("li[data-page] label");
 			if (element) {
 				let page = element.parentNode.dataset.page;
-				if (page) Vvveb.FileManager.loadPage(page, allowedComponents);
+				if (page) {
+					Vvveb.FileManager.loadPage(page, allowedComponents);
+					
+					let data = Vvveb.FileManager.pages[page];
+					
+					let pageUrl = window.location.pathname + "?module=editor/editor&template=" + data["file"] + "&url=" + data["url"] + "&name=" + data["title"];
+					if (data["post_id"]) {
+						pageUrl += "&post_id=" + data["post_id"];
+					}
+					if (data["product_id"]) {
+						pageUrl += "&product_id=" + data["product_id"];
+					}
+					
+					window.history.pushState({name:page}, null, pageUrl); 
+				}
+				
 				e.preventDefault();
 				return false;			
 			}
@@ -4262,7 +4297,8 @@ Vvveb.FileManager = {
 	},
 	
 	loadPage: function(name, allowedComponents = false, disableCache = true, loadComponents = false) {
-		let url = this.pages[name]['url'] ?? "";
+		let data = this.pages[name];
+		let url = data['url'] ?? "";
 		
 		if (!url) {
 			return;
@@ -4449,13 +4485,9 @@ Vvveb.Revisions = {
 						displayToast("danger", "Error", "Error loading revisions!");
 					});					
 				}			
-			}			
-		});
-		
-		document.querySelector(".revisions-dropdown").addEventListener("click", function (event) {
-			if (confirm("Are you sure?")) {
+			} else {			
 				let element = event.target.closest(".btn-revision-delete");
-				if (element) {
+				if (element && confirm("Are you sure?")) {
 
 					let item = element.closest(".dropdown-item");
 					let file = element.dataset.file;
@@ -4964,3 +4996,12 @@ let fontList = [{
 	value: "'Brush Script MT', sans-serif",
 	text: 'Brush Script'
 }];
+
+
+window.addEventListener("popstate", checkState);
+
+function checkState(e) {
+    if (e.state && e.state.name) {
+        Vvveb.FileManager.loadPage(e.state.name);
+    }
+}

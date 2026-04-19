@@ -90,7 +90,7 @@ VideoInput = { ...ImageInput, ...{
 	tag:"video",
 
     events: [
-        ["change", "onChange", "input[type=text]"],
+        ["change", "onImageChange", "input[type=text]"],
         ["click", "onClick", "button"],
         ["click", "onClick", "video"],
 	 ],
