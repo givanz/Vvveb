@@ -45,22 +45,54 @@ if ($_categories) {
 		if (isset($menu[$name]) && ($value == $menu[$name])) {
 			echo 'selected';
 		}
+	?>	
+	
+	
+	@menu input[data-v-options-*] = $menu['options']['@@__data-v-options-(*)__@@']
+	@menu select[data-v-options-*]|before = <?php $name = '@@__data-v-options-(*)__@@';?>
+	
+	@menu select[data-v-options-*] option|addNewAttribute = <?php 
+		$value = '@@__value__@@';
+		if (isset($menu['options'][$name]) && ($value == $menu['options'][$name])) {
+			echo 'selected';
+		}
 	?>
 
 	@menu|before = <?php 
 	
 	foreach($_categories as $id => $menu) {
 		$uniq = Vvveb\System\Functions\Str::random(5);
+
+		$menu_id    = 'menu-' . $menu['menu_item_id'];
+		$menu_input = "menu-{$menu['menu_item_id']}-input";
+		
+		$menu_hash    = "#$menu_id";
+		$menu_input_hash = "#$menu_input";
+		
 		if ($menu['parent_id'] == $parent) {?>
 
 		//catch all data attributes
 		@menu [data-v-taxonomy_item-*] = $menu['@@__data-v-taxonomy_item-(*)__@@']
 		@menu [data-v-taxonomy_item_id] = $menu['menu_item_id']
-		
-		
+				
 		@menu [data-v-taxonomy_item-url]|href = <?php echo htmlspecialchars(Vvveb\url('post/menu/index', $menu));?>
 		@menu [data-v-taxonomy_item-img]|src = $menu['images'][0]
-				
+
+		@menu [data-v-image]         = $menu['options']['img']
+		@menu [data-v-image-src]|src = $menu['options']['img_url']
+		@menu [data-v-image-src]|id  = $menu_id
+
+		@menu [data-v-image-src]|data-target-input = $menu_input_hash
+		@menu [data-v-image-src]|data-target-thumb = $menu_hash
+		
+		@menu [data-v-image-btn]|data-target-input = $menu_input_hash
+		@menu [data-v-image-btn]|data-target-thumb = $menu_hash
+		
+		
+		@menu .menu_input = $menu['image']
+		@menu .menu_input|data-target-input = $menu_input_hash
+		@menu .menu_input|id = $menu_input
+		
 		@menu|append = <?php 
 		 $generate_menu($menu['menu_item_id'], $_categories);
 	}?>

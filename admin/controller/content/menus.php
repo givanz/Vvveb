@@ -25,6 +25,7 @@ namespace Vvveb\Controller\Content;
 use function Vvveb\__;
 use function Vvveb\sanitizeHTML;
 use Vvveb\Sql\menuSQL;
+use Vvveb\System\Images;
 use Vvveb\System\Sites;
 use function Vvveb\url;
 
@@ -141,8 +142,7 @@ class Menus extends Categories {
 			$view->success[] = $success;
 			echo $success;
 		} else {
-			$view->errors = [$menus->error ?? ''];
-			echo $menus->error;
+			echo __('No id!');
 		}
 
 		die(0);
@@ -179,6 +179,20 @@ class Menus extends Categories {
 				if (isset($data['item_id_text'])) {
 					$lang['name'] = $data['item_id_text'];
 				}
+			}
+		}
+
+		if (isset($data['options'])) {
+			foreach ($data['options'] as $name => $value) {
+				if (! $value) {
+					unset($data['options'][$name]);
+				}
+			}
+
+			if ($data['options']) {
+				$data['options'] = json_encode($data['options'], true);
+			} else {
+				$data['options'] = '';
 			}
 		}
 
@@ -231,6 +245,7 @@ class Menus extends Categories {
 			] + $this->global;
 
 			$results = $menus->getMenuAllLanguages($options);
+			$placeholder = Images::image('placeholder.svg', 'menu_item');
 
 			foreach ($results['categories'] as &$menu) {
 				$langs                 = $menu['languages'] ? json_decode($menu['languages'], true) : [];
@@ -243,6 +258,16 @@ class Menus extends Categories {
 
 					$menu['name']    = $menu['languages'][$this->global['language_id']]['name'] ?? $langs[0]['name'] ?? '';
 					$menu['content'] = $menu['languages'][$this->global['language_id']]['content'] ?? $langs[0]['content'] ?? '';
+					if (isset($menu['options']) && $menu['options']) {
+						$menu['options'] = json_decode($menu['options'], true);
+						if (isset($menu['options']['img'])) {
+							$menu['options']['img_url'] = Images::image($menu['options']['img'], 'menu_item');
+						} else {
+							$menu['options']['img_url'] = $menu['options']['img_url'] ?? $placeholder;
+						}
+					} else {
+						$menu['options'] = ['img_url' => $placeholder];
+					}
 				}
 			}
 

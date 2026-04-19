@@ -30,6 +30,7 @@ use Vvveb\Sql\postSQL;
 use Vvveb\Sql\productSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use Vvveb\System\Images;
 use Vvveb\System\Sites;
 use function Vvveb\url;
 
@@ -38,9 +39,9 @@ class Menu extends ComponentBase {
 		'start'       => 0, //defaut, override from html
 		'limit'       => 10000,
 		'menu_id'     => null, //unset, set from html
+		'slug'        => null, //unset, set from html
 		'site_id'     => null, //unset, set from html
 		'language_id' => null, //unset, set from html
-		'slug'        => null, //unset, set from html
 	];
 
 	function results() {
@@ -74,6 +75,17 @@ class Menu extends ComponentBase {
 
 				if (! isset($category['children'])) {
 					$category['children'] = 0;
+				}
+
+				if (isset($category['options']) && $category['options']) {
+					$category['options'] = json_decode($category['options'], true);
+				} else {
+					$category['options'] = [];
+				}
+
+				$category['img'] = null;
+				if (isset($category['options']['img'])) {
+					$category['img'] = Images::image($category['options']['img'], 'menu_item');
 				}
 
 				if ($parent_id > 0) {
@@ -205,11 +217,11 @@ class Menu extends ComponentBase {
 		foreach ($fields as $field) {
 			$name  = $field['name'];
 			$value = $field['value'];
-			
+
 			$name = str_replace('item-', '', $name);
 
 			if ($name == 'name') {
-				$menu_item_content[$name] = sanitizeHTML($value);
+				$menu_item_content[$name] = strip_tags($value);
 			} else {
 				if ($name == 'content') {
 					$menu_item_content[$name] = sanitizeHTML($value);
@@ -218,7 +230,7 @@ class Menu extends ComponentBase {
 				}
 			}
 		}
-		
+
 		//$menu_item['menu_item_content']['post_id'] = $id;
 		$menu_item_content['language_id']      = self :: $global['language_id'];
 		$menu_item_content['content']          = $menu_item_content['content'] ?? '';
