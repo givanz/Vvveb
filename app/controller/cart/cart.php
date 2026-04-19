@@ -72,7 +72,7 @@ class Cart extends Base {
 
 		$cart = [
 			'products'          => $this->cart->getAll(),
-			'totals'            => $this->cart->getTotals(),
+			'totals'            => $this->cart->getAllTotals(),
 			'total_items'       => $this->cart->getNoProducts(),
 			'total_weight'      => $this->cart->getWeight(),
 			'total_price'       => $this->cart->getNoProducts(),

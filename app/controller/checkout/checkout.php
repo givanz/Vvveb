@@ -270,7 +270,7 @@ class Checkout extends Base {
 				if (($errors = $validator->validate($this->request->post)) === true) {
 					$checkoutInfo['products']        = $this->cart->getAll();
 					$checkoutInfo['product_options'] = $this->cart->getProductOptions();
-					$checkoutInfo['totals']          = $this->cart->getTotals();
+					$checkoutInfo['totals']          = $this->cart->getAllTotals();
 					$checkoutInfo['total']           = $grandTotal;
 					$checkoutInfo += prefixArrayKeys('shipping_', $checkoutInfo['shipping_address']);
 					$checkoutInfo += prefixArrayKeys('billing_', $checkoutInfo['billing_address']);

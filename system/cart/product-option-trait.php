@@ -52,7 +52,7 @@ trait ProductOptionTrait {
 		$product_options = $this->getProductOptions();
 
 		foreach ($product_options as $product_option) {
-			$this->addTotal('product_option.' . $product_option['product_option_rate_id'], $product_option['name'], $product_option['value']);
+			$this->addTotal('product_option', 'product_option.' . $product_option['product_option_rate_id'], $product_option['name'], $product_option['value']);
 		}
 	}
 }

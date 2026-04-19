@@ -65,9 +65,10 @@ trait TaxTrait {
 
 	function addTaxTotal() {
 		$taxes = $this->getTaxes();
-
+		$this->removeTotal('tax');
+		
 		foreach ($taxes as $tax) {
-			$this->addTotal('tax.' . $tax['tax_rate_id'], $tax['name'], $tax['value']);
+			$this->addTotal('tax', 'tax.' . $tax['tax_rate_id'], $tax['name'], $tax['value']);
 		}
 	}
 }

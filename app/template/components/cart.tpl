@@ -14,10 +14,11 @@ $_pagination_limit = isset($cart['limit']) ? $cart['limit'] : 5;
 $products = $cart['products'] ?? [];
 ?>
 
-[data-v-component-cart] [data-v-total_items] = $cart['total_items']
-[data-v-component-cart] [data-v-grand-total] = $cart['total']
-[data-v-component-cart] [data-v-grand-total_formatted] = $cart['total_formatted']
-[data-v-component-cart] [data-v-cart-cart-*]|innerText = $cart['@@__data-v-cart-cart-(*)__@@']
+[data-v-component-cart] [data-v-cart-total_items] = $cart['total_items']
+//[data-v-component-cart] [data-v-cart-total] = $cart['total']
+[data-v-component-cart] [data-v-cart-total_formatted] = $cart['total_formatted']
+
+
 
 @cart-product|before = <?php
 $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['product_id' => 1, 'image' => '#']] : false;
@@ -104,3 +105,5 @@ if(is_array($coupons)) foreach ($coupons as $index => $coupon) {
 	@coupon input[data-v-cart-coupon-*]|value = $coupon['@@__data-v-cart-coupon-(*)__@@']
 
 @coupon|after = <?php }?>
+
+[data-v-component-cart] [data-v-cart-*]|innerText = $cart['@@__data-v-cart-(*)__@@']

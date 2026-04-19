@@ -30,7 +30,7 @@ trait CouponTrait {
 	public function addCoupon($code) {
 		if ($code) {
 			$coupon  = new CouponSQL();
-			$options = $this->options + ['code' => $code, 'status' => 1];
+			$options = ['code' => $code, 'status' => 1] + $this->options;
 			$result  = $coupon->get($options);
 
 			if ($result && $result['code'] == $code) {
@@ -45,7 +45,7 @@ trait CouponTrait {
 
 	public function removeCoupon($code) {
 		$coupon = $this->coupons[$code];
-		$this->removeTotal('coupon.' . $coupon['coupon_id']);
+		$this->removeTotal('coupon', 'coupon.' . $coupon['coupon_id']);
 		unset($this->coupons[$code]);
 
 		return true;
@@ -58,14 +58,20 @@ trait CouponTrait {
 	function addCouponTotal() {
 		$coupons = $this->getCoupons();
 
+		$total = $this->getSubTotal();
+		//include taxes in discount calculation
+		$taxes = $this->getTotals('tax');
+		foreach ($taxes as $tax) {
+			$total += $tax['value'];
+		}		
+
 		foreach ($coupons as $coupon) {
 			if ($coupon['type'] == 'P') {
-				$discount = (($coupon['discount'] * $this->getSubTotal()) / 100);
+				$discount = (($coupon['discount'] * $total) / 100);
 			} else {
 				$discount = $coupon['discount'];
 			}
-
-			$this->addTotal('coupon.' . $coupon['coupon_id'], $coupon['name'], $discount);
+			$this->addTotal('coupon', 'coupon.' . $coupon['coupon_id'], $coupon['name'], -$discount);
 		}
 	}
 }

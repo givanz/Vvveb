@@ -25,15 +25,21 @@ namespace Vvveb\System\Cart;
 trait TotalTrait {
 	protected $totals = [];
 
-	function addTotal($key, $title, $value, $text = '') {
-		$data = ['key' => $key, 'title' => $title, 'value' => $value, 'value_formatted' => $this->currency->format($value), 'text' => $text];
+	function addTotal($namespace, $key, $title, $value, $text = '') {
+		$data = ['namespace' => $namespace, 'key' => $key, 'title' => $title, 'value' => $value, 'value_formatted' => $this->currency->format($value), 'text' => $text];
 
 		$this->totals[$key] = $data;
 		$this->write();
 	}
 
-	function removeTotal($key) {
-		unset($this->totals[$key]);
+	function removeTotal($namespace, $key = false) {
+		if ($key) {
+			unset($this->totals[$key]);
+		} else {
+			foreach ($this->totals as $key => $total) {
+				if ($total['namespace'] == $namespace) unset($this->totals[$key]); 
+			}
+		}
 	}
 
 	public function getSubTotal() {
@@ -46,7 +52,22 @@ trait TotalTrait {
 		return $total;
 	}
 
-	function getTotals() {
+	function getTotals($namespace = false, $key = false) {
+		if ($key) {
+			return $this->totals[$key];
+		} else if ($namespace) {
+			$totals = [];
+			foreach ($this->totals as $key => $total) {
+				if ($total['namespace'] == $namespace) $totals[$key] = $total; 
+			}
+			
+			return $totals;
+		}
+		
+		return $this->totals;
+	}
+	
+	function getAllTotals() {	
 		//include taxes
 		$this->addTaxTotal();
 		$this->addCouponTotal();

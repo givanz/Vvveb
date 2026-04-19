@@ -1,6 +1,9 @@
 import(common.tpl)
 
-[data-v-cart-page] [data-v-cart-cart-*]|innerText = $this->cart['@@__data-v-cart-cart-(*)__@@']
+[data-v-cart-page][data-v-cart-total_items] = $cart['total_items']
+//[data-v-cart-page] [data-v-cart-total] = $cart['total']
+[data-v-cart-page] [data-v-cart-total_formatted] = $cart['total_formatted']
+//[data-v-cart-page] [data-v-cart-*]|innerText = $this->cart['@@__data-v-cart-(*)__@@']
 
 @cart-product = [data-v-cart] [data-v-cart-product]
 
@@ -88,3 +91,4 @@ if(is_array($coupons)) foreach ($coupons as $index => $coupon) {
 	@coupon input[data-v-cart-coupon-*]|value = $coupon['@@__data-v-cart-coupon-(*)__@@']
 
 @coupon|after = <?php }?>
+
