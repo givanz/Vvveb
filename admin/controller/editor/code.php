@@ -25,8 +25,12 @@ namespace Vvveb\Controller\Editor;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use function Vvveb\sanitizeFileName;
+use Vvveb\System\Traits\Media as MediaTrait;
+use Vvveb\System\User\Admin;
 
 class Code extends Base {
+	use MediaTrait;
+
 	protected $saveDenyExtensions = ['php', 'tpl'];
 
 	function dirForType($type) {
@@ -34,23 +38,30 @@ class Code extends Base {
 			case 'public':
 				$scandir = DIR_MEDIA;
 
-			break;
+				break;
 
 			case 'plugins':
 				$scandir = DIR_PLUGINS;
 
-			break;
+				break;
 
 			case 'themes':
 				$scandir = DIR_THEMES;
 
-			break;
+				break;
 
 			default:
 				return false;
 		}
 
 		return $scandir;
+	}
+
+	function init() {
+		$type           = $this->request->get['type'] ?? false;
+		$this->dirMedia         = $this->dirForType($type);
+
+		return parent::init();
 	}
 
 	function index() {
@@ -61,8 +72,9 @@ class Code extends Base {
 		if (! $type) {
 			return;
 		}
-		$this->view->scanUrl     = "$controllerPath&action=scan&type=$type";
-		$this->view->uploadUrl   = "$controllerPath&action=upload&type=$type";
+
+		$this->setMediaEndpoints($controllerPath, "&type=$type");
+
 		$this->view->loadFileUrl = "$controllerPath&action=loadFile&type=$type";
 		$this->view->saveUrl     = "$controllerPath&action=save&type=$type";
 		$this->view->type        = $type;
@@ -74,6 +86,7 @@ class Code extends Base {
 
 	function sanitizeFileName($file, $type) {
 		if (V_SUBDIR_INSTALL && strpos($file, V_SUBDIR_INSTALL) === 0) {
+			//$path  = str_replace(V_SUBDIR_INSTALL, '', $path);
 			$file  = substr_replace($file, '', 0, strlen(V_SUBDIR_INSTALL));
 		}
 
@@ -104,9 +117,9 @@ class Code extends Base {
 
 		$extension = strtolower(substr($file, strrpos($file, '.') + 1));
 
-		if (in_array($extension, $this->saveDenyExtensions)) {
-			$message = ['success' => false, 'message' => sprintf(__('Saving not allowed for file type %s!'), trim($extension, '.'))];
-			$success = false;
+
+		if (in_array($extension, $this->saveDenyExtensions) && (($admin = Admin::current()) && ! in_array($admin['role'], ['super_admin', 'admin']))) {
+			$message = ['success' => false, 'message' => sprintf(__('Saving not allowed for file type %s for this role!'), trim($extension, '.'))];
 		} else {
 			if (! is_writable($file)) {
 				$message = ['success' => false, 'message' => sprintf(__('File not writable: %s Check if file has write permission.'), $file)];
