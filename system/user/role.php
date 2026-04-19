@@ -121,15 +121,19 @@ class Role {
 					$filename = str_replace('.php', '', $file);
 
 					if (is_dir($dir . '/' . $file)) {
-						self::mkmap($dir . '/' . $file, $path[$name]);
+						self::mkmap($dir . '/' . $file, $path[$name], $app);
 					} else {
 						if (! in_array($filename, ['base', 'crud', 'listing', 'error404', 'error403', 'error500'])) {
 							//$path[$name][$filename] = self::getActions2($dir . '/' . $file);
 							$class = str_replace(DIR_ROOT . $app . DS . 'controller' . DS, '', $dir . DS . $filename);
 							$class = str_replace('/', '\\', $class);
 							//echo $class;
-							$actions = self::getActions($class, $filename);
-
+							if ($app == APP) {
+								$actions = self::getActions($class, $filename, $dir . DS . $file);
+							} else {
+								$actions = self::getActions2($dir . DS . $file);
+							}
+							
 							if ($actions) {
 								$path[$name][$filename] = $actions;
 							}
@@ -145,12 +149,12 @@ class Role {
 
 	public static function controllers($app = 'admin') {
 		$tree = [];
-		self::mkmap(DIR_ROOT . $app . DS . 'controller', $tree);
+		self::mkmap(DIR_ROOT . $app . DS . 'controller', $tree, $app);
 
 		return $tree['controller'] ?? [];
 	}
 
-	public static function getActions($file) {
+	public static function getActions($file, $filename, $path) {
 		//echo $file;
 
 		$permission = str_replace('\\', '/', $file);
@@ -172,11 +176,13 @@ class Role {
 				foreach ($methods as $method) {
 					//ignore constructor
 					if ($method[0] != '_' && $method != 'init' && $method != 'goToHelp') {
+						$data[$method] = "$permission/$method";
+						/*
 						if ($method == 'index') {
 							$data[$method] = $permission;
 						} else {
 							$data[$method] = "$permission/$method";
-						}
+						}*/
 					}
 				}
 			}
@@ -185,6 +191,44 @@ class Role {
 		}
 
 		return [];
+	}
+
+	public static function getActions2($file) {
+		$permission = substr($file, strpos($file, '/controller/') + 12);
+		//remove extension
+		$permission = substr($permission, 0, strrpos($permission, '.'));
+		//if plugin add namespace
+		if (strpos($file, 'plugins/')) {
+			$pluginName = pregMatch('@/plugins/(.+?)/@', $file, 1);
+			$permission = "plugins/$pluginName$permission";
+		}
+
+		$data = [];
+		//$data[$permission] = $permission;
+
+		$controllerCode = file_get_contents($file);
+		//get all public methods
+		$methods = pregMatchAll('/(?<!private|protected)\s+function.+?(\w+)\(/', $controllerCode, 1);
+
+		//add index by default
+		$data['index'] = $permission;
+
+		if ($methods) {
+			foreach ($methods as $method) {
+				//ignore constructor
+				if ($method[0] != '_') {
+					$data[$method] = "$permission/$method";
+					/*
+					if ($method == 'index') {
+						$data[$method] = $permission;
+					} else {
+						$data[$method] = "$permission/$method";
+					}*/
+				}
+			}
+		}
+
+		return $data;
 	}
 
 	public static function getControllerList($app = 'admin') {
