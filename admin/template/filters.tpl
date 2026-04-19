@@ -2,7 +2,7 @@
 #filters input[name="action"]|before = <?php $action = Vvveb\get('action');if ($action) {?>
 #filters input[name="action"]|value  = <?php echo htmlspecialchars(Vvveb\get('action'));?>
 #filters input[name="action"]|after  = <?php } ?>
-#filters input[name="type"]|value    = <?php echo htmlspecialchars(Vvveb\get('type'));?>
+#filters input[name="type"]|value    = <?php echo $this->type ?? '';?>
 
 #filters|addClass = <?php if ($this->filter) echo 'show';?>
 #filters input[type="text"],#filters input[type="search"]|value = <?php 
@@ -44,3 +44,6 @@ if (isset($this->filter[$text])) echo htmlspecialchars($this->filter[$text]);
 }}?>
 
 @option|addNewAttribute = <?php if ($key == $selected) echo 'selected';?>
+
+#filters #all-sites|addNewAttribute = <?php if (isset($_GET['filter']['site_id']) && !$_GET['filter']['site_id']) echo 'checked';?>
+#filters #current-site|addNewAttribute = <?php if (!isset($_GET['filter']['site_id']) || $_GET['filter']['site_id']) echo 'checked';?>
