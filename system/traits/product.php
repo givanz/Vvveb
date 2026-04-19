@@ -23,10 +23,10 @@
 namespace Vvveb\System\Traits;
 
 use function Vvveb\__;
-use function Vvveb\getCurrency;
 use Vvveb\System\Cart\Currency;
 use Vvveb\System\Cart\Tax;
 use Vvveb\System\Images;
+use Vvveb\System\Locale;
 use function Vvveb\url;
 
 trait Product {
@@ -36,7 +36,7 @@ trait Product {
 		}
 
 		if (! isset($this->currentCurrency)) {
-			$this->currentCurrency = getCurrency();
+			$this->currentCurrency = Locale :: getCurrency();
 			$this->tax             = Tax::getInstance($options);
 			$this->currency        = Currency::getInstance($options);
 		}
@@ -52,7 +52,7 @@ trait Product {
 		$language        = [];
 
 		if (! isset($this->currentCurrency)) {
-			$this->currentCurrency = getCurrency();
+			$this->currentCurrency = Locale :: getCurrency();
 			$this->tax             = Tax::getInstance($options);
 			$this->currency        = Currency::getInstance($options);
 		}
@@ -62,7 +62,6 @@ trait Product {
 
 			if (! $product['name']) {
 				$product['name']   = '[' . __('No translation') . ']';
-				$product['slug']   = 'no-translation';
 			}
 		}
 
@@ -70,12 +69,12 @@ trait Product {
 			$product['images'] = json_decode($product['images'], true);
 
 			foreach ($product['images'] as &$image) {
-				$image['image'] = Images::image($image['image'], 'product', $options['image_size'] ?? 'medium');
+				$image['image'] = Images::image($image['image'], 'product', $options['image_size'] ?? 'medium', $options['image_resize'] ?? 'cs');
 			}
 		}
 
 		if (isset($product['image']) && $product['image']) {
-			$product['image'] = Images::image($product['image'], 'product', $options['image_size'] ?? 'medium');
+			$product['image'] = Images::image($product['image'], 'product', $options['image_size'] ?? 'medium', $options['image_resize'] ?? 'cs');
 			//$product['images'][] = ['image' => Images::image($product['image'], 'product')];
 		}
 
@@ -84,7 +83,11 @@ trait Product {
 		$product['modDate'] = date('r', strtotime($product['updated_at']));
 		$product['lastMod'] = date('Y-m-d\TH:i:sP', strtotime($product['updated_at']));
 
-		$url                         = ['slug' => $product['slug'], 'type' => $product['type'], 'product_id' => $product['product_id']] + $language;
+		$url                         = ['type' => $product['type'], 'product_id' => $product['product_id']] + $language;
+		//if translation is missing slug is not available
+		if (isset($product['slug'])) {
+			$url['slug'] = $product['slug'];
+		}
 
 		$product['url']      	       = url('product/product/index', $url);
 		$product['add_cart_url']     = url('cart/cart/add', ['product_id' => $product['product_id']]);
@@ -102,7 +105,7 @@ trait Product {
 			$product["{$price}_tax"]            = $amount ? $this->tax->addTaxes($amount, $product['tax_type_id']) : 0;
 			$product["{$price}_formatted"]      = $this->currency->format($amount);
 			$product["{$price}_tax_formatted"]  = $this->currency->format($product["{$price}_tax"]);
-			$product["{$price}_price_currency"] = $this->currentCurrency;
+			$product["{$price}_currency"]       = $this->currentCurrency;
 		}
 
 		$product['has_variants'] = false;

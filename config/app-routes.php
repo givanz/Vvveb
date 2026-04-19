@@ -77,6 +77,8 @@ return [
 	'/shop/{slug}'                          => ['module' => 'product/category/index'],
 	'/shop/{slug}/#page#'                   => ['module' => 'product/category/index'],
 	'/shop/{slug}/#page#/filters-{filters}' => ['module' => 'product/category/index'],
+	'/ptag/{slug}'                          => ['module' => 'product/tag/index'],
+	'/ptag/{slug}/#page#'                   => ['module' => 'product/tag/index'],
 	'/brand/{slug}'                         => ['module' => 'product/manufacturer/index'],
 	'/brand'                                => ['module' => 'product/manufacturer/index'],
 	'/brand/#page#'                         => ['module' => 'product/manufacturer/index'],
@@ -93,16 +95,19 @@ return [
 	'/cart/compare/remove/#product_id#' => ['module' => 'cart/compare/remove'],
 
 	//multi language catalog - language code must be at least 2 characters
-	'/{language{2,5}}/shop'                                 => ['module' => 'product/index'],
-	'/{language{2,5}}/shop/#page#'                          => ['module' => 'product/index'],
-	'/{language{2,5}}/shop/{slug}'                          => ['module' => 'product/category/index'],
-	'/{language{2,5}}/shop/{slug}/#page#'                   => ['module' => 'product/category/index'],
-	'/{language{2,5}}/shop/{slug}/#page#/filters-{filters}' => ['module' => 'product/category/index'],
-	'/{language{2,5}}/manufacturer/{slug}'                  => ['module' => 'product/manufacturer/index'],
-	'/{language{2,5}}/vendor/{slug}'                        => ['module' => 'product/vendor/index'],
-	'/{language{2,5}}/vendor/{slug}/#page#'                 => ['module' => 'product/vendor/index'],
-	//'/{language{2,5}}/product/{slug}-#product_id#'          => ['module' => 'product/product/index', 'edit'=>'?module=product/product&product_id={product_id}'],
-	'/{language{2,5}}/product/{slug}'          => ['module' => 'product/product/index', 'edit'=>'?module=product/product&product_id={slug}'],
+	'/{language{2,3}}/shop'                                 => ['module' => 'product/index'],
+	'/{language{2,3}}/shop/#page#'                          => ['module' => 'product/index'],
+	'/{language{2,3}}/shop/{slug}'                          => ['module' => 'product/category/index'],
+	'/{language{2,3}}/shop/{slug}/#page#'                   => ['module' => 'product/category/index'],
+	'/{language{2,3}}/shop/{slug}/#page#/filters-{filters}' => ['module' => 'product/category/index'],
+	'/{language{2,3}}/ptag/{slug}'                          => ['module' => 'product/tag/index'],
+	'/{language{2,3}}/ptag/{slug}/#page#'                   => ['module' => 'product/tag/index'],
+	'/{language{2,3}}/manufacturer/{slug}'                  => ['module' => 'product/manufacturer/index'],
+	'/{language{2,3}}/vendor/{slug}'                        => ['module' => 'product/vendor/index'],
+	'/{language{2,3}}/vendor/{slug}/#page#'                 => ['module' => 'product/vendor/index'],
+	//'/{language{2,3}}/product/{slug}-#product_id#'          => ['module' => 'product/product/index', 'edit'=>'?module=product/product&product_id={product_id}'],
+	'/{language{2,3}}/product/p-#product_id#'                 => ['module' => 'product/product/index', 'edit'=>'?module=product/product&product_id=#product_id#'],
+	'/{language{2,3}}/product/{slug}'                       => ['module' => 'product/product/index', 'edit'=>'?module=product/product&slug={slug}'],
 
 	//checkout
 	'/cart'                         => ['module' => 'cart/cart/index'],
@@ -152,27 +157,34 @@ return [
 	//'/page/{slug}-#post_id#'   => ['module' => 'content/page/index', 'edit'=>'?module=content/post&post_id={post_id}&type=page'],
 
 	//multi language content - language code must be at least 2 characters
-	'/{language{2,5}}/'           => ['module' => 'index/index'],
+	'/{language{2,3}}/'           => ['module' => 'index/index'],
 	//pagination for blog posts
-	'/{language{2,5}}/p/#page#'  => ['module' => 'index/index'],
+	'/{language{2,3}}/p/#page#'  => ['module' => 'index/index'],
 	//content
-	'/{language{2,5}}/blog'                   => ['module' => 'content'],
-	'/{language{2,5}}/cat/{slug}'             => ['module' => 'content/category/language'],
-	'/{language{2,5}}/tag/{slug}'             => ['module' => 'content/tag/index'],
-	//'/{language{2,5}}/{slug}-#post_id#'       => ['module' => 'content/post/index', 'edit'=>'?module=content/post&post_id={post_id}'],
-	'/{language{2,5}}/{slug}'       => ['module' => 'content/post/index', 'edit'=>'?module=content/post&post_id={slug}'],
-	//'/{language{2,5}}/page/{slug}-#post_id#'  => ['module' => 'content/page/index', 'edit'=>'?module=content/post&post_id={post_id}'],
-	'/{language{2,5}}/page/{slug}'  => ['module' => 'content/page/index', 'edit'=>'?module=content/post&slug={slug}'],
+	'/{language{2,3}}/blog'                   => ['module' => 'content'],
+	'/{language{2,3}}/cat/{slug}'             => ['module' => 'content/category/language'],
+	'/{language{2,3}}/tag/{slug}'             => ['module' => 'content/tag/index'],
+	//'/{language{2,3}}/{slug}-#post_id#'       => ['module' => 'content/post/index', 'edit'=>'?module=content/post&post_id={post_id}'],
+	'/{language{2,3}}/p-#post_id#'       => ['module' => 'content/post/index', 'edit'=>'?module=content/post&post_id=#post_id#'],
+	'/{language{2,3}}/{slug}'       => ['module' => 'content/post/index', 'edit'=>'?module=content/post&slug={slug}'],
+	//'/{language{2,3}}/page/{slug}-#post_id#'  => ['module' => 'content/page/index', 'edit'=>'?module=content/post&post_id={post_id}'],
+	'/{language{2,3}}/page/p-#post_id#'  => ['module' => 'content/page/index', 'edit'=>'?module=content/post&post_id=#post_id#'],
+	'/{language{2,3}}/page/{slug}'  => ['module' => 'content/page/index', 'edit'=>'?module=content/post&slug={slug}'],
 
-	'/{language{2,5}}/tag/{slug}'            => ['module' => 'content/tag/index'],
-	'/{language{2,5}}/tag/{slug}/#page#'     => ['module' => 'content/tag/index'],
-	'/{language{2,5}}/author/{username}'     => ['module' => 'content/user/index'],
+	'/{language{2,3}}/tag/{slug}'            => ['module' => 'content/tag/index'],
+	'/{language{2,3}}/tag/{slug}/#page#'     => ['module' => 'content/tag/index'],
+	'/{language{2,3}}/author/{username}'     => ['module' => 'content/user/index'],
 	//archive year
-	'/{language{2,5}}/#year{4,4}#'=> ['module' => 'content/archive/index'],
+	'/{language{2,3}}/#year{4,4}#'=> ['module' => 'content/archive/index'],
 	//archive month and year
-	'/{language{2,5}}/#year{4,4}#/#month{2,2}#'=> ['module' => 'content/archive/index'],
+	'/{language{2,3}}/#year{4,4}#/#month{2,2}#'=> ['module' => 'content/archive/index'],
 	//archive day
 	//'/#year#/#month#/#day#'=> ['module' => 'content/archive/index'],
+	/*
+	'/{language{2,3}}/cart'     => ['module' => 'cart/cart/index'],
+	'/{language{2,3}}/checkout' => ['module' => 'checkout/checkout/index'],
+	'/{language{2,3}}/user'     => ['module' => 'user/index'],
+	*/
 
 	//custom post
 	'/{type}'                   => ['module' => 'content'],
@@ -190,6 +202,8 @@ return [
 	'/{type}/cat/{slug}'                          => ['module' => 'product/category/index', 'type' => '{type}'],
 	'/{type}/cat/{slug}/#page#'                   => ['module' => 'product/category/index', 'type' => '{type}'],
 	'/{type}/cat/{slug}/#page#/filters-{filters}' => ['module' => 'product/category/index', 'type' => '{type}'],
+	'/{type}/t/{slug}'                         => ['module' => 'product/tag/index', 'type' => '{type}'],
+	'/{type}/t/{slug}/#page#'                  => ['module' => 'product/tag/index', 'type' => '{type}'],
 	'/{type}/{slug}'                              => ['module' => 'product/product/index', 'type' => '{type}', 'edit'=>'?module=product/product&type={type}&slug={slug}'],
 
 	//Cron

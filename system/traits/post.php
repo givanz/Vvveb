@@ -37,13 +37,17 @@ trait Post {
 	}
 
 	function post(&$post, &$options = []) {
+		if (! $post) {
+			return $post;
+		}
+
 		$type = $post['type'] ?? $options['type'] ?? 'post';
 
 		if (isset($post['images'])) {
 			$post['images'] = json_decode($post['images'], 1);
 
 			foreach ($post['images'] as &$image) {
-				$image = Images::image($image, 'post', $options['image_size'] ?? 'medium');
+				$image = Images::image($image, 'post', $options['image_size'] ?? 'medium', $options['image_resize'] ?? 'cs');
 			}
 		}
 
@@ -67,7 +71,7 @@ trait Post {
 		}
 
 		if (isset($post['image'])) {
-			$post['image'] = $post['images'][] = Images::image($post['image'], 'post', $options['image_size'] ?? 'medium');
+			$post['image'] = $post['images'][] = Images::image($post['image'], 'post', $options['image_size'] ?? 'medium', $options['image_resize'] ?? 'cs');
 		}
 
 		if (isset($post['avatar'])) {
@@ -98,9 +102,16 @@ trait Post {
 		if ($post['language_id'] != $options['default_language_id']) {
 			$language = ['language' => $options['language']];
 
-			if (! $post['name']) {
-				$post['name']   = '[' . __('No translation') . ']';
-				$post['slug']   = 'no-translation';
+			if ($post['name'] === null && isset($post['post_content'][$this->options['default_language_id']])) {
+				$langFallback = $post['product_content'][$this->options['default_language_id']];
+				$post['name']  = $langFallback['name'];
+				$post['slug']  = $langFallback['slug'];
+				$post['content']  = $langFallback['content'];
+				$post['language_id']  = $langFallback['language_id'];
+			} else {
+				if (! $post['name']) {
+					$post['name']   = '[' . __('No translation') . ']';
+				}
 			}
 		}
 
@@ -119,7 +130,11 @@ trait Post {
 		}
 
 		//url
-		$url                  = ['slug' => $post['slug'], 'post_id' => $post['post_id']] + $language;
+		$url                  = ['post_id' => $post['post_id']] + $language;
+		//if translation is missing slug is not available
+		if (isset($post['slug'])) {
+			$url['slug'] = $post['slug'];
+		}
 
 		if ($post['type'] != 'post') {
 			$url['type'] = $post['type'];

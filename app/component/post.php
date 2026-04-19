@@ -41,12 +41,12 @@ class Post  extends ComponentBase {
 		'language_id'    => null,
 		'site_id'        => null,
 		'slug'           => 'url',
-		'status'         => 'publish',
-		'comment_count'  => 1,
-		'comment_status' => 1,
-		'type'           => null,
-		'image_size'     => 'large',
-		//'type' => 'post',
+		'status'         => 'publish', //'publish', 'draft', 'pending', 'private', 'scheduled'
+		'comment_count'  => 1, // flag to include post comments count
+		'comment_status' => 1, // include only comments with status, 1 = published, 0 = unpublished/pending, 2 = spam, 3 = trash
+		'type'           => null, // filter by post type eg: post
+		'image_size'     => 'large', //options: xlarge, large, medium, thumb
+		'image_resize'   => null, //options: cs = Crop & resize, c = crop, r = resize, s = stretch
 	];
 
 	public $cacheExpire = 0; //no cache
@@ -60,7 +60,7 @@ class Post  extends ComponentBase {
 		//$languages = availableLanguages();
 		if (! isset($this->options['date_format'])) {
 			$site = siteSettings();
-			$this->options['date_format'] = $site['date_format'];
+			$this->options['date_format'] = $site['date_format'] ?? 'human';
 		}
 
 		if ($results) {

@@ -23,7 +23,6 @@
 namespace Vvveb\Component;
 
 use \Vvveb\Sql\Product_VariantSQL;
-use function Vvveb\getCurrency;
 use function Vvveb\model;
 use function Vvveb\sanitizeHTML;
 use Vvveb\Sql\ProductSQL;
@@ -33,20 +32,24 @@ use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Core\Request;
 use Vvveb\System\Event;
 use Vvveb\System\Images;
+use Vvveb\System\Locale;
+use Vvveb\System\Traits\Product as ProductTrait;
 use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
 class Product extends ComponentBase {
+	//use ProductTrait;
+
 	public static $defaultOptions = [
 		'product_id'          => 'url',
 		'slug'                => 'url',
 		'status'              => 1,
 		'language_id'         => null,
 		'site_id'             => null,
-		'user_id'             => null,
-		'user_group_id'       => null,
-		'product_variant_id'  => null,
+		'user_group_id'       => null, // user group id to use to calculate promotional price
+		'product_variant_id'  => null, // product variant id to display variant as default, for price and product options
 		'variant'             => null, //[true, false] include variants
+		'variant_price'       => null, //[true, false] include variants prices
 		'promotion'           => null, //[true, false] include promotional price
 		'points'              => null, //[true, false] include points
 		'stock_status'        => null, //[true, false] include stock status info
@@ -54,8 +57,8 @@ class Product extends ComponentBase {
 		'length_type'         => null, //[true, false] include length type info
 		'rating'              => null, //[true, false] include rating average
 		'reviews'             => null, //[true, false] include reviews count
-
-		'image_size'    => 'large',
+		'image_size'          => 'large',    //options: xlarge, large, medium, thumb - if null site settings is used
+		'image_resize'        => null,    //options: cs = Crop & resize, c = crop, r = resize, s = stretch - if null site settings is used
 	];
 
 	public $cacheExpire = 0; //no cache
@@ -67,7 +70,7 @@ class Product extends ComponentBase {
 		$results['images'] = [];
 
 		if (isset($results['product_image'])) {
-			$results['images'] = Images::images($results['product_image'], 'product', $this->options['image_size']);
+			$results['images'] = Images::images($results['product_image'], 'product', $this->options['image_size'], $this->options['image_resize'] ?? 'cs');
 		}
 
 		if (isset($results['image'])) {
@@ -113,7 +116,7 @@ class Product extends ComponentBase {
 
 		$this->tax             = Tax::getInstance($this->options);
 		$this->currency        = Currency::getInstance($this->options);
-		$this->currentCurrency = getCurrency();
+		$this->currentCurrency = Locale :: getCurrency();
 
 		foreach (['price', 'old_price', 'min_price', 'max_price'] as $price) {
 			$amount = 0;
@@ -124,7 +127,7 @@ class Product extends ComponentBase {
 			$results["{$price}_tax"]            = $amount ? $this->tax->addTaxes($amount, $results['tax_type_id']) : 0;
 			$results["{$price}_formatted"]      = $this->currency->format($amount);
 			$results["{$price}_tax_formatted"]  = $this->currency->format($results["{$price}_tax"]);
-			$results["{$price}_price_currency"] = $this->currentCurrency;
+			$results["{$price}_currency"]       = $this->currentCurrency;
 		}
 
 		$results['has_variants'] = false;
@@ -138,6 +141,17 @@ class Product extends ComponentBase {
 			$results['promotion_tax_formatted'] = $currency->format($results['promotion_tax']);
 			$results['promotion_formatted']     = $currency->format($results['promotion']);
 			$results['promotion_discount']      = 100 - ceil($results['promotion'] * 100 / $results['price']);
+		}
+
+
+		if ($results['language_id'] != $this->options['default_language_id']) {
+			if ($results['name'] === null && isset($results['product_content'][$this->options['default_language_id']])) {
+				$langFallback = $results['product_content'][$this->options['default_language_id']];
+				$results['name']  = $langFallback['name'];
+				$results['slug']  = $langFallback['slug'];
+				$results['content']  = $langFallback['content'];
+				$results['language_id']  = $langFallback['language_id'];
+			}
 		}
 
 		//rfc
