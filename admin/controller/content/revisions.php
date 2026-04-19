@@ -109,6 +109,10 @@ class Revisions extends Base {
 	}
 
 	function index() {
+		if (! isset($this->options[$this->object . '_id'])) {
+			$this->notFound();
+		}
+
 		$view           = $this->view;
 		$modelName      = $this->object . '_content_revision';
 		$revisions      = model($modelName);
