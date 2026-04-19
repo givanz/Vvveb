@@ -25,7 +25,7 @@ namespace Vvveb\Controller\Plugin;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use function Vvveb\fileUploadErrMessage;
-use function Vvveb\rrmdir;
+use function Vvveb\slugify;
 use Vvveb\System\CacheManager;
 use function Vvveb\System\Core\exceptionToArray;
 use Vvveb\System\Core\FrontController;
@@ -137,11 +137,11 @@ class Plugins extends Base {
 
 	function delete() {
 		if ($this->plugin) {
-			if (!is_array($this->plugin)) {
+			if (! is_array($this->plugin)) {
 				$this->plugin[] = $this->plugin;
 			}
 
-			foreach ($this->plugin as $plugin) { 
+			foreach ($this->plugin as $plugin) {
 				try {
 					if (PluginsList::uninstall($plugin, $this->global['site_id'])) {
 						$this->view->success[] = sprintf(__('Plugin "%s" removed!'), \Vvveb\humanReadable($plugin));
@@ -165,7 +165,7 @@ class Plugins extends Base {
 			if ($file && $file['error'] == UPLOAD_ERR_OK) {
 				try {
 					// use temorary file, php cleans temporary files on request finish.
-					$this->pluginSlug = PluginsList :: install($file['tmp_name'], str_replace('.zip', '', strtolower($file['name'])));
+					$this->pluginSlug = PluginsList :: install($file['tmp_name'], slugify(str_replace('.zip', '', $file['name'])));
 				} catch (\Exception $e) {
 					$error                = $e->getMessage();
 					$this->view->errors[] = $error;
@@ -182,7 +182,7 @@ class Plugins extends Base {
 					$this->pluginName        = "<b>$this->pluginName</b>";
 					$this->pluginActivateUrl = \Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'checkPluginAndActivate', 'plugin' => $this->pluginSlug, 'csrf' => $this->session->get('csrf')]);
 					$successMessage          = sprintf(__('Plugin %s was successfully installed!'), $this->pluginName, $this->pluginActivateUrl);
-					$successMessage         .= '<button type="submit" name="plugin" value="' . $this->themeSlug . '" class="btn btn-primary btn-sm ms-2" onclick="document.getElementById(\'action\').value=\'checkPluginAndActivate\';">' . __('Activate plugin') . '</button>';
+					$successMessage         .= '<button type="submit" name="plugin" value="' . $this->pluginName . '" class="btn btn-primary btn-sm ms-2" onclick="document.getElementById(\'action\').value=\'checkPluginAndActivate\';">' . __('Activate plugin') . '</button>';
 					$this->view->success[]   = $successMessage;
 				} else {
 					$errorMessage            = sprintf(__('Failed to install %s plugin!'), $this->pluginName);
