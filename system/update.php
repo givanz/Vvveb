@@ -126,14 +126,23 @@ class Update {
 	}
 
 	static function download($url) {
-		//$temp = tmpfile();
 		$f    = false;
-		$temp = tempnam(sys_get_temp_dir(), 'vvveb_update');
+		$temp = @tempnam(sys_get_temp_dir(), 'vvveb_update');
 
+		if (!$temp) {
+			$temp = @tmpfile();
+		}
+		
+		//if temp still fails use cache dir, some shared hosting have this issue
+		if (!$temp) {
+			$temp = DIR_CACHE . APP . '.update.' . md5($url) . 'zip';
+		}
+		
 		if ($content = download($url)) {
 			$f  = file_put_contents($temp, $content, LOCK_EX);
-
-			return $temp;
+			if ($f) {
+				return $temp;
+			}
 		}
 
 		return $f;
@@ -190,7 +199,7 @@ class Update {
 	}
 
 	function copyConfig() {
-		$skip = ['plugins.php', 'mail.php', 'sites.php', 'app.php', 'admin.php', 'app-routes.php'];
+		$skip = ['plugins.php', 'mail.php', 'sites.php', 'app.php', 'admin.php', 'rest.php', 'graphql.php', 'app-routes.php'];
 
 		return $this->copyFolder($this->workDir . DS . 'config', DIR_ROOT . DS . 'config', $skip);
 	}
@@ -285,7 +294,7 @@ class Update {
 
 		$diff     = [];
 		$tableSql = [];
-		$db;
+
 		//get table names from sql files
 		foreach ($files as $filename) {
 			$tableName   = basename($filename, '.sql');

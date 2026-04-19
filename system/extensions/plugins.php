@@ -28,7 +28,7 @@ use function Vvveb\rrmdir;
 use Vvveb\System\Event;
 
 class Plugins extends Extensions {
-	static protected $url = 'https://plugins.vvveb.com';
+	static protected $url = 'https://www.vvveb.com';
 
 	static protected $feedUrl = 'https://plugins.vvveb.com/feed/plugins';
 
@@ -131,7 +131,7 @@ class Plugins extends Extensions {
 
 			if (! file_exists($publicDest)) {
 				//try symlink first
-				if (symlink($publicSrc, $publicDest)) {
+				if (function_exists('symlink') && \symlink($publicSrc, $publicDest)) {
 					return true;
 				} else {
 					return rcopy($publicSrc, $publicDest);

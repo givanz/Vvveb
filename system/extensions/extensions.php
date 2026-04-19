@@ -135,14 +135,23 @@ abstract class Extensions {
 	}
 
 	static function download($url) {
-		//$temp = tmpfile();
 		$f    = false;
-		$temp = tempnam(sys_get_temp_dir(), 'vvveb_plugin');
-
+		$temp = @tempnam(sys_get_temp_dir(), 'vvveb_plugin');
+		
+		if (!$temp) {
+			$temp = @tmpfile();
+		}
+		
+		//if temp still fails use cache dir, some shared hosting have this issue
+		if (!$temp) {
+			$temp = DIR_CACHE . APP . '.extension.' . md5($url) . '.zip';
+		}
+		
 		if ($content = download($url)) {
 			$f  = file_put_contents($temp, $content, LOCK_EX);
-
-			return $temp;
+			if ($f) {
+				return $temp;
+			}
 		}
 
 		return $f;
@@ -156,7 +165,7 @@ abstract class Extensions {
 
 		$zip = new \ZipArchive();
 
-		if ($zip->open($extensionZipFile) === true) {
+		if ($zip->open($extensionZipFile/*, \ZipArchive::OVERWRITE*/) === true) {
 			$info       = false;
 			$folderName = $zip->getNameIndex(0);
 
