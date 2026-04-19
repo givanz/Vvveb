@@ -102,10 +102,29 @@
 									 <div class="mb-3 row">
 										<label for="title" class="col-sm-3 col-form-label">Primary language</label>
 										<div class="col-sm-9">
-										 <select name="language" class="form-select py-2" data-v-language-list>
-											<option value="en">English</option>
-											<option value="ro">Romanian</option>
-										  </select>
+											<div class="input-group">
+											 <select name="language" class="form-select" data-v-language-list>
+												<option value="en">English</option>
+												<option value="ro">Romanian</option>
+											  </select>
+											  <button type="button" class="btn btn-sm py-0 btn-toggle fs-5" onclick="addLanguage()">
+												  <i class="icon-add-outline"></i>
+											   </button>
+											</div>
+										</div>
+									  </div>
+									 <div class="mb-3 row language-row d-none">
+										<label for="title" class="col-sm-3 col-form-label">Language</label>
+										<div class="col-sm-9">
+											<div class="input-group">
+											 <select name="languages[]" class="form-select" data-v-language-list>
+												<option value="en">English</option>
+												<option value="ro">Romanian</option>
+											  </select>
+											  <button type="button" class="btn btn-sm py-0 btn-toggle fs-5 text-danger" onclick="removeLanguage(this)">
+												  <i class="icon-close-outline"></i>
+											   </button>
+											</div>
 										</div>
 									  </div>
 									 <div class="mb-3 row">
@@ -254,99 +273,113 @@
 			</div>
     </div>					
 	
-    <script>
-	let publicPath = '{$this->publicPath}';
-	function togglePasswordInput(element, id) {
-		let password = document.getElementById(id);
-		if (password.type == "password") {
-			password.type = "text"; 
-			//element.innerHTML = "&#x1F513;";
-			element.firstElementChild.className = "icon-eye-outline";
-		} else {
-			password.type = "password";
-			//element.innerHTML = "&#x1F512;";
-			element.firstElementChild.className = "icon-eye-off-outline";
-		}
-	}			
-		
- 	function randomPassword(length, chars = "abcdefghijklmnopqrstuvwxyz!@#$%^&*()-+<>ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890") {
-		var pass = "";
-		for (var x = 0; x < length; x++) {
-			var i = Math.floor(Math.random() * chars.length);
-			pass += chars.charAt(i);
-		}
-		return pass;
-	}
-	
-	function randomizePassword() {
-		document.getElementById("password").value = randomPassword(49);   
-	}
-	
-	function randomizeAdminPath() {
-		document.getElementById("admin-path").value = 'vadmin-' + randomPassword(32, "abcdefghijklmnopqrstuvwxyz!@<>ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"); 
-	};
-
-	randomizePassword();
-	
-	let isRootPublic = {$this->isRootPublic};
-	if (isRootPublic) {
-		randomizeAdminPath();
-		document.getElementById("not-public-notice").remove();
+<script>
+let publicPath = '{$this->publicPath}';
+function togglePasswordInput(element, id) {
+	let password = document.getElementById(id);
+	if (password.type == "password") {
+		password.type = "text"; 
+		//element.innerHTML = "&#x1F513;";
+		element.firstElementChild.className = "icon-eye-outline";
 	} else {
-		document.getElementById("rand-path-btn").remove();
-		document.getElementById("admin-path").disabled = true;		
+		password.type = "password";
+		//element.innerHTML = "&#x1F512;";
+		element.firstElementChild.className = "icon-eye-off-outline";
 	}
-    
-	let homepage = document.getElementById("homepage");
-	let homepageSelect = document.querySelector("[name='homepage']");
-	let themes = document.querySelector(".themes");
+}			
 	
-	function changeTheme(theme) {
-		fetch(window.location.pathname + "?action=getThemeTemplates&theme=" + theme)
-			.then((response) => {
-				if (!response.ok) { throw new Error(response) }
-				return response.json()
-			})
-			.then((data) => {
-				homepageSelect.replaceChildren();
-				for (code in data) {
-					let template = code;
-					let name = data[code];
-					
-					let el = document.createElement('option');
-					el.textContent = name;
-					el.value = template;
-					homepageSelect.appendChild(el);
-				}
+function randomPassword(length, chars = "abcdefghijklmnopqrstuvwxyz!@#$%^&*()-+<>ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890") {
+	var pass = "";
+	for (var x = 0; x < length; x++) {
+		var i = Math.floor(Math.random() * chars.length);
+		pass += chars.charAt(i);
+	}
+	return pass;
+}
+
+function randomizePassword() {
+	document.getElementById("password").value = randomPassword(49);   
+}
+
+function randomizeAdminPath() {
+	document.getElementById("admin-path").value = 'vadmin-' + randomPassword(32, "abcdefghijklmnopqrstuvwxyz!@<>ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"); 
+};
+
+randomizePassword();
+
+let isRootPublic = {$this->isRootPublic};
+if (isRootPublic) {
+	randomizeAdminPath();
+	document.getElementById("not-public-notice").remove();
+} else {
+	document.getElementById("rand-path-btn").remove();
+	document.getElementById("admin-path").disabled = true;		
+}
+
+let homepage = document.getElementById("homepage");
+let homepageSelect = document.querySelector("[name='homepage']");
+let themes = document.querySelector(".themes");
+
+function changeTheme(theme) {
+	fetch(window.location.pathname + "?action=getThemeTemplates&theme=" + theme)
+		.then((response) => {
+			if (!response.ok) { throw new Error(response) }
+			return response.json()
+		})
+		.then((data) => {
+			homepageSelect.replaceChildren();
+			for (code in data) {
+				let template = code;
+				let name = data[code];
 				
-				changeHomepage();
-			})
-			.catch(error => {
-				console.log(error.statusText);
-				//displayToast("danger", "Error", "Error loading theme templates!");
-			});			
+				let el = document.createElement('option');
+				el.textContent = name;
+				el.value = template;
+				homepageSelect.appendChild(el);
+			}
+			
+			changeHomepage();
+		})
+		.catch(error => {
+			console.log(error.statusText);
+			//displayToast("danger", "Error", "Error loading theme templates!");
+		});			
+}
+
+function changeHomepage() {
+	homepage.src = publicPath + "themes/" + document.querySelector('[name="theme"]:checked').value + "/" + homepageSelect.value;
+}
+
+homepageSelect.addEventListener("change", changeHomepage);
+themes.addEventListener("change", (e) => {
+	let element = event.target.closest("input");
+	if (element) {
+		changeTheme(element.value);
 	}
-	
-	function changeHomepage() {
-		homepage.src = publicPath + "themes/" + document.querySelector('[name="theme"]:checked').value + "/" + homepageSelect.value;
-	}
-	
-	homepageSelect.addEventListener("change", changeHomepage);
-	themes.addEventListener("change", (e) => {
-		let element = event.target.closest("input");
-		if (element) {
-			changeTheme(element.value);
-		}
-	});
-	
-	function iframeLoad(e) {
-		homepage.contentWindow.document.body.style.userSelect = "none";
-		homepage.contentWindow.document.body.addEventListener("click", (e) => {e.stopPropagation();e.preventDefault();return false;});
-	}
-	
-	homepage.addEventListener("load", iframeLoad);
-	changeHomepage();
-    </script>
-    <script src="../../admin/default/js/theme.js"></script>
-  </body>
+});
+
+function iframeLoad(e) {
+	homepage.contentWindow.document.body.style.userSelect = "none";
+	homepage.contentWindow.document.body.addEventListener("click", (e) => {e.stopPropagation();e.preventDefault();return false;});
+}
+
+homepage.addEventListener("load", iframeLoad);
+changeHomepage();
+
+function addLanguage() {
+	let languages = document.querySelectorAll('.language-row');
+	let languageTemplate = languages[0];
+	let newLanguage = languageTemplate.cloneNode(true);
+	newLanguage.classList.remove("d-none");
+	languages[languages.length - 1].after(newLanguage);
+}
+
+function removeLanguage(element) {
+	let language = element.closest('.language-row');
+	language.remove();
+}
+
+</script>
+<script src="../../admin/default/js/theme.js"></script>
+</body>
 </html>
