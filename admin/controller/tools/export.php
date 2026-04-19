@@ -42,7 +42,9 @@ class Export extends Base {
 		header('Content-Disposition: attachment; filename=vvveb-export.xml');
 		header('Content-Type: application/octet-stream');
 
-		die($xmlData);
+		echo $xmlData;
+
+		die();
 	}
 
 	private function namespaceTree() {
