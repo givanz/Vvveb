@@ -23,18 +23,22 @@
 namespace Vvveb\Controller\Settings;
 
 use function Vvveb\__;
-use function Vvveb\availableCurrencies;
 use Vvveb\Controller\Base;
 use function Vvveb\friendlyDate;
+use function Vvveb\getTemplateList;
+use function Vvveb\slugify;
 use Vvveb\Sql\CountrySQL;
 use Vvveb\Sql\regionSQL;
 use Vvveb\Sql\SiteSQL;
+use Vvveb\System\Cache;
 use Vvveb\System\CacheManager;
 use Vvveb\System\Event;
 use Vvveb\System\Extensions\Themes;
 use Vvveb\System\Images;
+use Vvveb\System\Locale;
 use Vvveb\System\Media\Image;
 use Vvveb\System\Sites;
+use Vvveb\System\User\Role;
 use Vvveb\System\Validator;
 
 class Site extends Base {
@@ -118,23 +122,85 @@ class Site extends Base {
 		$this->save();
 	}
 
+	private function themeTemplates($theme) {
+		$templates = getTemplateList($theme, ['email']);
+
+		$files = ['index.html' => 'Home page'];
+		foreach ($templates as $template) {
+			if ($template['folder']) {
+				$files[$template['folder']][$template['folder'] . '/' . $template['filename']] = $template['title'];
+			} else {
+				$files[$template['filename']] = $template['title'];
+			}
+		}
+
+		return $files;
+	}
+
+	function getThemeTemplates() {
+		$theme = $this->request->get['theme'];
+		if ($theme) {
+			$files = $this->themeTemplates($theme);
+
+			$this->response->setType('json');
+			return $files;
+		}
+	}
+
 	function save() {
 		$siteValidator 		    = new Validator(['site']);
 		$settingsValidator	  = new Validator(['site-settings']);
 
-		$view      = $this->view;
+		$view       = $this->view;
 		$site 	    = $this->request->post['site'] ?? [];
-		$settings  = $this->request->post['settings'] ?? [];
+		$settings   = $this->request->post['settings'] ?? [];
+		$routes     = $this->request->post['route'] ?? [];
+		$routesType = $this->request->post['routes-type'] ?? [];
+
+		$newRoutes = [];
+		foreach ($routes as $route) {
+			$r = $route['route'];
+			unset($route['route']);
+			foreach ($route as $key => &$value) {
+				if (! $value) {
+					unset($route[$key]);
+				}
+			}
+
+			$newRoutes[$r] = $route;
+		}
 
 		if (($errors = $siteValidator->validate($site)) === true &&
 			($errors = $settingsValidator->validate($settings)) === true) {
 			$sites = new SiteSQL();
 
 			if (! isset($site['host']) || ! $site['host']) {
-				$site['host'] = strtolower($site['name']) . '.*';
+				$site['host'] = slugify($site['name']) . '.*.*';
 			}
 
-			$site['key'] = strtolower(Sites::siteKey($site['host']));
+			if ($this->request->post['site-type'] == 'subfolder') {
+				$site['host'] = '*.*.*';
+				if (! $site['path']) {
+					$site['path'] = slugify($site['name']);
+				}
+			}
+
+			if ($this->request->post['site-type'] == 'both') {
+				if (! $site['path'] && $site['path']) {
+					$site['host'] = '*.*.*';
+				}
+
+				if (! $site['path']) {
+					$site['path'] = slugify($site['name']);
+				}
+			}
+
+			if ($this->request->post['site-type'] == 'subdomain') {
+				$site['path'] = '';
+			}
+
+			$site['path'] = slugify($site['path']);
+			$site['key']  = strtolower(Sites::siteKey($site['host'])) . ($site['path'] ? '/' . $site['path'] : '');
 
 			foreach ($settings['description'] as &$lang) {
 				foreach ($lang as $field => &$value) {
@@ -149,7 +215,7 @@ class Site extends Base {
 				}
 			}
 
-			$currencies = availableCurrencies();
+			$currencies = Locale :: availableCurrencies();
 			foreach ($currencies as $currency_id => $currency) {
 				if ($currency['currency_id'] == $settings['currency_id']) {
 					$settings['currency'] = $currency_id;
@@ -175,6 +241,16 @@ class Site extends Base {
 
 				if ($result >= 0) {
 					//CacheManager::delete('site');
+					$siteRoutes = DIR_CONFIG . "site-$site_id-routes.php";
+
+					if ($routesType == 'site') {
+						file_put_contents($siteRoutes, '<?php return ' . var_export($newRoutes, true) . ';');
+					} else {
+						if (file_exists($siteRoutes)) {
+							unlink($siteRoutes);
+						}
+					}
+
 					CacheManager::delete();
 					$message              = __('Site saved!');
 					$view->success['get'] = $message;
@@ -183,6 +259,49 @@ class Site extends Base {
 					$this->view->errors = [$sites->error];
 				}
 			} else {
+				$newHomepage  = $this->request->post['new-homepage'] ?? [];
+				if ($newHomepage) {
+					foreach ($newHomepage as $languageId) {
+						if ($languageId == $settings['language_id']) {
+							continue;
+						}
+
+						$template = $site['template'][$languageId] ?: 'index.html';
+						$newTemplate = str_replace('.html', '', $template) . '-' . slugify($site['name']);
+
+						if ($languageId) {
+							$lang = $languageId;
+							foreach ($this->view->languagesList as $slug => $lng) {
+								if ($lng['language_id'] == $languageId) {
+									$lang = $slug;
+									break;
+								}
+							}
+
+							$newTemplate .= '-' . $lang;
+						}
+
+						$newTemplate .= '.html';
+						$theme        = $site['theme'];
+
+						$source = DIR_THEMES . $theme . DS . $template;
+						$dest   = DIR_THEMES . $theme . DS . $newTemplate;
+
+						if (file_exists($source)) {
+							$html = file_get_contents($source);
+							if (file_put_contents($dest, $html)) {
+								$site['template'][$languageId] = $newTemplate;
+							}
+						}
+					}
+				}
+
+				foreach ($site['template'] as $id => $template) {
+					if (! $template) {
+						unset($site['template'][$id]);
+					}
+				}
+
 				$data['site']             = $site;
 				$data['site']['settings'] = json_encode($settings);
 				$return                   = $sites->add($data);
@@ -193,13 +312,23 @@ class Site extends Base {
 
 				list($site, $settings, $site_id, $data) = Event :: trigger(__CLASS__,__FUNCTION__, $site, $settings, $site_id, $data);
 
-				if (! $site_id) {
-					$view->errors = [$sites->error];
-				} else {
+				if ($site_id) {
+					$siteRoutes = DIR_CONFIG . "site-$site_id-routes.php";
+
+					if ($routesType == 'site') {
+						file_put_contents($siteRoutes, '<?php return ' . var_export($newRoutes, true) . ';');
+					} else {
+						if (file_exists($siteRoutes)) {
+							unlink($siteRoutes);
+						}
+					}
+
 					//CacheManager::delete('site');
 					CacheManager::delete();
 					$message              = __('Site saved!');
 					$view->success['get'] = $message;
+					$view->errors = [$sites->error];
+				} else {
 					$this->redirect(['module'=>'settings/site', 'success' => $message, 'site_id' => $site_id]);
 				}
 			}
@@ -280,7 +409,7 @@ class Site extends Base {
 			$view->domain = '';
 
 			if ($domain) {
-				$view->domain = ($domain['domain'] ?? '') . '.' . ($domain['tld'] ?? '');
+				$view->domain = ($domain['domain'] ?? '') . ($domain['tld'] ? '.' . $domain['tld'] : '');
 			}
 
 			$setting['invoice_format_preview']  = $this->invoiceFormatPreview($setting['invoice_format'] ?? '');
@@ -290,13 +419,37 @@ class Site extends Base {
 			//$site['full-url']   = $site ? ('//' . Sites::url($site['host']) . (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '')  . ($site['path'] ?? '' ? '/' . $site['path'] : '')) : '';
 			$site['full-url']    = $site ? ('//' . $site['url']) : '';
 			$view->site          = $site + $setting;
+			$view->path          = $site['path'] ?? '';
 			$view->setting       = $setting;
 			$view->resize        = ['cs' => __('Crop & Resize'), 's' => __('Stretch'), 'c' => __('Crop')];
 			$view->formats       = Image::formats();
 			$view->themeList     = $themeList;
 			$view->subdir        = V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '';
-			$view->templateList  = \Vvveb\getTemplateList(false, ['email']);
-			$view->currenciesList = availableCurrencies();
+			$view->templateList  = getTemplateList(false, ['email']);
+			$view->currenciesList = Locale :: availableCurrencies();
+
+			$siteRoutes = DIR_CONFIG . "site-$site_id-routes.php";
+			if (file_exists($siteRoutes)) {
+				$view->routes 	= include $siteRoutes;
+				$view->routesType = 'site';
+			} else {
+				$view->routes 	= include DIR_CONFIG . 'app-routes.php';
+				$view->routesType = 'global';
+			}
+
+			$view->modules  = Role::controllers('app');
+
+			$cache = Cache::getInstance();
+
+			$view->modules  = $cache->cache(APP, 'app-actions',function () {
+				$actions = Role::controllers('app');
+
+				//set home first
+				$home = $actions['index'];
+				$actions = array_merge($home, $actions);
+
+				return $actions;
+			}, 259200);
 
 			$controllerPath  = $admin_path . 'index.php?module=media/media';
 			$view->scanUrl   = "$controllerPath&action=scan";

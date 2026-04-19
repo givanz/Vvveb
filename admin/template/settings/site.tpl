@@ -13,7 +13,7 @@ import(crud.tpl, {"type":"site"})
 [data-v-theme-list] option|after = <?php 
 } ?>
 
-
+[data-v-template-list]|before = <?php $template_id = 0; ?>
 @templates-select-option = [data-v-template-list] [data-v-option]
 
 @templates-select-option|deleteAllButFirstChild
@@ -28,8 +28,6 @@ import(crud.tpl, {"type":"site"})
 
 @templates-select-option|after = <?php
 }?>
-
-@templates-select-option|addNewAttribute = <?php if (isset($selected) && $option == $selected) echo 'selected';?>
 
 
 @templates-select-option|before = <?php
@@ -47,7 +45,7 @@ if (($optgroup != $option['folder'])) {
 ?>
 
 @templates-select-option|value = $option['file']
-@templates-select-option|addNewAttribute = <?php if (isset($this->site['template']) && $option['file']== $this->site['template']) echo 'selected';?>
+@templates-select-option|addNewAttribute = <?php if (isset($this->site['template'][$template_id]) && $option['file']== $this->site['template'][$template_id]) echo 'selected';?>
 @templates-select-option = <?php echo htmlspecialchars(ucfirst($option['title']));?>
 
 
@@ -70,9 +68,9 @@ input[data-v-site-*][type=checkbox]|addNewAttribute = <?php
 ?>
 
 
-[data-v-site-*]|innerText = $this->site['@@__data-v-site-(*)__@@']
-[data-v-site-*]|title = $this->site['@@__data-v-site-(*)__@@']
-a[data-v-site-*]|href = $this->site['@@__data-v-site-(*)__@@']
+#settings-form [data-v-site-*]|innerText = $this->site['@@__data-v-site-(*)__@@']
+#settings-form [data-v-site-*]|title = $this->site['@@__data-v-site-(*)__@@']
+#settings-form a[data-v-site-*]|href = $this->site['@@__data-v-site-(*)__@@']
 
 
 input[data-v-setting]|value = <?php 
@@ -216,14 +214,18 @@ foreach ($this->languagesList as $language) {
 	$content = $this->site['description'][$language['language_id']] ?? [];
 ?>
 	[data-v-languages] [data-v-language-id]|id = <?php echo 'lang-' . $language['code'] . '-' . $_lang_instance;?>
-	[data-v-languages]  [data-v-language-id]|addClass = <?php if ($_i == 0) echo 'show active';?>
+	[data-v-languages] [data-v-language-id]|addClass = <?php if ($_i == 0) echo 'show active';?>
 
 	@language [data-v-language-name] = $language['name']
 	@language [data-v-language-img]|title = $language['name']
 	@language [data-v-language-img]|src = <?php echo 'language/' . $language['code'] . '/' . $language['code'] . '.png';?>
 	@language [data-v-language-link]|href = <?php echo '#lang-' . $language['code'] . '-' . $_lang_instance?>
 	@language [data-v-language-link]|addClass = <?php if ($_i == 0) echo 'active';?>
-
+	
+	//home template4
+	@language [data-v-template-list]|name = <?php echo 'site[template][' . $language['language_id'] .']'; $template_id = $language['language_id'];?>
+	@language .new-homepage|value = $language['language_id']
+	
 @language|after = <?php 
 $_i++;
 }
@@ -286,3 +288,48 @@ foreach ($this->currenciesList as $code => $currency) { ?>
 	
 	[data-v-currency-list] [data-v-currency]|after = <?php
 }?>
+
+
+@route = [data-v-routes] [data-v-route]
+@route|deleteAllButFirstChild
+
+@route|before = <?php
+$i = 0;
+foreach ($this->routes as $route => $config) { ?>
+
+	@route [data-v-route-route]|name = <?php echo "route[$i][route]";?>
+	@route [data-v-route-module]|name = <?php echo "route[$i][module]";?>
+	@route [data-v-route-edit]|name = <?php echo "route[$i][edit]";?>
+	@route [data-v-route-route] = $route
+	@route input[data-v-route-module] = $config['module']
+	@route input[data-v-route-edit] = $config['edit']
+	
+@route|after = <?php $i++; } ?>
+
+@module = [data-v-route-module] option
+@module|deleteAllButFirstChild
+
+@module|before = <?php
+
+foreach ($this->modules as $namespace => $module) {
+	foreach ($module as $controller => $actions) {
+	if (!is_array($actions)) $actions = $module; 	
+	foreach ($actions as $name => $action) { ?>
+
+	@module = $action
+	@module|value = $action
+	
+	//cover rule shorthand syntax where action is ommited when index  
+	@module|addNewAttribute = <?php 
+	if (( $config['module'] == $action) || 
+		( $config['module'] . '/index' == $action ) || 
+		( $config['module'] . '/index/index' == $action ) || 
+		( $config['module']  == $action . '/index' ) ||
+		( $config['module']  == $action . '/index/index' )
+	) echo 'selected';?>
+	
+@module|after = <?php } } } ?>
+
+[name="routes-type"]|addNewAttribute = <?php if (isset($this->routesType) && $this->routesType == '@@__value__@@') echo 'checked';?>
+
+#siteRoutes|style = <?php if (isset($this->routesType) && $this->routesType == 'global') echo 'display:none';?>

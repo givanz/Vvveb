@@ -24,6 +24,7 @@ namespace Vvveb\Controller\Settings;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use function Vvveb\humanReadable;
 use Vvveb\Sql\SiteSQL;
 use Vvveb\System\Sites as SitesList;
 use Vvveb\System\User\Admin;
@@ -101,10 +102,16 @@ class Sites extends Base {
 			]
 		);
 
-		if (isset($results['site'])) {
-			foreach ($results['site'] as &$site) {
-				$site['url']         = SitesList::url($site['host']) . (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
-				$site['delete-url']  = \Vvveb\url(['module' => 'settings/sites', 'action' => 'delete', 'site_id[]' => $site['site_id']]);
+		$sites = SitesList::getSites();
+
+		if (isset($results['site']) && $sites) {
+			foreach ($sites as &$site) {
+				$site['template-friendly'] = humanReadable(str_replace(['index', '.html'], '', $site['template'][0] ?? ''));
+				$site['delete-url']        = \Vvveb\url(['module' => 'settings/sites', 'action' => 'delete', 'site_id[]' => $site['site_id']]);
+
+				if (isset($results['site'][$site['site_id']])) {
+					$results['site'][$site['site_id']] += $site;
+				}
 			}
 		}
 

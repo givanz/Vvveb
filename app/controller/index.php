@@ -33,11 +33,20 @@ class Index extends Base {
 	function index() {
 		$site = Sites :: getSiteData(SITE_ID);
 
-		if (isset($site['template']) && $site['template']) {
-			$this->view->template($site['template']);
-			//force homepage template if a different html template is selected
-			$this->view->tplFile('index.tpl');
-			//return $site['template'];
+		if (isset($site['template']) && is_array($site['template'])) {
+			$lang = $this->global['language_id'];
+			if (isset($site['template'][$lang])) {
+				$template = $site['template'][$lang];
+			} else {
+				$template = $site['template'][0] ?? false;
+			}
+
+			if ($template) {
+				$this->view->template($template);
+				//force homepage template if a different html template is selected
+				$this->view->tplFile('index.tpl');
+				//return $site['template'];
+			}
 		}
 	}
 }
