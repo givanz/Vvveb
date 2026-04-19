@@ -189,6 +189,7 @@
 
 	CREATE PROCEDURE get(
 		IN post_id INT,
+		IN site_id INT,
 		IN slug CHAR,
 		IN language_id INT,
 		IN comment_count INT,
@@ -234,27 +235,32 @@
 				)  
 
 			LEFT JOIN admin ad ON (_.admin_id = ad.admin_id)  				
+		
+			@IF isset(:site_id)
+			THEN
+				LEFT JOIN post_to_site ps ON (ps.post_id = _.post_id AND ps.site_id = :site_id)
+			END @IF	
 			
 		WHERE 1 = 1
 
-            @IF isset(:slug) && !(isset(:post_id) && :post_id) 
-			THEN 
-				AND pd.slug = :slug 
+        	@IF isset(:slug) && !(isset(:post_id) && :post_id) 
+        	THEN 
+			AND pd.slug = :slug 
         	END @IF			
 
-            @IF isset(:post_id) && :post_id > 0
-			THEN
-                AND _.post_id = :post_id
+        	@IF isset(:post_id) && :post_id > 0
+        	THEN
+			AND _.post_id = :post_id
         	END @IF		
 			
-            @IF isset(:admin_id)
-			THEN
-                AND _.admin_id = :admin_id
+        	@IF isset(:admin_id)
+        	THEN
+			AND _.admin_id = :admin_id
         	END @IF			
 			
-			@IF isset(:type)
-			THEN
-                AND _.type = :type
+        	@IF isset(:type)
+        	THEN
+			AND _.type = :type
         	END @IF			
 
         LIMIT 1; 

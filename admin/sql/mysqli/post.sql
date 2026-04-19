@@ -6,6 +6,7 @@
 		IN start INT,               -- start offset
 		IN limit INT,               -- number of posts
 		IN search CHAR,             -- filter posts by search string
+		IN search_boolean INT,      -- use boolean search
 		IN like CHAR,               -- filter posts by search string using LIKE for partial search, slower
 		IN username CHAR,           -- filter by author username
 		IN status CHAR,             -- filter by author username
@@ -240,11 +241,16 @@
 			END @IF					
 
 			-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
-			@IF isset(:order_by)
+			@IF isset(:search)
 			THEN
-				ORDER BY post.$order_by $direction		
+				ORDER BY score DESC		
 			@ELSE
-				ORDER BY post.post_id DESC
+				@IF isset(:order_by)
+				THEN 
+					ORDER BY post.$order_by $direction
+				@ELSE
+					ORDER BY post.post_id DESC
+				END @IF	
 			END @IF
 			
 			-- limit
@@ -268,6 +274,7 @@
 
 	CREATE PROCEDURE get(
 		IN post_id INT,
+		IN site_id INT,
 		IN slug CHAR,
 		IN language_id INT,
 		IN comment_count INT,
@@ -313,27 +320,32 @@
 				)  
 
 			LEFT JOIN admin ad ON (_.admin_id = ad.admin_id)  				
+		
+			@IF isset(:site_id)
+			THEN
+				LEFT JOIN post_to_site ps ON (ps.post_id = _.post_id AND ps.site_id = :site_id)
+			END @IF	
 			
 		WHERE 1 = 1
 
-            @IF isset(:slug) && !(isset(:post_id) && :post_id) 
-			THEN 
+        	@IF isset(:slug) && !(isset(:post_id) && :post_id) 
+        	THEN 
 				AND pd.slug = :slug 
         	END @IF			
 
-            @IF isset(:post_id) && :post_id > 0
-			THEN
-                AND _.post_id = :post_id
+        	@IF isset(:post_id) && :post_id > 0
+        	THEN
+				AND _.post_id = :post_id
         	END @IF		
 			
-            @IF isset(:admin_id)
-			THEN
-                AND _.admin_id = :admin_id
+        	@IF isset(:admin_id)
+        	THEN
+				AND _.admin_id = :admin_id
         	END @IF			
 			
-			@IF isset(:type)
-			THEN
-                AND _.type = :type
+        	@IF isset(:type)
+        	THEN
+				AND _.type = :type
         	END @IF			
 
         LIMIT 1; 

@@ -8,6 +8,7 @@
 		IN type CHAR,
 		IN language_id INT,
 		IN promotion INT,     -- include promotional price
+		IN user_group_id INT, -- user_group_id for group promotional price
 		IN variant INT,       -- include variants
 		IN variant_price INT, -- include variants min max prices
 		IN points INT,        -- include points

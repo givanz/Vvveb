@@ -8,6 +8,7 @@
 		IN type CHAR,
 		IN language_id INT,
 		IN promotion INT,     -- include promotional price
+		IN user_group_id INT, -- user_group_id for group promotional price
 		IN variant INT,       -- include variants
 		IN variant_price INT, -- include variants min max prices
 		IN points INT,        -- include points
@@ -1177,11 +1178,16 @@
 
 
 		-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
-		@IF isset(:order_by)
+		@IF isset(:search)
 		THEN
-			ORDER BY product.$order_by $direction		
+			ORDER BY score DESC		
 		@ELSE
-			ORDER BY product.product_id DESC
+			@IF isset(:order_by)
+			THEN 
+				ORDER BY product.$order_by $direction
+			@ELSE
+				ORDER BY product.product_id DESC
+			END @IF	
 		END @IF
 		
 
