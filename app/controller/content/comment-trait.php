@@ -61,7 +61,7 @@ trait CommentTrait {
 				'notSpam'     => $notSpam,
 				'commentType' => $commentType,
 				'commentName' => $commentName,
-				'user_id' => $user['user_id'],
+				'user_id' => $user['user_id'] ?? false,
 			]);
 
 			list($comment) = Event :: trigger(__CLASS__, __FUNCTION__ , $comment);
