@@ -23,8 +23,16 @@
 use Vvveb\System\Functions\Str;
 
 /*
- * Get attributes as a key => value array for elements specified by selector
- * Ex: @@macro KeyValue(".settings input","data-v-option","data-v-option")@@
+ * Escape string
+ * Ex: @@macro Escape("Escape ' this","'")@@
+ */
+function vtplEscape($vtpl, $node, $string, $char = '\'') {
+	return str_replace($char, '\\' . $char, $string);
+}
+
+/*
+ * Convert name[key] > ['name']['key']
+ * Ex: @@macro vtplpostNameToArrayKey("name[key]")@@
  */
 function vtplpostNameToArrayKey($vtpl, $node, $keyAttribute) {
 	return Vvveb\postNameToArrayKey($keyAttribute);
@@ -68,7 +76,7 @@ function vtplKeyValue($vtpl, $node, $selector, $keyAttribute, $valueAttribute) {
  variable = variable ex product.price = price this will result in $product['price'] == $price
  variable = 'string' ex this.stock = 'available' this will result in $this->price == $price
  */
- /*
+/*
 function ifCondition($string = '') {
 	$logic      = ['&&', '\|\|', 'AND', 'OR'];
 	$regex      = '/\s+(' . implode(')\s+|\s+(', $logic) . ')\s+/i';
@@ -134,34 +142,34 @@ function ifCondition($condition = '') {
 	//transform variables to php variables
 	$array_keys = '';
 	$condition  = preg_replace_callback('/[\'"]?[a-zA-Z_][\w\.-]*[\'"]?/',
-	function ($matches) use (&$array_keys) {
-		$value = $matches[0];
-		$len = strlen($value) - 1;
+		function ($matches) use (&$array_keys) {
+			$value = $matches[0];
+			$len = strlen($value) - 1;
 
-		if ($value == 'null' || $value == 'NULL'
-			|| $value[0] == '\'' || $value[$len] == '\''
-			|| $value[0] == '"' || $value[$len] == '"') {
-			return $value;
-		}
-
-		if (strpos($value, 'this') === 0) {
-			$value = str_replace('this.', 'this->', $value);
-		}
-
-		if (strpos($value, '.') !== 0) {
-			$value = Vvveb\dotToArrayKey($value);
-			$value = '$' . $value;
-
-			if ($array_keys) {
-				$array_keys .= ' && ';
+			if ($value == 'null' || $value == 'NULL'
+				|| $value[0] == '\'' || $value[$len] == '\''
+				|| $value[0] == '"' || $value[$len] == '"') {
+				return $value;
 			}
-			$array_keys .= "isset($value)";
-		} else {
-			$value = '$' . $value;
-		}
 
-		return $value;
-	}, $condition);
+			if (strpos($value, 'this') === 0) {
+				$value = str_replace('this.', 'this->', $value);
+			}
+
+			if (strpos($value, '.') !== 0) {
+				$value = Vvveb\dotToArrayKey($value);
+				$value = '$' . $value;
+
+				if ($array_keys) {
+					$array_keys .= ' && ';
+				}
+				$array_keys .= "isset($value)";
+			} else {
+				$value = '$' . $value;
+			}
+
+			return $value;
+		}, $condition);
 
 	//double ==
 	$condition = preg_replace('/(?<![<>\!])=+/', ' == ', $condition);
@@ -258,16 +266,28 @@ function vtplIfAttr($vtpl, $node) {
 	}
 
 	foreach ($ifnot as $value => $cond) {
-		$node->removeAttribute("data-v-attr-if-not-$value");
+		//$node->removeAttribute("data-v-attr-if-not-$value");
+		$attr = $value;
+		if ($val = $node->getAttribute($value)) {
+			$attr = $attr . '=' . '"' . $val . '"';
+		}
+		$node->removeAttribute($value);
+
 		$condition = ifCondition($cond);
-		$if        = "<?php if  (!($condition)) {echo '$value';}?>";
+		$if        = "<?php if  (!($condition)) {echo '$attr';}?>";
 		$vtpl->addNodeNewAttribute($node, $if);
 	}
 
 	foreach ($if as $value => $cond) {
-		$node->removeAttribute("data-v-attr-if-$value");
+		//$node->removeAttribute("data-v-attr-if-$value");
+		$attr = $value;
+		if ($val = $node->getAttribute($value)) {
+			$attr = $attr . '=' . '"' . $val . '"';
+		}
+		$node->removeAttribute($value);
+
 		$condition = ifCondition($cond);
-		$if        = "<?php if  ($condition) {echo '$value';}?>";
+		$if        = "<?php if  ($condition) {echo '$attr';}?>";
 		$vtpl->addNodeNewAttribute($node, $if);
 	}
 }

@@ -47,7 +47,7 @@ class VtplDebug {
 	private $debugHtml;
 
 	function enabled() {
-		return $this->enabled;
+		return $this->enabled || $this->debugLog;
 	}
 
 	function enable($switch) {
