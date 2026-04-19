@@ -9,11 +9,12 @@
 
 	CREATE PROCEDURE get(
 		IN post_id INT,
-        IN slug CHAR,
-        IN language_id INT,
-        IN comment_count INT,
-        IN comment_status INT,
-        IN type CHAR,
+		IN site_id INT,
+		IN slug CHAR,
+		IN language_id INT,
+		IN comment_count INT,
+		IN comment_status INT,
+		IN type CHAR,
 		OUT fetch_row,
 	)
 	BEGIN
@@ -39,6 +40,11 @@
 			FROM post AS _
 			LEFT JOIN post_content pd ON (_.post_id = pd.post_id AND pd.language_id = :language_id)  
 			LEFT JOIN admin ad ON (_.admin_id = ad.admin_id)  
+
+			@IF isset(:site_id)
+			THEN
+				LEFT JOIN post_to_site ps ON (ps.post_id = _.post_id AND ps.site_id = :site_id)
+			END @IF		
 		WHERE 1 = 1
 
         	@IF isset(:slug) && !(isset(:post_id) && :post_id) 
@@ -70,7 +76,9 @@
 	CREATE PROCEDURE getContent(
 		IN post_id INT,
 		IN site_id INT,
-                IN slug CHAR,
+		IN status INT,
+		IN slug CHAR,
+		IN type CHAR,
 		OUT fetch_all,
 	)
 	BEGIN
@@ -80,27 +88,32 @@
 			LEFT JOIN language ON (language.language_id = _.language_id)
 			LEFT JOIN post ON (post.post_id = _.post_id)
 
-		@IF isset(:site_id)
-		THEN
-			LEFT JOIN post_to_site pt ON (pt.post_id = _.post_id)
-		END @IF			
+			@IF isset(:site_id)
+			THEN
+				LEFT JOIN post_to_site ps ON (ps.post_id = _.post_id AND ps.site_id = :site_id)
+			END @IF			
 			
 		WHERE 1 = 1
 
 		@IF isset(:slug) && !(isset(:post_id) && :post_id) 
 		THEN 
 			AND _.post_id = (SELECT post_id FROM post_content WHERE slug = :slug LIMIT 1)
-        	END @IF			
+		END @IF			
 
 		@IF isset(:post_id) && :post_id > 0
 		THEN
 			AND _.post_id = :post_id
-        	END @IF			
-
+		END @IF	
+		
+		@IF isset(:type) && :type
+		THEN 
+			AND post.type = :type
+		END @IF
+		
 		@IF isset(:site_id)
 		THEN
-            	    AND pt.site_id = :site_id
-        	END @IF			
+			AND ps.site_id = :site_id
+		END @IF			
 	END
 
 	-- Get categories
