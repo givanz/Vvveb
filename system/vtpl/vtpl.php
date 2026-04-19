@@ -23,7 +23,7 @@
 //set debug to true to show the vtpl console log
 defined('VTPL_DEBUG') || define('VTPL_DEBUG', false);
 
-define('VTPL_HTML_MINIFY', false);
+defined('VTPL_HTML_MINIFY') || define('VTPL_HTML_MINIFY', false);
 define('VTPL_JS_MINIFY', false);
 define('VTPL_PHP_MINIFY', false);
 define('VTPL_CLEAN_COMP_OPT', false);
@@ -60,6 +60,8 @@ class Vtpl {
 	private $removeWhitespace = false;
 
 	private $removeVattrs = false;
+	
+	private $minifyHtml = VTPL_HTML_MINIFY;
 
 	private $documentType = 'html';
 
@@ -85,40 +87,38 @@ class Vtpl {
 
 	private $scripts;
 
-	private $_scripts;
-
 	private $debug;
 
 	private $phpCode;
 
-	private $_modifiers = ['outerHTML', 'text', 'before', 'after', 'append', 'prepend', 'deleteAllButFirst', 'deleteAllButFirstChild', 'delete', 'if_exists', 'hide', 'addClass', 'removeClass'];
+	private $modifiers = ['outerHTML', 'text', 'before', 'after', 'append', 'prepend', 'deleteAllButFirst', 'deleteAllButFirstChild', 'delete', 'if_exists', 'hide', 'addClass', 'removeClass'];
 
 	private $variableFilters =
-	[
-		'capitalize'        => 'ucfirst($$0)',
-		'html_to_text'      => 'Vvveb\htmlToText($$0)',
-		'cdata'       	     => 'CDATA_START . $$0. CDATA_END',
-		'friendly_date'     => 'Vvveb\friendlyDate($$0)',
-		'friendly_number'   => 'Vvveb\parseQuantity($$0)',
-		'human_readable'    => 'Vvveb\humanReadable($$0)',
-		'date'              => 'date($$1,is_int($$0) ? $$0 : strtotime($$0))',
-		'truncate'          => 'substr($$0, 0, $$1)',
-		'truncate_words'    => 'Vvveb\truncateWords($$0,$$1)',
-		'replace'           => 'str_replace($$1, $$2, $$0)',
-		'uppercase'         => 'strtoupper($$0)',
-		'lowercase'         => 'strtolower($$0)',
-		'append'            => '$$1 . $$0',
-		'prepend'           => '$$0 . $$1',
-		'strip_html'        => 'strip_tags($$0)',
-		'strip_newlines'    => 'str_replace("\n",\' \', $$0)',
-		'mod'               => ['tag', 'if (@++$_modc_@@__VTPL_rand()__@@ % (int)$$1 === (int)$$2) {', 'if (@++$_modc_@@__VTPL_rand()__@@ % (int)$$1 === (int)$$2) {'],
-		'mod_class'         => ['class', '<?php if (@++$_modc_@@__VTPL_rand()__@@ % (int)$$1 === (int)$$2) echo $$0;?>'],
-		'conditional_class' => ['class', '<?php if (@++$_modc_@@__VTPL_rand()__@@ % (int)$$1 === (int)$$2) echo $$0;?>'],
-		'iteration_class'   => ['class', '<?php if (@++$_iterc_@@__VTPL_rand()__@@ === (int)$$2) echo $$1;?>'],
-		'number_format'     => 'number_format($$0, $$1, $$2, $$3)',
-		'only_decimals'     => 'substr($$0, (($_strpos = strrpos($$0, \'.\')) !== false)?$_strpos + 1:-100, ($_strpos !== false)?10:false)',
-		'without_decimals'  => 'substr($$0, 0, strrpos($$0, \'.\'))',
-	];
+		[
+			'capitalize'        => 'ucfirst($$0)',
+			'html_to_text'      => 'Vvveb\htmlToText($$0)',
+			'cdata'       	     => 'CDATA_START . $$0. CDATA_END',
+			'friendly_date'     => 'Vvveb\friendlyDate($$0)',
+			'friendly_number'   => 'Vvveb\parseQuantity($$0)',
+			'human_readable'    => 'Vvveb\humanReadable($$0)',
+			'date'              => 'date($$1,is_int($$0) ? $$0 : strtotime($$0))',
+			'truncate'          => 'substr($$0, 0, $$1)',
+			'truncate_words'    => 'Vvveb\truncateWords($$0,$$1)',
+			'replace'           => 'str_replace($$1, $$2, $$0)',
+			'uppercase'         => 'strtoupper($$0)',
+			'lowercase'         => 'strtolower($$0)',
+			'append'            => '$$1 . $$0',
+			'prepend'           => '$$0 . $$1',
+			'strip_html'        => 'strip_tags($$0)',
+			'strip_newlines'    => 'str_replace("\n",\' \', $$0)',
+			'mod'               => ['tag', 'if (@++$_modc_@@__VTPL_rand()__@@ % (int)$$1 === (int)$$2) {', 'if (@++$_modc_@@__VTPL_rand()__@@ % (int)$$1 === (int)$$2) {'],
+			'mod_class'         => ['class', '<?php if (@++$_modc_@@__VTPL_rand()__@@ % (int)$$1 === (int)$$2) echo $$0;?>'],
+			'conditional_class' => ['class', '<?php if (@++$_modc_@@__VTPL_rand()__@@ % (int)$$1 === (int)$$2) echo $$0;?>'],
+			'iteration_class'   => ['class', '<?php if (@++$_iterc_@@__VTPL_rand()__@@ === (int)$$2) echo $$1;?>'],
+			'number_format'     => 'number_format($$0, $$1, $$2, $$3)',
+			'only_decimals'     => 'substr($$0, (($_strpos = strrpos($$0, \'.\')) !== false)?$_strpos + 1:-100, ($_strpos !== false)?10:false)',
+			'without_decimals'  => 'substr($$0, 0, strrpos($$0, \'.\'))',
+		];
 
 	private $attributesIndex = 0;
 
@@ -132,7 +132,7 @@ class Vtpl {
 
 	private $constatns = [];
 
-	private $_external_elements = false;
+	private $external_elements = false;
 
 	function __construct($selector = null, $componentId = null, $componentContent = null) {
 		$this->templatePath = [];
@@ -161,6 +161,10 @@ class Vtpl {
 
 	function removeVattrs($flag = true) {
 		$this->removeVattrs = $flag;
+	}	
+	
+	function setMinifyHtml($flag = true) {
+		$this->minifyHtml = $flag;
 	}
 
 	function getDocumentType() {
@@ -382,47 +386,47 @@ class Vtpl {
 					$found = false;
 
 					foreach ($files as $importFile) {
-						if (file_exists($importFile)) {
-							$parameter = trim($imports[2][$i]);
-							$this->debug->log('LOAD', $importFile);
+					if (file_exists($importFile)) {
+						$parameter = trim($imports[2][$i]);
+						$this->debug->log('LOAD', $importFile);
 
-							if (! empty($parameter)) {
-								//if php array then parameter is a template variables list
-								if ($parameter[0] == '{'/* || $parameter[0] == '['*/) {
-									$importContent = file_get_contents($importFile);
+						if (! empty($parameter)) {
+							//if php array then parameter is a template variables list
+							if ($parameter[0] == '{'/* || $parameter[0] == '['*/) {
+								$importContent = file_get_contents($importFile);
 
-									//process template
-									$templateParams = json_decode($parameter, true);
+								//process template
+								$templateParams = json_decode($parameter, true);
 
-									foreach ($templateParams as $name => $value) {
-										$importContent = str_replace('{{' . $name . '}}' , $value, $importContent);
-									}
-								} else {
-								//parameter is a css selector to check if the element exists and conditionally include template
-								$elements = $this->xpath->query($this->cssToXpath($parameter));
-									//remove true and process froms earlier
-									if (true || $elements && $elements->length) {
-										//found, load template below
-										$importContent = file_get_contents($importFile);
-									} else {
-										//not found, replace import with nothing
-										$this->template = str_replace($imports[0][$i], '' , $this->template);
-
-										continue;
-									}
+								foreach ($templateParams as $name => $value) {
+									$importContent = str_replace('{{' . $name . '}}' , $value, $importContent);
 								}
 							} else {
-								$importContent = file_get_contents($importFile);
-							}
+								//parameter is a css selector to check if the element exists and conditionally include template
+								$elements = $this->xpath->query($this->cssToXpath($parameter));
+								//remove true and process froms earlier
+								if (true || $elements && $elements->length) {
+									//found, load template below
+									$importContent = file_get_contents($importFile);
+								} else {
+									//not found, replace import with nothing
+									$this->template = str_replace($imports[0][$i], '' , $this->template);
 
-							//remove comments
-							$importContent = preg_replace("/(?<![\"'])\/\*.*?\*\/|\s*(?<![\"'])\/\/[^\n]*/s", '', $importContent);
-							$content .= $importContent . "\n";
+									continue;
+								}
+							}
+						} else {
+							$importContent = file_get_contents($importFile);
+						}
+
+						//remove comments
+						$importContent = preg_replace("/(?<![\"'])\/\*.*?\*\/|\s*(?<![\"'])\/\/[^\n]*/s", '', $importContent);
+						$content .= $importContent . "\n";
 
 							$found = true;
-						} else {
-							$this->debug->log('VTPL_IMPORT_FILE_NOT_EXIST', $importFile);
-							//error_log($imports[0][$i] . " $importFile does not exists");
+					} else {
+						$this->debug->log('VTPL_IMPORT_FILE_NOT_EXIST', $importFile);
+						//error_log($imports[0][$i] . " $importFile does not exists");
 						}
 					}
 
@@ -552,6 +556,9 @@ class Vtpl {
 			// .warn*: HTML only. The same as [class*="warning"]
 			'/\.([a-z][\w\-\_]*)\*/',	//	*[ contains( concat( " ", @class, " " ), concat( " ", "\1") ) ]
 
+			// .warning: HTML only. The same as [class~="warning"]  and has other attributes
+			'/(?<=\])\.([a-z][\w\-\_]*)+/',	//	*[ contains( concat( " ", @class, " " ), concat( " ", "\1", " " ) ) ]
+
 			// .warning: HTML only. The same as [class~="warning"]
 			'/\.([a-z][\w\-\_]*)+/',	//	*[ contains( concat( " ", @class, " " ), concat( " ", "\1", " " ) ) ]
 
@@ -588,6 +595,7 @@ class Vtpl {
 			'\1[ contains( concat( " ", @class, " " ), concat( " ", "\2") ) ]', //element[class*="string"]
 			'\1[ contains( concat( " ", @class, " " ), concat( " ", "\2", " " ) ) ]', //element[class~="string"]
 			'*[ contains( concat( " ", @class, " " ), concat( " ", "\1") ) ]', //[class*="string"]
+			'[ contains( concat( " ", @class, " " ), concat( " ", "\1", " " ) ) ]', //element[class~="string"]
 			'*[ contains( concat( " ", @class, " " ), concat( " ", "\1", " " ) ) ]', //element[class~="string"]
 			'\1[ @id = "\2" ]', //element#id
 			'*[ @id = "\1" ]', //#id
@@ -599,87 +607,93 @@ class Vtpl {
 		return $result;
 	}
 
+	function query($selector) {
+		$result   = $this->xpath->query($this->cssToXpath($selector));
+
+		return $result;
+	}
+
 	private function processElements($modifier, $elements, $val) {
 		switch ($modifier) {
 			case 'deleteAllButFirstChild':
 				$this->deleteAllButFirstChild($elements, $val ?? false);
 
-			break;
+				break;
 
 			case 'deleteAllButFirst':
 				$this->deleteAllButFirst($elements);
 
-			break;
+				break;
 
 			case 'outerHTML':
 				$this->outerHTML($elements, $val);
 
-			break;
+				break;
 
 			case 'innerText':
 				$this->innerText($elements, $val);
 
-			break;
+				break;
 
 			case 'before':
 				$this->insertBefore($elements, $val);
 
-			break;
+				break;
 
 			case 'after':
 				$this->insertAfter($elements, $val);
 
-			break;
+				break;
 
 			case 'append':
 				$this->append($elements, $val);
 
-			break;
+				break;
 
 			case 'prepend':
 				$this->prepend($elements, $val);
 
-			break;
+				break;
 
 			case 'delete':
 				$this->delete($elements);
 
-			break;
+				break;
 
 			case 'if_exists':
 				$this->ifExists($elements, $val);
 
-			break;
+				break;
 
 			case 'hide':
 				$this->hide($elements, $val);
 
-			break;
+				break;
 
 			case 'addClass':
 				$this->addClass($elements, $val);
 
-			break;
+				break;
 
 			case 'removeClass':
 				$this->removeClass($elements, $val);
 
-			break;
+				break;
 
 			case 'addNewAttribute':
 				$this->addNewAttribute($elements, $val);
 
-			break;
+				break;
 
 			case 'removeAttribute':
 				$this->removeAttribute($elements, $val);
 
-			break;
+				break;
 
 			case '':
 				$this->innerHTML($elements, $val);
 
-			break;
+				break;
 
 			default:
 				$this->setAttribute($elements, $modifier, $val);
@@ -689,23 +703,29 @@ class Vtpl {
 	private function processTemplate() {
 		if (isset($this->selectors) && isset($this->document) && isset($this->xpath)) {
 			//check for multiple selectors
-			$newSelectors = [];
-
-			foreach ($this->selectors as &$data) {
+			
+			$count = count($this->selectors);
+			for ($i = 0; $i < $count - 1; $i++) {
+				$data = $this->selectors[$i];
 				//$data[0] = selector
 				if (strpos($data[0], ',') !== false) {
-					$selectors = explode(',', $data[0]);
-					//set first selector for current selector
-					$data[0] = $selectors[0];
-					unset($selectors[0]);
-					//add new selectors
+					$selectorComponents       = explode('|', $data[0]);
+					$selector                 = $selectorComponents[0];
+					$modifier                 = (isset($selectorComponents[1])) ? trim($selectorComponents[1]) : '';
+					
+					$selectors = explode(',', $selector);
+					$newSelectors = [];
 					foreach ($selectors as $selector) {
-						$newSelectors[] = [trim($selector), $data[1] ?? ''];
+						$newSelectors[] = [trim($selector) . ($modifier ? '|' . $modifier : ''), $data[1] ?? ''];
 					}
+
+					$newCount = count($newSelectors) - 1;
+
+					array_splice($this->selectors, $i, 1, $newSelectors);  
+					$count += $newCount;
+					$i += $newCount;
 				}
 			}
-
-			$this->selectors = array_merge($this->selectors, $newSelectors);
 
 			foreach ($this->selectors as &$data) {
 				$selector                 = $data[0];
@@ -713,7 +733,7 @@ class Vtpl {
 				$selector                 = $selectorComponents[0];
 				$modifier                 = (isset($selectorComponents[1])) ? trim($selectorComponents[1]) : '';
 				$value                    = (isset($data[1])) ? $data[1] : '';
-				$this->_external_elements = false;
+				$this->external_elements = false;
 
 				//enable disable debugging
 				if (! $selector) {
@@ -766,7 +786,7 @@ class Vtpl {
 				$val = $value;
 
 				if ($selector == 'debug') {
-					$this->debug->log = ($value == 'true') ? true : false;
+					$this->debug->enable(($value == 'true') ? true : false);
 				} else {
 					$valueElements = explode('-', $value);
 
@@ -782,7 +802,7 @@ class Vtpl {
 								$this->debug->log('SELECTOR_STRING', "$index not found for $value");
 							}
 
-						break;
+							break;
 
 						case 'replace_php_code':
 							$phpCode = $this->phpCode[(int) $valueElements[1]] ?? '';
@@ -792,7 +812,7 @@ class Vtpl {
 							}
 							*/
 
-							if ($modifier && ! in_array($modifier, $this->_modifiers)) {
+							if ($modifier && ! in_array($modifier, $this->modifiers)) {
 								$val = '<_script language="php"><![CDATA[' . $this->minifyPhp($phpCode) . ']]></_script>';
 							} else {
 								if ($modifier == 'if_exists' || $modifier == 'hide') {
@@ -807,15 +827,15 @@ class Vtpl {
 							}
 							$this->debug->log('SELECTOR_PHP', $phpCode);
 
-						break;
+							break;
 
 						case 'replace_variable':
-							$variable = $this->variables[(int) $valueElements[1]];
+							$variable = $this->variables[(int) $valueElements[1]] ?? '';
 							if ($modifier) {
 								if ($modifier == 'if_exists' || $modifier == 'hide') {
 									$val = $variable;
 								} else {
-									if (! in_array($modifier, $this->_modifiers) || $modifier == 'addClass') {
+									if (! in_array($modifier, $this->modifiers) || $modifier == 'addClass') {
 										$val = '<_script language="php"><![CDATA[if (isset(' . $variable . ')) echo htmlspecialchars(' . $variable . ');]]></_script>';
 									}
 								}
@@ -829,10 +849,10 @@ class Vtpl {
 
 							$this->debug->log('SELECTOR_VARIABLE', $variable);
 
-						break;
+							break;
 
 						case 'replace_from':
-							$from = $this->froms[0][(int) $valueElements[1]]; //external html file
+							$from = $this->froms[0][(int) $valueElements[1]] ?? ''; //external html file
 							/*
 							  $fromSelector = substr($this->froms[2][(int) $valueElements[1]],1);
 							  //load specified selector if available otherwise load html with the same selector
@@ -844,10 +864,10 @@ class Vtpl {
 							  }*/
 							//get html
 							//if ($from != '@_SELF_@')
-							$this->_external_elements = true;
+							$this->external_elements = true;
 							$val                      = $valueElements;
 							//$val = $this->loadFromExternalHtml($from, $fromSelector);
-						break;
+							break;
 					}
 
 					if ($isConstant) {
@@ -944,52 +964,52 @@ class Vtpl {
 
 						//run php functions if any
 						$command = preg_replace_callback('/@@__VTPL_([^_]+)__@@/',
-									function ($matches) {
-										return eval('return ' . $matches[1] . ';');
-									}, $command);
+							function ($matches) {
+								return eval('return ' . $matches[1] . ';');
+							}, $command);
 					}
 
 					if ($type == 'class') {
 						//replace variables with their values
 						$command = preg_replace_callback('@\$\$(\d+)@',
-								   function ($matches) use ($options) {
-								   	if ($matches[1] > 0) {
-								   		$options[$matches[1]] = '\'' . trim($options[$matches[1]], '\'') . '\'';
-								   	}
+							function ($matches) use ($options) {
+								if ($matches[1] > 0) {
+									$options[$matches[1]] = '\'' . trim($options[$matches[1]], '\'') . '\'';
+								}
 
-								   	return $options[$matches[1]];
-								   }, $command);
+								return $options[$matches[1]];
+							}, $command);
 
 						$this->addNodeClass($node, trim($commands[1], '\''), false);
 					} else {
 						if ($type == 'tag') {
 							//replace variables with their values
 							$command = preg_replace_callback('@\$\$(\d+)@',
-								   function ($matches) use ($options) {
-								   	if ($matches[1] > 0) {
-								   		$options[$matches[1]] = '\'' . trim($options[$matches[1]], '\'') . '\'';
-								   	}
+								function ($matches) use ($options) {
+									if ($matches[1] > 0) {
+										$options[$matches[1]] = '\'' . trim($options[$matches[1]], '\'') . '\'';
+									}
 
-								   	return $options[$matches[1]];
-								   }, $command);
+									return $options[$matches[1]];
+								}, $command);
 
 							$openTag = preg_replace_callback('@\$\$(\d+)@',
-								   function ($matches) use ($options) {
-								   	if ($matches[1] > 0) {
-								   		$options[$matches[1]] = '\'' . trim($options[$matches[1]], '\'') . '\'';
-								   	}
+								function ($matches) use ($options) {
+									if ($matches[1] > 0) {
+										$options[$matches[1]] = '\'' . trim($options[$matches[1]], '\'') . '\'';
+									}
 
-								   	return $options[$matches[1]];
-								   }, $commands[1]);
+									return $options[$matches[1]];
+								}, $commands[1]);
 
 							$closeTag = preg_replace_callback('@\$\$(\d+)@',
-								   function ($matches) use ($options) {
-								   	if ($matches[1] > 0) {
-								   		$options[$matches[1]] = '\'' . trim($options[$matches[1]], '\'') . '\'';
-								   	}
+								function ($matches) use ($options) {
+									if ($matches[1] > 0) {
+										$options[$matches[1]] = '\'' . trim($options[$matches[1]], '\'') . '\'';
+									}
 
-								   	return $options[$matches[1]];
-								   }, $commands[2]);
+									return $options[$matches[1]];
+								}, $commands[2]);
 
 							$nodeList = [$node]; //only one node and the methods accepts multiple nodes
 							$this->tagWrap($nodeList, $openTag, $closeTag);
@@ -1001,13 +1021,13 @@ class Vtpl {
 							}
 
 							$chain = preg_replace_callback('@\$\$(\d+)@',
-								   function ($matches) use ($options) {
-								   	if ($matches[1] > 0) {
-								   		$options[$matches[1]] = '\'' . trim($options[$matches[1]], '\'') . '\'';
-								   	}
+								function ($matches) use ($options) {
+									if ($matches[1] > 0) {
+										$options[$matches[1]] = '\'' . trim($options[$matches[1]], '\'') . '\'';
+									}
 
-								   	return $options[$matches[1]];
-								   }, $commands[1]);
+									return $options[$matches[1]];
+								}, $commands[1]);
 						}
 					}
 				} else {
@@ -1057,109 +1077,109 @@ class Vtpl {
 		}
 
 		$value = preg_replace_callback('/@@__innerText__@@/',
-					   function ($matches) use ($node) {
-					   	$value = $this->innerText([$node]);
+			function ($matches) use ($node) {
+				$value = $this->innerText([$node]);
 
-					   	if (isset($value[0]) && ($value[0] == '{' /*|| $value[0] == '['*/)) {
-					   		$value = json_decode($value, 1);
-					   		$value = var_export($value, 1);
-					   	}
+				if (isset($value[0]) && ($value[0] == '{' /*|| $value[0] == '['*/)) {
+					$value = json_decode($value, 1);
+					$value = var_export($value, 1);
+				}
 
-					   	$this->debug->log('VTPL_ATTRIBUTE', '<b>VALUE </b>' . $value);
+				$this->debug->log('VTPL_ATTRIBUTE', '<b>VALUE </b>' . $value);
 
-					   	return trim($value);
-					   }, $value);
+				return trim($value);
+			}, $value);
 
 		$value = preg_replace_callback('/@@__innerHtml__@@/',
-					   function ($matches) use ($node) {
-					   	$value = $this->innerHtml([$node]);
+			function ($matches) use ($node) {
+				$value = $this->innerHtml([$node]);
 
-					   	if (isset($value[0]) && ($value[0] == '{'/* || $value[0] == '['*/)) {
-					   		$value = json_decode($value, 1);
-					   		$value = var_export($value, 1);
-					   	}
+				if (isset($value[0]) && ($value[0] == '{'/* || $value[0] == '['*/)) {
+					$value = json_decode($value, 1);
+					$value = var_export($value, 1);
+				}
 
-					   	$this->debug->log('VTPL_ATTRIBUTE', '<b>VALUE </b>' . $value);
+				$this->debug->log('VTPL_ATTRIBUTE', '<b>VALUE </b>' . $value);
 
-					   	return $value;
-					   }, $value);
+				return $value;
+			}, $value);
 
 		//attribute value
 		$value = preg_replace_callback('/@@__([\.a-zA-Z*_-]+)__@@/',
-					   function ($matches) use ($node) {
-					   	$attributeName = $matches[1];
+			function ($matches) use ($node) {
+				$attributeName = $matches[1];
 
-					   	if (strpos($attributeName, '*') !== false) {
-					   		//wildcard attribute
-					   		$attributeName = str_replace('*', '', $attributeName);
+				if (strpos($attributeName, '*') !== false) {
+					//wildcard attribute
+					$attributeName = str_replace('*', '', $attributeName);
 
-					   		foreach ($node->attributes as $attribute) {
-					   			if (strpos($attribute->name, $attributeName) !== false) {
-					   				$value = $attribute->value;
-					   			}
-					   		}
-					   	} else {
-					   		$value = $node->getAttribute($matches[1]);
-					   	}
+					foreach ($node->attributes as $attribute) {
+						if (strpos($attribute->name, $attributeName) !== false) {
+							$value = $attribute->value;
+						}
+					}
+				} else {
+					$value = $node->getAttribute($matches[1]);
+				}
 
-					   	if (isset($value[0]) && ($value[0] == '{'/* || $value[0] == '['*/)) {
-					   		$value = json_decode($value, 1);
-					   		$value = var_export($value, 1);
-					   	}
+				if (isset($value[0]) && ($value[0] == '{'/* || $value[0] == '['*/)) {
+					$value = json_decode($value, 1);
+					$value = var_export($value, 1);
+				}
 
-					   	$this->debug->log('VTPL_ATTRIBUTE', '<b>VALUE </b>' . $value);
+				$this->debug->log('VTPL_ATTRIBUTE', '<b>VALUE </b>' . $value);
 
-					   	return $value;
+				return $value;
 
-					   	return \Vvveb\System\filter('@[#\@&=?\0-9a-zA-Z_: ;-]+@',$value, 500);
-					   }, $value);
+				return \Vvveb\System\filter('@[#\@&=?\0-9a-zA-Z_: ;-]+@',$value, 500);
+			}, $value);
 
 		//run regex on attribute name @@__data-v-product-*:data-v-product-(*)__@@
 		//$value = preg_replace_callback('/@@__\[([\*a-zA-Z_-]+)\]:([a-zA-Z-_\]\[\\\+\(\)\,\+\^:*]+)__@@/',
 		$value = preg_replace_callback('/@@__([*a-zA-Z_-]+):([a-zA-Z-_\]\[\\\+\(\)\,\.\+\^:*]+)__@@/',
-					   function ($matches) use ($node) {
-					   	$attrib = $matches[1];
-					   	$regex = $matches[2];
-					   	$this->debug->log('VTPL_ATTRIBUTE', '<b>ATTRIB NAME</b> ' . $attrib);
-					   	$this->debug->log('VTPL_ATTRIBUTE', '<b>REGEX </b> ' . $regex);
-					   	$value = $node->getAttribute($attrib);
-					   	$this->debug->log('VTPL_ATTRIBUTE', '<b>ATTRIB VALUE </b> ' . $value);
+			function ($matches) use ($node) {
+				$attrib = $matches[1];
+				$regex = $matches[2];
+				$this->debug->log('VTPL_ATTRIBUTE', '<b>ATTRIB NAME</b> ' . $attrib);
+				$this->debug->log('VTPL_ATTRIBUTE', '<b>REGEX </b> ' . $regex);
+				$value = $node->getAttribute($attrib);
+				$this->debug->log('VTPL_ATTRIBUTE', '<b>ATTRIB VALUE </b> ' . $value);
 
-					   	foreach ($node->attributes as $name => $attrNode) {
-					   		if (preg_match('@' . $regex . '@', $value, $_match)) {
-					   			//$value = \Vvveb\System\filter('@[0-9a-zA-Z_\-\.\#\/]+@', $_match[1], 500);
-					   			$value = $_match[1];
-					   			$this->debug->log('VTPL_ATTRIBUTE', '<b>MATCH </b>' . $_match[1]);
-					   		} else {
-					   			$this->debug->log('VTPL_ATTRIBUTE', '<b>NO MATCH </b> ' . $regex . ' - ' . $attrib . ' - ' . $attrNode->name);
-					   		}
-					   	}
+				foreach ($node->attributes as $name => $attrNode) {
+					if (preg_match('@' . $regex . '@', $value, $_match)) {
+						//$value = \Vvveb\System\filter('@[0-9a-zA-Z_\-\.\#\/]+@', $_match[1], 500);
+						$value = $_match[1];
+						$this->debug->log('VTPL_ATTRIBUTE', '<b>MATCH </b>' . $_match[1]);
+					} else {
+						$this->debug->log('VTPL_ATTRIBUTE', '<b>NO MATCH </b> ' . $regex . ' - ' . $attrib . ' - ' . $attrNode->name);
+					}
+				}
 
-					   	return $value;
-					   }, $value);
+				return $value;
+			}, $value);
 
 		//attribute name ex @@__data-v-plugin-(.+)__@@
 		$value = preg_replace_callback('/@@__(.+?)__@@/',
-				   function ($matches) use ($node) {
-				   	$value = $node->getAttribute($matches[1]);
-				   	$this->debug->log('VTPL_ATTRIBUTE', '<b>ATTRIB NAME</b> ' . $matches[1]);
-				   	//expand shorthand expression (*) to regex ([a-zA-Z_0-9-]+)
-				   	$regex = str_replace('(*)', '([a-zA-Z_0-9-\.]+)', $matches[1]);
+			function ($matches) use ($node) {
+				$value = $node->getAttribute($matches[1]);
+				$this->debug->log('VTPL_ATTRIBUTE', '<b>ATTRIB NAME</b> ' . $matches[1]);
+				//expand shorthand expression (*) to regex ([a-zA-Z_0-9-]+)
+				$regex = str_replace('(*)', '([a-zA-Z_0-9-\.]+)', $matches[1]);
 
-				   	foreach ($node->attributes as $name => $attrNode) {
-				   		if (preg_match("@$regex@", $name, $_match)) {
-				   			//$value = \Vvveb\System\filter('@[0-9a-zA-Z_\-\.\#\/]+@', $_match[1], 500);
-				   			$value = $_match[1] ?? null;
-				   			$this->debug->log('VTPL_ATTRIBUTE', '<b>MATCH </b>' . $value);
-				   		} else {
-				   			$this->debug->log('VTPL_ATTRIBUTE', '<b>NO MATCH </b>');
-				   		}
-				   	}
+				foreach ($node->attributes as $name => $attrNode) {
+					if (preg_match("@$regex@", $name, $_match)) {
+						//$value = \Vvveb\System\filter('@[0-9a-zA-Z_\-\.\#\/]+@', $_match[1], 500);
+						$value = $_match[1] ?? null;
+						$this->debug->log('VTPL_ATTRIBUTE', '<b>MATCH </b>' . $value);
+					} else {
+						$this->debug->log('VTPL_ATTRIBUTE', '<b>NO MATCH </b>');
+					}
+				}
 
-				   	return $value;
+				return $value;
 
-				   	return \Vvveb\System\filter('@[#\@&=?\0-9a-zA-Z_: ;-]+@',$value, 500);
-				   }, $value);
+				return \Vvveb\System\filter('@[#\@&=?\0-9a-zA-Z_: ;-]+@',$value, 500);
+			}, $value);
 
 		$json = [];
 
@@ -1176,37 +1196,37 @@ class Vtpl {
 		}
 
 		$value = preg_replace_callback('/@@([\.a-zA-Z_-]+)@@/m',
-					   function ($matches) use ($node, $json) {
-					   	return $attrib = var_export(\Vvveb\arrayPath($json, $matches[1]), true);
-					   	$this->debug->log('VTPL_ATTRIBUTE', '<b>JSON NAME</b> ' . $attrib);
-					   	$this->debug->log('VTPL_ATTRIBUTE', '<b>REGEX </b> ' . $regex);
-					   	$value = $node->getAttribute($attrib);
-					   	$this->debug->log('VTPL_ATTRIBUTE', '<b>ATTRIB VALUE </b> ' . $value);
+			function ($matches) use ($node, $json) {
+				return $attrib = var_export(\Vvveb\arrayPath($json, $matches[1]), true);
+				$this->debug->log('VTPL_ATTRIBUTE', '<b>JSON NAME</b> ' . $attrib);
+				$this->debug->log('VTPL_ATTRIBUTE', '<b>REGEX </b> ' . $regex);
+				$value = $node->getAttribute($attrib);
+				$this->debug->log('VTPL_ATTRIBUTE', '<b>ATTRIB VALUE </b> ' . $value);
 
-					   	return $value;
-					   }, $value);
+				return $value;
+			}, $value);
 
 		//macros, compile time function calls
 		$value = preg_replace_callback('/@@macro ([a-z_A-Z]+)\((.+?)\)@@/',
-					   function ($matches) use (&$node) {
-					   	$function = 'vtpl' . $matches[1];
-					   	//$parameters = preg_split('@\'?\s*,\s*\'?@', $matches[2]);
+			function ($matches) use (&$node) {
+				$function = 'vtpl' . $matches[1];
+				//$parameters = preg_split('@\'?\s*,\s*\'?@', $matches[2]);
 
-					   	if (function_exists($function)) {
-					   		preg_match_all('@"(.*?)",?@i', $matches[2], $parameters, PREG_SET_ORDER);
-					   		//add node as first parameter to allow macros to alter node if needed
-					   		$params[] = &$this;
-					   		$params[] = &$node;
+				if (function_exists($function)) {
+					preg_match_all('@"(.*?)",?@i', $matches[2], $parameters, PREG_SET_ORDER);
+					//add node as first parameter to allow macros to alter node if needed
+					$params[] = &$this;
+					$params[] = &$node;
 
-					   		foreach ($parameters as $param) {
-					   			$params[] = trim($param[1]);
-					   		}
-					   		/*$params_exp = var_export($params, true);*/
-					   		return call_user_func_array($function, $params);
-					   	}
+					foreach ($parameters as $param) {
+						$params[] = trim($param[1]);
+					}
+					/*$params_exp = var_export($params, true);*/
+					return call_user_func_array($function, $params);
+				}
 
-					   	return $matches[0];
-					   }, $value);
+				return $matches[0];
+			}, $value);
 
 		$value = $this->processAttributeFilters($value, $node);
 
@@ -1243,7 +1263,7 @@ class Vtpl {
 					}
 					//if ($node->nodeName !== 'title') $html .= '<_script language="php"><![CDATA[/*__VTPL_MAP:' . $node->getLineNo() . '*/]]></_script>';
 
-					if ($this->_external_elements) {
+					if ($this->external_elements) {
 						$result = $this->loadFromExternalHtml($html, $node);
 						$this->removeChildren($node);
 
@@ -1254,31 +1274,31 @@ class Vtpl {
 					} else {
 						switch ($node->nodeName) {
 							case 'input':
-				/*		    case 'option':*/
+								/*		    case 'option':*/
 								$this->setAttribute($node, 'value', $html);
 
-							break;
-							//case 'img':
+								break;
+								//case 'img':
 							case 'iframe':
-							//case 'script':
+								//case 'script':
 							case 'video':
 							case 'audio':
 							case 'source':
 								$this->setAttribute($node, 'src', $html);
 
-							break;
-							/*
-							//case 'a':
-							case 'link':
-							//case 'script':
-								$this->setAttribute($node, 'href', $html);
-							break;
-							*/
+								break;
+								/*
+								//case 'a':
+								case 'link':
+								//case 'script':
+									$this->setAttribute($node, 'href', $html);
+								break;
+								*/
 
 							case 'form':
 								$this->setAttribute($node, 'action', $html);
 
-							break;
+								break;
 
 							default:
 								$this->removeChildren($node);
@@ -1286,7 +1306,7 @@ class Vtpl {
 								$append = $this->processAttributeConstants($html, $node);
 								$f->appendXML($append);
 								$node->appendChild($f);
-							}
+						}
 					}
 				}
 			}
@@ -1313,7 +1333,7 @@ class Vtpl {
 					continue;
 				}
 
-				if ($this->_external_elements) {
+				if ($this->external_elements) {
 					$result = $this->loadFromExternalHtml($html, $node);
 
 					$parent = $node->parentNode;
@@ -1371,20 +1391,20 @@ class Vtpl {
 					}
 				} else {
 					switch ($node->nodeName) {
-							case 'input':
-				/*		    case 'option':*/
-								$this->setAttribute($node, 'value', $text);
+						case 'input':
+							/*		    case 'option':*/
+							$this->setAttribute($node, 'value', $text);
 
 							break;
 
 							break;
 							//case 'img':
-							case 'iframe':
+						case 'iframe':
 							//case 'script':
-							case 'video':
-							case 'audio':
-							case 'source':
-								$this->setAttribute($node, 'src', $text);
+						case 'video':
+						case 'audio':
+						case 'source':
+							$this->setAttribute($node, 'src', $text);
 
 							break;
 							/*
@@ -1394,12 +1414,12 @@ class Vtpl {
 							break;
 							*/
 
-							case 'form':
-								$this->setAttribute($node, 'action', $text);
+						case 'form':
+							$this->setAttribute($node, 'action', $text);
 
 							break;
 
-							default:
+						default:
 							//if node has no children append text
 							$f = $this->document->createDocumentFragment();
 							$f->appendXML($this->processAttributeConstants($text, $node));
@@ -1502,7 +1522,7 @@ class Vtpl {
 
 		if ($nodeList) {
 			foreach ($nodeList as $node) {
-				if ($this->_external_elements) {
+				if ($this->external_elements) {
 					if ($this->froms[0][(int) $html[1]] == '@_SELF_@') {
 						$selector = $this->froms[2][(int) $html[1]];
 						$xpath    = new DOMXpath($this->document);
@@ -1535,7 +1555,7 @@ class Vtpl {
 
 		if ($nodeList) {
 			foreach ($nodeList as $node) {
-				if ($this->_external_elements) {
+				if ($this->external_elements) {
 					if ($this->froms[0][(int) $html[1]] == '@_SELF_@') {
 						$selector = $this->froms[2][(int) $html[1]];
 						$xpath    = new DOMXpath($this->document);
@@ -1569,7 +1589,7 @@ class Vtpl {
 
 		if ($nodeList) {
 			foreach ($nodeList as $node) {
-				if ($this->_external_elements) {
+				if ($this->external_elements) {
 					if ($this->froms[0][(int) $html[1]] == '@_SELF_@') {
 						$selector = $this->froms[2][(int) $html[1]];
 						$xpath    = new DOMXpath($this->document);
@@ -1588,7 +1608,7 @@ class Vtpl {
 					}
 				} else {
 					$f = $this->document->createDocumentFragment();
-					$f->appendXML($html);
+					$f->appendXML($this->processAttributeConstants($html, $node));
 					$node->appendChild($f);
 				}
 			}
@@ -1602,7 +1622,7 @@ class Vtpl {
 
 		if ($nodeList) {
 			foreach ($nodeList as $node) {
-				if ($this->_external_elements) {
+				if ($this->external_elements) {
 					$result = $this->loadFromExternalHtml($html, $node);
 
 					if (! $result) {
@@ -1626,7 +1646,7 @@ class Vtpl {
 					}
 				} else {
 					$f = $this->document->createDocumentFragment();
-					$f->appendXML($html);
+					$f->appendXML($this->processAttributeConstants($html, $node));
 
 					if ($node->firstChild) {
 						// $ref has an immediate sibling : insert newnode before this one
@@ -1803,7 +1823,7 @@ class Vtpl {
 			$html = $this->removePhp($html);
 		}
 
-		if (VTPL_HTML_MINIFY === true) {
+		if ($this->minifyHtml === true) {
 			$html = $this->minifyHtml($html);
 		}
 
@@ -1832,24 +1852,24 @@ class Vtpl {
 		}
 		//replace script tags with placeholders to preserve formatting.
 
-		//preg_match_all("@<script[^>]*>.*?script>@s", $html, $this->_scripts);
-		preg_match_all("/<script(.*?)>(.*?)<\/script>/smix", $html, $this->_scripts);
-		$count          = count($this->_scripts[0] ?? []);
+		//preg_match_all("@<script[^>]*>.*?script>@s", $html, $this->scripts);
+		preg_match_all("/<script(.*?)>(.*?)<\/script>/smix", $html, $this->scripts);
+		$count          = count($this->scripts[0] ?? []);
 
 		if ($count) {
 			$patternsScripts     = [];
 			$placeholdersScripts = [];
 
 			for ($i=0; $i < $count; $i++) {
-				$patternsScripts[]     = $this->_scripts[0][$i];
-				$placeholdersScripts[] = '<script ' . $this->_scripts[1][$i] . ' holder="@@__VTPL__SCRIPT_PLACEHOLDER__' . $i . '@@"></script>';
+				$patternsScripts[]     = $this->scripts[0][$i];
+				$placeholdersScripts[] = '<script ' . $this->scripts[1][$i] . ' holder="@@__VTPL__SCRIPT_PLACEHOLDER__' . $i . '@@"></script>';
 			}
 
 			$html           = str_replace($patternsScripts, $placeholdersScripts, $html);
-			$this->_scripts = $this->_scripts[2];
+			$this->scripts = $this->scripts[2];
 		}
 
-		if (VTPL_HTML_MINIFY === true) {
+		if ($this->minifyHtml === true) {
 			$html = $this->minifyHtml($html);
 		}
 		//replace constants
@@ -1877,7 +1897,6 @@ class Vtpl {
 		//original document used to extract selectors
 		//$this->originalDocument = clone($this->document);
 		$this->xpath = new DOMXpath($this->document);
-
 		if ($rootNamespace = $this->document->lookupNamespaceUri($this->document->namespaceURI)) {
 			$this->xpath->registerNamespace('x', $rootNamespace);
 		}
@@ -1955,6 +1974,7 @@ class Vtpl {
 		if (! $currentNode || ! $currentNode->childNodes || $currentNode->childNodes->length == 0) {
 			return;
 		}
+
 		$length = $currentNode->childNodes->length;
 
 		$publicLen = strlen(PUBLIC_PATH);
@@ -1968,8 +1988,8 @@ class Vtpl {
 			//strip comments
 			if ($this->removeComments && $node->nodeType == XML_COMMENT_NODE) {
 				$node->parentNode->removeChild($node);
-				//$i--;
-				//continue;
+				$i--;
+				continue;
 			}
 
 			//check if attribute is a php variable
@@ -1979,19 +1999,48 @@ class Vtpl {
 					$name  = $attrNode->nodeName;
 
 					//set relative media to theme folder
-					if (($name == 'src' || $name == 'href' || $name == 'srcset') && $this->relativePath && $node->nodeName != 'A') {
-						if ($value && $value[0] != '#' && $value[0] != '@' && strncmp($value, '//', 2) != 0 && (strpos($value, ':') === false)) {
-							if ($value[0] == '/') {
-								if (strncmp($value, PUBLIC_PATH, $publicLen) == 0) {
-									$value = substr($value, $publicLen);
-								} else {
-									$value = substr($value, 1);
-								}
+					if ($this->relativePath) {
+						if (($name == 'src' || $name == 'href' || $name == 'srcset') && $node->nodeName != 'A') {
+							if ($value && $value[0] != '#' && 
+								$value[0] != '@' && 
+								strncmp($value, '//', 2) != 0 && 
+								strncmp($value, '/feed/', 6) != 0 && 
+								(strpos($value, ':') === false)) {
+								if ($value[0] == '/') {
+									if (strncmp($value, PUBLIC_PATH, $publicLen) == 0) {
+										$value = substr($value, $publicLen);
+									} else {
+										$value = substr($value, 1);
+									}
 
-								$this->setNodeAttribute($node, $name, PUBLIC_PATH . $value);
-							} else {
-								$this->setNodeAttribute($node, $name, $this->relativePath . $value);
+									$this->setNodeAttribute($node, $name, PUBLIC_PATH . $value);
+								} else {
+									$this->setNodeAttribute($node, $name, $this->relativePath . $value);
+								}
 							}
+						}
+						
+						if ($name == 'style' && strpos($value, 'url(') !== false) {
+							$value = preg_replace_callback('/url\(([^\)]+)\)/',
+							function ($matches) {
+								$url = trim($matches[1], ' \'"');
+
+								if ($url[0] == '/') {
+									if (strncmp($url, PUBLIC_PATH, $publicLen) == 0) {
+										$url = substr($url, $publicLen);
+									} else {
+										$url = substr($url, 1);
+									}
+
+									$url = PUBLIC_PATH . $url;
+								} else {
+									$url = $this->relativePath . $url;
+								}
+								
+								return 'url(' . $url . ')';
+							}, $value);
+							
+							$this->setNodeAttribute($node, $name, $value);
 						}
 					}
 
@@ -2002,17 +2051,17 @@ class Vtpl {
 					} else {
 						if (strpos($value,'$') !== false) {
 							$value = preg_replace_callback('/{(\$[a-z][\w\.>\-]+)}/i',
-							  function ($matches) {
-							  	$value = $matches[1];
+								function ($matches) {
+									$value = $matches[1];
 
-							  	if (strpos($value, '$this') === 0) {
-							  		$value = str_replace('$this.', '$this->', $value);
-							  	}
-							  	$value   = Vvveb\dotToArrayKey($value);
-							  	$php  = '<_script language="php"><![CDATA[ if (isset(' . $value . ')) echo htmlspecialchars(' . $value . ');]]></_script>';
+									if (strpos($value, '$this') === 0) {
+										$value = str_replace('$this.', '$this->', $value);
+									}
+									$value   = Vvveb\dotToArrayKey($value);
+									$php  = '<_script language="php"><![CDATA[if (isset(' . $value . ')) echo htmlspecialchars(' . $value . ');]]></_script>';
 
-							  	return $php;
-							  }, $value);
+									return $php;
+								}, $value);
 
 							$this->setNodeAttribute($node, $name, $value);
 						}
@@ -2054,7 +2103,7 @@ class Vtpl {
 					(strpos($trimmed, '{$') !== false) || //string has variable
 					(strpos($trimmed, '<?php') !== false) || //string has php code
 					(is_numeric($trimmed[0]))
-					) {
+				) {
 					continue;
 				}
 
@@ -2064,7 +2113,7 @@ class Vtpl {
 					//don't translate long texts
 					if (strlen($trimmed) < 1024) {
 						/*
-						$php     = '<_script language="php"><![CDATA[ echo ' . $this->translationFunction . '(\'' . $trimmed . '\');]]></_script>';
+						$php     = '<_script language="php"><![CDATA[echo ' . $this->translationFunction . '(\'' . $trimmed . '\');]]></_script>';
 						//keep space around text for html spacing
 						$php = str_replace($trimmed, $php, $text);
 						$f   = $this->document->createDocumentFragment();
@@ -2113,7 +2162,7 @@ class Vtpl {
 
 				$diff = $currentNode->childNodes->length - $before;
 				$length += $diff;
-			//$i += $diff;
+				//$i += $diff;
 			} else {
 				$this->setMultiLanguageText($node);
 			}
@@ -2175,25 +2224,25 @@ class Vtpl {
 		$self = $this;
 
 		$html = preg_replace_callback('/@@__VTPL__ATTRIBUTE_PLACEHOLDER__(\d+)@@/',
-					  function ($matches) use ($self) {
-					  	return $self->attributes[$matches[1]];
-					  }, $html); //sad hack :(
+			function ($matches) use ($self) {
+				return $self->attributes[$matches[1]];
+			}, $html); //sad hack :(
 
 		$html = preg_replace_callback('/__VTPL__NEW_ATTRIBUTE_PLACEHOLDER__(\d+)=""/',
-					  function ($matches) use ($self) {
-					  	return $self->newAttributes[$matches[1]];
-					  }, $html); //sad hack :(
+			function ($matches) use ($self) {
+				return $self->newAttributes[$matches[1]];
+			}, $html); //sad hack :(
 
 		$html = preg_replace_callback('/<script(.*?)holder="@@__VTPL__SCRIPT_PLACEHOLDER__(\d+)@@"(.*?)><\/script>/',
-					  function ($matches) use ($self) {
-					  	if (VTPL_JS_MINIFY) {
-					  		$script = $self->minifyJs($self->_scripts[$matches[2]]);
-					  	} else {
-					  		$script = $self->_scripts[$matches[2]];
-					  	}
+			function ($matches) use ($self) {
+				if (VTPL_JS_MINIFY) {
+					$script = $self->minifyJs($self->scripts[$matches[2]]);
+				} else {
+					$script = $self->scripts[$matches[2]];
+				}
 
-					  	return '<script' . $matches[1] . ' ' . $matches[3] . '>' . $script . '</script>';
-					  }, $html);
+				return '<script' . $matches[1] . ' ' . $matches[3] . '>' . $script . '</script>';
+			}, $html);
 
 		//cleanup modified scripts
 		$html = preg_replace('/<script.*?holder="@@__VTPL__SCRIPT_PLACEHOLDER__(\d+)@@"[^>]*>/','', $html);
@@ -2202,33 +2251,33 @@ class Vtpl {
 		Constants, replace @@_CONSTANT_NAME_@@ with the value defined for CONSTANT_NAME = 'value'
 		*/
 		$html = preg_replace_callback('/@@_CONSTANT_([A-Z_]*)_@@/',
-					  function ($matches) use ($self) {
-					  	return $self->constants[$matches[0]];
-					  }, $html);
+			function ($matches) use ($self) {
+				return $self->constants[$matches[0]];
+			}, $html);
 
 		/*
 		 Moustache variables used in javascript code in html template, it replaces {$variable} with $variable, if $variable is array then the output is json
 		 Modifier support with {$variable|function_name} ex: {$var|htmlspecialchars} multiple modifiers {$var|htmlspecialchars|trim}
 		 */
 		$html = preg_replace_callback('/{\s*(\$[\w\-\>\.]+)\|?([\w\.\|]+)?\s*}/',
-					  function ($matches) use ($self) {
-					  	$modifier = false;
+			function ($matches) use ($self) {
+				$modifier = false;
 
-					  	$variable = str_replace('$this.', '$this->', $matches[1]);
-					  	$variable = Vvveb\dotToArrayKey($variable);
+				$variable = str_replace('$this.', '$this->', $matches[1]);
+				$variable = Vvveb\dotToArrayKey($variable);
 
-					  	if (isset($matches[2]) && $matches[2]) {
-					  		$modifier = $variable;
-					  		$modifiers = explode('|', $matches[2]);
+				if (isset($matches[2]) && $matches[2]) {
+					$modifier = $variable;
+					$modifiers = explode('|', $matches[2]);
 
-					  		foreach ($modifiers as $mod) {
-					  			$modifier = "$mod($modifier)";
-					  		}
-					  	}
+					foreach ($modifiers as $mod) {
+						$modifier = "$mod($modifier)";
+					}
+				}
 
-					  	if ($modifier) {
-					  		$template =
-							"<?php if (isset($variable)) {
+				if ($modifier) {
+					$template =
+					"<?php if (isset($variable)) {
 									\$modified = $modifier;
 									if (is_array($variable)) {
 										echo json_encode(\$modified);
@@ -2237,9 +2286,9 @@ class Vtpl {
 									}
 								}
 							?>";
-					  	} else {
-					  		$template =
-							"<?php if (isset($variable)) {
+				} else {
+					$template =
+					"<?php if (isset($variable)) {
 									if (is_array($variable)) {
 										echo json_encode($variable);
 									} else {
@@ -2247,10 +2296,10 @@ class Vtpl {
 									}
 								}
 							?>";
-					  	}
+				}
 
-					  	return $template;
-					  }, $html);
+				return $template;
+			}, $html);
 
 		$html = str_replace(['<_script language="php"><![CDATA[', ']]></_script>', '<_script language="php">', '</_script>'], ['<?php ', ' ?>', '<?php ', ' ?>'], $html);
 		//decode html entities to match translation strings
@@ -2268,7 +2317,9 @@ class Vtpl {
 		//$html = preg_replace('/(data-[\w\-]+)="\s*"/','$1', $html);
 
 		//remove data-v- attributes
-		//$html = preg_replace('/data-v-[\-\w]+\s*=\s*"[^"]*"|data-v-[\-\w]+/','', $html);
+		if ($this->removeVattrs) {
+			//$html = preg_replace('/data-v-[\-\w]+\s*=\s*"[^"]*"|data-v-[\-\w]+/','', $html);
+		}
 	}
 
 	function saveCompiledTemplate($compiledFile) {
@@ -2282,7 +2333,7 @@ class Vtpl {
 			$componentNode = $elements->item($this->componentId);
 
 			if ($componentNode) {
-				$tmpDom = new DOMDocument();
+				$tmpDom                      = new DOMDocument();
 				$tmpDom->preserveWhiteSpace  = false;
 				$tmpDom->recover             = true;
 				$tmpDom->strictErrorChecking = false;
