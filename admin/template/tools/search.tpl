@@ -1,7 +1,7 @@
 import(common.tpl)
 
 @group = .search-results .group
-@item  = .search-results .group .list-group-item
+@item  = .search-results .group li
 
 @group|deleteAllButFirstChild
 @item|deleteAllButFirstChild

@@ -224,7 +224,7 @@
 	)
 	BEGIN
 
-		SELECT menu_item.url, menu_item.sort_order, menu_item.parent_id, menu_item.type, menu_item.item_id, td.*, menu_item.menu_item_id as menu_item_id, menu_item.menu_item_id as array_key 
+		SELECT menu_item.url, menu_item.sort_order, menu_item.parent_id, menu_item.type, menu_item.options, menu_item.item_id, td.*, menu_item.menu_item_id as menu_item_id, menu_item.menu_item_id as array_key 
 			
 		
 			FROM menu_item
@@ -315,7 +315,7 @@
 			@IF isset(:search)
 			THEN 
 			
-				AND td.name LIKE :search
+				AND td.name LIKE CONCAT('%',:search,'%')
 				
 			END @IF						
 			

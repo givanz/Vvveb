@@ -24,7 +24,9 @@ namespace Vvveb\Controller\Tools;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use function Vvveb\htmlToText;
 use Vvveb\System\Images;
+use function Vvveb\truncateWords;
 use function Vvveb\url;
 
 
@@ -86,6 +88,7 @@ class Search extends Base {
 					'type' => 'cardimage',
 					'src'  => $product['image'],
 					'text' => $product['name'],
+					'description' => htmlToText(truncateWords($product['excerpt'] ?? $product['content'], 50)),
 					'url'  => $url,
 				];
 			}
@@ -105,6 +108,7 @@ class Search extends Base {
 					'type' => 'cardimage',
 					'src'  => $post['image'],
 					'text' => $post['name'],
+					'description' => htmlToText(truncateWords($post['excerpt'] ?? $post['content'], 50)),
 					'url'  => $url,
 				];
 			}
@@ -127,6 +131,27 @@ class Search extends Base {
 					'type' => 'cardimage',
 					'src'  => $user['image'],
 					'text' => $user['first_name'] . ' ' . $user['last_name'] . ' (' . $user['username'] . ') ' . $user['email'],
+					'url'  => $url,
+				];
+			}
+		}
+
+		$categories   = new \Vvveb\Sql\CategorySQL();
+		$results = $categories->getCategories($options + ['search' => $text]);
+
+		if (isset($results['categories'])) {
+			$key = __('taxonomy');
+			foreach ($results['categories'] as $category) {
+				$url           = url(['module' => 'content/categories', 'taxonomy_id' => $category['taxonomy_id']]);
+				if (isset($category['avatar'])) {
+					$category['image']= Images::image($category['avatar'], 'category');
+				}
+
+				$search[$key][]  = [
+					'type' => 'cardimage',
+					'src'  => $category['image'],
+					'text' => $category['name'],
+					'description' => htmlToText(truncateWords($category['content'], 50)),
 					'url'  => $url,
 				];
 			}

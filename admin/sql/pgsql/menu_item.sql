@@ -106,7 +106,7 @@
 			@IF isset(:search)
 			THEN 
 			
-				AND td.name LIKE :search
+				AND td.name LIKE CONCAT('%',:search,'%')
 				
 			END @IF						
 			

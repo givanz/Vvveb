@@ -98,7 +98,7 @@
 			@IF isset(:search) && :search
 			THEN 
 			
-				AND tc.name LIKE :search
+				AND tc.name LIKE CONCAT('%',:search,'%')
 				
 			END @IF	
 			
@@ -248,7 +248,7 @@
 			@IF isset(:search)
 			THEN 
 			
-				AND tc.name LIKE :search
+				AND tc.name LIKE CONCAT('%',:search,'%')
 				
 			END @IF	
 			
@@ -304,7 +304,7 @@
 	)
 	BEGIN
 		-- taxonomy_item
-		SELECT *
+		SELECT *, .name as name, _.slug as slug
 			FROM taxonomy_item as _ -- (underscore) _ means that data will be kept in main array
 				
 				@IF isset(:post_id) THEN
@@ -335,6 +335,11 @@
 					
 				END @IF	
 				
+				@IF isset(:type)
+				THEN 
+					INNER JOIN taxonomy t ON (_.taxonomy_id = t.taxonomy_id AND t.type = :type)   
+				END @IF	
+				
 			WHERE 
 			1 = 1
 
@@ -351,7 +356,8 @@
 				AND _.post_type = :post_type 
 				
 			END @IF				
-	
+
+
 			@IF isset(:post_id)
 			THEN 
 				,pt.post_id as checked  
@@ -599,7 +605,7 @@
 			@IF isset(:search) && :search
 			THEN 
 			
-				AND tc.name LIKE :search
+				AND tc.name LIKE CONCAT('%',:search,'%')
 				
 			END @IF						
 			
