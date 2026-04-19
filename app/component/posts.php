@@ -23,7 +23,6 @@
 namespace Vvveb\Component;
 
 use function Vvveb\__;
-use function Vvveb\availableLanguages;
 use function Vvveb\get;
 use function Vvveb\getSetting;
 use function Vvveb\siteSettings;
@@ -43,7 +42,7 @@ class Posts extends ComponentBase {
 		'type'               => 'post',
 		'site_id'            => null,
 		'start'              => null,
-		'limit'              => ['url', 8],
+		'limit'              => ['url', 4],
 		'order_by'           => 'post_id',
 		'direction'          => 'desc',
 		'status'             => 'publish',
@@ -53,7 +52,7 @@ class Posts extends ComponentBase {
 		'taxonomy_item_id'   => NULL,
 		'taxonomy_item_slug' => NULL,
 		'search'             => NULL,
-		'search_boolean'     => true,
+		'search_boolean'     => NULL,
 		'like'               => NULL,
 		'admin_id'           => NULL,
 		//archive
@@ -94,7 +93,7 @@ class Posts extends ComponentBase {
 	}
 
 	function cacheKey() {
-		if (isset($this->options['search'])) {
+		if (isset($this->options['search']) || isset($this->options['page']) || isset($this->options['post_id'])) {
 			return false;
 		}
 
@@ -104,18 +103,15 @@ class Posts extends ComponentBase {
 	function results() {
 		$posts = new PostSQL();
 
-		if (! isset($this->options['page']) && ! isset($this->options['start'])) {
-			$this->options['page'] = 1;
+		$this->options['limit'] = (int) ($this->options['limit'] ?? 4 ?: 4);
+
+		if (($page = $this->options['page'] ?? false) && is_numeric($page)) {
+			$this->options['start'] = ($page - 1) * ($this->options['limit']);
 		}
 
-		if ($page = ($this->options['page'] ?? false)) {
-			$this->options['start'] = ($page - 1) * ((int) ($this->options['limit'] ?? 4));
-		}
-		/*
-		if ($this->options['limit'] && ! $page) {
-			$this->options['start'] = 0;
-		}
-		*/
+		$this->options['start'] = (int) ($this->options['start'] ?? 0 ?: 0);
+
+
 		if (isset($this->options['post_id']) && is_array($this->options['post_id']) && $this->options['source'] == 'autocomplete') {
 			$this->options['post_id'] = array_keys($this->options['post_id']);
 		} else {
@@ -130,6 +126,11 @@ class Posts extends ComponentBase {
 		if (isset($this->options['direction']) &&
 				! in_array($this->options['direction'], ['asc', 'desc'])) {
 			unset($this->options['direction']);
+		}
+
+		//wildcard search for one word search
+		if (isset($this->options['search']) && strpos($this->options['search'], ' ') == false) {
+			$this->options['search_boolean'] = true;
 		}
 
 		if (isset($this->options['search']) && isset($this->options['search_boolean'])) {
@@ -147,12 +148,11 @@ class Posts extends ComponentBase {
 		}
 
 		$results = $posts->getAll($this->options);
-		//$languages = availableLanguages();
 		$this->options['type'] = $this->options['type'] ?: 'post';
 
 		if (! isset($this->options['date_format'])) {
 			$site = siteSettings();
-			$this->options['date_format'] = $site['date_format'];
+			$this->options['date_format'] = $site['date_format'] ?? 'human';
 		}
 
 		if ($results && isset($results['post'])) {
@@ -192,7 +192,7 @@ class Posts extends ComponentBase {
 			($this->options['page'] > 1) &&
 			(isset($this->options['404']) && $this->options['404']) &&
 			! $_SERVER['QUERY_STRING']) {
-				$results['404'] = true;
+			$results['404'] = true;
 		}
 
 		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
