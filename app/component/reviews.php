@@ -40,8 +40,8 @@ class Reviews extends Comments {
 		'status'        => 1, //approved reviews
 		'start'         => 0,
 		'limit'         => 10,
-		'image_size'    => 'thumb',
 		'order'         => 'asc', //desc
+		'image_size'    => 'thumb', //options: xlarge, large, medium, thumb
 	];
 
 	public $cacheExpire = 0; //no cache
@@ -81,7 +81,8 @@ class Reviews extends Comments {
 			$results += $stats;
 		}
 
-		$results['rating'] = number_format($results['rating'] ?? 0, 1);
+		$results['rating']     = number_format($results['rating'] ?? 0, 1);
+		$results['rating_int'] = ceil($results['rating']);
 
 		//compute width and fill missing ratings
 		foreach ([1, 2, 3, 4, 5] as $rating) {
