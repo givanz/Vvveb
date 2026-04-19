@@ -1,4 +1,4 @@
-[data-v-language-list] option|deleteAllButFirst
+[data-v-language-list] option|deleteAllButFirstChild
 
 [data-v-language-list] option|before = <?php
 	foreach ($this->languagesList as $code => $language) {

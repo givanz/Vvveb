@@ -27,16 +27,26 @@ if(isset($this->themes) && is_array($this->themes)) {
 	//$pagination = $this->themes[$_themes_idx]['pagination'];
 	foreach ($this->themes as $index => $theme) { ?>
 	
-    [data-v-themes] [data-v-theme] [data-v-theme-*]|innerText  = $theme['@@__data-v-theme-([-_\w]+)__@@']
-    [data-v-themes] [data-v-theme] a[data-v-theme-*]|href  = $theme['@@__data-v-theme-([-_\w]+)__@@']
-    [data-v-themes] [data-v-theme] img[data-v-theme-*]|src  = $theme['@@__data-v-theme-([-_\w]+)__@@']
+    [data-v-themes] [data-v-theme] [data-v-theme-*]|innerText  = $theme['@@__data-v-theme-(*)__@@']
+    [data-v-themes] [data-v-theme] a[data-v-theme-*]|href  = $theme['@@__data-v-theme-(*)__@@']
+    [data-v-themes] [data-v-theme] img[data-v-theme-*]|src  = $theme['@@__data-v-theme-(*)__@@']
     [data-v-themes] [data-v-theme] input.form-check-input|addNewAttribute  = <?php if (isset($theme['active']) && $theme['active']) echo 'checked';?>
     [data-v-themes] [data-v-theme] input.form-check-input|value  = $theme['folder']
-    
-	[data-v-themes] [data-v-theme] [data-v-theme-activate-url]|href  = <?php echo Vvveb\url(['action' => 'activate', 'theme' => $theme['folder']]);?>
-	[data-v-themes] [data-v-theme] [data-v-theme-delete-url]|href  = <?php echo Vvveb\url(['action' => 'delete', 'theme' => $theme['folder']]);?>
-	[data-v-themes] [data-v-theme] [data-v-theme-preview-url]|href  = <?php echo Vvveb\url('index/index') . '?theme=' . $theme['folder'];?>
-	
+
 	[data-v-themes]  [data-v-theme]|after = <?php 
+	} 
+}?>
+
+
+[name="homepage"] option|deleteAllButFirstChild
+
+[name="homepage"] option|before = <?php
+if(isset($this->templates) && is_array($this->templates)) {
+	foreach ($this->templates as $file => $name) { ?>
+	
+		[name="homepage"] option|value = $file
+		[name="homepage"] option       = $name
+    
+	[name="homepage"] option|after = <?php 
 	} 
 }?>

@@ -23,21 +23,20 @@
 namespace Vvveb\Controller;
 
 use function Vvveb\__;
-use function Vvveb\installedLanguages;
+use function Vvveb\getTemplateList;
 use function Vvveb\sanitizeFileName;
 use function Vvveb\session as sess;
-use function Vvveb\setLanguage;
 use Vvveb\Sql\LanguageSQL;
-use Vvveb\Sql\menuSQL;
+use Vvveb\Sql\menu_itemSQL;
 use Vvveb\Sql\RoleSQL;
 use Vvveb\Sql\SiteSQL;
 use Vvveb\System\Core\View;
 use Vvveb\System\Extensions\Plugins;
 use Vvveb\System\Extensions\Themes as ThemesList;
 use Vvveb\System\Functions\Str;
+use Vvveb\System\Locale;
 use Vvveb\System\Media\Image;
 use Vvveb\System\User\Admin;
-use function Vvveb\userPreferedLanguage;
 
 define('REQUIRED_EXTENSIONS', ['mysqli', 'mysqlnd', 'xml', 'libxml', 'pcre',  'zip', 'dom', 'curl', 'gettext']);
 define('WRITABLE_FOLDERS', ['storage', 'storage/cache', 'storage/model', 'storage/compiled-templates', 'config', 'config/sites.php', 'public/media/', 'public/themes', 'public/image-cache', 'plugins']);
@@ -52,7 +51,7 @@ class Index extends Base {
 
 	function __construct() {
 		if (! ($lang = sess('install_language'))) {
-			$lang = userPreferedLanguage();
+			$lang = Locale::userPreferedLanguage();
 
 			if ($lang) {
 				sess(['install_language' => $lang, 'language_id' => 1]);
@@ -60,7 +59,7 @@ class Index extends Base {
 		}
 
 		if ($lang) {
-			setLanguage($lang);
+			Locale::setLanguage($lang);
 		}
 
 		$this->subdir = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : \Vvveb\detectSubDir());
@@ -118,7 +117,7 @@ class Index extends Base {
 		return $notMet;
 	}
 
-	function replaceInFile($file, $search, $replace) {
+	private function replaceInFile($file, $search, $replace) {
 		$content = file_get_contents($file);
 
 		if ($content) {
@@ -193,6 +192,36 @@ class Index extends Base {
 		}
 	}
 
+	private function themeTemplates($theme) {
+		$templates = getTemplateList($theme);
+
+		$files = ['index.html' => 'Home page'];
+		foreach ($templates as $template) {
+			foreach (['error', 'index.'] as $type) {
+				if (strpos($template['filename'], $type) !== false) {
+					continue 2;
+				}
+			}
+
+			$files[$template['filename']] = $template['title'];
+			if ($template['folder'] != null) {
+				break;
+			}
+		}
+
+		return $files;
+	}
+
+	function getThemeTemplates() {
+		$theme = $this->request->get['theme'];
+		if ($theme) {
+			$files = $this->themeTemplates($theme);
+
+			$this->response->setType('json');
+			return $files;
+		}
+	}
+
 	function index() {
 		$requirements   = $this->checkRequirements();
 		$noimport 	     = $this->request->post['noimport'] ?? false;
@@ -220,7 +249,7 @@ class Index extends Base {
 			if (isset($this->request->post['language'])) {
 				$lang = $this->request->post['language'];
 				sess(['install_language' => $lang, 'language_id' => 1]);
-				setLanguage($lang);
+				Locale::setLanguage($lang);
 			} else {
 				$this->import($noimport);
 				//if user data is provided (by CLI) run also step2
@@ -230,7 +259,7 @@ class Index extends Base {
 			}
 		}
 
-		$installedLanguages = [DEFAULT_LANG => '0'] + array_flip(installedLanguages());
+		$installedLanguages = [DEFAULT_LANG => '0'] + array_flip(Locale::installedLanguages());
 		$languagesList      = include DIR_SYSTEM . 'data/languages-list.php';
 		$languages          = array_intersect_key($languagesList, $installedLanguages);
 		$this->view->config = $this->config;
@@ -243,13 +272,17 @@ class Index extends Base {
 
 	function install() {
 		if (! defined('CLI')) {
-			$themes             =  ThemesList :: getList();
+			$themes      =  ThemesList :: getList();
+			$activeTheme = key($themes);
 
-			$this->view->themes = $themes;
+			$this->view->themes    = $themes;
+			$this->view->templates = $this->themeTemplates($activeTheme);
+
 			$this->view->count  = count($themes);
 		}
 
 		$isRootPublic             = (constant('PUBLIC_PATH') == DIRECTORY_SEPARATOR) ? 'true' : 'false';
+		$this->view->publicPath   = PUBLIC_PATH;
 		$this->view->isRootPublic = $isRootPublic;
 
 		$languagesList      = include DIR_SYSTEM . 'data/languages-list.php';
@@ -264,19 +297,17 @@ class Index extends Base {
 			$user        = $this->request->post['admin'] ?? [];
 			$settings    = $this->request->post['settings'] ?? [];
 			$theme       = $this->request->post['theme'] ?? 'landing';
+			$homepage    = $this->request->post['homepage'] ?? 'index.html';
 			$noecommerce = $this->request->post['noecommerce'] ?? false;
 			$hostname    = $this->request->post['hostname'] ?? null;
 			$adminPath   = $this->request->post['admin-path'] ?? false;
 			$language    = $this->request->post['language'] ?? 'en_US';
+			$languages   = $this->request->post['languages'] ?? [];
 
 			$user['status'] = 1;
 			$result         = Admin::update($user, ['username' => 'admin']);
 			$sites          = new SiteSQL();
 			//$result         = \Vvveb\setMultiSetting('site',$settings);
-
-			if ($noecommerce) {
-				Plugins::activate('hide-ecommerce', 1);
-			}
 
 			//set default website url
 			$sites           = new SiteSQL();
@@ -301,6 +332,7 @@ class Index extends Base {
 				'site_id'  => 1,
 				'name'     => $settings['description'][1]['title'] ?? 'Default',
 				'theme'    => $theme,
+				'template' => [$homepage],
 				'settings' => json_encode($settings),
 			];
 
@@ -337,20 +369,39 @@ class Index extends Base {
 			@\Vvveb\setConfig('sites.* * *', $site);
 
 			$lang = $language ?? sess('install_language') ?? 'en_US';
+			$languageModel      = new LanguageSQL();
 
 			//set default language
 			if ($lang && $lang != 'en_US') {
-				$languageModel      = new LanguageSQL();
 				$language           = $languagesList[$lang];
-				$language['name']   = preg_replace('/$(\w+).*/', '$1', $language['name']);
-				$language['slug']   = preg_replace('/$(\w+).*/', '$1', $language['code']);
+				$language['name']   = preg_replace('/^(\w+).*/', '$1', $language['name']);
+				$language['slug']   = preg_replace('/^(\w+).*/', '$1', $language['code']);
 				$language['locale'] = $language['code'];
 				$language['code']   = $lang;
 				$language['status'] = 1;
 				//$installed              = $languageModel->get(['code' => $lang]);
 				$result = $languageModel->edit(['language' => $language, 'language_id' => 1]);
 				sess(['language' => $language['slug'], 'code' => $language['code'], 'language_id' => 1]);
-				setLanguage($lang);
+				Locale::setLanguage($lang);
+			}
+
+			$inserted = [$lang];
+			if ($languages) {
+				foreach ($languages as $code) {
+					if (in_array($code, $inserted)) {
+						continue;
+					}
+
+					$inserted[]   = $code;
+					$ln           = $languagesList[$code];
+					$ln['name']   = preg_replace('/^(\w+).*/', '$1', $ln['name']);
+					$ln['slug']   = preg_replace('/^(\w+).*/', '$1', $ln['code']);
+					$ln['locale'] = $ln['code'];
+					$ln['code']   = $code;
+					$ln['status'] = 1;
+
+					$languageModel->add(['language' => $ln]);
+				}
 			}
 
 			$error = '';
@@ -389,21 +440,38 @@ class Index extends Base {
 			if ($subdir) {
 				$subdir = sanitizeFileName($subdir);
 				$subdir = '/' . trim($subdir, '/ ');
-				//add subdir path to menu links
-				$menus  = new menuSQL();
-
-				foreach ([1, 5] as $menu_id) { //main menu and footer menu id's
-					$menuItems = $menus->get(['menu_id' => $menu_id, 'language_id' => 1])['menu'] ?? [];
-
-					foreach ($menuItems as $menuItem) {
-						$data = ['url' => $this->subdir . $menuItem['url'], 'menu_item_content' => []];
-						$menus->editMenuItem(['menu_item' => $data,  'menu_item_id' => $menuItem['menu_item_id']]);
-					}
-				}
 
 				//try to set subdir in env.php and .htaccess
 				$this->replaceInFile(DIR_ROOT . 'env.php', "define('V_SUBDIR_INSTALL', false" , "define('V_SUBDIR_INSTALL', '{$subdir}'");
 				$this->replaceInFile(DIR_ROOT . '.htaccess', 'RewriteRule ^ index.php [L]' , "RewriteRule ^ {$subdir}/index.php [L]");
+			}
+
+
+			$menus = new menu_itemSQL();
+
+			if ($subdir || $isRootPublic == 'false') {
+				//add subdir path to menu links
+				$sub   = $subdir ?: '';
+
+				foreach ([1, 5] as $menu_id) { //main menu and footer menu id's
+					$menuItems = $menus->getAll(['menu_id' => $menu_id, 'language_id' => 1, 'site_id' => 1])['menu_item'] ?? [];
+
+					foreach ($menuItems as $menuItem) {
+						$data = ['url' => $sub . $menuItem['url'], 'menu_item_content' => []];
+						if ($menuItem['content']) {
+							$content = str_replace('"/media/', '"' . PUBLIC_PATH . 'media/', $menuItem['content']);
+							$data['menu_item_content'] = [['content' => $content, 'language_id' => 1]];
+						}
+
+						$menus->editMenuItem(['menu_item' => $data,  'menu_item_id' => $menuItem['menu_item_id']]);
+					}
+				}
+			}
+
+			if ($noecommerce) {
+				Plugins::activate('hide-ecommerce', 1);
+				//delete shop menu item
+				$menus->deleteMenuItem(['menu_item_id' => 43]);
 			}
 
 			if ($error) {
@@ -423,7 +491,7 @@ class Index extends Base {
 			$this->view->success[] = $success;
 			$admin_path            = \Vvveb\adminPath();
 			$admin_path            = str_replace($this->subdir, '', $admin_path);
-			$location              = preg_replace('@/install.*$@', $admin_path . "/index.php?module=settings/site&site_id=1&success=$success&errors=$error#description", ($_SERVER['REQUEST_URI'] ?? ''));
+			$location              = preg_replace('@/install.*$@', $admin_path . "/index.php?module=settings/site&site_id=1&success=$success&errors=$error#description-tab", ($_SERVER['REQUEST_URI'] ?? ''));
 
 			$this->redirect($location);
 		}
