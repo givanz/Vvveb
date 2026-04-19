@@ -1,1 +1,1 @@
-import(category.tpl)
+import(content/category.tpl)
