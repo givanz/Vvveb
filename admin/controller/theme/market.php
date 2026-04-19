@@ -83,6 +83,8 @@ class Market extends Base {
 		if (isset($this->request->get['json'])) {
 			$this->view->setType('json');
 		}
+
+		return $this->index();
 	}
 
 	function index() {
@@ -113,7 +115,7 @@ class Market extends Base {
 		}
 
 		$view->set($themes);
-		$view->categories = $categories['categories'];
+		$view->categories = $categories['categories'] ?? [];
 		$view->set($request);
 	}
 }

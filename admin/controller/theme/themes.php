@@ -41,6 +41,7 @@ class Themes extends Base {
 
 		try {
 			if ($slug) {
+				$slug = sanitizeFileName($slug);
 				$theme =  ThemesList :: getMarketList(['slug' => $slug])['themes'];
 
 				if ($theme && isset($theme[0])) {
@@ -193,14 +194,14 @@ class Themes extends Base {
 		$error = false;
 
 		foreach ($files as $file) {
-			$this->themeSlug = str_replace('.zip', '', strtolower($file['name']));
+			$this->themeSlug = slugify(str_replace('.zip', '', $file['name']));
 
 			if ($file && $file['error'] == UPLOAD_ERR_OK) {
 				try {
 					// use temorary file, php cleans temporary files on request finish.
-					$this->themeSlug = ThemesList :: install($file['tmp_name'], $this->themeSlug, false);
+					$success = ThemesList :: install($file['tmp_name'], $this->themeSlug, false);
 
-					if ($this->themeSlug) {
+					if ($success) {
 						ThemesList :: fixIfMissingTemplates($this->themeSlug);
 					}
 				} catch (\Exception $e) {
@@ -292,7 +293,11 @@ class Themes extends Base {
 			CacheManager::clearCompiledFiles();
 			CacheManager::clearPageCache();
 		} else {
-			$error                = __('Error activating theme, check config/sites.php write permissions');
+			$error                = __('Error activating theme');
+
+			if (! is_writable(DIR_CONFIG . 'sites.php')) {
+				$error .= ' - ' . sprintf(__('%s is not writable!'), 'config/sites.php');
+			}
 			$this->view->errors[] = $error;
 		}
 
