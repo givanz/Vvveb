@@ -57,7 +57,18 @@ if(is_array($logs)) foreach ($logs as $index => $log) {
 @log|after = <?php }?>
 
 
-[data-v-order] [data-v-order-*]|innerText = $this->order['@@__data-v-order-(*)__@@']
+[data-v-order] [data-v-order-*]|innerText = 
+<?php
+	 $name = '@@__data-v-order-(*)__@@';
+	 if (isset($_POST[$name])) 
+		$value = $_POST[$name]; 
+	 else if (isset($this->order[$name])) 
+		$value = $this->order[$name];
+	 else $value = '';
+	 
+	 echo htmlspecialchars($value);
+?>
+
 [data-v-order] a[data-v-order-*]|href = $this->order['@@__data-v-order-(*)__@@']
 
 [data-v-order] [data-v-order-site_url]|href = $this->order['site_url']
