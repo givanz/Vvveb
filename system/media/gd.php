@@ -113,6 +113,9 @@ class Image {
 
 	public function resize($width, $height = 0, $method = 's') {
 		switch ($method) {
+			case 'r':
+				return $this->_resize($width, $height);
+
 			case 's':
 				return $this->stretch($width, $height);
 
@@ -136,8 +139,23 @@ class Image {
 		}
 
 		if (! $height) {
-			$height = $width * $newRatio;
+			$height = ceil($width / $newRatio);
 		}
+		
+		$this->image = imagescale($this->image, $width, $height, IMG_BICUBIC_FIXED);
+	}
+	
+	public function _resize($width, $height = 0) {
+		if (! $this->width || ! $this->height || ! $this->image) {
+			return;
+		}
+
+		$ratio = $newRatio =  $this->width / $this->height;
+
+		if ($width && $height) {
+			$newRatio = $width / $height;
+		}
+
 
 		if ($width && $height) {
 			$scaleW = $width / $this->width;

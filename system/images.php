@@ -131,7 +131,7 @@ class Images {
 		return $image;
 	}
 
-	static public function images($images, $type, $size = '') {
+	static public function images($images, $type, $size = '', $method = 'cs') {
 		foreach ($images as $key => &$image) {
 			$image['image'] = Images::image($image['image'], $type, $size);
 		}

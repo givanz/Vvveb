@@ -95,6 +95,9 @@ class Image {
 		}
 
 		switch ($method) {
+			case 'r':
+				return $this->_resize($width, $height);
+			
 			case 's':
 				return $this->stretch($width, $height);
 
@@ -107,6 +110,25 @@ class Image {
 	}
 
 	public function stretch($width, $height = 0) {
+		$ratio = $newRatio =  $this->width / $this->height;
+
+		if ($width && $height) {
+			$newRatio = $width / $height;
+		}
+		
+		if (! $height) {
+			$height = ceil($width / $newRatio);
+		}
+
+		if (method_exists($this->image, 'adaptiveResizeImage')) {
+			return $this->image->adaptiveResizeImage($width, $height);
+		} else {
+			//$this->image->thumbnailImage($width, $height, true, true);
+			return $this->image->resizeImage($width, $height, \Imagick::FILTER_LANCZOS, 1, true);
+		}
+	}
+	
+	public function _resize($width, $height = 0) {
 		//$this->width  = $this->image->getImageWidth();
 		//$this->height = $this->image->getImageHeight();
 
@@ -114,10 +136,6 @@ class Image {
 
 		if ($width && $height) {
 			$newRatio = $width / $height;
-		}
-
-		if (! $height) {
-			$height = $width / $newRatio;
 		}
 
 		if ($width && $height) {
@@ -179,6 +197,8 @@ class Image {
 		} else {
 			$newWidth  = intval($width);
 			$newHeight = intval($height);
+			$crop_x     = 0;
+			$crop_y     = 0;
 		}
 
 		if ($this->width != $newWidth && $this->height != $newHeight) {
