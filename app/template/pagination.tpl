@@ -65,6 +65,16 @@ if ($pagecount > $maxpages)
 		$page_stop = $maxpages;
 	}
 }
+
+if (!function_exists('pageUrl')) {
+	function pageUrl($page, &$parameters, &$query_string, &$url) {
+		if ($page > 1) {
+			return htmlspecialchars(Vvveb\url($url, ['page' => $page] + $parameters)) . $query_string;
+		} else {
+			return htmlspecialchars(Vvveb\url($url, $parameters)) . $query_string;
+		}
+	}
+}
 ?>
 
 @page|before = <?php  
@@ -74,7 +84,7 @@ if ($pagecount > $maxpages)
 	[data-pagination] [data-pages] = $pagecount
 	
 	@page [data-page-no] = $page
-	@page [data-page-url]|href = <?php echo htmlspecialchars(Vvveb\url($url, ['page' => $page] + $parameters)) . $query_string;?>
+	@page [data-page-url]|href = <?php echo pageUrl($page, $parameters, $query_string, $url);?>
 	@page|addClass = <?php if (($current_page == $page) && !$vvveb_is_page_edit) echo 'active'?>
 
 @page|after = <?php 
@@ -83,12 +93,12 @@ if ($pagecount > $maxpages)
 
 	[data-pagination] [data-count] = $component['count']
 	[data-pagination] [data-current-page] = $current_page
-	[data-pagination] [data-current-url]|action = <?php echo htmlspecialchars(Vvveb\url($url, ['page' => $current_page]  + $parameters)) . $query_string;?>
+	[data-pagination] [data-current-url]|action = <?php echo pageUrl($page, $parameters, $query_string, $url);?>
 	
-	[data-pagination] [data-first] [data-page-url]|href = <?php echo htmlspecialchars(Vvveb\url($url, ['page' => 1]  + $parameters)) . $query_string;?>
-	[data-pagination] [data-prev]  [data-page-url]|href = <?php echo htmlspecialchars(Vvveb\url($url, ['page' => max($current_page - 1, 1)]  + $parameters)) . $query_string;?>
-	[data-pagination] [data-next]  [data-page-url]|href = <?php echo htmlspecialchars(Vvveb\url($url, ['page' => min($current_page + 1, $pagecount)]  + $parameters)) . $query_string;?>
-	[data-pagination] [data-last]  [data-page-url]|href = <?php echo htmlspecialchars(Vvveb\url($url, ['page' => $pagecount]  + $parameters)) . $query_string;?>
+	[data-pagination] [data-first] [data-page-url]|href = <?php echo pageUrl(1, $parameters, $query_string, $url);?>
+	[data-pagination] [data-prev]  [data-page-url]|href = <?php echo pageUrl(max($current_page - 1, 1), $parameters, $query_string, $url);?>
+	[data-pagination] [data-next]  [data-page-url]|href = <?php echo pageUrl(min($current_page + 1, $pagecount), $parameters, $query_string, $url);?>
+	[data-pagination] [data-last]  [data-page-url]|href = <?php echo pageUrl($pagecount, $parameters, $query_string, $url);?>
 
 
 [data-pagination]|after = <?php 
