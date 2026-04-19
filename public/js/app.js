@@ -829,7 +829,7 @@ function loadAjax(url, selector, callback = null, params = {}, method = "get") {
 
 
 VvvebTheme.ajax.selector        =  VvvebTheme.ajax.selector || "a[data-url], a[data-page-url], a[data-v-url], a[data-v-menu-item-url], a[data-v-post-url], a[data-v-product-url], a[data-v-cat-url], a[data-v-archive-url], a[data-v-admin-url], a[data-v-post-author-url], a[data-v-breadcrumb-item-url], a[data-v-categories-cat-url], a[data-v-cart-product-url]";
-VvvebTheme.ajax.siteContainer   = VvvebTheme.ajax.siteContainer || ["#site-content", "body > section"];
+VvvebTheme.ajax.siteContainer   = VvvebTheme.ajax.siteContainer || ["#site-content", ".inner-page-hero", "body > section", "body > nav"];
 VvvebTheme.ajax.scrollContainer = VvvebTheme.ajax.scrollContainer || "body";
 VvvebTheme.ajax.skipUrl         = VvvebTheme.ajax.skipUrl || [];
 
