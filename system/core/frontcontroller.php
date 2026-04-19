@@ -92,7 +92,11 @@ class FrontController {
 			$controller         = 'Vvveb\Controller\Error' . $statusCode;
 			//http_response_code($statusCode);
 			$view = View::getInstance();
-			$view->set($message);
+			if (is_array($message)) {
+				$view->set($message);
+			} else {
+				$view->message = $message;
+			}
 			self :: call($controller, 'index', $file);
 			PageCache::getInstance()->cleanUp();
 			die();
@@ -299,7 +303,7 @@ class FrontController {
 		return $_GET['module'] ?? '';
 	}
 
-	static public function dispatch() {
+	static public function dispatch(&$site = []) {
 		$module   = $_GET['module'] ?? $_POST['module'] ?? null;
 		$action   = $_GET['action'] ?? $_POST['action'] ?? null;
 		$_REQUEST = array_merge($_GET, $_REQUEST);
@@ -312,17 +316,16 @@ class FrontController {
 		*/
 
 		//remove GET parameters to allow correct matching,
-		$uri = $_SERVER['REQUEST_URI'] ?? '';
-
-		if (V_SUBDIR_INSTALL) {
-			$uri = substr($uri, strlen(V_SUBDIR_INSTALL));
-			//$uri = str_replace(V_SUBDIR_INSTALL, '', $uri);
-		}
-
+		$uri = SITE_URI ?? $_SERVER['REQUEST_URI'] ?? '/';
 		$uri   = preg_replace('/\?.*$/', '', $uri);
-		$route = false;
 
-		if (! $module && (APP != 'admin' && APP != 'install' && (Routes::init(APP) && $route = Routes::match($uri)))) {
+		$route = false;
+		$routesSiteId = null;
+		if (isset($site['route'])) {
+			$routesSiteId = $site['site_id'];
+		};
+
+		if (! $module && (APP != 'admin' && APP != 'install' && (Routes::init(APP, $routesSiteId) && $route = Routes::match($uri)))) {
 			$_GET = array_merge($route, $_GET);
 		} else {
 			$module         = $module ?? ((APP == 'install' || APP == 'admin') ? 'index' : false);

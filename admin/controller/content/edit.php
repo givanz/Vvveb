@@ -226,7 +226,11 @@ class Edit extends Base {
 		}
 
 		//get site host for current selected site to use for absolute url
-		$url = ['host' => $this->global['host']];
+		$url = ['host' => $this->global['host'], 'path' => $this->global['path'] ? '/' . $this->global['path'] : null];
+
+		if ($this->type != $this->object) {
+			$url['type'] = $this->type;
+		}
 
 		$revisionsUrl = \Vvveb\url(['module' => "$controller/revisions", 'object' => $this->object, 'type' => $this->type, $this->object . '_id' => $post_id]);
 		$name         = '';

@@ -1723,7 +1723,9 @@ function download($url) {
 				curl_close($ch);
 			}
 
-			if ($httpcode != 200) return;
+			if ($httpcode != 200) {
+				return;
+			}
 		}
 	} else {
 		if (ini_get('allow_url_fopen') == '1') {
@@ -1798,12 +1800,14 @@ function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception 
 				$streamVerboseHandle = fopen('php://temp', 'w+');
 				curl_setopt($ch, CURLOPT_STDERR, $streamVerboseHandle);
 			}
-			
+
 			$result = curl_exec($ch);
 
 			if ($result) {
 				$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-				if ($httpcode != 200) return;
+				if ($httpcode != 200) {
+					return;
+				}
 
 				if ($cache) {
 					$cacheDriver->set('url', $cacheKey, $result);

@@ -93,7 +93,16 @@ class Editor extends Base {
 
 		$pages = $list + Cache::getInstance()->cache(APP, 'template-list-' . $theme,
 			function () use ($theme) {
-				return \Vvveb\getTemplateList($theme);
+				$templates =  \Vvveb\getTemplateList($theme);
+				//add a prefix for templates like 404 to avoid showing them first
+				foreach ($templates as $key => $template) {
+					if (is_numeric($key) || is_numeric($key[0])) {
+						unset($templates[$key]);
+						$templates["t-$key"] = $template;
+					}
+				}
+
+				return $templates;
 			}, 604800);
 
 		list($pages) = Event::trigger(__CLASS__, __FUNCTION__, $pages);
@@ -102,7 +111,7 @@ class Editor extends Base {
 	}
 
 	private function clearTemplateListCache($theme = null) {
-		return Cache::getInstance()->delete(APP, 'template-list-' . $theme);
+		return Cache::getInstance()->delete(APP, 'template-list-' . sanitizeFileName($theme));
 	}
 
 	private function loadEditorData() {
@@ -149,12 +158,12 @@ class Editor extends Base {
 		if (file_exists($themeFolder . $vvvebJs)) {
 			$assets['js']['vvvebjs'] = $view->themeBaseUrl . $vvvebJs;
 		}
-		
+
 		list($assets) =
 		Event::trigger(__CLASS__, __FUNCTION__, $assets);
-		
+
 		foreach ($assets as $type => $files) {
-			$name = 'theme' . ucfirst($type);//themeSections
+			$name = 'theme' . ucfirst($type); //themeSections
 			$view->$name = $files;
 		}
 	}
@@ -181,8 +190,14 @@ class Editor extends Base {
 				if (! isset($post['slug']) || ! isset($post['name'])) {
 					continue;
 				}
+
 				$slug = htmlspecialchars($post['slug']);
-				$url  = url('content/page/index',['slug' => $slug, 'post_id' => $post['post_id']]);
+				$params = ['slug' => $slug, 'post_id' => $post['post_id']];
+				if ($this->global['path']) {
+					$params['path'] = '/' . $this->global['path'];
+				}
+
+				$url = url('content/page/index', $params);
 
 				$posts["$slug-page"] = [
 					'name'      => "$slug-page",
@@ -203,7 +218,7 @@ class Editor extends Base {
 
 	function index() {
 		$theme              = $this->getTheme();
-		$themeParam         = ($theme ? '&theme=' . $theme : '');
+		$themeParam         = (isset($this->request->get['theme']) ? '&theme=' . $theme : '');
 		$view               = View::getInstance();
 		$view->themeBaseUrl = PUBLIC_PATH . 'themes/' . $theme . '/';
 		$view->themeName    = $theme;
@@ -226,14 +241,15 @@ class Editor extends Base {
 		$this->loadThemeAssets();
 		$urlParams = '';
 		//if admin host is different than site host (for multi site install) use full url including host
-		if ($_SERVER['HTTP_HOST'] !== $this->global['site_url']) {
+		$host = $_SERVER['HTTP_HOST'] . ($this->global['path'] ? '/' . $this->global['path'] : '');
+		if ($host !== $this->global['site_url']) {
 			//$urlPrefix = '//' . $this->global['site_url'];
 			$urlParams = '&site_id=' . $this->global['site_id'];
 		}
 
-		$this->pages($theme, $urlParams);
+		$this->pages(isset($this->request->get['theme']) ? $theme : false, $urlParams);
 
-		$homeUrl      = V_SUBDIR_INSTALL ?: '/';
+		$homeUrl      = (V_SUBDIR_INSTALL ?: '') . '/' . ($this->global['path'] ? $this->global['path'] : '');
 		$url          = sanitizeFileName($this->request->get['url'] ?? $homeUrl, false);
 		$name         = $this->request->get['name'] ?? '';
 		$template     = $this->request->get['template'] ?? ''; //\Vvveb\getUrlTemplate($url) ?? 'index.html';
@@ -245,11 +261,11 @@ class Editor extends Base {
 		$site_name = '';
 		if ($url == $homeUrl && ! $template) {
 			$site = Sites :: getSiteData($this->global['site_id']);
-			$template  = $site['template'] ?: 'index.html';
+			$template  = ($site['template'][$this->global['language_id']] ?? $site['template'][0] ?? '') ?: 'index.html';
 			$site_name = $site['name'];
 		}
 
-		$file         = $template;
+		$file = $template;
 
 		//check if url and template is relative
 		if (strpos($url, '//') !== false && strpos($template, '..') !== false) {
@@ -307,7 +323,7 @@ class Editor extends Base {
 		if ($route && isset($route['module'])) {
 			switch ($route['module']) {
 				case 'product/product/index':
-					$className                  = 'product';
+					$className = 'product';
 
 					if (isset($route['product_id'])) {
 						$current_page['product_id'] = $route['product_id'];
@@ -325,7 +341,7 @@ class Editor extends Base {
 
 				case 'content/post/index':
 				case 'content/page/index':
-					$className               = 'page';
+					$className = 'page';
 
 					if (isset($route['post_id'])) {
 						$current_page['post_id'] = $route['post_id'];
@@ -374,7 +390,7 @@ class Editor extends Base {
 		$current_page += [
 			'name'      => $key,
 			'file'      => $file,
-			'url'       => $url . ($theme ? '?theme=' . $theme : '') . $urlParams,
+			'url'       => $url . (isset($this->request->get['theme']) ? '?theme=' . $theme : '') . $urlParams,
 			'title'     => $name,
 			'folder'    => '',
 			'className' => $className,
@@ -686,7 +702,7 @@ class Editor extends Base {
 			}
 		}
 
-		$this->clearTemplateListCache(sanitizeFileName($this->request->get['theme'] ?? false));
+		$this->clearTemplateListCache($this->request->get['theme'] ?? false);
 		$this->response->setType('json');
 		$this->response->output($message);
 	}
@@ -706,7 +722,7 @@ class Editor extends Base {
 		$theme            = $this->getTheme();
 		$url              = '';
 
-		$file             = sanitizeFileName(str_replace('.html', '', $file)) . '.html';
+		$file             = slugify(sanitizeFileName(str_replace('.html', '', $file))) . '.html';
 		$folder           = trim(sanitizeFileName($folder), '/');
 		$startTemplateUrl = sanitizeFileName($startTemplateUrl);
 
@@ -720,6 +736,11 @@ class Editor extends Base {
 					$default          = $templateType == 'global' ? "content/$type.html" : "content/$slug.html";
 					$default          = sanitizeFileName($default);
 					$template         = $templateType == 'global' && isset($startTemplateUrl) ? $startTemplateUrl : $default;
+					
+					if ($templateType != 'global' ) {
+						$file = $template;
+					}
+					
 					$post             = new PostSQL();
 					$result           = $post->add([
 						'post' => [
@@ -750,6 +771,11 @@ class Editor extends Base {
 					$default          = sanitizeFileName($default);
 					$template         = $templateType == 'global' && isset($startTemplateUrl) ? $startTemplateUrl : $default;
 					$price            = $this->request->post['price'] ?? 0;
+
+					if ($templateType != 'global' ) {
+						$file = $template;
+					}
+
 					$product          = new ProductSQL();
 					$result           = $product->add([
 						'product' => [
@@ -801,11 +827,10 @@ class Editor extends Base {
 
 		if ($startTemplateUrl) {
 			$startTemplate = $themeFolder . DS . $startTemplateUrl;
-
 			if (file_exists($startTemplate)) {
 				if (! ($html = @file_get_contents($startTemplate))) {
 					$text .= sprintf(__('%s is not readable!'), $startTemplate);
-				}
+				} 
 			} else {
 				$text .= sprintf(__('%s does not exist!'), $startTemplate);
 			}
@@ -918,6 +943,8 @@ class Editor extends Base {
 		}
 
 		if (CacheManager::clearCompiledFiles('app', $this->global['site_id'], $theme)) {
+			$this->clearTemplateListCache($this->request->get['theme'] ?? false);
+			
 			$pageCache = new PageCache();
 			$uri       = preg_replace('/\?.+/', '', $uri);
 			$path      = $pageCache->uri($uri);

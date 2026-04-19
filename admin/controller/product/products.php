@@ -157,6 +157,13 @@ class Products extends Listing {
 
 		$options += $this->filter;
 
+		if (isset($this->request->get['filter']['site_id'])) {
+			if ($this->request->get['filter']['site_id']) {
+				//$options['site_id'] = $this->filter['site_id'];
+			} else {
+				unset($options['site_id']);
+			}
+		}
 		$results = $products->getAll($options);
 
 		$defaultTemplate = "product/{$this->type}.html";
@@ -186,14 +193,14 @@ class Products extends Listing {
 				$product['edit-url']      = url(['module' => 'product/product', 'product_id' => $product['product_id'], 'type' => $product['type']]);
 				$product['delete-url']    = url(['module' => 'product/products', 'action' => 'delete'] + $url); // + ['product_id[]' => $product['product_id']]);
 				$product['duplicate-url'] = url(['module' => 'product/products', 'action' => 'duplicate'] + $url); // + ['product_id' => $product['product_id']]);
-				$product['view-url']      = url('product/product/index', $product + $url + ['host' => $this->global['host']]);
+				$product['view-url']      = url('product/product/index', $product + $url + ['host' => $this->global['host'], 'path' => $this->global['path'] ? '/' . $this->global['path'] : null]);
 				$relativeUrl              = url('product/product/index', $product + $url);
 				$product['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($product['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template], false);
 			}
 		}
 
 		$view->set($results);
-		$view->status           = [0 => 'Disabled', 1 => 'Enabled'];
+		$view->status           = [0 => __('Disabled'), 1 => __('Enabled')];
 		$view->filter           = $this->filter;
 		$view->type             = $this->type;
 		$view->limit            = $options['limit'];

@@ -374,6 +374,8 @@ function start() {
 	//start session
 	//Session :: getInstance();
 	$site_id = false;
+	$path    = $_SERVER['REQUEST_URI'] ?? '/';
+	
 	if (isset($_GET['site_id'])) {
 		//check if admin user to allow site id override for editor
 		if ($admin = \Vvveb\System\User\Admin :: current()) {
@@ -381,22 +383,25 @@ function start() {
 		}
 	}
 
-	$site = Sites :: getSiteData($site_id);
-
+	$site = Sites :: getSiteData($site_id, $path);
 
 	if ($site) {
 		define('SITE_URL', $site['host']);
 		define('SITE_ID', $site['site_id'] ?? 1);
+		define('SITE_URI', $site['uri'] ?? '');
+		define('SITE_PATH', $site['path'] ?? '');
 
 		//load plugins first for APP
 		if (APP != 'admin') {
 			Plugins :: loadPlugins(SITE_ID);
 		}
 
-		FrontController::dispatch();
+		FrontController::dispatch($site);
 	} else {
 		define('SITE_URL', $_SERVER['HTTP_HOST'] ?? 'localhost');
 		define('SITE_ID', 1);
+		define('SITE_URI', '');
+		define('SITE_PATH', '');		
 		FrontController::notFound(false, 'Website not found!');
 	}
 }
