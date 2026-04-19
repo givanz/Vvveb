@@ -37,7 +37,6 @@ class Posts extends ComponentBase {
 		'id_manufacturer' => NULL,
 		'order'           => ['url', 'price asc'],
 		'id_category'     => 'url',
-		'id'              => NULL,
 	];
 
 	public $options = [];
@@ -49,7 +48,7 @@ class Posts extends ComponentBase {
 
 		foreach ($results['post'] as $id => &$post) {
 			if (isset($post['images'])) {
-				$post['images'] = json_decode($post['images'], 1);
+				$post['images'] = json_decode($post['images'], true);
 
 				foreach ($post['images'] as &$image) {
 					$image = Images::image($image, 'post');
