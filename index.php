@@ -72,14 +72,16 @@ if (! defined('APP')) {
 
 		if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'install') === false) {
 			//avoid redirect loop
-			die(header("Location: $subdir/install/index.php"));
+			header("Location: $subdir/install/index.php");
+			exit();
 		}
 	}
 } elseif (! is_installed() && (! defined('APP') || APP != 'install')) {
 	defined('APP') || define('APP', 'install');
 
 	if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'install') === false) {
-		die(header("Location: $subdir/install/index.php"));
+		header("Location: $subdir/install/index.php");
+		exit();
 	}
 }
 
