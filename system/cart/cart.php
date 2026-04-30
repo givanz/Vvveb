@@ -396,6 +396,8 @@ class Cart {
 
 		$key = str_replace('"', '', $key);
 
+		$quantity = max(1, $quantity);
+
 		if (isset($this->products[$key])) {
 			$this->products[$key]['quantity'] += $quantity;
 		} else {
