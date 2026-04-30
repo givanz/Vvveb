@@ -30,7 +30,7 @@ use function Vvveb\sanitizeFileName;
 use Vvveb\System\Event;
 
 trait Media {
-	public $uploadDenyExtensions = ['php', 'svg', 'js', 'exe', 'html', 'phtml'];
+	public $uploadDenyExtensions = ['php', 'svg', 'js', 'exe', 'html', 'phtml', 'htaccess'];
 
 	public $uploadDenyMime    = ['image/svg', 'image/svg+xml', 'application/javascript', 'application/x-msdownload'];
 
