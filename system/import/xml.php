@@ -37,13 +37,11 @@ class Xml {
 	private $idsMap;
 
 	private $importXMLOptions = LIBXML_NOBLANKS |
-								LIBXML_COMPACT |
-								LIBXML_NOCDATA |
-								LIBXML_NOENT |
-								LIBXML_NONET |
-								LIBXML_PARSEHUGE |
-								LIBXML_NOWARNING |
-								LIBXML_BIGLINES;
+		LIBXML_COMPACT |
+		LIBXML_NOCDATA |
+		LIBXML_PARSEHUGE |
+		LIBXML_NOWARNING |
+		LIBXML_BIGLINES;
 
 	private $tableOrder = [];
 
@@ -87,7 +85,7 @@ class Xml {
 				$q = '"';
 			}
 
-			$stmt   = $this->db->execute("SELECT * FROM $q$tableName$q", [], []);
+			$stmt   = $this->db->query("SELECT * FROM $q$tableName$q");
 			//$result = $stmt->get_result();
 
 			while ($row = $this->db->fetchArray($stmt)) {
@@ -144,7 +142,7 @@ class Xml {
 
 				break;
 
-			 case LIBXML_ERR_ERROR:
+			case LIBXML_ERR_ERROR:
 				$return .= "Error $error->code: ";
 
 				break;
