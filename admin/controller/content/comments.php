@@ -102,6 +102,12 @@ class Comments extends Listing {
 
 			$url                    = ['module' => "$module/$listController", 'action' => 'save', 'status' => $status, $type . '_id' => $comment[$type . '_id']];
 			$postUrl                = ['module' => "$module/$controller", $type . '_id' => $comment[$type . '_id']];
+			
+			$comment['author-url']  = '';
+			if ($comment['user_id']) {
+				$comment['author-url'] = \Vvveb\url(['module' => 'user/user', 'user_id' => $comment['user_id']]);
+			}
+			
 			$comment['edit-url']    = \Vvveb\url($postUrl);
 			$comment['delete-url']  = \Vvveb\url(['module' => "$module/$listController", 'action' => 'delete'] + $url);
 			$comment['approve-url'] = \Vvveb\url(['newstatus' => 1] + $url);

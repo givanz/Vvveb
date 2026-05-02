@@ -574,7 +574,7 @@ VvvebTheme.Gui = {
 
 		if (commentId > 0) {
 			document.querySelector(".replyto").style.display = "";
-			document.querySelector(".replyto [data-comment-author]").innerHTML = commentAuthor;
+			document.querySelector(".replyto [data-comment-author]").textContent = commentAuthor;
 		} else {
 			document.querySelector(".replyto").style.display = "none";
 		}
