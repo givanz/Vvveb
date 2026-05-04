@@ -239,7 +239,7 @@ function exceptionToArray($exception, $file = false) {
 	$line      = $lineNo;
 	$code      = '';
 
-	if ($file && file_exists($file) && ($codeLines = file($file)) && isset($codeLines[$lineNo])) {
+	if (! defined('CLI') && $file && file_exists($file) && ($codeLines = file($file)) && isset($codeLines[$lineNo])) {
 		$codeLines[$lineNo] = preg_replace("/\n$/","\t // <==\n", $codeLines[$lineNo]);
 		$lines              = array_slice($codeLines, $lineNo - 7, 14);
 		$line               = implode("\n", array_slice($codeLines, $lineNo, 1));
@@ -401,7 +401,7 @@ function start() {
 		define('SITE_URL', $_SERVER['HTTP_HOST'] ?? 'localhost');
 		define('SITE_ID', 1);
 		define('SITE_URI', '');
-		define('SITE_PATH', '');		
+		define('SITE_PATH', '');
 		FrontController::notFound(false, 'Website not found!');
 	}
 }
