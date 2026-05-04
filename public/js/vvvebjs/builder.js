@@ -1888,7 +1888,7 @@ Vvveb.Builder = {
 			// uncomment to use outerHTML, not recommended
 			//let text = selectedEl.outerHTML;
 			
-			fetch(namespaceUrl + "/translate&action=get", {method: "POST",  body: new URLSearchParams({text, csrf: document.getElementById('csrf')?.value})})
+			fetch(namespaceUrl + "/translate&action=get", {method: "POST",  body: new URLSearchParams({text, csrf: document.getElementById('csrf')?.value}), credentials: 'include'})
 			.then((response) => {
 				if (!response.ok) { throw new Error(response) }
 				return response.json()
@@ -2033,10 +2033,19 @@ Vvveb.Builder = {
 				}
 			}
 			
-			if (after) {
-				element.after(node);
+			if (element) {
+				if (after) {
+					element.after(node);
+				} else {
+					element.append(node);
+				}
 			} else {
-				element.append(node);
+				let newsection = Vvveb.Builder.frameBody.querySelector('newsection')
+				if (newsection) {
+					newsection.before(node);
+				} else {
+					Vvveb.Builder.frameBody.append(node);
+				}
 			}
 			
 			if (component.afterDrop) {
@@ -2310,7 +2319,7 @@ Vvveb.Builder = {
 		
 		let data = {type, name, html:element.outerHTML, csrf: document.getElementById('csrf')?.value};
 		
-		fetch(saveReusableUrl, {method: "POST",  body: new URLSearchParams(data)})
+		fetch(saveReusableUrl, {method: "POST",  body: new URLSearchParams(data), credentials: 'include'})
 		.then((response) => {
 			if (!response.ok) { throw new Error(response) }
 			return response.json()
@@ -2354,7 +2363,8 @@ Vvveb.Builder = {
 		return fetch(saveUrl, {
 			method: "POST",  
 			headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-			body:  nestedFormData(data)
+			body:  nestedFormData(data),
+			credentials: 'include'
 		})
 		.then((response) => {
 			if (!response.ok) {
@@ -2378,7 +2388,7 @@ Vvveb.Builder = {
 			let message = err;
 			try {
 				let [response, responseInText] = err;
-				let message = responseInText ?? response.statusText ?? "Error uploading!";
+				message = responseInText ?? response.statusText ?? "Error uploading!";
 			} catch (e) {
 			}
 
@@ -2387,7 +2397,9 @@ Vvveb.Builder = {
 				displayToast("danger", "Error", message);
 			});
 
-			displayToast("danger", "Error", message.substr(0, 200));
+			if (typeof message == "string") {
+				displayToast("danger", "Error", message.substr(0, 200));
+			}
 		});
 	},
 	
@@ -2717,7 +2729,22 @@ Vvveb.Gui = {
 				bg = "danger";
 			}
 			
-			displayToast(bg, "Save", data.message ?? data);
+			if (typeof data.message === "string") {
+				displayToast(bg, "Save", data.message ?? data);
+			} else if (Array.isArray(data.message)) {
+				for (let message of data.message) {
+					console.log(message);
+					if (message.success || data == "success") {	
+						bg = "success"
+					} else {
+						bg = "danger";
+					}
+					
+					displayToast(bg, "Save", message.message);
+				}
+			} else if (typeof data === "string") {
+				displayToast(bg, "Save", data);
+			}
 
 			const offcanvas = document.getElementById('save-offcanvas');
 			if (offcanvas) {
@@ -2850,7 +2877,7 @@ Vvveb.Gui = {
 		let submitForm = function(e) {
 
 			let data = {};
-			this.querySelectorAll("input[type=text],input[type=checkbox]:checked,input[type=radio]:checked,input[name=image],textarea,select:not(:disabled)").forEach( (el, i) => {
+			this.querySelectorAll("input[type=text],input[type=number],input[type=checkbox]:checked,input[type=radio]:checked,input[name=image],textarea,select:not(:disabled)").forEach( (el, i) => {
 				if (el.offsetParent || el.name == 'image') data[el.name] = el.value;
 			});			
 
@@ -2866,7 +2893,9 @@ Vvveb.Gui = {
 				data['className'] = 'page';
 			}
 
-			data['file'] = data['file'] ? data['file'] : '';
+			data['file']             = data['file'] ? data['file'] : '';
+			data['filename']         = data['filename'] ? data['filename'] : data['file'];
+			data['startTemplateUrl'] = data['startTemplateUrl'] ? data['startTemplateUrl'] : '';
 			e.preventDefault();
 
 			return Vvveb.Builder.saveAjax(data, this.action, function (savedData) {
@@ -2885,6 +2914,17 @@ Vvveb.Gui = {
 					Vvveb.FileManager.loadPage(data.name);
 					Vvveb.FileManager.scrollToPage(page);
 					bsModal.hide();
+
+		
+					let pageUrl = window.location.pathname + "?module=editor/editor&template=" + data["file"] + "&url=" + data["url"] + "&name=" + data["title"];
+					if (data["post_id"]) {
+						pageUrl += "&post_id=" + data["post_id"];
+					}
+					if (data["product_id"]) {
+						pageUrl += "&product_id=" + data["product_id"];
+					}
+					
+					window.history.pushState({name:data.name}, null, pageUrl); 
 				} else {
 					let message = savedData?.message ?? "Error saving!";
 					displayToast("danger", "Error", message);
@@ -3613,7 +3653,12 @@ Vvveb.SectionList = {
 							Vvveb.Builder.frameBody.append(node);
 						}
 					} else {
-						Vvveb.Builder.frameBody.append(node);
+						let newsection = Vvveb.Builder.frameBody.querySelector('newsection')
+						if (newsection) {
+							newsection.before(node);
+						} else {
+							Vvveb.Builder.frameBody.append(node);
+						}
 					}
 				}
 				
@@ -4297,8 +4342,7 @@ Vvveb.FileManager = {
 	},
 	
 	loadPage: function(name, allowedComponents = false, disableCache = true, loadComponents = false) {
-		let data = this.pages[name];
-		let url = data['url'] ?? "";
+		let url = this.pages[name]['url'] ?? "";
 		
 		if (!url) {
 			return;
@@ -4453,7 +4497,6 @@ Vvveb.Revisions = {
 		document.querySelector(".revisions-dropdown").addEventListener("click", function (event) {
 			let element = event.target.closest(".btn-revision-load");
 			if (element) {
-
 				let file = element.dataset.file;
 
 				if (file) {
@@ -4547,10 +4590,13 @@ Vvveb.Server = {
 		data.append("_component_content", this.content);
 		data.append("html", Vvveb.Builder.getHtml());
 		data.append("csrf", document.getElementById('csrf')?.value);
+		data.append("user_key", userKey);
+		data.append("admin_id", adminId);
 		
 		fetch(this.url + '&_component_ajax=' + this.component + '&_component_id=' + this.index + '&_server_template=' + this.userServerTemplate + '&r=true',{
 			method: 'POST', 
-			body: data
+			body: data,
+			credentials: 'include'
 		})
 		.then((response) => {
 			if (!response.ok) { throw new Error(response) }
@@ -4899,10 +4945,14 @@ Vvveb.NewSection = {
 		}
 		
 		this.container = generateElements(this.template)[0];
-		if (position == 'after') {
-			lastSection.after(this.container);
+		if (lastSection) {
+			if (position == 'after') {
+				lastSection.after(this.container);
+			} else {
+				lastSection.before(this.container);
+			}
 		} else {
-			lastSection.before(this.container);
+			Vvveb.Builder.frameBody.append(this.container)
 		}
 		
 		return this.container;
