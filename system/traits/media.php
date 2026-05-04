@@ -30,11 +30,13 @@ use function Vvveb\sanitizeFileName;
 use Vvveb\System\Event;
 
 trait Media {
-	public $uploadDenyExtensions = ['php', 'svg', 'js', 'exe', 'html', 'phtml', 'htaccess'];
+	public $uploadDenyExtensions = ['php', 'svg', 'js', 'exe', 'html', 'phtml', 'htaccess', '.phar'];
 
 	public $uploadDenyMime    = ['image/svg', 'image/svg+xml', 'application/javascript', 'application/x-msdownload'];
 
 	public $stripMetadataMime = ['image/jpg', 'image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+
+	public $denySignatures = ['<?php'];
 
 	//protected $uploadAllowExtensions = ['ico','jpg','jpeg','png','gif','webp', 'mp4', 'mkv', 'mov'];
 
@@ -72,6 +74,20 @@ trait Media {
 		$this->view->postMaxSize       = parseQuantity(ini_get('post_max_size'));
 	}
 
+	protected function isExecutableFile($file) {
+		if (file_exists($file)) {
+			$header = file_get_contents($file, false, null, 0, 16);
+			if ($header) {
+				foreach ($this->denySignatures as $signature) {
+					if (strpos($header, $signature) !== false) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 	function upload() {
 		$files      = $this->request->files['files'] ?? [];
 		$overwrite  = $this->request->post['overwrite'] ?? false;
@@ -89,6 +105,10 @@ trait Media {
 				$path      = sanitizeFileName($this->request->post['mediaPath'] ?? '');
 				$fileName  = sanitizeFileName($files['name'][$count]);
 
+				if (! $fileName) {
+					continue;
+				}
+
 				if (V_SUBDIR_INSTALL && strpos($path, V_SUBDIR_INSTALL) === 0) {
 					//$path  = str_replace(V_SUBDIR_INSTALL, '', $path);
 					$path  = substr_replace($path, '', 0, strlen(V_SUBDIR_INSTALL));
@@ -102,28 +122,60 @@ trait Media {
 					$success = true;
 				} else {
 					$message = fileUploadErrMessage($files['error'][$count]);
+					$response[] = ['success' => $success, 'message' => $message, 'file' => $fileName];
+					continue;
 				}
 
 				if (isset($this->uploadDenyExtensions) && in_array($extension, $this->uploadDenyExtensions)) {
-					$message .= __('File type not allowed!');
+					$message .= sprintf(__('File type %s not allowed!'), $extension);
 					$success = false;
+					$response[] = ['success' => $success, 'message' => $message, 'file' => $fileName];
+					continue;
 				}
 
 				if (isset($this->uploadDenyMime) && in_array($mimeType, $this->uploadDenyMime)) {
-					$message .= __('File type not allowed!');
+					$message .= sprintf(__('File type %s not allowed!'), $mimeType);
 					$success = false;
+					$response[] = ['success' => $success, 'message' => $message, 'file' => $fileName];
+					continue;
 				}
 
 				if (isset($this->stripMetadataMime) && in_array($mimeType, $this->stripMetadataMime)) {
 					$files['tmp_name'][$count];
 				}
 
+				//deny hidden files
+				if ($fileName[0] == '.') {
+					$message .= __('Invalid upload!');
+					$success = false;
+					$response[] = ['success' => $success, 'message' => $message, 'file' => $fileName];
+					continue;
+				}
+
+				//check if the path is inside the allowed path
+				$destination = realpath($this->dirMedia . DS . $path . DS);
+				if (strncmp($destination, $this->dirMedia, strlen($this->dirMedia) - 1) !== 0) {
+					$message .= __('Invalid upload!');
+					$success = false;
+					$response[] = ['success' => $success, 'message' => $message, 'file' => $fileName];
+					continue;
+				}
+
+				//check if it's not a php file disguised as an image
+				if ($this->isExecutableFile($files['tmp_name'][$count])) {
+					$message .= sprintf(__('File type %s not allowed!'), 'PHP');
+					$success = false;
+					$response[] = ['success' => $success, 'message' => $message, 'file' => $fileName];
+					continue;
+				}
+
 				$origFilename = $fileName;
 				$i            = 1;
 
 				if ($success) {
+					$destination .= DS . $fileName;
+					$message .= $destination;
 					if ($overwrite) {
-						$destination = $this->dirMedia . $path . DS . $fileName;
 					} else {
 						while (file_exists($destination = $this->dirMedia . $path . DS . $fileName) && ($i++ < 5)) {
 							$fileName = rand(0, 10000) . '-' . $origFilename;
@@ -134,7 +186,7 @@ trait Media {
 						if (isset($this->request->post['onlyFilename'])) {
 							$return = $fileName;
 						} else {
-							$return = $destination;
+							$return = $path . DS . $fileName;
 						}
 						$message = __('File uploaded successfully!');
 					} else {
