@@ -57,14 +57,10 @@ class File {
 		$namespace  = $this->validateNamespace($namespace);
 		$key        = $this->validateNamespace($key);
 
-		$files = glob($this->cacheDir . $namespace . '.' . $this->cachePrefix . basename($key) . '.*');
-
-		if ($files) {
-			if (file_exists($files[0])) {
-				$data = file_get_contents($files[0]);
-
-				return json_decode($data, true);
-			}
+		$file = $this->cacheDir . $namespace . '.' . $this->cachePrefix . basename($key);
+		if (file_exists($file)) {
+			$data = file_get_contents($file);
+			return json_decode($data, true);
 		}
 
 		return null;
@@ -126,7 +122,7 @@ class File {
 		}
 
 		if ($key) {
-			$name .= $this->cachePrefix . basename($key) . '.*';
+			$name .= $this->cachePrefix . basename($key) . '*';
 		} else {
 			$name .= '*';
 		}
