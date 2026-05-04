@@ -202,6 +202,7 @@ class Editor extends Base {
 				$posts["$slug-page"] = [
 					'name'      => "$slug-page",
 					'file'      => $post['template'] ? $post['template'] : 'content/page.html',
+					'filename'  => $post['template'] ? $post['template'] : 'content/page.html',
 					'url'       => $url . ($theme ? '?theme=' . $theme : '') . $urlParams,
 					'title'     => htmlspecialchars($post['name']),
 					'post_id'   => $post['post_id'],
@@ -244,7 +245,7 @@ class Editor extends Base {
 		$host = $_SERVER['HTTP_HOST'] . ($this->global['path'] ? '/' . $this->global['path'] : '');
 		if ($host !== $this->global['site_url']) {
 			//$urlPrefix = '//' . $this->global['site_url'];
-			$urlParams = '&site_id=' . $this->global['site_id'];
+			$urlParams = (isset($this->request->get['theme']) ? '&' : '?') . 'site_id=' . $this->global['site_id'];
 		}
 
 		$this->pages(isset($this->request->get['theme']) ? $theme : false, $urlParams);
@@ -287,8 +288,10 @@ class Editor extends Base {
 					}
 				} else {
 					//check if theme template exists
-					if (! file_exists(DIR_THEMES . $theme . DS . $url)) {
-						$this->notFound(sprintf(__('%s does not exist!'), $url));
+					$relative = preg_replace('@.+themes/[^\/]+/@', '', $url);
+
+					if (! file_exists(DIR_THEMES . $theme . DS . $relative)) {
+						$this->notFound(sprintf(__('%s does not exist!'), $relative));
 						exit();
 					}
 				}
@@ -316,7 +319,7 @@ class Editor extends Base {
 				}
 			}
 		} else {
-			$this->notFound();
+			$this->notFound(sprintf(__('%s does not exist!'), __('template')));
 			exit();
 		}
 
@@ -390,6 +393,7 @@ class Editor extends Base {
 		$current_page += [
 			'name'      => $key,
 			'file'      => $file,
+			'filename'  => $file,
 			'url'       => $url . (isset($this->request->get['theme']) ? '?theme=' . $theme : '') . $urlParams,
 			'title'     => $name,
 			'folder'    => '',
@@ -398,6 +402,12 @@ class Editor extends Base {
 		];
 
 		$view->pages = [$key => $current_page] + $view->pages;
+
+		//encrypted key for component render requests
+		$key                          = \Vvveb\getConfig('app.key');
+		$keyData                      = $this->global['admin_id'] . '-' . $this->global['site_id'];
+		$view->userKey                = \Vvveb\encrypt($key, $keyData);
+		$view->adminId                = $this->global['admin_id'];
 
 		$admin_path                    = \Vvveb\adminPath();
 		$mediaControllerPath           = $admin_path . 'index.php?module=media/media';
@@ -708,7 +718,7 @@ class Editor extends Base {
 	}
 
 	function save() {
-		$file             = $this->request->post['file'] ?? '';
+		$file             = $this->request->post['filename'] ?? '';
 		$folder           = $this->request->post['folder'] ?? '';
 		$startTemplateUrl = $this->request->post['startTemplateUrl'] ?? null;
 		$name             = $this->request->post['name'] ?? '';
@@ -720,11 +730,14 @@ class Editor extends Base {
 		$menu_id          = $this->request->post['menu_id'] ?? false;
 		$uri              = $this->request->post['url'] ?? '/';
 		$theme            = $this->getTheme();
-		$url              = '';
-
-		$file             = slugify(sanitizeFileName(str_replace('.html', '', $file))) . '.html';
 		$folder           = trim(sanitizeFileName($folder), '/');
 		$startTemplateUrl = sanitizeFileName($startTemplateUrl);
+		$success          = false;
+		$url              = '';
+
+		if ($file) {
+			$file = sanitizeFileName(str_replace('.html', '', $file)) . '.html';
+		}
 
 		if ($type && $name) {
 			$slug    = slugify($name);
@@ -733,16 +746,13 @@ class Editor extends Base {
 			switch ($type) {
 				case 'page':
 				case 'post':
-					$default          = $templateType == 'global' ? "content/$type.html" : "content/$slug.html";
-					$default          = sanitizeFileName($default);
-					$template         = $templateType == 'global' && isset($startTemplateUrl) ? $startTemplateUrl : $default;
-					
-					if ($templateType != 'global' ) {
-						$file = $template;
-					}
-					
-					$post             = new PostSQL();
-					$result           = $post->add([
+					$default  = $templateType == 'global' ? "content/$type.html" : "content/$slug.html";
+					$default  = sanitizeFileName($default);
+					$template = ($templateType == 'global' && isset($startTemplateUrl) && $startTemplateUrl) ? $startTemplateUrl : $default;
+					$file     = $template;
+
+					$post = new PostSQL();
+					$result = $post->add([
 						'post' => [
 							'template'     => $template,
 							'type'         => $type,
@@ -767,14 +777,11 @@ class Editor extends Base {
 					break;
 
 				case 'product':
-					$default          = $templateType == 'global' ? "product/$type.html" : "product/$slug.html";
-					$default          = sanitizeFileName($default);
-					$template         = $templateType == 'global' && isset($startTemplateUrl) ? $startTemplateUrl : $default;
-					$price            = $this->request->post['price'] ?? 0;
-
-					if ($templateType != 'global' ) {
-						$file = $template;
-					}
+					$default  = $templateType == 'global' ? "product/$type.html" : "product/$slug.html";
+					$default  = sanitizeFileName($default);
+					$template = $templateType == 'global' && isset($startTemplateUrl) ? $startTemplateUrl : $default;
+					$price    = $this->request->post['price'] ?? 0;
+					$file     = $template;
 
 					$product          = new ProductSQL();
 					$result           = $product->add([
@@ -811,8 +818,8 @@ class Editor extends Base {
 
 		$view         = View::getInstance();
 		$view->noJson = true;
-		$success      = false;
 		$text      		 = '';
+		$messages = [];
 
 		$baseUrl      = PUBLIC_PATH . 'themes/' . $theme . '/' . ($folder ? $folder . '/' : '');
 		$themeFolder  = $this->getThemeFolder();
@@ -821,18 +828,20 @@ class Editor extends Base {
 
 		//if more than one level deep add one level up for each level
 		$fileBase = ($folder ? $folder . '/' : '') . $file;
-		while (($pos = strpos($fileBase, '/', $pos + 1)) !== false) {
-			$relativeBase .= '../';
+		if ($fileBase) {
+			while (($pos = strpos($fileBase, '/', $pos + 1)) !== false) {
+				$relativeBase .= '../';
+			}
 		}
 
 		if ($startTemplateUrl) {
 			$startTemplate = $themeFolder . DS . $startTemplateUrl;
 			if (file_exists($startTemplate)) {
 				if (! ($html = @file_get_contents($startTemplate))) {
-					$text .= sprintf(__('%s is not readable!'), $startTemplate);
-				} 
+					$messages[] = ['success' => false, 'message' => sprintf(__('%s is not readable!'), $startTemplate)];
+				}
 			} else {
-				$text .= sprintf(__('%s does not exist!'), $startTemplate);
+				$messages[] = ['success' => false, 'message' => sprintf(__('%s does not exist!'), $startTemplate)];
 			}
 
 			$html = preg_replace('@<base\s+href[^>]+>@', '<base href="' . $relativeBase . '">', $html);
@@ -842,15 +851,14 @@ class Editor extends Base {
 			$url = "$baseUrl$file";
 		}
 
-		$data = compact('file', 'name', 'url', 'startTemplateUrl');
 
 		if ($elements) {
 			if ($this->saveElements($elements)) {
 				$success = true;
-				$text    = __('Elements saved!') . "\n";
+				$messages[] = ['success' => true, 'message' => __('Elements saved!')];
 			} else {
 				$success = false;
-				$text    = __('Error saving elements!') . "\n";
+				$messages[] = ['success' => false, 'message' => __('Error saving elements!')];
 			}
 		}
 
@@ -866,18 +874,18 @@ class Editor extends Base {
 			$fileName = $themeFolder . DS . ($folder ? $folder . DS : '') . $file;
 		}
 
-		if (! $startTemplateUrl && ! $isPlugin) {
+		if (! $startTemplateUrl && ! $isPlugin && $file) {
 			$backupFolder = $themeFolder . DS . 'backup' . DS;
 
 			if (is_writable($backupFolder)) {
-				if ($this->backup($file)) {
+				if ($this->backup(($folder ? $folder . DS : '') . $file)) {
 				} else {
 					$success = false;
-					$text .= __('Error saving revision!') . "\n";
+					$messages[] = ['success' => false, 'message' =>  __('Error saving revision!')];
 				}
 			} else {
 				$success = false;
-				$text .= sprintf(__('%s folder not writable!'), $theme . DS . 'backup') . "\n";
+				$messages[] = ['success' => false, 'message' => sprintf(__('%s folder not writable!'), $theme . DS . 'backup')];
 			}
 		}
 
@@ -897,61 +905,65 @@ class Editor extends Base {
 			$results = $menus->addMenuItem($menuData);
 
 			if ($results) {
-				$text .= "\n" . __('Menu item added!');
+				$messages[] = ['success' => true, 'message' => __('Menu item added!')];
 			}
 		}
 
-		if ($html) {
-			//reset base href so that html file can be loaded properly in browser directly from folder
-			//$html = preg_replace('@<base href[^>]+>@', '', $html);
-			$html = preg_replace('@<base href[^>]+>@', '<base href="' . $relativeBase . '">', $html);
-			//remove empty value for data attributes
-			$html = preg_replace('/(data-[\w\-]+)="\s*"/','$1', $html);
+		$data = compact('file', 'name', 'url', 'startTemplateUrl');
 
-			if (@file_put_contents($fileName, $html)) {
-				$globalOptions = [];
-				//keep css inline for email templates
-				if (strpos($fileName, '/email/') !== false) {
-					$globalOptions['inline-css'] = true;
-				}
+		if ($file) {
+			if ($html) {
+				//reset base href so that html file can be loaded properly in browser directly from folder
+				//$html = preg_replace('@<base href[^>]+>@', '', $html);
+				$html = preg_replace('@<base href[^>]+>@', '<base href="' . $relativeBase . '">', $html);
+				//remove empty value for data attributes
+				$html = preg_replace('/(data-[\w\-]+)="\s*"/','$1', $html);
 
-				$html = $this->saveGlobalElements($html, $globalOptions);
+				if (@file_put_contents($fileName, $html)) {
+					$globalOptions = [];
+					//keep css inline for email templates
+					if (strpos($fileName, '/email/') !== false) {
+						$globalOptions['inline-css'] = true;
+					}
 
-				$success = true;
-				$text .= __('File saved!');
-			} else {
-				$success = false;
-				if (! is_writable($fileName)) {
-					$text .= sprintf(__('%s is not writable!'), $file);
+					$html = $this->saveGlobalElements($html, $globalOptions);
+
+					$success = true;
+					$messages[] = ['success' => true, 'message' =>  __('File saved!')];
 				} else {
-					$text .= sprintf(__('Error saving %s!'), $file);
+					$success = false;
+					if (! is_writable($fileName)) {
+						$messages[] = ['success' => false, 'message' => sprintf(__('%s is not writable!'), $file)];
+					} else {
+						$messages[] = ['success' => false, 'message' => sprintf(__('Error saving %s!'), $file)];
+					}
 				}
+			} else {
+				$messages[] = ['success' => false, 'message' =>  __('Page html empty!')];
 			}
-		} else {
-			$text .= __('Page html empty!');
 		}
 
 		$cssFile = DS . 'css' . DS . 'custom.css';
 
 		//try to create custom.css if it doesn't exist
 		if (! file_exists($themeFolder . $cssFile) && ! touch($themeFolder . $cssFile)) {
-			$text .= '<br/>' . sprintf(__('Can not create file %s!'), $theme . $cssFile);
+			$messages[] = ['success' => false, 'message' => sprintf(__('Can not create file %s!'), $theme . $cssFile)];
 		} else {
 			if (! is_writable($themeFolder . $cssFile)) {
-				$text .= '<br/>' . sprintf(__('%s is not writable!'), $theme . $cssFile);
+				$messages[] = ['success' => false, 'message' => sprintf(__('%s is not writable!'), $theme . $cssFile)];
 			}
 		}
 
 		if (CacheManager::clearCompiledFiles('app', $this->global['site_id'], $theme)) {
 			$this->clearTemplateListCache($this->request->get['theme'] ?? false);
-			
+
 			$pageCache = new PageCache();
 			$uri       = preg_replace('/\?.+/', '', $uri);
 			$path      = $pageCache->uri($uri);
 			$pageCache->purge($path);
 		}
 
-		$data += ['success' => $success, 'message' => $text];
+		$data += ['success' => $success, 'message' => $messages];
 
 		$this->response->setType('json');
 		$this->response->output($data);

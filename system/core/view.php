@@ -101,13 +101,16 @@ class View {
 		$this->templatePath = $themePath; //\Vvveb\config($this->app . '.theme', 'default') . DS;
 
 		if (isset($_REQUEST['_component_ajax']) && $this->isEditor) {
-			$this->component        = \Vvveb\filter('/[a-z\-]+/', $_REQUEST['_component_ajax'], 80);
-			$this->componentCount   = \Vvveb\filter('/\d+/', $_REQUEST['_component_id'],  4);
-			//$this->componentCount   = 0;
-			//if (isset($_REQUEST['_server_template'])) {
-			$this->componentContent = $_POST['_component_content'] ?? '';
-			$this->html             = $_POST['html'] ?? '';
-			//}
+			//check if admin to allow override for editor
+			if ($admin = \Vvveb\System\User\Admin :: current()) {
+				$this->component        = \Vvveb\filter('/[a-z\-]+/', $_REQUEST['_component_ajax'], 80);
+				$this->componentCount   = \Vvveb\filter('/\d+/', $_REQUEST['_component_id'] ?? 0,  4);
+
+				$this->componentContent = $_POST['_component_content'] ?? '';
+				$this->html             = $_POST['html'] ?? '';
+			} else {
+				die('Invalid request!');
+			}
 		}
 
 		$selector = $count = null;
