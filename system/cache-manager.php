@@ -113,6 +113,7 @@ class CacheManager {
 	public static function delete($namespace = '') {
 		self :: clearModelCache($namespace);
 		self :: clearObjectCache($namespace);
+		self :: clearFrontend();
 		self :: clearCompiledFiles($namespace);
 		self :: clearPageCache();
 
