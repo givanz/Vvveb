@@ -101,10 +101,18 @@ class View {
 		$this->templatePath = $themePath; //\Vvveb\config($this->app . '.theme', 'default') . DS;
 
 		if (isset($_REQUEST['_component_ajax']) && $this->isEditor) {
-			//check if admin to allow override for editor
-			if ($admin = \Vvveb\System\User\Admin :: current()) {
+			//check if user key is correct to allow override for editor
+			if (($admin = \Vvveb\System\User\Admin :: current()) && ($userKey = $_POST['user_key'] ?? '') && ($adminId = $_POST['admin_id'] ?? '')) {
+				$correctKey   = $adminId . '-' . SITE_ID;
+				$key          = \Vvveb\getConfig('app.key');
+				$decriptedKey = \Vvveb\decrypt($key, $userKey);
+
+				if (($admin['admin_id'] != $adminId)|| $decriptedKey != $correctKey) {
+					die('Invalid user key!');
+				}
+
 				$this->component        = \Vvveb\filter('/[a-z\-]+/', $_REQUEST['_component_ajax'], 80);
-				$this->componentCount   = \Vvveb\filter('/\d+/', $_REQUEST['_component_id'] ?? 0,  4);
+				$this->componentCount   = \Vvveb\filter('/\d+/', $_REQUEST['_component_id'],  4);
 
 				$this->componentContent = $_POST['_component_content'] ?? '';
 				$this->html             = $_POST['html'] ?? '';
