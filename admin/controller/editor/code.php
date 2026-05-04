@@ -31,7 +31,7 @@ use Vvveb\System\User\Admin;
 class Code extends Base {
 	use MediaTrait;
 
-	protected $saveDenyExtensions = ['php', 'tpl'];
+	protected $saveDenyExtensions = ['php', 'tpl', 'svg', 'js', 'exe', 'html', 'phtml', 'htaccess', 'phar'];
 
 	function dirForType($type) {
 		switch ($type) {
@@ -59,7 +59,7 @@ class Code extends Base {
 
 	function init() {
 		$type           = $this->request->get['type'] ?? false;
-		$this->dirMedia         = $this->dirForType($type);
+		$this->dirMedia = $this->dirForType($type);
 
 		return parent::init();
 	}
@@ -93,45 +93,63 @@ class Code extends Base {
 		$file = preg_replace("@^[\/]public@", '', $file);
 
 		if ($type == 'plugins') {
-			$file = DIR_PLUGINS . preg_replace("@^[\/]plugins[\/]@", '', $file);
+			$dir  = DIR_PLUGINS;
+			$file = preg_replace("@^[\/]plugins[\/]@", '', $file);
 		} else {
 			if ($type == 'themes') {
-				$file = DIR_THEMES . preg_replace("@^[\/]themes[\/]@", '', $file);
+				$dir  = DIR_THEMES;
+				$file = preg_replace("@^[\/]themes[\/]@", '', $file);
 			} else {
-				$file = DIR_PUBLIC . $file;
+				$dir  = DIR_PUBLIC;
 			}
 		}
 
+		$file = $dir . $file;
 		$file = sanitizeFileName($file);
+
+		if (strncmp(realpath($file), $dir, strlen($dir)) !== 0) {
+			return false;
+		}
 
 		return $file;
 	}
 
 	function save() {
-		$type    = $this->request->get['type'];
-		$file    = $this->request->get['file'];
-		$content = $this->request->post['content'];
-		$file    = $this->sanitizeFileName($file, $type);
+		$type     = $this->request->get['type'];
+		$filename = $this->request->get['file'];
+		$content  = $this->request->post['content'];
+		$file     = $this->sanitizeFileName($filename, $type);
 
-		$message = ['success' => false, 'message' => sprintf(__('Error saving: %s!'), $file)];
+		$success = false;
+		$message = sprintf(__('Error saving: %s!'), $filename);
 
-		$extension = strtolower(substr($file, strrpos($file, '.') + 1));
+		if ($file) {
+			$extension = strtolower(substr($file, strrpos($file, '.') + 1));
 
-
-		if (in_array($extension, $this->saveDenyExtensions) && (($admin = Admin::current()) && ! in_array($admin['role'], ['super_admin', 'admin']))) {
-			$message = ['success' => false, 'message' => sprintf(__('Saving not allowed for file type %s for this role!'), trim($extension, '.'))];
-		} else {
-			if (! is_writable($file)) {
-				$message = ['success' => false, 'message' => sprintf(__('File not writable: %s Check if file has write permission.'), $file)];
+			if (in_array($extension, $this->saveDenyExtensions) && (($admin = Admin::current()) && ! in_array($admin['role'], ['super_admin', 'admin']))) {
+				$message = sprintf(__('Saving not allowed for file type %s for this role!'), trim($extension, '.'));
+				$success = false;
 			} else {
-				if (file_put_contents($file, $content)) {
-					$message = ['success' => true, 'message' => __('File saved!')];
+				if ($extension == 'php' || $this->isExecutableFile($file)) {
+					$message .= sprintf(__('File type %s not allowed!'), 'PHP');
+					$success = false;
+				} else {
+					if (! is_writable($file)) {
+						$message = sprintf(__('File not writable: %s Check if file has write permission.'), $filename);
+						$success = false;
+					} else {
+						if (file_put_contents($file, $content)) {
+							$message = __('File saved!');
+							$success = true;
+						}
+					}
 				}
 			}
 		}
 
+		$output = ['success' => $success, 'message' => $message];
 		$this->response->setType('json');
-		$this->response->output($message);
+		$this->response->output($output);
 	}
 
 	function loadFile() {
