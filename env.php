@@ -34,7 +34,7 @@ define('PAGE_CACHE', true);
 Disable on production to hide error messages, if enabled it will show detailed error messages 
 Warning: Enabling debug will decrease performance
 */
-defined('DEBUG') || define('DEBUG', true);
+defined('DEBUG') || define('DEBUG', false);
 defined('VTPL_DEBUG') || define('VTPL_DEBUG', false);
 defined('GETTEXT') || define('GETTEXT', true);
 

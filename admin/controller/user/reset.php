@@ -25,6 +25,7 @@ namespace Vvveb\Controller\User;
 use function Vvveb\__;
 use function Vvveb\email;
 use Vvveb\System\Functions\Str;
+use Vvveb\System\Locale;
 use Vvveb\System\Sites;
 use Vvveb\System\User\Admin;
 use function Vvveb\url;
