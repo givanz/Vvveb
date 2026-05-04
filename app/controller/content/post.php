@@ -32,6 +32,7 @@ use Vvveb\System\Core\FrontController;
 use Vvveb\System\Event;
 use Vvveb\System\Locale;
 use Vvveb\System\User\Admin;
+use function Vvveb\truncateWords;
 
 class Post extends Base {
 	public $type = 'post';
@@ -52,6 +53,8 @@ class Post extends Base {
 		$slug       = $this->request->get['slug'] ?? '';
 		$type       = $this->request->get['type'] ?? null;
 		$created_at = $this->request->get['created_at'] ?? ''; //revision preview
+		$content    = [];
+		$languageContent = [];
 
 		//check for custom post or product
 		if ($type) {
@@ -81,7 +84,6 @@ class Post extends Base {
 
 			$class                           = __NAMESPACE__ . '\\' . ucfirst($this->type); //__CLASS__ is always Post
 			list($content, $language, $slug) = Event :: trigger($class,__FUNCTION__, $content, $language, $slug);
-			$languageContent = [];
 
 			if ($content) {
 				if (isset($content[$language])) {
@@ -139,8 +141,27 @@ class Post extends Base {
 				}
 
 				$languageContent['title'] = $languageContent['name'];
-				if (isset($this->global['site']['description']['title'])) {
-					$languageContent['title'] = $languageContent['title'] . ' - ' . $this->global['site']['description']['title'];
+
+				//make sure title and desc don't exceed recommended seo limits
+				$titleLen = strlen($languageContent['title']);
+				if ($titleLen > 70) {
+					$languageContent['title'] = truncateWords($languageContent['title'], 70);
+				} else {
+					if (isset($this->global['site']['description']['title']) &&
+						($siteTitleLen = strlen($this->global['site']['description']['title'])) &&
+						($titleLen + $siteTitleLen) < 70) {
+						$languageContent['title'] = $languageContent['title'] . ' - ' . $this->global['site']['description']['title'];
+					}
+				}
+
+				if ($languageContent['meta_description']) {
+					$metaLen = strlen($languageContent['meta_description']);
+					if ($metaLen > 70) {
+						$languageContent['meta_description'] = truncateWords($languageContent['meta_description'], 160);
+					}
+				} else {
+					$excerpt = ($languageContent['excerpt'] ?? '') ?: $languageContent['content'];
+					$languageContent['meta_description'] = truncateWords(strip_tags($excerpt), 160);
 				}
 
 				list($content, $languageContent, $language, $slug) = Event :: trigger($class, __FUNCTION__ . ':after', $content, $languageContent, $language, $slug);
@@ -169,11 +190,10 @@ class Post extends Base {
 					return $this->notFound(true, ['message' => $error, 'title' => $error]);
 				}
 			}
-
-			$this->view->post    = $languageContent;
-			$this->view->content = $content;
 		}
 
+		$this->view->post    = $languageContent;
+		$this->view->content = $content;
 		$this->view->default_comment_status = $this->global['site']['default_comment_status'] ?? false;
 		$this->view->anonymous_comments = $this->global['site']['anonymous_comments'] ?? false;
 	}

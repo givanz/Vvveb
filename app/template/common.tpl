@@ -91,6 +91,6 @@ head > link[hreflang]|after = <?php
 }
 ?>
 
-head > title                            = <?php echo htmlspecialchars($this->global['site']['description']['title'] ?? '@@__innerText__@@');?>
-head > meta[name="description"]|content = <?php echo htmlspecialchars($this->global['site']['description']['meta-description'] ?? '@@__content__@@');?>
-head > meta[name="keywords"]|content    = <?php echo htmlspecialchars($this->global['site']['description']['meta-keywords'] ?? '@@__content__@@');?>
+head > title                            = <?php echo htmlspecialchars($this->global['site']['description']['title'] ??  '');?>
+head > meta[name="description"]|content = <?php echo htmlspecialchars($this->global['site']['description']['meta-description'] ?? '@@macro Escape("@@__content__@@")@@');?>
+head > meta[name="keywords"]|content    = <?php echo htmlspecialchars($this->global['site']['description']['meta-keywords'] ?? '@@macro Escape("@@__content__@@")@@');?>

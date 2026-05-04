@@ -1360,7 +1360,7 @@ function dd(...$variables) {
 		echo highlight_string("<?php\n" . var_export($variable, true), true);
 	}
 
-	die(0);
+	die();
 }
 
 function encrypt($key, $value, $cipher = 'aes256', $digest = 'sha256', $tag = null, $aad = '', $tag_length = 16) {
@@ -1519,7 +1519,28 @@ function checkPhpSyntax($source) {
 }
 
 function truncateWords($text, $limit) {
-	return preg_replace('/((\w+\W*){' . ($limit - 1) . '}(\w+))(.*)/m', '${1}', $text);
+	$parts = preg_split('/(\s+)/ms', substr($text, 0, $limit * 2), 0, PREG_SPLIT_DELIM_CAPTURE);
+	$partsCount = count($parts);
+
+	$length = 0;
+	$lastPart = 0;
+	for (; $lastPart < $partsCount; ++$lastPart) {
+		$partlen = strlen($parts[$lastPart]);
+		$length += $partlen;
+		if ($length >= $limit) {
+			//don't include less than two letter last word or spaces
+			$partlen = strlen($parts[$lastPart - 1]);
+			while (($partlen < 3) && $lastPart > 3) {
+				$lastPart--;
+				$partlen = strlen($parts[$lastPart - 1]);
+			}
+			break;
+		}
+	}
+
+	return implode(array_slice($parts, 0, $lastPart));
+
+	//return preg_replace('/((\w+\W*){' . ($limit - 1) . '}(\w+))(.*)/m', '${1}', $text);
 }
 
 /**
