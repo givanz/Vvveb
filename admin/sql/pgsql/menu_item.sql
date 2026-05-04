@@ -155,7 +155,7 @@
 				( @KEYS(:each), menu_item_id)
 			
 			VALUES ( :each, :menu_item_id)
-				ON DUPLICATE KEY UPDATE @LIST(:each);
+				ON CONFLICT ("menu_item_id", "language_id") DO UPDATE SET "content" = :each.content;
 
 		-- allow only table fields and set defaults for missing values
 		@FILTER(:menu_item, menu_item)

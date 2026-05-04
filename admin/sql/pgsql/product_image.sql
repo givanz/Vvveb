@@ -69,8 +69,7 @@
         
         VALUES (:product_id, :namespace, :key, :value )
         
-        ON DUPLICATE KEY 
-            UPDATE value = values(value);
+		ON CONFLICT ("product_image_id", "language_id") DO UPDATE SET @LIST(:each);
 		
 	END
 
@@ -85,7 +84,7 @@
 
 		UPDATE product_image 
 			
-			SET  @LIST(:product_image) 
+			SET @LIST(:product_image) 
 			
 		WHERE product_image_id = :product_image_id
 	 

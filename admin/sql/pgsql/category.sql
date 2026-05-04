@@ -335,7 +335,16 @@
 				
 				@IF isset(:type)
 				THEN 
-					INNER JOIN taxonomy t ON (_.taxonomy_id = t.taxonomy_id AND t.type = :type)   
+					INNER JOIN taxonomy t ON (
+						_.taxonomy_id = t.taxonomy_id AND t.type = :type
+
+						@IF isset(:post_type)
+						THEN 
+						
+							AND t.post_type = :post_type 
+							
+						END @IF	
+						)   
 				END @IF	
 				
 			WHERE 
@@ -348,13 +357,6 @@
 				
 			END @IF				
 			
-			@IF isset(:post_type)
-			THEN 
-			
-				AND _.post_type = :post_type 
-				
-			END @IF				
-	
 			@IF isset(:post_id)
 			THEN 
 				,pt.post_id as checked  
