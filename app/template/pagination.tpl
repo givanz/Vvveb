@@ -71,6 +71,7 @@ if (!function_exists('pageUrl')) {
 		if ($page > 1) {
 			return htmlspecialchars(Vvveb\url($url, ['page' => $page] + $parameters)) . $query_string;
 		} else {
+			unset($parameters['page']);
 			return htmlspecialchars(Vvveb\url($url, $parameters)) . $query_string;
 		}
 	}
