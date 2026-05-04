@@ -22,8 +22,6 @@
 
 namespace Vvveb\Controller;
 
-use function Vvveb\url;
-
 #[\AllowDynamicProperties]
 class Cron {
 	function _construct() {
@@ -50,15 +48,15 @@ class Cron {
 		}
 
 		if (! empty($this->request->post) || defined('CLI')) {
-			die(0);
+			die();
 		}
 
-		die(0);
+		die();
 	}
 
 	function call() {
 		$cronkey  = \Vvveb\getConfig('app.cronkey');
-		echo $url = url('cron/index', ['key' => $cronkey]);
+
 		$options  = [
 			'timeout'   => 0.01,
 			'blocking'  => false,
