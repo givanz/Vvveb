@@ -31,12 +31,10 @@ class Rss {
 	private $rss;
 
 	private $importXMLOptions = LIBXML_NOBLANKS |
-								LIBXML_COMPACT |
-								LIBXML_NOCDATA |
-								LIBXML_NOENT |
-								LIBXML_NONET |
-								LIBXML_PARSEHUGE |
-								LIBXML_NOWARNING;
+		LIBXML_COMPACT |
+		LIBXML_NOCDATA |
+		LIBXML_PARSEHUGE |
+		LIBXML_NOWARNING;
 
 	// |
 	//LIBXML_BIGLINES;
