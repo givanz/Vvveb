@@ -4,9 +4,9 @@
 
 	CREATE PROCEDURE getAll(
 		-- variables
-		IN  language_id INT,
-		IN  site_id INT,
-		IN  user_id INT
+		IN language_id INT,
+		IN site_id INT,
+		IN user_id INT
 		
 		IN order_status CHAR,
 		IN order_status_id INT,

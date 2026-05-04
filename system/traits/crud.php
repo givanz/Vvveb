@@ -93,11 +93,11 @@ trait Crud {
 
 	function save() {
 		$type        = $this->type;
-		$type_id     = "{$type}_id";
 		$module      = $this->module;
 		$controller  = $this->controller ?? $type;
 		$result      = [];
 
+		$type_id       = $this->type_id ?? "{$type}_id";
 		$this->data_id = $this->request->get[$type_id] ?? false;
 
 		if (isset($this->fullPost) && $this->fullPost) {
@@ -140,13 +140,13 @@ trait Crud {
 			}
 
 			if ($result && isset($result[$type])) {
-				$successMessage        = humanReadable(__($type)) . __(' saved!');
+				$successMessage             = humanReadable(__($type)) . __(' saved!');
 				$this->view->success['get'] = $successMessage;
 				$this->session->set('success', ['get' => $successMessage]);
 
 				if (! $this->data_id && $this->redirect) {
 					if ($this->redirect === true) {
-					$this->redirect(['module' => "$module/$controller", $type_id => $result[$type], 'success' => $successMessage]);
+						$this->redirect(['module' => "$module/$controller", $type_id => $result[$type], 'success' => $successMessage]);
 					} else {
 						$this->redirect($this->redirect . "?$type_id={$result[$type]}&success=$successMessage");
 					}

@@ -4,8 +4,7 @@
 
 	CREATE PROCEDURE getAll(
 		-- variables
-		IN site_id INT,
-        IN user_id INT,
+		IN user_id INT,
 
 		-- pagination
 		IN start INT,
@@ -119,7 +118,7 @@
 	-- Delete user address
 
 	CREATE PROCEDURE delete(
-		IN  user_address_id ARRAY,
+		IN user_address_id ARRAY,
 		IN user_id INT,
 		OUT affected_rows
 	)

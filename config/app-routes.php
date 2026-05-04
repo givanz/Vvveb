@@ -135,11 +135,19 @@ return [
 	//content
 	'/blog'                  => ['module' => 'content'],
 	'/blog/#page#'           => ['module' => 'content'],
+	//post taxonomy
 	'/cat/{slug}'            => ['module' => 'content/category/index'],
 	'/cat/{slug}/#page#'     => ['module' => 'content/category/index'],
-	'/tag/{slug}'            => ['module' => 'content/tag/index'],
-	'/tag/{slug}/#page#'     => ['module' => 'content/tag/index'],
-	'/author/{username}'     => ['module' => 'content/user/index'],
+	'/t/{slug}'            => ['module' => 'content/tag/index'],
+	'/t/{slug}/#page#'     => ['module' => 'content/tag/index'],
+	//page taxonomy
+	//post taxonomy
+	'/category/{slug}'        => ['module' => 'content/category/index', 'type' => 'page'],
+	'/category/{slug}/#page#' => ['module' => 'content/category/index', 'type' => 'page'],
+	'/tag/{slug}'             => ['module' => 'content/tag/index', 'type' => 'page'],
+	'/tag/{slug}/#page#'      => ['module' => 'content/tag/index', 'type' => 'page'],
+
+	'/author/{username}'      => ['module' => 'content/user/index'],
 	//archive year
 	'/#year{4,4}#'=> ['module' => 'content/archive/index'],
 	//archive month and year
@@ -162,8 +170,17 @@ return [
 	'/{language{2,3}}/p/#page#'  => ['module' => 'index/index'],
 	//content
 	'/{language{2,3}}/blog'                   => ['module' => 'content'],
+	//post taxonomy
 	'/{language{2,3}}/cat/{slug}'             => ['module' => 'content/category/language'],
-	'/{language{2,3}}/tag/{slug}'             => ['module' => 'content/tag/index'],
+	'/{language{2,3}}/cat/{slug}/#page#'      => ['module' => 'content/category/language'],
+	'/{language{2,3}}/t/{slug}'             => ['module' => 'content/tag/index'],
+	'/{language{2,3}}/t/{slug}/#page#'      => ['module' => 'content/tag/index'],
+	//page taxonomy
+	'/{language{2,3}}/category/{slug}'        => ['module' => 'content/category/language', 'type' => 'page'],
+	'/{language{2,3}}/category/{slug}/#page#' => ['module' => 'content/category/language', 'type' => 'page'],
+	'/{language{2,3}}/tag/{slug}'             => ['module' => 'content/tag/index', 'type' => 'page'],
+	'/{language{2,3}}/tag/{slug}/#page#'      => ['module' => 'content/tag/index', 'type' => 'page'],
+	//post
 	//'/{language{2,3}}/{slug}-#post_id#'       => ['module' => 'content/post/index', 'edit'=>'?module=content/post&post_id={post_id}'],
 	'/{language{2,3}}/p-#post_id#'       => ['module' => 'content/post/index', 'edit'=>'?module=content/post&post_id=#post_id#'],
 	'/{language{2,3}}/{slug}'       => ['module' => 'content/post/index', 'edit'=>'?module=content/post&slug={slug}'],
@@ -185,7 +202,7 @@ return [
 	'/{language{2,3}}/checkout' => ['module' => 'checkout/checkout/index'],
 	'/{language{2,3}}/user'     => ['module' => 'user/index'],
 	*/
-
+	
 	//custom post
 	'/{type}'                   => ['module' => 'content'],
 	'/{type}/#page#'            => ['module' => 'content'],

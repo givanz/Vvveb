@@ -5,7 +5,6 @@
 	CREATE PROCEDURE getAll(
 		-- variables
 		IN language_id INT,
-		IN site_id INT,
 		IN post_id INT,
 		IN user_id INT,
 		IN status INT,

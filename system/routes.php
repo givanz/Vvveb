@@ -45,6 +45,8 @@ class Routes {
 
 	private static function processRoute($url, $data) {
 		$module = $data['module'];
+		unset($data['edit'], $data['module']);
+
 		//self :: $modules[$module] = $url;
 
 		$parameters = [];
@@ -53,6 +55,10 @@ class Routes {
 			if ($matches[1]) {
 				$parameters = $matches[1];
 			}
+		}
+
+		if ($data) {
+			$parameters = array_merge($parameters, array_keys($data));
 		}
 
 		self :: $modules[$module][] = ['url' => $url, 'parameters' => $parameters, 'count' => count($parameters)];
@@ -107,7 +113,7 @@ class Routes {
 
 	public static function init($app = 'app', $site_id = null) {
 		$cacheDriver = Cache :: getInstance();
-		if ($site_id) { 
+		if ($site_id) {
 			$cacheKey = $site_id;
 		} else {
 			$cacheKey = $app;
@@ -119,12 +125,12 @@ class Routes {
 			static::$modules = $result['modules'];
 		} else {
 			$routesConfig = DIR_ROOT . '/config/';
-			if ($site_id) { 
+			if ($site_id) {
 				$routesConfig .= "site-$site_id-routes.php";
 			} else {
 				$routesConfig .= "$app-routes.php";
 			}
-			
+
 			if (file_exists($routesConfig)) {
 				self :: $routes += include $routesConfig;
 			}

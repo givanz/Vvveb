@@ -18,6 +18,9 @@ if(isset($this->taxonomies) && is_array($this->taxonomies)) {
 
 	@taxonomy_item [data-v-taxonomy_item-url]|title = $taxonomy_item['name']	
 	@taxonomy_item a[data-v-edit-url]|href = <?php echo \Vvveb\url(['module' => 'content/taxonomy_item', 'taxonomy_id' => $taxonomyItem['taxonomy_id']]);?>
+
+	@taxonomy_item [data-v-taxonomy_item-label]|for = <?php echo 't-' . $taxonomy_item['taxonomy_id'];?>
+	@taxonomy_item [data-v-taxonomy_item-input]|id = <?php echo 't-' . $taxonomy_item['taxonomy_id'];?>
 	
 	
 	@taxonomy_item|after = <?php 

@@ -111,7 +111,16 @@
 				
 				@IF isset(:type)
 				THEN 
-					INNER JOIN taxonomy t ON (_.taxonomy_id = t.taxonomy_id AND t.type = :type)   
+					INNER JOIN taxonomy t ON (
+						_.taxonomy_id = t.taxonomy_id AND t.type = :type
+
+						@IF isset(:post_type)
+						THEN 
+						
+							AND t.post_type = :post_type 
+							
+						END @IF							
+					)   
 				END @IF	
 				
 			WHERE 
@@ -128,7 +137,7 @@
 			THEN 
                 AND _.taxonomy_item_id = :taxonomy_item_id
         	END @IF		
-        
+
 			@IF isset(:post_id)
 			THEN 
 				AND pt.post_id = :post_id 

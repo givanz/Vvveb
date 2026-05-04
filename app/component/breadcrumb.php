@@ -90,7 +90,8 @@ class Breadcrumb extends ComponentBase {
 						+ self :: $global);
 
 					if ($result && isset($result['taxonomy_item_id'])) {
-						$breadcrumb[] = ['text' => $result['name'], 'url' => url('product/category/index', $result + $urlOptions)];
+						$cat = ['slug' => $result['slug']];
+						$breadcrumb[] = ['text' => $result['name'], 'url' => url('product/category/index', $cat + $urlOptions)];
 					}
 				}
 
@@ -141,7 +142,8 @@ class Breadcrumb extends ComponentBase {
 						+ self :: $global);
 
 					if ($result && isset($result['taxonomy_item_id'])) {
-						$breadcrumb[] = ['text' => $result['name'], 'url' => url('content/category/index', $result + $urlOptions)];
+						$cat = ['slug' => $result['slug']];
+						$breadcrumb[] = ['text' => $result['name'], 'url' => url('content/category/index', $cat + $urlOptions)];
 					}
 				}
 
@@ -150,7 +152,19 @@ class Breadcrumb extends ComponentBase {
 				break;
 
 			case 'content/page/index':
-				$post_id = $request->get['post_id'] ?? false;
+				$post_id      = $request->get['post_id'] ?? false;
+
+				if ($post_id) {
+					$category = new CategorySQL();
+					$result   = $category->getCategory(
+						['post_id' => $post_id, 'limit' => 1, 'type' => 'categories', 'post_type' => 'page']
+						+ self :: $global);
+
+					if ($result && isset($result['taxonomy_item_id'])) {
+						$cat = ['slug' => $result['slug'], 'type' => 'page'];
+						$breadcrumb[] = ['text' => $result['name'], 'url' => url('content/category/index', $cat + $urlOptions)];
+					}
+				}
 
 				$breadcrumb[] = ['text' => $name, 'url' => false];
 

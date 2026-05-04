@@ -183,6 +183,21 @@ return
  				'action' => 'index',
  				'icon'   => 'la la-boxes',
  			],
+ 			'categories' => [
+ 				'name' => __('Categories'),
+ 				'url' => $admin_path . '?module=content/categories&taxonomy_id=6',
+ 				'module' => 'content/categories',
+ 				'action' => 'index',
+ 				'icon' => 'la la-boxes',
+ 			],
+
+ 			'tags' => [
+ 				'name' => __('Tags'),
+ 				'url' => $admin_path . '?module=content/categories&taxonomy_id=7',
+ 				'module' => 'content/categories',
+ 				'action' => 'index',
+ 				'icon' => 'la la-tags',
+ 			],
  			/*
 			'categories' => 
 			[

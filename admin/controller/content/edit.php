@@ -301,12 +301,15 @@ class Edit extends Base {
 			if ($template == $defaultTemplate) {
 				$view->template_missing = sprintf(__('Template missing, choose existing template or %screate global template%s for %s.'), '<a href="' . $design_url . '" target="_blank">', '</a>', $type_name);
 			} else {
-				$view->template_missing = sprintf(__('Template missing, %screate template%s for this  %s.'), '<a href="' . $design_url . '" target="_blank">', '</a>', $type_name);
+				$view->template_missing = sprintf(__('Template %s missing, %screate template%s for this %s.'), '<b>' . $template . '</b>', '<a href="' . $design_url . '" target="_blank">', '</a>', $type_name);
 			}
 		}
 
-		if ($this->type != 'page') {
-			$view->taxonomies = $this->taxonomies($post[$this->object . '_id'] ?? false);
+		$view->taxonomies = $this->taxonomies($post[$this->object . '_id'] ?? false);
+		
+		if ($this->type == 'page') {
+			//remove menu type
+			unset($view->taxonomies[3]);
 		}
 
 		$sites = $post[$this->object . '_to_site'] ?? [];

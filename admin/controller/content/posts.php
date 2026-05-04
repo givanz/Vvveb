@@ -251,7 +251,7 @@ class Posts extends Listing {
 				$template              = $post['template'] ? $post['template'] : $defaultTemplate;
 				$post['url']           = url($url);
 				$post['edit-url']      = $post['url'];
-				$post['admin-url']     = url(['module' => 'content/posts']) . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
+				$post['admin-url']     = url(['module' => 'content/posts']) . '&type=' . $this->type . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
 				$post['delete-url']    = url(['module' => 'content/posts', 'action' => 'delete'] + $url); // + ['post_id[]' => $post['post_id']]);
 				$post['duplicate-url'] = url(['module' => 'content/posts', 'action' => 'duplicate'] + $url); // + ['post_id' => $post['post_id']]);
 				$post['view-url']      = url("content/{$this->type}/index", $post + $url + ['host' => $this->global['host'], 'path' => $this->global['path'] ? '/' . $this->global['path'] : null]);

@@ -37,7 +37,11 @@ class Category extends Base {
 
 		if ($slug) {
 			$categorySql = new CategorySQL();
-			$options     = $this->global + ['slug' => $slug/*, 'post_type' => $type*/];
+			$options     = $this->global + ['slug' => $slug];
+			if ($type) {
+				$options['post_type'] = $type;
+			}
+
 			$category    = $categorySql->getCategoryBySlug($options);
 
 			if ($category) {
@@ -56,6 +60,15 @@ class Category extends Base {
 				$this->request->get['taxonomy_item_id'] = $category['taxonomy_item_id'];
 				$this->request->get['slug']             = $category['slug'];
 				$this->view->category                   = $category;
+
+				if ($type != 'product') {
+					//product/category-page.html
+					$template = 'product/' . $this->type . '-' . $type . '.html';
+					if ($template) {
+						$this->view->template($template);
+						$this->view->tplFile('product/' . $this->type . '.tpl');
+					}
+				}
 			} else {
 				$message = sprintf(__('%s not found!'), ucfirst(__($this->type)));
 				$this->notFound(true, ['message' => $message, 'title' => $message]);
