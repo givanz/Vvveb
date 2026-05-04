@@ -44,11 +44,19 @@ foreach ($this->categories as $category) {?>
 
 /* notifications */
 @log = [data-v-logs] [data-v-logs-line]
-@log|before = <?php 
-if (isset($this->log) && is_array($this->log)) foreach($this->log as $message) {?>
-	
-	@log [data-v-log-text] = $message
+[data-v-logs]|before = <?php 
+	if (isset($this->log) && $this->log && is_array($this->log)) {?>
+
+	@log|before = <?php 
+	foreach($this->log as $message) {?>
 		
-@log|after = <?php 
+		@log [data-v-log-text] = $message
+			
+	@log|after = <?php 
+		}
+	?>
+	
+[data-v-logs]|after = <?php 
 	}
 ?>
+
