@@ -33,11 +33,13 @@ class Robots extends Base {
 			$text = @file_get_contents($robots);
 		}
 
-		$host = ' https://' . $_SERVER['HTTP_HOST'] ?? '' . (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '');
+		$path = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . ($this->global['path'] ? $this->global['path'] : '');
+		$host = 'https://' . ($_SERVER['HTTP_HOST'] ?? '') . $path;
 
 		// change sitemap urls to absolute
-		if ($host) {
+		if ($path) {
 			$text = preg_replace('@(sitemap):\s+/@', "$1: $host/", $text);
+			$text = preg_replace('@(disallow):\s+/@', "$1: $path/", $text);
 		}
 
 		$this->response->setType('text');
