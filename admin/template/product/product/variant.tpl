@@ -4,10 +4,11 @@
 
 @product-variant|before = <?php
 if(isset($this->product['product_variant']) && is_array($this->product['product_variant']))
-foreach ($this->product['product_variant'] as $i => $variant) {
+foreach ($this->product['product_variant'] as $options => $variant) {
 	$product_variant_id = $variant['product_variant_id'];
 ?>
 	@product-variant|data-id                       = $variant['product_variant_id']
+	@product-variant [data-v-variant-name]         = $this->combinations[$options]
 	@product-variant input[data-v-variant-*]|value = $variant['@@__data-v-variant-(*)__@@']
 	@product-variant input[data-v-variant-*]|name  = <?php echo "product_variant[$product_variant_id][@@__data-v-variant-(*)__@@]";?>
 

@@ -17,7 +17,9 @@
 				ON option_content.option_id = `option`.option_id AND option_content.language_id = :language_id
 		
 		WHERE 1 = 1
-			
+	
+		ORDER BY option.option_id DESC
+		
 		-- limit
 		@IF isset(:limit)
 		THEN		
@@ -53,6 +55,7 @@
 
 	PROCEDURE add(
 		IN option ARRAY,
+		IN language_id INT,
 		OUT insert_id
 	)
 	BEGIN
@@ -117,7 +120,11 @@
 		OUT affected_rows, 
 	)
 	BEGIN
-		-- option
+		-- option value
+		DELETE FROM option_value_content WHERE option_value_id IN (:option_value_id);
+		DELETE FROM option_value WHERE option_value_id IN (:option_id);
+
+		-- option	
 		DELETE FROM option_content WHERE option_id IN (:option_id);
 		DELETE FROM `option` WHERE option_id IN (:option_id);
 	END

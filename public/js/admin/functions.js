@@ -26,6 +26,7 @@ function addTemplate(id, name, parent, element = false, parentElement = "table",
 						replace('id="' + id + '"', '');
 	
 	let row = generateElements(template)[0];
+	row.removeAttribute("id");
 	element.querySelector(parent + " " + container).append(row);
 	
 	if (callback) {
@@ -292,7 +293,7 @@ function generateElements(html) {
 }
 
 function togglePasswordInput(element, input) {
-	let password = document.getElementById(input);
+	let password = document.getElementById(input) || element.parentNode.querySelector("[type=text],[type=password]");
 	if (password.type == "password") {
 		password.type = "text"; 
 		let i = element.querySelector("i")
