@@ -137,16 +137,16 @@ abstract class Extensions {
 	static function download($url) {
 		$f    = false;
 		$temp = @tempnam(sys_get_temp_dir(), 'vvveb_plugin');
-		
-		if (!$temp) {
+
+		if (! $temp) {
 			$temp = @tmpfile();
 		}
-		
+
 		//if temp still fails use cache dir, some shared hosting have this issue
-		if (!$temp) {
+		if (! $temp) {
 			$temp = DIR_CACHE . APP . '.extension.' . md5($url) . '.zip';
 		}
-		
+
 		if ($content = download($url)) {
 			$f  = file_put_contents($temp, $content, LOCK_EX);
 			if ($f) {
@@ -157,11 +157,33 @@ abstract class Extensions {
 		return $f;
 	}
 
+	static function validFile($file) {
+		if (strpos($file, '..') !== false) {
+			return false;
+		}
+
+		if (strpos($file, 'htaccess') !== false) {
+			return false;
+		}
+		
+		//for public folder don't allow php and htaccess files
+		if (strpos($file, 'public') !== false) {
+			$extension = strtolower(substr($file, strrpos($file, '.') + 1));
+			if (in_array($extension, ['php', 'htaccess'])) {
+				return false;
+			}
+		}
+		
+		
+		return true;
+	}
+	
 	static function install($extensionZipFile, $slug = false, $validate = true) {
 		$extension   = static :: $extension;
 		$success     = true;
 		$extractTo   = static :: $baseDir;
 		$fileCheck   = "$extension.php";
+		$valid       = false;
 
 		$zip = new \ZipArchive();
 
@@ -181,6 +203,10 @@ abstract class Extensions {
 			for ($i = $zip->numFiles - 1; ($i > 0 && $success == true); $i--) {
 				$file = $zip->getNameIndex($i);
 
+				if (!self :: validFile($file)) {
+					throw new \Exception(sprintf(__('Zip contains invalid file "%s"'), $file));
+				}
+				
 				if ($validate) {
 					//check if all files inside the extension folder
 					if (strpos($file, $folderName) === false) {
@@ -199,32 +225,28 @@ abstract class Extensions {
 
 					if (isset($info['slug']) && ($folderName == ($info['slug'] . '/'))) {
 						// Unzip Path
-						if ($zip->extractTo($extractTo)) {
-							$success = $info['slug'];
-						} else {
-							$success = false;
-						}
+						$success = $info['slug'];
+						$valid = true;
 					} else {
 						if ($validate) {
 							throw new \Exception(sprintf(__('%s slug `%s` does not match folder %s!'), $extension, $info['slug'] ?? '', $folderName));
 						} else {
-							if ($zip->extractTo($extractTo . DS . $slug)) {
-								$info    = ['slug' => $slug];
-								$success = $info['slug'];
-							} else {
-								$success = false;
-							}
+							$extractTo .= DS . $slug;
+							$info    = ['slug' => $slug];
+							$success = $info['slug'];
 						}
 					}
 
-					break;
+					//break;
 				}
 			}
 
 			// no extension.php found then treat as generic extension/theme
-			if ($success) {
-				$extractTo .= DS . $slug;
-
+			if ($success && $valid) {
+				if (!is_writable($extractTo)) {
+					throw new \Exception(sprintf(__('%s folder not writable!'), str_replace(DIR_ROOT, '', $extractTo)));
+				}
+				
 				if ($zip->extractTo($extractTo)) {
 					$success = $slug;
 					$info    = ['slug' => $slug];
@@ -236,7 +258,7 @@ abstract class Extensions {
 			$zip->close();
 
 			if (! $info) {
-				throw new \Exception(sprintf(__('No `%s.php` info found inside zip!', $extension)));
+				throw new \Exception(sprintf(__('No `%s.php` info found inside zip!'), $extension));
 			}
 		} else {
 			throw new \Exception(__('File is not a valid zip archive!'));

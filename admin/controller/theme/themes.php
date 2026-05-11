@@ -219,7 +219,7 @@ class Themes extends Base {
 				$this->themeName         = "<b>$this->themeName</b>";
 				$this->themeActivateUrl  = \Vvveb\url(['module' => 'theme/themes', 'action'=> 'activate', 'theme' => $this->themeSlug]);
 				$successMessage          = sprintf(__('Theme %s was successfully installed!'), '<b>' . $this->themeSlug . '</b>');
-				$successMessage         .= '<button type="submit" name="theme" value="' . $this->themeSlug . '" class="btn btn-primary btn-sm ms-2" onclick="document.getElementById(\'action\').value=\'activate\';">' . __('Activate theme') . '</button>';
+				$successMessage         .= '<button type="submit" name="theme" value="' . $this->themeSlug . '" class="btn btn-primary btn-sm btn-icon ms-2" onclick="document.getElementById(\'action\').value=\'activate\';">' . __('Activate theme') . '</button>';
 				$this->view->success[]   = $successMessage;
 				ThemesList :: clearThemesCache();
 			}
@@ -285,7 +285,7 @@ class Themes extends Base {
 			$this->themeActivateUrl  = \Vvveb\url(['module' => 'theme/themes', 'action'=> 'import', 'theme' => $theme]);
 			$successMessage          = sprintf(__('Theme <b>%s</b> was activated!'), $themeName, $this->themeActivateUrl);
 			//$successMessage .= '<a class="btn btn-success btn-sm ms-4" href="' . $this->themeActivateUrl . '">' . __('Import theme content') . '</a>';
-			$successMessage .= '<a class="btn btn-outline-primary btn-sm ms-2" target="_blank" href="/">' . __('View website') . '</a>';
+			$successMessage .= '<a class="btn btn-outline-primary btn-sm btn-icon ms-2" target="_blank" href="/">' . __('View website') . '</a>';
 
 			$this->view->success[] = $successMessage;
 			CacheManager::clearObjectCache('site');

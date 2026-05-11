@@ -59,7 +59,7 @@ class Market extends Base {
 							$successMessage    = sprintf(__('Theme %s was successfully installed!'), $themeName, $themeActivateUrl);
 							$this->view->log[] = $successMessage;
 
-							$successMessage .= "<button class='btn btn-primary btn-sm m-2' formaction='$themeActivateUrl' name='theme' value='$slug'>" . __('Activate theme') . '</button>';
+							$successMessage .= "<button class='btn btn-primary btn-sm btn-icon m-2' formaction='$themeActivateUrl' name='theme' value='$slug'>" . __('Activate theme') . '</button>';
 							$this->view->success[] = $successMessage;
 						} else {
 							$error                = sprintf(__('Error installing "%s"!'), $slug);

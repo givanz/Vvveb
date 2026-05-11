@@ -179,10 +179,8 @@ class Plugins extends Base {
 			if (! $error) {
 				if ($this->pluginSlug) {
 					$this->pluginName        = \Vvveb\humanReadable($this->pluginSlug);
-					$this->pluginName        = "<b>$this->pluginName</b>";
-					$this->pluginActivateUrl = \Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'checkPluginAndActivate', 'plugin' => $this->pluginSlug, 'csrf' => $this->session->get('csrf')]);
-					$successMessage          = sprintf(__('Plugin %s was successfully installed!'), $this->pluginName, $this->pluginActivateUrl);
-					$successMessage         .= '<button type="submit" name="plugin" value="' . $this->pluginName . '" class="btn btn-primary btn-sm ms-2" onclick="document.getElementById(\'action\').value=\'checkPluginAndActivate\';">' . __('Activate plugin') . '</button>';
+					$successMessage          = sprintf(__('Plugin %s was successfully installed!'), '<b>' . $this->pluginName . '</b>');
+					$successMessage         .= '<button type="submit" name="plugin" value="' . $this->pluginSlug . '" class="btn btn-primary btn-sm btn-icon ms-2" onclick="document.getElementById(\'action\').value=\'checkPluginAndActivate\';">' . __('Activate plugin') . '</button>';
 					$this->view->success[]   = $successMessage;
 				} else {
 					$errorMessage            = sprintf(__('Failed to install %s plugin!'), $this->pluginName);
@@ -201,6 +199,7 @@ class Plugins extends Base {
 		$this->category = $this->request->get['category'] ?? false;
 		$this->plugin   = $this->request->post['plugin'] ?? $this->request->get['plugin'] ?? null;
 		$csrf           = $this->request->post['csrf'] ?? $this->request->get['csrf'] ?? false;
+		$message        = '';
 
 		if (! defined('CLI') && $csrf != $this->session->get('csrf')) {
 			die('Invalid csrf!');
@@ -211,13 +210,18 @@ class Plugins extends Base {
 
 		try {
 			if (PluginsList::loadPlugin($this->plugin)) {
+				$message .= __('Plugin loads') . '<br>';
 				if (PluginsList::activate($this->plugin, $this->global['site_id'])) {
 					$active = true;
 				}
+			} else {
+				$message .= __('Plugin does not load!') . '<br>';
 			}
 		} catch (\ParseError $e) {
 			$error = exceptionToArray($e);
 		} catch (\Exception $e) {
+			$error = exceptionToArray($e);
+		} catch (\Error $e) {
 			$error = exceptionToArray($e);
 		}
 
@@ -226,7 +230,7 @@ class Plugins extends Base {
 			$error['title']   = sprintf(__('Error activating plugin `%s`!'), $this->plugin);
 			FrontController::notFound(false, $error, 500);
 
-			die(0);
+			die();
 		}
 
 		if ($active) {
@@ -235,7 +239,7 @@ class Plugins extends Base {
 			$plugin     =  PluginsList :: getList($this->global['site_id'])[$this->plugin] ?? [];
 
 			if (isset($plugin['settings']) && $plugin['settings']) {
-				$success .= "<a class='btn btn-primary btn-sm m-2' href='{$plugin['settings']}'>" . __('Settings') . '</a>';
+				$success .= "<a class='btn btn-primary btn-sm btn-icon m-2' href='{$plugin['settings']}'>" . __('Settings') . '</a>';
 			}
 			$this->session->set('success', $success);
 
@@ -266,7 +270,13 @@ class Plugins extends Base {
 				die($response);
 			}
 		} else {
-			die(sprintf(__('Error activating plugin `%s`!'), $this->plugin) . '<br/>' . __('Check config file permissions!'));
+			$message .= sprintf(__('Error activating plugin `%s`!'), $this->plugin);
+			
+			if (!is_writable(DIR_CONFIG . 'plugins.php')) {
+				$message . '<br/>' . __('Check config file permissions!');
+			}
+			
+			die($message);
 		}
 
 		return false;

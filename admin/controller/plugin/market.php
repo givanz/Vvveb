@@ -58,7 +58,7 @@ class Market extends Base {
 							$successMessage    = sprintf(__('Plugin %s was successfully installed!'), $pluginName, $pluginActivateUrl);
 							$this->view->log[] = $successMessage;
 
-							$successMessage .= "<button class='btn btn-primary btn-sm m-2' formaction='$pluginActivateUrl' name='plugin' value='$slug'>" . __('Activate plugin') . '</button>';
+							$successMessage .= "<button class='btn btn-primary btn-sm btn-icon m-2' formaction='$pluginActivateUrl' name='plugin' value='$slug'>" . __('Activate plugin') . '</button>';
 							$this->view->success[] = $successMessage;
 						} else {
 							$error                = sprintf(__('Error installing "%s"!'), $slug);

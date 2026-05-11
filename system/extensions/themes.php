@@ -182,6 +182,23 @@ class Themes extends Extensions {
 		}
 	}
 
+	static function validFile($file) {
+		if (strpos($file, '..') !== false) {
+			return false;
+		}
+
+		if (strpos($file, 'htaccess') !== false) {
+			return false;
+		}
+		
+		$extension = strtolower(substr($file, strrpos($file, '.') + 1));
+		if ($extension == 'php' && strpos($file, '/theme.php') === false) {
+			return false;
+		}
+		
+		return true;
+	}
+	
 	static function install($extensionZipFile, $slug = false, $validate = false) {
 		$success     = true;
 		$extractTo   = static :: $baseDir;
@@ -194,6 +211,10 @@ class Themes extends Extensions {
 			//search for top level index.html
 			for ($i = 0; (($i < $zip->numFiles) && $success == true); $i++) {
 				$file = $zip->getNameIndex($i);
+
+				if (!self :: validFile($file)) {
+					throw new \Exception(sprintf(__('Zip contains invalid file "%s"'), $file));
+				}
 
 				if (strpos($file, $fileCheck) !== false) {
 					if (! $folder || (strlen($file) < strlen($folder))) {
@@ -209,11 +230,10 @@ class Themes extends Extensions {
 
 				$extractTo = preg_replace('@[\\\/]([^\\\/]+?)\.\w+$@', '', $extractTo);
 				if ($zip->extractTo($extractTo)) {
-					
 					if ($folder !== 'index.html') {
 						$folder = preg_replace('@[\\\/]([^\\\/]+?)\.\w+$@', '', $folder);
 						$slug = slugify($folder);
-					
+
 						rename($extractTo . $folder, $extractTo . $slug);
 					}
 				} else {
