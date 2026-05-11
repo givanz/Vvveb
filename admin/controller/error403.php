@@ -22,7 +22,8 @@
 
 namespace Vvveb\Controller;
 
-class Error403 extends Base {
+#[\AllowDynamicProperties]
+class Error403 { /*extends Base*/
 	function index() {
 	}
 }
