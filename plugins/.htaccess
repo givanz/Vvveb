@@ -1,0 +1,14 @@
+Options +SymLinksIfOwnerMatch -Indexes
+
+<IfModule !mod_authz_core.c>
+	<Files *.php>
+		Require all denied
+	</Files>
+
+</IfModule>
+
+<IfModule mod_authz_core.c>
+	<FilesMatch "\.(?i:php)$">
+		Require all denied
+	</FilesMatch>
+</IfModule>

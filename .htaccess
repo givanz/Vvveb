@@ -1,3 +1,5 @@
+Options +SymLinksIfOwnerMatch -Indexes
+
 <IfModule !mod_authz_core.c>
 	<Files *.php>
 		Require all denied
@@ -22,7 +24,6 @@
 <IfModule dir_module>
     DirectoryIndex index.php
 </IfModule>
-
 
 #<IfModule mod_headers.c>
 #Header always set Content-Security-Policy "upgrade-insecure-requests;"

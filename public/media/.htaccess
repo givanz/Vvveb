@@ -1,3 +1,5 @@
+Options +SymLinksIfOwnerMatch -Indexes
+
 <Files *.php>
  order allow,deny
  deny from all
