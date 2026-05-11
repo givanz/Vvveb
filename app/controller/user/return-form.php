@@ -48,7 +48,7 @@ class ReturnForm extends Base {
 					$this->request->post['return_status_id']     =  1;
 					$this->request->post['product_id']           =  1;
 				} else {
-					$this->view->errors['return'] = sprintf(__('Order %s not found!'), $customer_order_id);
+					$this->view->errors['return'] = sprintf(__('Order %s not found!'), htmlspecialchars($customer_order_id));
 
 					return $this->index();
 				}
