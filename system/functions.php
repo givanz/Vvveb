@@ -1434,9 +1434,9 @@ function sanitizeHTML($string) {
 		return $string;
 	}
 
-	//$string = stripTags($string);
-
 	// Fix &entity\n;
+	//add <> before tag entities to allow regex matching
+	$string = str_replace(['&lt;', '&gt;'], ['&lt;<', '>&gt;'], $string);
 	$string = str_replace(['&amp;', '&lt;', '&gt;'], ['&amp;amp;', '&amp;lt;', '&amp;gt;'], $string);
 	$string = preg_replace('/(&#*\w+)[\x00-\x20]+;/u', '$1;', $string);
 	$string = preg_replace('/(&#x*[0-9A-F]+);*/iu', '$1;', $string);
@@ -1465,6 +1465,8 @@ function sanitizeHTML($string) {
 		$string   = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $string);
 	} while ($string !== $string);
 
+	//restore entities
+	$string = str_replace(['&lt;<', '>&gt;'], ['&lt;', '&gt;'], $string);
 	return $string;
 }
 
