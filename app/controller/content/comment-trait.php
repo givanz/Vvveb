@@ -55,7 +55,7 @@ trait CommentTrait {
 
 			//sanitize html and inline js code
 			$post['content'] = sanitizeHTML($post['content']);
-			$post['author']  = sanitizeHTML(str_replace(str_split('(){}:'), '', $post['author']));
+			$post['author']  = sanitizeHTML(stripChars($post['author']));
 
 			$comment   = array_merge($post, $user, [
 				'created_at'  => date('Y-m-d H:i:s'),

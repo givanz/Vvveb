@@ -1429,6 +1429,10 @@ function stripTagsArray($array, $tags) {
 	return $array;
 }
 
+function stripChars($string, $chars = ['(', ')' , '{' , '}', ':', '<' , '>']) {
+	return str_replace($chars, '', $string);
+}
+
 function sanitizeHTML($string) {
 	if (! is_string($string)) {
 		return $string;

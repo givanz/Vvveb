@@ -21,13 +21,25 @@
  */
 
 namespace Vvveb\System\User;
+use function Vvveb\stripChars;
+use function Vvveb\sanitizeHTML;
 
 class Auth {
 	static $options = ['cost' => 11];
 
 	public static function sanitize(&$data) {
+		foreach ($data as $name => &$val) { 
+			if (is_string($val) && !in_array($name, ['created_at', 'updated_at', 'bio'])) {
+				$val = stripChars($val);
+			}
+		}
+
 		if (isset($data['username'])) {
 			$data['username'] = preg_replace('/[^\w-]/', '', $data['username']);
+		}
+
+		if (isset($data['bio'])) {
+			$data['bio'] = sanitizeHTML($data['bio']);
 		}
 
 		if (isset($data['email'])) {
