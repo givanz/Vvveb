@@ -29,17 +29,38 @@ use function Vvveb\url;
 
 class Orders extends ComponentBase {
 	public static $defaultOptions = [
-		'start'             => 0,
-		'order_id'          => null,
-		'customer_order_id' => null,
-		'limit'             => ['url', 4],
-		'order'             => ['url', 'price asc'],
+		'start'              => 0,
+		'limit'              => ['url', 4],
+		'user_id'            => null,
+		'order_status'       => null,
+		'order_status_id'    => null,
+		'payment_status'     => null,
+		'payment_status_id'  => null,
+		'shipping_status'    => null,
+		'shipping_status_id' => null,
+		'email'              => null,
+		'phone_number'       => null,
+		'search'             => null,
+		'order_by'           => ['url', 'order_id'],
+		'direction'          => ['url', 'DESC'],
+		'language_id'        => null,
+		'site_id'            => null,
 	];
 
 	public $options = [];
 
 	function results() {
 		$orders = new \Vvveb\Sql\OrderSQL();
+
+		if (isset($this->options['order_by']) &&
+				! in_array($this->options['order_by'], ['order_id', 'created_at', 'updated_at'])) {
+			unset($this->options['order_by']);
+		}
+
+		if (isset($this->options['direction']) &&
+				! in_array($this->options['direction'], ['asc', 'desc'])) {
+			unset($this->options['direction']);
+		}
 
 		$results = $orders->getAll($this->options);
 
