@@ -42,16 +42,18 @@ class Cart extends Base {
 		$options = array_intersect_key($this->global['site'],
 			array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
 
-		$cart_id = false;
+		$encrypted_cart_id = false;
 
 		if (isset($this->request->get['cart_id'])) {
-			$cart_id = $options['cart_id'] = $this->request->get['cart_id'];
+			$encrypted_cart_id = $this->request->get['cart_id'];
 		}
 
 		$this->cart = ShoppingCart::getInstance($this->global + $options);
 
-		if ($cart_id) {
-			$this->cart->loadCart($cart_id);
+		if ($encrypted_cart_id) {
+			if ($cart_id = $this->cart->setEncryptedId($encrypted_cart_id)) {
+				$this->cart->loadCart($cart_id);
+			}
 		}
 	}
 

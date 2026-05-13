@@ -87,11 +87,12 @@ class Cart {
 		$this->tax      = Tax :: getInstance();
 		$this->weight   = Weight :: getInstance();
 
-		$this->cart_id  = $options['cart_id'] ?? null;
-		$this->options  = $options;
+		$this->options           = $options;
+		$this->cart_id           = $options['cart_id'] ?? null;
+		$this->encrypted_cart_id = $options['encrypted_cart_id'] ?? null;
 
-		if ($this->cart_id && ! is_numeric($this->cart_id)) {
-			$cart_id = urldecode($this->cart_id);
+		if ($this->encrypted_cart_id || ($this->cart_id && ! is_numeric($this->cart_id))) {
+			$cart_id = urldecode($this->encrypted_cart_id ?? $this->cart_id);
 			$key     = \Vvveb\getConfig('app.key');
 			$cart_id = \Vvveb\decrypt($key, $cart_id);
 
@@ -123,10 +124,23 @@ class Cart {
 	}
 
 	public function create() {
-		//calll only if you need a cart id beforehand, otherwise a cart will be created automatically when adding a product if it does not exist
+		//call only if you need a cart id beforehand, otherwise a cart will be created automatically when adding a product if it does not exist
 		$this->write();
 
 		return $this->cart_id;
+	}
+
+	public function setEncryptedId($encrypted_cart_id) {
+		$encrypted_cart_id = urldecode($encrypted_cart_id);
+		$key               = \Vvveb\getConfig('app.key');
+		$cart_id           = \Vvveb\decrypt($key, $encrypted_cart_id);
+
+		if ($cart_id) {
+			$this->encrypted_cart_id = $encrypted_cart_id;
+			$this->cart_id           = $cart_id;
+		}
+
+		return $cart_id;
 	}
 
 	public function getEncryptedId() {
@@ -189,8 +203,10 @@ class Cart {
 						if (is_numeric($value)) {
 							$productOptions[$value] = $value;
 						} else {
-							$product_option_value_id                  = $value['product_option_value_id'];
-							$productOptions[$product_option_value_id] = $product_option_value_id;
+							if (isset($value['product_option_value_id'])) {
+								$product_option_value_id                  = $value['product_option_value_id'];
+								$productOptions[$product_option_value_id] = $product_option_value_id;
+							}
 						}
 					}
 				}
@@ -266,7 +282,9 @@ class Cart {
 						if (is_numeric($option)) {
 							$product_option_value_id = $option;
 						} else {
-							$product_option_value_id = $option['product_option_value_id'];
+							if (isset($option['product_option_value_id'])) {
+								$product_option_value_id = $option['product_option_value_id'];
+							}
 						}
 
 						$value = $optionResults[$product_option_value_id];
@@ -313,6 +331,13 @@ class Cart {
 				//if product variant override price and stock
 				if (isset($prod['product_variant_id']) && $prod['product_variant_id']) {
 					$variant         = $variantsResults[$prod['options']] ?? [];
+					if (! $variant) {
+						foreach ($variantsResults as $var) {
+							if ($prod['product_variant_id'] == $var['product_variant_id']) {
+								$variant = $var;
+							}
+						}
+					}
 
 					if ($variant && $variant['product_variant_id'] == $prod['product_variant_id']) {
 						$prod['variant']        = $variant;
