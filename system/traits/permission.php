@@ -31,8 +31,8 @@ trait Permission {
 	 * Permission check for each module/action
 	 */
 	protected function permission($permission = null) {
-		$module     = $this->module ?? strtolower(FrontController::getModuleName());
-		$action     =  $this->action ?? strtolower(FrontController::getActionName());
+		$module     = strtolower(FrontController::getModuleName());
+		$action     = strtolower(FrontController::getActionName());
 		$action     = ($action && $action != 'index') ? '/' . $action : '';
 		$permission = $permission ?? ($module . $action);
 
@@ -50,7 +50,7 @@ trait Permission {
 
 			$this->notFound($data, 403);
 
-			die(0);
+			die();
 		}
 	}
 
