@@ -1,0 +1,2245 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Vvveb\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: nl_NL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.2.2\n"
+
+#: public/plugins/seo/plugin.php:46 plugins/test/plugin.php:48
+msgid "Test plugin"
+msgstr "Test plugin"
+
+#: admin/validate/settings.php:29 admin/validate/settings.php:36
+#: admin/validate/settings.php:43 app/validate/checkout_shipping.php:29
+#: app/validate/checkout_shipping.php:36 app/validate/checkout_shipping.php:43
+#: app/validate/checkout_shipping.php:50 app/validate/checkout_shipping.php:57
+#: app/validate/checkout_shipping.php:64 app/validate/checkout_shipping.php:71
+#: app/validate/checkout_shipping.php:78 app/validate/checkout_shipping.php:85
+#: app/validate/checkout_shipping.php:92 app/validate/checkout_shipping.php:99
+#: app/validate/checkout_shipping.php:106
+#: app/validate/checkout_shipping.php:113
+#: app/validate/checkout_shipping.php:120 app/validate/checkout.php:29
+#: app/validate/checkout.php:36 app/validate/checkout.php:43
+#: app/validate/checkout.php:50 app/validate/checkout_payment.php:29
+#: app/validate/checkout_payment.php:36 app/validate/checkout_payment.php:43
+#: app/validate/checkout_payment.php:50 app/validate/checkout_payment.php:57
+#: app/validate/checkout_payment.php:64 app/validate/checkout_payment.php:71
+#: app/validate/checkout_payment.php:78 app/validate/checkout_payment.php:85
+#: app/validate/checkout_payment.php:92 app/validate/checkout_payment.php:99
+#: app/validate/checkout_payment.php:106 app/validate/checkout_payment.php:113
+#: app/validate/checkout_payment.php:120
+msgid "%s must not be greater than 100"
+msgstr "%s mag niet groter zijn dan 100"
+
+#: admin/controller/product/product.php:149
+msgid "Product saved!"
+msgstr "Product bewaard!"
+
+#: admin/controller/user/login.php:75 app/controller/user/login.php:42
+msgid "Login successful!"
+msgstr "Succesvol aangemeld!"
+
+#: admin/controller/user/login.php:85 app/controller/user/login.php:46
+msgid "Authentication failed, wrong email or password!"
+msgstr "Authenticatie mislukt, verkeerde e-mail of wachtwoord!"
+
+#: admin/controller/tools/errorlog.php:41
+msgid "empty file"
+msgstr "leeg bestand"
+
+#: admin/controller/tools/errorlog.php:46
+msgid "PHP error log not readable, make sure that your log is properly configured and that is readable."
+msgstr "PHP foutlogboek niet leesbaar, zorg ervoor dat uw log goed geconfigureerd is en dat het leesbaar is."
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:16
+msgid "Vvveb - Edit product"
+msgstr "Vvveb - Product bewerken"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:133
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:140
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:133
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:134
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:133
+msgid "Edit Profile"
+msgstr "Profiel Bewerken"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:144
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:151
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:144
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:278
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:145
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:144
+msgid "Loading ..."
+msgstr "Laden ..."
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:144
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:151
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:144
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:220
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:278
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:469
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:639
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:145
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:144
+msgid "..."
+msgstr "..."
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:148
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:155
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:148
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:282
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:149
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:148
+msgid "Logout"
+msgstr "Uitloggen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:163
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:170
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:163
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:164
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:163
+msgid "View live website"
+msgstr "Live website bekijken"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:204
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:265
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:211
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:272
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:204
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:265
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:205
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:266
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:204
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:265
+#: config/custom-post-menu.php:40 config/admin-menu.php:405
+#: config/admin-menu.php:649
+msgid "Add new"
+msgstr "Nieuw toevoegen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:215
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:223
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:222
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:230
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:215
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:223
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:216
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:224
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:215
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:223
+msgid "Live"
+msgstr "Live"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:229
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:236
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:229
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:230
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:229
+msgid "Maintenance"
+msgstr "Onderhoud"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:235
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:242
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:235
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:236
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:235
+msgid "Coming soon"
+msgstr "Binnenkort verwacht"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:278
+msgid ""
+"&ensp;\n"
+" Product"
+msgstr ""
+"&ensp;\n"
+" Product"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:288
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:288
+msgid "&nbsp; Preview"
+msgstr "&nbsp; Voorbeeld"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:289
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:292
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:289
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:285
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:413
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:442
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:287
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:430
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:462
+msgid "&nbsp;"
+msgstr "&nbsp;"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:291
+msgid "&nbsp; Save draft"
+msgstr "&nbsp; Ontwerp opslaan"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:294
+msgid "&nbsp; Save product"
+msgstr "&nbsp; Bewaar productl"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:352
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:349
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:928
+msgid "&times;"
+msgstr "&times;"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:367
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:364
+#: config/custom-post-menu.php:65
+msgid "General"
+msgstr "Algemeen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:370
+msgid "Data"
+msgstr "Data"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:373
+msgid "Links"
+msgstr "Links"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:381
+msgid "Image"
+msgstr "Afbeelding"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:408
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:312
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:314
+msgid "Product Name"
+msgstr "Naam Product"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:415
+msgid "Product Url"
+msgstr "Product Url"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:421
+msgid "Product Slug"
+msgstr "Product Slug"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:429
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:418
+msgid "Description"
+msgstr "Beschrijving"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:432
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:421
+msgid "&nbsp; Design content"
+msgstr "&nbsp; Ontwerp inhoud"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:442
+msgid "Product tags"
+msgstr "Product tags"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:455
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:333
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:335
+msgid "Model"
+msgstr "Model"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:460
+msgid "SKU"
+msgstr "SKU"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:468
+msgid "UPC"
+msgstr "UPC"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:474
+msgid "EAN"
+msgstr "EAN"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:482
+msgid "JAN"
+msgstr "JAN"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:488
+msgid "ISBN"
+msgstr "ISBN"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:496
+msgid "MPN"
+msgstr "MPN"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:501
+msgid "Location"
+msgstr "Locatie"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:507
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:821
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1065
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1327
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1665
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1818
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:356
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:358
+msgid "Price"
+msgstr "Prijs"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:511
+msgid "Tax Class"
+msgstr "Belastingsklasse"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:521
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:819
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1063
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1325
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1663
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:735
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:360
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:362
+msgid "Quantity"
+msgstr "Aantal"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:526
+msgid "Minimum Quantity"
+msgstr "Minimum aantal"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:533
+msgid ""
+"Subtract\n"
+" Stock"
+msgstr ""
+"Aftrekken\n"
+" Voorraad"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:537
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:560
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:809
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:845
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:894
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:943
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:992
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1053
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1088
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1136
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1184
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1232
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1293
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1315
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1349
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1396
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1443
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1503
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1525
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1554
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1576
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1605
+msgid "Yes"
+msgstr "Ja"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:538
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:565
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:810
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:847
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:896
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:945
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:994
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1054
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1090
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1137
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1185
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1234
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1294
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1316
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1351
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1398
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1445
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1504
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1526
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1555
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1577
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1606
+msgid "No"
+msgstr "Nee"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:542
+msgid "Out Of Stock Status"
+msgstr "Geen voorraad status"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:554
+msgid "Requires Shipping"
+msgstr "Verzending vereist"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:572
+msgid "SEO URL"
+msgstr "SEO URL"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:579
+msgid ""
+"Date\n"
+" Available"
+msgstr ""
+"Datum\n"
+" Beschikbaar"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:593
+msgid ""
+"Dimensions (L x W x\n"
+" H)"
+msgstr ""
+"Afmetingen (L x B x\n"
+" H)"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:608
+msgid ""
+"Length\n"
+" Class"
+msgstr ""
+"Lengte\n"
+" Klasse"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:612
+msgid "Centimeter"
+msgstr "Centimeter"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:613
+msgid "Millimeter"
+msgstr "Millimeter"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:614
+msgid "Inch"
+msgstr "Inch"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:619
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:823
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1067
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1329
+msgid "Weight"
+msgstr "Gewicht"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:624
+msgid ""
+"Weight\n"
+" Class"
+msgstr ""
+"Gewichts\n"
+" Klasse"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:636
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:2020
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:670
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:482
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:572
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:366
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:368
+msgid "Status"
+msgstr "Status"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:639
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:369
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:371
+msgid "Enabled"
+msgstr "Ingeschakeld"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:640
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:370
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:372
+msgid "Disabled"
+msgstr "Uitgeschakeld"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:643
+msgid "Sort Order"
+msgstr "Sorteer volgorde"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:654
+msgid "Manufacturer"
+msgstr "Producent"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:663
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:236
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:52
+#: config/custom-post-menu.php:51 config/admin-menu.php:273
+#: config/admin-menu.php:488
+msgid "Categories"
+msgstr "Categorieën"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:676
+msgid "Related Products"
+msgstr "Gerelateerde producten"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:693
+msgid "Attribute"
+msgstr "Kenmerk"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:694
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:765
+msgid "Text"
+msgstr "Tekst"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:710
+msgid "100mhz"
+msgstr "100 MHz"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:741
+msgid "Checkbox"
+msgstr "Selectievakje"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:747
+msgid "Select"
+msgstr "Selecteer"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:753
+msgid "Textarea"
+msgstr "Tekstveld"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:759
+msgid "Radio"
+msgstr "Radio"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:771
+msgid "Date"
+msgstr "Datum"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:777
+#: storage/compiled-templates/app_www.vvveb.net_landing_error500.html:73
+msgid "File"
+msgstr "Bestand"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:783
+msgid "Time"
+msgstr "Tijd"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:789
+msgid "Date & Time"
+msgstr "Datum & Tijd"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:806
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1050
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1290
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1312
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1500
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1522
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1551
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1573
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1602
+msgid "Required"
+msgstr "Verplicht"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:818
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1062
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1324
+msgid "Option Value"
+msgstr "Optiewaarde"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:820
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1064
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1326
+msgid "Subtract Stock"
+msgstr "Trek voorraad af"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:822
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1066
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1328
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1924
+msgid "Points"
+msgstr "Punten"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:831
+msgid ""
+"Checkbox\n"
+" 1"
+msgstr ""
+"Selectievakje\n"
+" 1"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:834
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:930
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:979
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1039
+msgid "Checkbox 2"
+msgstr "Selectievakje 2"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:835
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:884
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:980
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1040
+msgid "Checkbox 3"
+msgstr "Selectievakje 3"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:836
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:885
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:934
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1041
+msgid "Checkbox 4"
+msgstr "Selectievakje 4"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:852
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:859
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:866
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:901
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:908
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:915
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:950
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:957
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:964
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:999
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1006
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1013
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1095
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1102
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1109
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1143
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1150
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1157
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1191
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1198
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1205
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1239
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1246
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1253
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1356
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1363
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1370
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1403
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1410
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1417
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1450
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1457
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1464
+msgid "+"
+msgstr "+"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:853
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:860
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:867
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:902
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:909
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:916
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:951
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:958
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:965
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1000
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1007
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1014
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1096
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1103
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1110
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1144
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1151
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1158
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1192
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1199
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1206
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1240
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1247
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1254
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1357
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1364
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1371
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1404
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1411
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1418
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1451
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1458
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1465
+msgid "-"
+msgstr "-"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:880
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:929
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:978
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1038
+msgid "Checkbox 1"
+msgstr "Selectievakje 1"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:881
+msgid ""
+"Checkbox\n"
+" 2"
+msgstr ""
+"Selectievakje\n"
+" 2"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:931
+msgid ""
+"Checkbox\n"
+" 3"
+msgstr ""
+"Selectievakje\n"
+" 3"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:981
+msgid ""
+"Checkbox\n"
+" 4"
+msgstr ""
+"Selectievakje\n"
+" 4"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1075
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1123
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1171
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1219
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1278
+msgid "Red"
+msgstr "Rood"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1077
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1124
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1172
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1220
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1279
+msgid "Blue"
+msgstr "Blauw"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1078
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1126
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1173
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1221
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1280
+msgid "Green"
+msgstr "Groen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1079
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1127
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1175
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1222
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1281
+msgid "Yellow"
+msgstr "Geel"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1299
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1509
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1531
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1560
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1582
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1611
+msgid ""
+"Option\n"
+" Value"
+msgstr ""
+"Opție\n"
+" Waarde"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1337
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1384
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1431
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1489
+msgid "Small"
+msgstr "Klein"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1339
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1385
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1432
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1490
+msgid "Medium"
+msgstr "Gemiddeld"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1340
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1387
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1433
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1491
+msgid "Large"
+msgstr "Groot"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1635
+msgid "Recurring Profile"
+msgstr "Terugkerend profiel"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1636
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1662
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1816
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1934
+msgid "Customer Group"
+msgstr "Klantengroep"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1664
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1817
+msgid "Priority"
+msgstr "Prioriteit"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1666
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1819
+msgid "Date Start"
+msgstr "Startdatum"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1667
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1820
+msgid "Date End"
+msgstr "Einddatum"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1675
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1716
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1757
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1828
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1940
+msgid "Default"
+msgstr "Standaard"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1890
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:460
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:483
+msgid "Edit"
+msgstr "Bewerk"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1893
+msgid "Clear"
+msgstr "Wissen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1935
+msgid "Reward Points"
+msgstr "Beloningspunten"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1958
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:445
+msgid "Featured Media"
+msgstr "Aanbevolen media"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1971
+msgid "Set featured image"
+msgstr "Aanbevolen afbeelding instellen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1979
+msgid "&ensp;Categories"
+msgstr "&ensp;Categorieën"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1990
+msgid "Fashion"
+msgstr "Mode"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:1997
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:860
+msgid "News"
+msgstr "Nieuws"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:2004
+msgid "Uncategorized"
+msgstr "Ongecategoriseerd"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_product.html:2013
+msgid "Product options"
+msgstr "Product opties"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:16
+msgid "Vvveb - Dasboard"
+msgstr "Vvveb - Dasboard"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:297
+msgid "Total new orders"
+msgstr "Totaal nieuwe bestellingen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:306
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:342
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:377
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:382
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:412
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:505
+msgid "0"
+msgstr "0"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:306
+msgid "Refunds"
+msgstr "Terugbetalingen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:311
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:347
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:678
+msgid "1"
+msgstr "1"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:311
+#: config/admin-menu.php:239 config/admin-menu.php:571
+msgid "Returns"
+msgstr "Retouren"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:333
+msgid "Total customers"
+msgstr "Totaal aantal klanten"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:342
+msgid "this month"
+msgstr "deze maand"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:347
+msgid "this year"
+msgstr "dit jaar"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:368
+msgid "Total Comments"
+msgstr "Totaal aantal reacties"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:377
+msgid "total"
+msgstr "totaal"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:382
+msgid "spam"
+msgstr "spam"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:403
+msgid "Total reviews"
+msgstr "Totaal aantal beoordelingen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:406
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:417
+msgid "5"
+msgstr "5"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:412
+msgid "unapproved"
+msgstr "niet goedgekeurd"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:417
+msgid "approved"
+msgstr "goedgekeurd"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:432
+msgid "Bar chart"
+msgstr "Staafdiagram"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:545
+msgid "Line chart"
+msgstr "Lijndiagram"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:657
+msgid "Latest orders"
+msgstr "Laatste bestellingen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:668
+msgid "#"
+msgstr "#"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:669
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:773
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:823
+msgid "Customer"
+msgstr "Klant"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:671
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:824
+msgid "Date added"
+msgstr "Datum toegevoegd"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:672
+msgid "Total"
+msgstr "Totaal"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:673
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:775
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:826
+msgid "Action"
+msgstr "Actie"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:704
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:94
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:527
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:553
+msgid "No posts to display!"
+msgstr "Geen berichten om weer te geven!"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:722
+msgid "Top products sales"
+msgstr "Verkoop topproducten"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:733
+msgid "Product"
+msgstr "Product"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:734
+msgid "Thumb"
+msgstr "Miniatuur"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:736
+msgid "Trend"
+msgstr "Trending"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:746
+msgid "31/05/2018"
+msgstr "31-05-2018"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:762
+msgid "New customers"
+msgstr "Nieuwe Klanten"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:774
+msgid "Date joined"
+msgstr "Datum toegevoegd"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:812
+msgid "New comments"
+msgstr "Nieuwe Reacties"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:825
+msgid "Comment"
+msgstr "Reacties"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:920
+msgid "Widgets"
+msgstr "Widgets"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:930
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:487
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:577
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:602
+msgid "Published"
+msgstr "Gepubliceerd"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:931
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:489
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:579
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:604
+msgid "Draft"
+msgstr "Concept"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:932
+msgid "Pending preview"
+msgstr "In afwachting van een voorvertoning"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:937
+msgid "Close"
+msgstr "Sluiten"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_index.html:938
+msgid "Add widget"
+msgstr "Widget toevoegen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:16
+msgid "Vvveb - Edit post"
+msgstr "Vvveb - Bericht bewerken"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:278
+msgid ""
+"&ensp;\n"
+" Post"
+msgstr ""
+"&ensp;\n"
+" Plaatsen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:292
+msgid "&nbsp; Save post"
+msgstr "&nbsp; Bewaar bericht"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:400
+msgid "Title"
+msgstr "Titel"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:406
+msgid "Post Url"
+msgstr "URL van het bericht"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:411
+msgid "Slug"
+msgstr "Melc"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:458
+msgid "Set featured media"
+msgstr "Aanbevolen media instellen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:464
+msgid "Post options"
+msgstr "Opties voor het plaatsen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:471
+msgid "Publish date"
+msgstr "Publicatiedatum"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:488
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:578
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:603
+msgid "Pending"
+msgstr "In afwachting van"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:490
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:501
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:580
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:605
+msgid "Private"
+msgstr "Privé"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:495
+msgid "Visibillity"
+msgstr "Zichtbaarheid"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:500
+msgid "Public"
+msgstr "Openbaar"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:565
+#: config/custom-post-menu.php:58 config/admin-menu.php:495
+msgid "Tags"
+msgstr "Etichete"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:590
+msgid "Attributes"
+msgstr "Kenmerken"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_post.html:597
+msgid "Template"
+msgstr "Template"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_user_login.html:16
+msgid "Vvveb - Login"
+msgstr "Vvveb - Inloggen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_user_login.html:53
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:191
+msgid "&#10006;"
+msgstr "&#10006;"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_user_login.html:60
+msgid "Username or email"
+msgstr "Gebruikersnaam of e-mailadres"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_user_login.html:65
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:211
+msgid "Password"
+msgstr "Wachtwoord"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_user_login.html:70
+msgid "&#128274;"
+msgstr "&#128274;"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_user_login.html:84
+msgid "Sign In &nbsp;"
+msgstr "Aanmelden &nbsp;"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_user_login.html:95
+msgid "Remember me"
+msgstr "Onthoud mij"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_user_login.html:99
+msgid "Forgot your password?"
+msgstr "Wachtwoord vergeten?"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:13
+msgid "Blog Home - Vvveb Default Blog Template"
+msgstr "Blog Home - Vvveb Standaard Blog Template"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:30
+msgid "Vvveb Blog"
+msgstr "Vvveb Blog"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:31
+msgid "minimal blog template"
+msgstr "minimale blog template"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:45
+msgid "Our Solution"
+msgstr "Onze oplossing"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:48
+msgid "How We Help"
+msgstr "Hoe wij helpen"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:51
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:110
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:116
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:808
+msgid "Blog"
+msgstr "Blog"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:54
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:141
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:151
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:813
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:124
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:369
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:371
+msgid "Contact"
+msgstr "Contact"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:111
+msgid "Post author"
+msgstr "Auteur van het bericht"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:115
+msgid "By"
+msgstr "Door"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:115
+msgid "admin"
+msgstr "admin"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:121
+msgid "Post date"
+msgstr "Datum bericht"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:126
+msgid "December 31, 2020"
+msgstr "31 December 2020"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:134
+msgid "on Hello world!"
+msgstr "op Hallo wereld!"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:157
+msgid "#winter"
+msgstr "#winter"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:158
+msgid "#tag"
+msgstr "#etichetă"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:178
+msgid "Newer Posts"
+msgstr "Nieuwe berichten"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:195
+msgid "Older Posts"
+msgstr "Oude berichten"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:251
+msgid "Archives"
+msgstr "Arhieven"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:255
+msgid "January 2021"
+msgstr "Januari 2021"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:258
+msgid "December 2020"
+msgstr "December 2020"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:261
+msgid "November 2018"
+msgstr "November 2018"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:264
+msgid "October 2018"
+msgstr "Oktober 2018"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:272
+msgid "About"
+msgstr "Over"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:274
+msgid "Integer non diam sit amet magna luctus mollis ac eu nisi. In accumsan tellus ut dapibus blandit."
+msgstr "Integer non diam sit amet magna luctus mollis ac eu nisi. In accumsan tellus ut dapibus blandit."
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:299
+msgid "Copyright &copy; Your Website 2021"
+msgstr "Copyright &copy; Uw Website 2021"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:300
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:908
+msgid "Powered by"
+msgstr "Aangedreven door"
+
+#: storage/compiled-templates/app_blog.vvveb.net_blog-default_index.html:300
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:908
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:354
+msgid "Vvveb"
+msgstr "Vvveb"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:10
+msgid "Essence - Homepage"
+msgstr "Essence - Hoofdpagina"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:57
+msgid "Popular"
+msgstr "Populair"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:70
+msgid "Newest"
+msgstr "Nieuwste"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:85
+msgid "Bestsellers"
+msgstr "Bestsellers"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:107
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:805
+msgid "Shop"
+msgstr "Winkel"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:113
+#: config/admin-menu.php:124 config/admin-menu.php:133
+msgid "Pages"
+msgstr "Pagina’s"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:121
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:841
+msgid "Guides"
+msgstr "Handleidingen"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:126
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:826
+msgid "Order status"
+msgstr "Bestel status"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:131
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:836
+msgid "Shipping & Delivery"
+msgstr "Verzending en levering"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:136
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:831
+msgid "Payment options"
+msgstr "Betalingsopties"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:206
+msgid "E-Mail Address"
+msgstr "E-mailadres"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:220
+msgid "Authenticating"
+msgstr "Verificatie"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:224
+msgid "Login"
+msgstr "Inloggen"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:229
+msgid "Forgotten Password"
+msgstr "Wachtwoord vergeten"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:245
+msgid "New Customer"
+msgstr "Nieuwe Klant"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:246
+msgid "Register Account"
+msgstr "Account aanmaken"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:252
+msgid "Welcome"
+msgstr "Welkom"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:252
+msgid "John Doe"
+msgstr "John Doe"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:257
+#: config/custom-post-menu.php:70
+msgid "Comments"
+msgstr "Reacties"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:260
+#: config/admin-menu.php:225
+msgid "Orders"
+msgstr "Bestellingen"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:263
+msgid "Downloads"
+msgstr "Downloads"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:266
+msgid "Profile"
+msgstr "Profiel"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:328
+msgid "Mango"
+msgstr "Mango"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:330
+msgid "Size: S"
+msgstr "Maat: S"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:331
+msgid "Color: Red"
+msgstr "Kleur: Rood"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:354
+msgid "Summary"
+msgstr "Overzicht"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:357
+msgid "subtotal:"
+msgstr "subtotaal:"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:358
+msgid "$274.00"
+msgstr "274,00 USD"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:361
+msgid "delivery:"
+msgstr "bezorging:"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:362
+msgid "Free"
+msgstr "Gratis"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:365
+msgid "discount:"
+msgstr "korting:"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:366
+msgid "-15%"
+msgstr "-15%"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:369
+msgid "total:"
+msgstr "totaal:"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:374
+msgid "VIEW CART"
+msgstr "WINKELWAGEN BEKIJKEN"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:375
+msgid "check out"
+msgstr "afrekenen"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:392
+msgid "Enter text to search!"
+msgstr "Vul tekst in om te zoeken!"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:401
+msgid "No posts found!"
+msgstr "Geen berichten gevonden!"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:426
+msgid "No products found!"
+msgstr "Geen producten gevonden!"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:469
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:474
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:639
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:643
+msgid "Add to cart"
+msgstr "Toevoegen aan winkelwagen"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:513
+msgid "asoss"
+msgstr "asoss"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:514
+msgid "New Collection"
+msgstr "Nieuwe Collectie"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:515
+msgid "view collection"
+msgstr "collectie bekijken"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:532
+msgid "Clothing"
+msgstr "Kleding"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:542
+msgid "Shoes"
+msgstr "Schoenen"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:552
+msgid "Accessories"
+msgstr "Toebehoren"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:570
+msgid "-60%"
+msgstr "-60%"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:571
+msgid "Global Sale"
+msgstr "Globale Verkoop"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:572
+msgid "Buy Now"
+msgstr "Koop nu"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:588
+msgid "Popular Products"
+msgstr "Populaire Producten"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:712
+msgid "Latest Posts"
+msgstr "Laatste berichten"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:742
+msgid "Continue reading"
+msgstr "Lees verder"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:846
+msgid "Term of use"
+msgstr "Gebruikstermijn"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:851
+msgid "Privacy Policy"
+msgstr "Privacybeleid"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:863
+msgid "Subscribe"
+msgstr "Abonneer"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:904
+msgid "Copyright &copy;"
+msgstr "Copyright &copy;"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:905
+msgid "All rights reserved | This template is made with"
+msgstr "Alle rechten voorbehouden | Deze template is gemaakt met"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:905
+msgid "by"
+msgstr "door"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:905
+msgid "Colorlib"
+msgstr "Colorlib"
+
+#: storage/compiled-templates/app_demo.vvveb.net_essence_index.html:923
+msgid "Product was added to cart."
+msgstr "Product is toegevoegd aan winkelwagen."
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_error500.html:15
+msgid "Vvveb - Server Under Load"
+msgstr "Vvveb - Server zwaar belast"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_error500.html:60
+msgid "Internal server error, please try again later."
+msgstr "Interne server fout, probeer het later nog eens."
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_error500.html:64
+msgid "Refresh page"
+msgstr "Ververs pagina"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_error500.html:67
+msgid "Error"
+msgstr "Fout"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_error500.html:81
+msgid "Code"
+msgstr "Code"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_error500.html:91
+msgid "Trace"
+msgstr "Traceer"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:16
+msgid "Vvveb - Products"
+msgstr "Vvveb - Producten"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:279
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:499
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:505
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:514
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:545
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:281
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:526
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:532
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:541
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:573
+msgid "&ensp;"
+msgstr "&ensp;"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:280
+#: config/admin-menu.php:249 config/admin-menu.php:256
+msgid "Products"
+msgstr "Producten"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:300
+msgid "&nbsp; Add product"
+msgstr "&nbsp; Product toevoegen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:316
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:318
+msgid "Apple Cinema 30\" 23"
+msgstr "Apple Cinema 30\" 23"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:319
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:321
+msgid "Canon EOS 5D"
+msgstr "Canon EOS 5D"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:322
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:324
+msgid "HP LP3065"
+msgstr "HP LP3065"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:325
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:327
+msgid "HTC Touch HD"
+msgstr "HTC Touch HD"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:328
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:330
+msgid "iMac"
+msgstr "iMac"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:337
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:339
+msgid "Product 15"
+msgstr "Product 15"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:340
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:342
+msgid "Product 3"
+msgstr "Product 3"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:343
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:345
+msgid "Product 21"
+msgstr "Product 21"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:346
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:348
+msgid "Product 1"
+msgstr "Product 1"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:349
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:351
+msgid "Product 14"
+msgstr "Product 14"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:374
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:376
+msgid "Filter"
+msgstr "Filter"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:383
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:385
+msgid "Check this custom checkbox"
+msgstr "Deze aangepaste checkbox aanvinken"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:389
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:391
+msgid "Toggle this custom radio"
+msgstr "Deze aangepaste radio aan-/uitzetten"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:394
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:396
+msgid "Or toggle this other custom radio"
+msgstr "Of deze andere aangepaste radio"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:420
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:437
+msgid "&ensp;Thumbnail"
+msgstr "&ensp;Miniatuur"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:423
+msgid "&ensp;Product"
+msgstr "&ensp;Product"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:426
+msgid "&ensp;Price"
+msgstr "&ensp;Prijs"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:429
+msgid "&ensp;Stock"
+msgstr "&ensp;Voorraad"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:432
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:452
+msgid "&ensp;Actions"
+msgstr "&ensp;Acties"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:465
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:506
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:489
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:533
+msgid "Design"
+msgstr "Ontwerp"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:470
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:500
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:494
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:527
+msgid "View"
+msgstr "Bekijk"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:480
+msgid "10"
+msgstr "10"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:489
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:516
+msgid "&ensp;Edit"
+msgstr "&ensp;Bewerken"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:493
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:520
+msgid "Toggle primary"
+msgstr "Aan-/Uitzetten primair"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:496
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:523
+#: config/admin-menu.php:302
+msgid "Options"
+msgstr "Opties"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:515
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:542
+msgid "Delete"
+msgstr "Verwijder"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:543
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:571
+msgid "items, page"
+msgstr "artikelen, pagina"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:545
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:573
+msgid "of"
+msgstr "van"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:554
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:582
+msgid "First"
+msgstr "Eerste"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:561
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:589
+msgid "Previous"
+msgstr "Vorige"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:578
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:606
+msgid "Next"
+msgstr "Volgende"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_product_products.html:585
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:613
+msgid "Last"
+msgstr "Laatste"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_error404.html:15
+msgid "Vvveb - Page not found"
+msgstr "Vvveb - Pagina niet gevonden"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_error404.html:60
+msgid "Page not found."
+msgstr "Pagina niet gevonden."
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:16
+msgid "Vvveb - Posts"
+msgstr "Vvveb - Berichten"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:282
+#: config/custom-post-menu.php:27
+msgid "Posts"
+msgstr "Berichten"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:302
+msgid "&nbsp; Add post"
+msgstr "&nbsp; Bericht toevoegen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:409
+msgid "Edit selected"
+msgstr "Geselecteerde bewerken"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:413
+msgid "Delete selected"
+msgstr "Geslecteerde verwijderen"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:440
+msgid "&ensp;Name"
+msgstr "&ensp;Naam"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:443
+msgid "&ensp;Author"
+msgstr "&ensp;Auteur"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:446
+msgid "&ensp;Comments"
+msgstr "&ensp;Reacties"
+
+#: storage/compiled-templates/admin_www.vvveb.net_default_content_posts.html:449
+msgid "&ensp;Date"
+msgstr "&ensp;Datum"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:9
+msgid "Canvas - Homepage"
+msgstr "Canvas - Hoofdpagina"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:108
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:356
+#: config/admin-menu.php:393
+msgid "Themes"
+msgstr "Thema’s"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:111
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:357
+#: config/admin-menu.php:368 config/admin-menu.php:386
+msgid "Plugins"
+msgstr "Pluginuri"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:114
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:362
+msgid "Resources"
+msgstr "Bronnen"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:116
+msgid "User Documentation"
+msgstr "Gebruikersdocumentatie"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:117
+msgid "Developer Documentation"
+msgstr "Ontwikkelaarsdocumentatie"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:121
+msgid "Github"
+msgstr "Github"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:138
+msgid "Open Source CMS"
+msgstr "Open Source CMS"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:139
+msgid "Reinvented"
+msgstr "Opnieuw uitgevonden"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:142
+msgid "Powerful and easy to use drag and drop builder"
+msgstr "Krachtige en gemakkelijk te gebruiken opmaakprogramma met slepen en neerzetten"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:143
+msgid "for blogs, websites or ecommerce stores."
+msgstr "voor blogs, websites of webwinkels."
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:148
+msgid "&#9889;"
+msgstr "&#9889;"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:148
+msgid "Free download"
+msgstr "Gratis Download"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:148
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:153
+msgid "&rsaquo;"
+msgstr "&rsaquo;"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:152
+msgid "Live demo"
+msgstr "Live demo"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:152
+msgid "&rarr;"
+msgstr "&rarr;"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:156
+msgid "Page builder"
+msgstr "Paginabouwer"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:157
+msgid "Frontend"
+msgstr "Voorkant"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:163
+msgid "* Note: Early Alpha Preview"
+msgstr "* Opmerking: Vroege Alpha Voorbeeld"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:188
+msgid "Drag and drop builder"
+msgstr "Bouwer met slepen en neerzetten"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:189
+msgid "Unlimited design powers with an easy to use interface"
+msgstr "Onbeperkte ontwerpmogelijkheden met een gebruiksvriendelijke interface"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:190
+msgid "change anything on your website with a few clicks."
+msgstr "verander alles op uw website met een paar klikken."
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:214
+#: config/admin-menu.php:718
+msgid "Security"
+msgstr "Beveiliging"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:215
+msgid "Vvveb is 100% safe against sql injections"
+msgstr "Vvveb is 100% veilig tegen sql-injecties"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:216
+msgid "a vulerability that affects most CMSs."
+msgstr "een kwetsbaarheid die de meeste CMS’en treft."
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:229
+msgid "Unlimited theme flexibility"
+msgstr "Onbeperkte flexibiliteit van het thema"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:230
+msgid "Vvveb uses plain html for templating for maximum flexibility"
+msgstr "Vvveb gebruikt standaard html voor templating voor maximale flexibiliteit"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:231
+msgid "convert any html template to a theme in just a few minutes."
+msgstr "converteer elke html template naar een thema in slechts enkele minuten."
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:254
+#: config/admin-menu.php:212 config/admin-menu.php:506
+msgid "Ecommerce"
+msgstr "Webwinkel"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:255
+msgid "Vvveb is a full featured ecommerce platform"
+msgstr "Vvveb is een volwaardig webwinkelplatform"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:256
+msgid "with advanced functionality."
+msgstr "met geavanceerde functionaliteit."
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:269
+msgid "Localization"
+msgstr "Lokalisering"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:270
+msgid "Publish content in multiple languages"
+msgstr "Publiceer inhoud in meerdere talen"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:271
+msgid "or sell in different currencies."
+msgstr "of verkopen in verschillende valuta."
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:294
+msgid "Multisite"
+msgstr "Multisite"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:295
+msgid "Run multiple websites or subdomains"
+msgstr "Meerdere websites of subdomeinen beheren"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:296
+msgid "from the same installation."
+msgstr "uit dezelfde installatie."
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:309
+msgid "Demo import"
+msgstr "Importeer demo"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:310
+msgid "Built in demo import functionality helps you get started faster"
+msgstr "Ingebouwde functionaliteit voor het importeren van demo’s helpt u sneller aan de slag te gaan"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:311
+msgid "by providing initial content and configuration."
+msgstr "door het verstrekken van initiële inhoud en configuratie."
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:334
+msgid "Open source and free"
+msgstr "Open source en gratis"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:335
+msgid "Open source code means"
+msgstr "Open source code betekent"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:336
+msgid "transparency and collaboration."
+msgstr "transparantie en samenwerking."
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:364
+msgid "User documentation"
+msgstr "Gebruikersdocumentatie"
+
+#: storage/compiled-templates/app_www.vvveb.net_landing_index.html:365
+msgid "Developer documentation"
+msgstr "Ontwikkelaarsdocumentatie"
+
+#: system/validator.php:41 system/validator.php:112
+msgid "%s is empty"
+msgstr "%s is leeg"
+
+#: system/validator.php:42
+msgid "%s is invalid, valid options are %s"
+msgstr "%s is ongeldig, geldige opties zijn %s"
+
+#: system/validator.php:43
+msgid "%s is longer than %d"
+msgstr "%s is langer dan %d"
+
+#: system/validator.php:44
+msgid "%s is shorter than %d"
+msgstr "%s is korter dan %d"
+
+#: system/validator.php:45
+msgid "%s does not match %s"
+msgstr "%s komt niet overeen met %s"
+
+#: system/validator.php:46 system/validator.php:47
+msgid "%s is invalid"
+msgstr "%s is ongeldig"
+
+#: system/validator.php:48
+msgid "%s invalid email"
+msgstr "%s ongeldig e-maiadres"
+
+#: system/validator.php:49
+msgid "%s not complex enough, include uppercase letters and digits"
+msgstr "%s niet complex genoeg, gebruik hoofdletters en cijfers"
+
+#: plugins/debug/plugin.php:43 plugins/markdown/plugin.php:43
+msgid "Markdown"
+msgstr "Markdown"
+
+#: plugins/seo/plugin.php:46
+msgid "Seo optimization"
+msgstr "SEO optimalisatie"
+
+#: plugins/cookie-notice/plugin.php:43
+msgid "Cookie notice"
+msgstr "Cookiebericht"
+
+#: plugins/insert-scripts/plugin.php:48
+msgid "Insert scripts"
+msgstr "Scripts invoegen"
+
+#: plugins/cdn/plugin.php:43
+msgid "CDN for static content"
+msgstr "CDN voor statische inhoud"
+
+#: plugins/minify/plugin.php:43
+msgid "Minify"
+msgstr "Verklein"
+
+#: plugins/contact-form/plugin.php:49
+msgid "Contact form"
+msgstr "Contact formulier"
+
+#: plugins/hide-ecommerce/plugin.php:43
+msgid "HideEcommerce"
+msgstr "Verberg e-commerce"
+
+#: config/custom-post-menu.php:34
+msgid "List"
+msgstr "Liijst"
+
+#: config/custom-post-menu.php:46 config/admin-menu.php:144
+msgid "Classification"
+msgstr "Rangschikking"
+
+#: config/admin-menu.php:28
+msgid "Dashboard"
+msgstr "Bord"
+
+#: config/admin-menu.php:34
+msgid "Edit website"
+msgstr "Website bewerken"
+
+#: config/admin-menu.php:139
+msgid "Add new page"
+msgstr "Nieuwe pagina toevoegen"
+
+#: config/admin-menu.php:149 config/admin-menu.php:469
+msgid "Menus"
+msgstr "Menu’s"
+
+#: config/admin-menu.php:206
+msgid "Media library"
+msgstr "Mediabibliotheek"
+
+#: config/admin-menu.php:217
+msgid "Sales"
+msgstr "Verkoop"
+
+#: config/admin-menu.php:233
+msgid "Recurring"
+msgstr "Terugkerend"
+
+#: config/admin-menu.php:262
+msgid "Add new product"
+msgstr "Nieuw product teovoegen"
+
+#: config/admin-menu.php:268
+msgid "Taxonomy"
+msgstr "Taxonomie"
+
+#: config/admin-menu.php:279
+msgid "Manufacturers"
+msgstr "Producenten"
+
+#: config/admin-menu.php:285
+msgid "Vendors"
+msgstr "Leveranciers"
+
+#: config/admin-menu.php:291 config/admin-menu.php:314
+#: config/admin-menu.php:363
+msgid "Configuration"
+msgstr "Configuratie"
+
+#: config/admin-menu.php:296 config/admin-menu.php:475
+msgid "Custom fields"
+msgstr "Aangepaste velden"
+
+#: config/admin-menu.php:308
+msgid "Digital content"
+msgstr "Digitale inhoud"
+
+#: config/admin-menu.php:319
+msgid "Reviews"
+msgstr "Beoordelingen"
+
+#: config/admin-menu.php:327
+msgid "Questions"
+msgstr "Vragen"
+
+#: config/admin-menu.php:343 config/admin-menu.php:349
+#: config/admin-menu.php:432
+msgid "Users"
+msgstr "Gebruikers"
+
+#: config/admin-menu.php:355 config/admin-menu.php:438
+msgid "Add new user"
+msgstr "Nieuwe gebruiker toevoegen"
+
+#: config/admin-menu.php:374
+msgid "Installed Plugins"
+msgstr "Geïnstalleerde Plugins"
+
+#: config/admin-menu.php:380
+msgid "Add new plugin"
+msgstr "Nieuwe plugin toevoegen"
+
+#: config/admin-menu.php:399
+msgid "Installed Themes"
+msgstr "Geïnstalleerde Thema’s"
+
+#: config/admin-menu.php:413
+msgid "Settings"
+msgstr "Instellingen"
+
+#: config/admin-menu.php:420
+msgid "General Settings"
+msgstr "Algemene Instellingen"
+
+#: config/admin-menu.php:426
+msgid "Admin users"
+msgstr "Beheerders"
+
+#: config/admin-menu.php:444 config/admin-menu.php:553
+msgid "Roles"
+msgstr "Rollen"
+
+#: config/admin-menu.php:449 config/admin-menu.php:558
+msgid "Manage Roles"
+msgstr "Beheer rollen"
+
+#: config/admin-menu.php:455 config/admin-menu.php:564
+msgid "Add Roles"
+msgstr "Rollen toevoegen"
+
+#: config/admin-menu.php:463
+msgid "Content"
+msgstr "Inhoud"
+
+#: config/admin-menu.php:481
+msgid "Taxonomies"
+msgstr "Belastingniveaus"
+
+#: config/admin-menu.php:489
+msgid "(Hierarchical)"
+msgstr "(Hiërarchisch)"
+
+#: config/admin-menu.php:496
+msgid "(Flat)"
+msgstr "(Vlak)"
+
+#: config/admin-menu.php:513
+msgid "Checkout & payments"
+msgstr "Afrekenen & betalingen"
+
+#: config/admin-menu.php:519
+msgid "Shipping"
+msgstr "Verzending"
+
+#: config/admin-menu.php:525
+msgid "Email notifications"
+msgstr "Meldingen per e-mail"
+
+#: config/admin-menu.php:531
+msgid "Discount coupons"
+msgstr "Kortingsbonnen"
+
+#: config/admin-menu.php:536
+msgid "Taxes"
+msgstr "Belastingen"
+
+#: config/admin-menu.php:541
+msgid "Tax classes"
+msgstr "Belastingsklassen"
+
+#: config/admin-menu.php:547
+msgid "Tax rates"
+msgstr "Belastingtarieven"
+
+#: config/admin-menu.php:576
+msgid "Statuses"
+msgstr "Statussen"
+
+#: config/admin-menu.php:584
+msgid "Classes"
+msgstr "Klassen"
+
+#: config/admin-menu.php:594
+msgid "Localisation"
+msgstr "Lokalisatie"
+
+#: config/admin-menu.php:600
+msgid "Languages"
+msgstr "Talen"
+
+#: config/admin-menu.php:606
+msgid "Currencies"
+msgstr "Valuta"
+
+#: config/admin-menu.php:611
+msgid "Geo location"
+msgstr "Geo locatie"
+
+#: config/admin-menu.php:617
+msgid "Countries"
+msgstr "Landen"
+
+#: config/admin-menu.php:623
+msgid "Zones"
+msgstr "Zones"
+
+#: config/admin-menu.php:628
+msgid "Geo Zones"
+msgstr "Geo Zones"
+
+#: config/admin-menu.php:637 config/admin-menu.php:643
+msgid "Sites"
+msgstr "Websites"
+
+#: config/admin-menu.php:659
+msgid "Tools"
+msgstr "Gereedschap"
+
+#: config/admin-menu.php:666
+msgid "Cache"
+msgstr "Cache"
+
+#: config/admin-menu.php:672
+msgid "Import/Export"
+msgstr "Import/Export"
+
+#: config/admin-menu.php:678
+msgid "Import"
+msgstr "Importeer"
+
+#: config/admin-menu.php:684
+msgid "Export"
+msgstr "Exporteer"
+
+#: config/admin-menu.php:692
+msgid "Backup"
+msgstr "Backup"
+
+#: config/admin-menu.php:698
+msgid "System info"
+msgstr "Systeeminformatie"
+
+#: config/admin-menu.php:704
+msgid "System Info"
+msgstr "Systeeminformatie"
+
+#: config/admin-menu.php:710
+msgid "Error log"
+msgstr "Foutenlogboek"
+
+#: app/component/checkout.php:64
+msgid "checkout created!"
+msgstr "afrekening gemaakt!"
+
+#: app/component/checkout.php:66 app/controller/user/signup.php:47
+msgid "This email has already been used!"
+msgstr "Deze e-mailadres is al gebruikt!"
+
+#: app/component/checkout.php:69 app/controller/checkout/checkout.php:52
+msgid "Error creating checkout!"
+msgstr "Fout bij het aanmaken van de afrekening!"
+
+#: app/controller/user/signup.php:45
+msgid "User created!"
+msgstr "Gebruiker aangemaakt!"
+
+#: app/controller/user/signup.php:50
+msgid "Error creating user!"
+msgstr "Fout bij het aanmaken van gebruiker!"
+
+#: app/controller/checkout/checkout.php:47
+msgid "Order placed!"
+msgstr "Bestelling geplaatst!"
