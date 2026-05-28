@@ -480,8 +480,19 @@ class View {
 						return $return;
 					}
 				} catch (\ParseError | \Error $e) {
-					$data = \Vvveb\System\Core\exceptionToArray($e, $this->compiledTemplate);
+					static $handled;
 
+					if ($handled) {
+						if (DEBUG) {
+							echo $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
+						} else {
+							die('Server error, enable debug for more info');
+						}
+						return;
+					}
+					$handled = true;
+
+					$data = \Vvveb\System\Core\exceptionToArray($e, $this->compiledTemplate);
 					return FrontController :: notFound(false, $data, 500);
 				}
 			}
