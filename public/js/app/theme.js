@@ -179,28 +179,52 @@ function productPage() {
 					let variant;
 					
 					if (Object.keys(productVariants).length > 0) {// have variants
-						let variantId = JSON.stringify(selectedProductOptions).replaceAll(/[^\d:,]+/g,'');
+						//let variantId = JSON.stringify(selectedProductOptions).replaceAll(/[^\d:,]+/g,'');
+						//variant = productVariants[variantId];
+						variant = false;
+						let variantId = "";
+						let options = {};
+						let opts = [];
+						let lastVariantId = "";
+						for (opt in selectedProductOptions) {
+							if (variantId) {
+								variantId += ","
+							}
+							
+							variantId += opt + ":" + selectedProductOptions[opt];
+							opts.push(opt);
+							
+							if (productVariants[variantId]) {
+								options[variantId] = Array.from(opts);
+								lastVariantId = variantId;
+							}
+						}
 
-						variant = productVariants[variantId];
+						variant = productVariants[lastVariantId];
 
 						if (variant) {
 							isStock = variant && variant.stock_quantity > 0 ? true : false;
 							productOptionsContainer.querySelectorAll('input[type="radio"]').forEach(radio => {
-								const currentOptions = Object.assign({}, selectedProductOptions);
 								let id = radio.name.match(/(\d+)/)[1] ?? false;
-								if (id) {
+								const currentOptions = Object.assign({}, selectedProductOptions);
+								if (!options[lastVariantId].includes(id)) return;
+								
+								if (id && currentOptions[id]) {
 									currentOptions[id] = radio.value;
 									let currentVariantId = JSON.stringify(currentOptions).replaceAll(/[^\d:,]+/g,'');
 									let variant = productVariants[currentVariantId];
-									let hasStock = variant && variant.stock_quantity > 0 ? true : false;
-									let text = radio.parentNode.querySelector("[data-v-value-name]");
+									
+									if (variant) {
+										let hasStock = variant && variant.stock_quantity > 0 ? true : false;
+										let text = radio.parentNode.querySelector("[data-v-value-name]");
 
-									if (hasStock) {
-										text.style.textDecoration = "";
-										text.style.opacity = "";
-									} else {
-										text.style.textDecoration = "line-through";
-										text.style.opacity = 0.5;
+										if (hasStock) {
+											text.style.textDecoration = "";
+											text.style.opacity = "";
+										} else {
+											text.style.textDecoration = "line-through";
+											text.style.opacity = 0.5;
+										}
 									}
 								}
 							});
@@ -236,7 +260,7 @@ if ('serviceWorker' in navigator) {
 }
 
 function togglePasswordInput(element, input) {
-	let password = document.getElementById(input);
+	let password = document.getElementById(input) || element.parentNode.querySelector("[type=text],[type=password]");
 	if (password.type == "password") {
 		password.type = "text"; 
 		let i = element.querySelector("i")

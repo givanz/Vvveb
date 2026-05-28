@@ -8,10 +8,11 @@ foreach ($this->product['product_variant'] as $options => $variant) {
 	$product_variant_id = $variant['product_variant_id'];
 ?>
 	@product-variant|data-id                       = $variant['product_variant_id']
-	@product-variant [data-v-variant-name]         = $this->combinations[$options]
+	@product-variant [data-v-variant-name]         = $variant['name']
 	@product-variant input[data-v-variant-*]|value = $variant['@@__data-v-variant-(*)__@@']
 	@product-variant input[data-v-variant-*]|name  = <?php echo "product_variant[$product_variant_id][@@__data-v-variant-(*)__@@]";?>
 
+	@product-variant [data-v-variant-combination]|value = $options
 	
 	@product-variant [data-v-variant-combination]|before = <?php 
 		$name = 'combinations';

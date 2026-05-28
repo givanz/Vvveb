@@ -260,9 +260,26 @@ class Product extends Edit {
 
 		$view->combinations = [];
 
-		if ($optionIds) {
-			$combinations       = $this->optionCombinations($optionIds);
-			$view->combinations = array_combine($combinations[1], $combinations[0]);
+		if ($optionIds && $view->product['product_variant']) {
+			foreach ($view->product['product_variant'] as $opts => &$variant) {
+				$keys = explode(',', $opts);
+				$name = '';
+				foreach ($keys as $key) {
+					$r = explode(':', $key);
+					$o = $r[0];
+					$v = $r[1];
+
+					if ($name) {
+						$name .= ' / ';
+					}
+
+					$name .= $optionIds[$o][$v];
+				}
+
+				$variant['name'] = $name;
+			}
+			//$combinations       = $this->optionCombinations($optionIds);
+			//$view->combinations = array_combine($combinations[1], $combinations[0]);
 		}
 
 		$view->product['manufacturer_id'] = (($view->product['manufacturer_id'] ?? 0) ? $view->product['manufacturer_id'] : '');
