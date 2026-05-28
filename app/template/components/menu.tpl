@@ -33,19 +33,43 @@ if (isset($this->_component['menu']) && isset($this->_component['menu'][$_menu_i
 @category|data-v-id = $category['menu_item_id']
 @category|data-v-component = 'menu'
 @category|data-v-type = 'menu-item'
-
+	
 @category|before = <?php 
 
 	foreach($_categories as $id => $category) {
 		if (isset($category['parent_id']) && ($category['parent_id'] == $parent_id)) {
 ?>
 
+		@category|addNewAttribute = <?php if (isset($category['options']) && !$vvveb_is_page_edit)
+		echo 'style="';
+		 if (isset($category['options']['width'])) echo 'position:static;';
+		echo '"';
+		?>		
+		
+		@category > a|addNewAttribute = <?php if (isset($category['options']) && !$vvveb_is_page_edit)
+		echo 'style="';
+		 if (isset($category['options']['padding-x'])) echo 'padding-left:' . $category['options']['padding-x'] . 'px;padding-right:' . $category['options']['padding-x'] .'px;';
+		 if (isset($category['options']['padding-y'])) echo 'padding-top:' . $category['options']['padding-y'] . 'px;padding-bottom:' . $category['options']['padding-y'] .'px;';
+		echo '"';
+		?>
+			
+
 		//catch all data attributes
 		@category [data-v-menu-item-*]|innerText = $category['@@__data-v-menu-item-(*)__@@']
 		@category [data-v-menu-item-content] = <?php echo($category['content'] ?? '');?>
 		
 		@category [data-v-menu-item-url]|href = $category['url']
-		@category [data-v-menu-item-img]|src  = $category['images'][0]
+		@category [data-v-menu-item-img]|src  = $category['img']
+		@category [data-v-menu-item-img]|width  = $category['options']['img_width']
+		@category [data-v-menu-item-img]|height  = $category['options']['img_height']
+		@category [data-v-menu-item-recursive]|addNewAttribute = <?php if (isset($_categories[$parent_id]['options']) && !$vvveb_is_page_edit)
+		echo 'style="';
+		 if (isset($_categories[$parent_id]['options']['columns'])) echo 'column-count:' . $_categories[$parent_id]['options']['columns'] .';';
+		 if (isset($_categories[$parent_id]['options']['width'])) echo 'width:' . $_categories[$parent_id]['options']['width'] .'%;';
+		 if (isset($_categories[$parent_id]['options']['sub-padding-x'])) echo 'padding-left:' . $_categories[$parent_id]['options']['sub-padding-x'] . 'px;padding-right:' . $_categories[$parent_id]['options']['sub-padding-x'] .'px;';
+		 if (isset($_categories[$parent_id]['options']['sub-padding-y'])) echo 'padding-top:' . $_categories[$parent_id]['options']['sub-padding-x'] . 'px;padding-bottom:' . $_categories[$parent_id]['options']['sub-padding-x'] .'px;';
+		echo '"';
+		?>
 		
 		@category|append = <?php 
 		  if ($category['children'] > 0 && isset($generate_menu)) {

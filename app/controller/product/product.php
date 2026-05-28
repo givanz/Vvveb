@@ -130,7 +130,7 @@ class Product extends Base {
 
 						if ($admin) {
 							$revisions = model('product_content_revision');
-							$revision  = $revisions->get(['created_at' => $created_at, 'post_id' => $languageContent['post_id']] + $this->global);
+							$revision  = $revisions->get(['created_at' => $created_at, 'product_id' => $languageContent['product_id']] + $this->global);
 
 							if ($revision && isset($revision['content'])) {
 								$languageContent['content'] = $revision['content'];
