@@ -107,7 +107,13 @@ class User extends Base {
 		if ($this->type == 'user') {
 			$userGroup           = model('user_group');
 			$groups              = $userGroup->getAll(['status' => 1] + $this->global)['user_group'] ?? '';
-			$view->user_group_id = $groups;
+
+			$user_group_id = [];
+			foreach ($groups as $group) {
+				$user_group_id[$group['user_group_id']] = $group['name'];
+			}
+
+			$view->user_group_id = $user_group_id;
 		}
 	}
 
@@ -123,7 +129,7 @@ class User extends Base {
 				\Vvveb\session(['user' => $userInfo]);
 				$this->view->global['user_id'] = $userInfo['user_id'];
 				$success                       = __('Login successful!');
-				$success .= '<a class="btn btn-outline-success btn-sm ms-2" target="_blank" href="/user">' . __('View website') . '</a>';
+				$success .= '<a class="btn btn-outline-success btn-sm btn-icon ms-2" target="_blank" href="/user">' . __('View website') . '</a>';
 				$view->success[]               = $success;
 			} else {
 				$error          = __('Login failed!');
