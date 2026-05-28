@@ -68,7 +68,7 @@ class Php {
 	}
 
 	public function __destruct() {
-		return $this->close();
+		//return $this->close();
 	}
 
 	public function get($key) {
