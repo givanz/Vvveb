@@ -1,14 +1,14 @@
 -- Product reviews
 
-	
 	CREATE PROCEDURE getAll(
 		-- variables
-		IN  language_id INT,
-		IN  site_id INT,
-		IN 	product_id INT,
-		IN 	slug CHAR,
-        IN 	user_id INT,
-        IN 	status INT,
+		IN language_id INT,
+		IN site_id INT,
+		IN product_id INT,
+		IN slug CHAR,
+		IN user_id INT,
+		IN admin_id INT,
+		IN status INT,
 
 		-- pagination
 		IN start INT,
@@ -47,12 +47,17 @@
             THEN 
 				AND product_review.user_id  = :user_id
             END @IF	              
-            
-			-- status
+
+            @IF isset(:admin_id)
+            THEN 
+            	AND product.admin_id  = :admin_id
+            END @IF	            
+			
+            -- status
             @IF isset(:status)
-			THEN 
-				AND product_review.status  = :status
-        	END @IF	            
+            THEN 
+            	AND product_review.status  = :status
+            END @IF	            
 
 		@SQL_LIMIT(:start, :limit);
 		
@@ -84,12 +89,12 @@
 	
 	CREATE PROCEDURE getProductStats(
 		-- variables
-		IN  language_id INT,
-		IN  site_id INT,
-		IN 	product_id INT,
-		IN 	slug CHAR,
-        IN 	user_id INT,
-        IN 	status INT,
+		IN language_id INT,
+		IN site_id INT,
+		IN product_id INT,
+		IN slug CHAR,
+		IN user_id INT,
+		IN status INT,
 		-- return
 		OUT fetch_all, -- orders
 		OUT fetch_one  -- count	
@@ -101,29 +106,29 @@
 		FROM product_review AS summary 
 		WHERE 1 = 1
 			
-			-- product
-            @IF isset(:product_id)
-			THEN 
-				AND summary.product_id  = :product_id
-        	END @IF	            
-            
-			-- product slug
-            @IF isset(:slug)
-			THEN 
-				AND summary.product_id  = (SELECT product_id FROM product_content WHERE slug = :slug LIMIT 1) 
-			END @IF
+		    -- product
+		    @IF isset(:product_id)
+		    THEN 
+			AND summary.product_id  = :product_id
+		    END @IF	            
+		    
+		    -- product slug
+		    @IF isset(:slug)
+		    THEN 
+			AND summary.product_id  = (SELECT product_id FROM product_content WHERE slug = :slug LIMIT 1) 
+		    END @IF
 
-            -- user
-            @IF isset(:user_id)
-			THEN 
-				AND summary.user_id  = :user_id
-        	END @IF	              
-            
-			-- status
-            @IF isset(:status)
-			THEN 
-				AND summary.status  = :status
-        	END @IF		
+		    -- user
+		    @IF isset(:user_id)
+		    THEN 
+			AND summary.user_id  = :user_id
+		    END @IF	              
+		    
+		    -- status
+		    @IF isset(:status)
+		    THEN 
+			AND summary.status  = :status
+		    END @IF		
 			
 		GROUP BY summary.rating;
 
@@ -181,7 +186,8 @@
 
 	CREATE PROCEDURE edit(
 		IN product_review ARRAY,
-		IN  id_product_review INT,
+		IN id_product_review INT,
+		IN admin_id INT,
 		OUT affected_rows
 	)
 	BEGIN
@@ -193,17 +199,28 @@
 			SET  @LIST(:product_review) 
 			
 		WHERE product_review_id = :product_review_id
-	 
+
+		@IF isset(:admin_id)
+		THEN
+			AND product_review.product_id IN (SELECT product_id FROM product WHERE product.admin_id = :admin_id)
+		END @IF;	 
 	END
 	
 	-- Delete product review
 
 	CREATE PROCEDURE delete(
-		IN  product_review_id ARRAY,
+		IN product_review_id ARRAY,
+		IN admin_id INT,
 		OUT affected_rows
 	)
 	BEGIN
 
-		DELETE FROM product_review WHERE product_review_id IN (:product_review_id)
-	 
+		DELETE product_review FROM product_review
+
+		@IF isset(:admin_id)
+		THEN
+			INNER JOIN product ON (product.product_id = product_review.product_id AND product.admin_id = :admin_id)
+		END @IF
+
+		WHERE product_review_id IN (:product_review_id)	 
 	END
