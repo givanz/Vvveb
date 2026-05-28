@@ -439,6 +439,7 @@ class Index extends Base {
 
 			if ($subdir) {
 				$subdir = sanitizeFileName($subdir);
+				$subdir = str_replace(['\\', '/'], '/', $subdir);
 				$subdir = '/' . trim($subdir, '/ ');
 
 				//try to set subdir in env.php and .htaccess
