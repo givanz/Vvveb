@@ -1003,7 +1003,7 @@ Vvveb.Components.add("elements/flip-box", {
 			<div class="flip-box-back">
 				<div class="d-flex align-items-center flex-column">
 				  <div class="flex-shrink-0">
-					<img src="../../media/demo/posts/2.jpg" alt="Post">
+					<img src="../../media/demo/posts/2.jpg" class="card-img-top" alt="Post">
 				  </div>
 				  <div class="flex-grow-1 ms-3">
 					<p>
@@ -1122,7 +1122,7 @@ Vvveb.Components.add("elements/social-icons", {
 			inline:false,
 			inputtype: ListInput,
 			data: {
-				selector:"> li",
+				selector:"li",
 				container:"",
 				prefix:"Item ",
 				name: "text",
