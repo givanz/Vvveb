@@ -1653,6 +1653,7 @@ Vvveb.Builder = {
 				self.selectNode(node);
 				Vvveb.TreeList.loadComponents();
 				Vvveb.TreeList.selectComponent(node);
+				Vvveb.Server.renderComponents(node);
 				self.loadNodeComponent(node);
 				
 				if (self.dragType == "section") {
@@ -2680,7 +2681,7 @@ Vvveb.Gui = {
 		folder   =  (folder = /(.+)\//.exec(filename)) ? folder[1] : '/';
 
 		page 	 = Vvveb.FileManager.getCurrentUrl();
-		page     = (page = /[^\/]+\?$/.exec(page)) ? page[0] : '';
+		page     = (page = /[^\/]+\/?$/.exec(page)) ? page[0] : '';
 		page     = page.replace(".html", "");
 		page 	 = page ? page : "new-template";
 		page    += ".html";
@@ -2721,10 +2722,10 @@ Vvveb.Gui = {
 	
 		return Vvveb.Builder.saveAjax(pageData, saveUrl, (data) => {
 			//use toast to show save status
-
+			let success = true;
 			let bg = "success";
+			
 			if (data.success || data == "success") {		
-				document.querySelectorAll("#top-panel .save-btn").forEach(e => e.setAttribute("disabled", "true"));
 			} else {
 				bg = "danger";
 			}
@@ -2733,11 +2734,12 @@ Vvveb.Gui = {
 				displayToast(bg, "Save", data.message ?? data);
 			} else if (Array.isArray(data.message)) {
 				for (let message of data.message) {
-					console.log(message);
+
 					if (message.success || data == "success") {	
 						bg = "success"
 					} else {
 						bg = "danger";
+						success = false;
 					}
 					
 					displayToast(bg, "Save", message.message);
@@ -2754,6 +2756,11 @@ Vvveb.Gui = {
 			
 			btn.querySelector(".loading").classList.add("d-none");
 			btn.querySelector(".button-text").classList.remove("d-none");
+			
+			if (success) {
+				document.querySelectorAll("#top-panel .save-btn").forEach(e => e.setAttribute("disabled", "true"));
+			}
+			
 		}, (error) => {
 			btn.querySelector(".loading").classList.add("d-none");
 			btn.querySelector(".button-text").classList.remove("d-none");
@@ -2894,6 +2901,7 @@ Vvveb.Gui = {
 			}
 
 			data['file']             = data['file'] ? data['file'] : '';
+			data['content']          = data['content'] ? '<div>' + data['content'] + '</div>' : '';
 			data['filename']         = data['filename'] ? data['filename'] : data['file'];
 			data['startTemplateUrl'] = data['startTemplateUrl'] ? data['startTemplateUrl'] : '';
 			e.preventDefault();
@@ -4651,12 +4659,21 @@ Vvveb.Server = {
 			this.index =  Array.prototype.indexOf.call(Vvveb.Builder.frameBody.querySelectorAll(selector), element);
 		}*/
 
-		 for (attribute of element.attributes) {
+		this.component = null;
+		for (attribute of element.attributes) {
 			  if (attribute.name.startsWith("data-v-component-")) {
 				  this.component = attribute.name.replace("data-v-component-","");
 				  break;
 			  }
-		  }
+		}
+		
+		if (!this.component) return element;  
+		
+		this.index = index;
+		if (typeof index == "undefined" || index == null) {
+			let selector = "[" + this.component + "]";
+			this.index =  Array.prototype.indexOf.call(Vvveb.Builder.frameBody.querySelectorAll(selector), element);			
+		}  
 		
 		if (this.content != element.outerHTML) {
 			let itemClone = element.cloneNode(true);
@@ -4677,7 +4694,7 @@ Vvveb.Server = {
 	
 	//search for components inside element and render them all
 	renderComponents(element) {
-		const path = ".//*[ @*[starts-with(name(), 'data-v-component-')] ]";
+		const path = ".//*[ @*[starts-with(name(), 'data-v-component-')] ] | ../*[ @*[starts-with(name(), 'data-v-component-')] ]";
 		const elements = window.FrameDocument.evaluate(path, element ?? window.FrameDocument, null, XPathResult.ANY_TYPE, null);
   
 		components = [];

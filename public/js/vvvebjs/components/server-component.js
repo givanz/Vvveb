@@ -89,20 +89,9 @@ class ServerComponent {
 		
 		this.component = this.attributes[0].replace("data-v-component-", "");
 		this.index =  Array.prototype.indexOf.call(Vvveb.Builder.frameBody.querySelectorAll(selector), element);
+
+		element = Vvveb.Server.renderComponent(element, this.component, this.index);
 		
-		if (this.content != element.outerHTML) {
-			let itemClone = element.cloneNode(true);
-			itemClone.querySelectorAll(".vvveb-hidden").forEach(e => e.classList.remove("vvveb-hidden"));
-			
-			this.content = itemClone.outerHTML;
-			this.element = element;
-			
-			let self = this;
-			this.throttle = setTimeout(function () {
-				clearTimeout(this.throttle);
-				self.ajax();
-			}, 500);
-		}
 		return element;
 	}
 };
