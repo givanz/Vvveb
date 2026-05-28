@@ -1,6 +1,6 @@
 -- Posts
 
-	-- get all post 
+	-- get all posts
 
 	CREATE PROCEDURE getAll(
 		IN start INT,               -- start offset
@@ -247,7 +247,8 @@
 			@ELSE
 				@IF isset(:order_by)
 				THEN 
-					ORDER BY post.$order_by $direction
+					-- ORDER BY $order_by $direction
+					ORDER BY post.@ESC(:order_by) @ESC(:direction)		
 				@ELSE
 					ORDER BY post.post_id DESC
 				END @IF	
@@ -439,6 +440,7 @@
 		IN post_field_value ARRAY,
 		IN post_id INT,
 		IN site_id ARRAY,
+		IN admin_id INT,
 		OUT insert_id,
 		OUT affected_rows,
 		OUT insert_id,
@@ -503,6 +505,12 @@
 				SET @LIST(:post) 
 				
 			WHERE post_id = :post_id
+			
+			@IF !empty(:admin_id) 
+			THEN			
+				AND admin_id = :admin_id
+			END @IF				
+			
 		END @IF;
 		
 
@@ -532,6 +540,7 @@
 
 	CREATE PROCEDURE delete(
 		IN  post_id ARRAY,
+		IN  admin_id INT,
 		OUT affected_rows,
 		OUT affected_rows,
 		OUT affected_rows,
@@ -539,10 +548,32 @@
 	)
 	BEGIN
 		
-		DELETE FROM post_to_taxonomy_item WHERE post_id IN (:post_id);
-		DELETE FROM post_to_site WHERE post_id IN (:post_id);
-		DELETE FROM post_content WHERE post_id IN (:post_id);
-		DELETE FROM post WHERE post_id IN (:post_id);
+		DELETE post_to_taxonomy_item FROM post_to_taxonomy_item 
+			@IF isset(:admin_id)
+			THEN
+				INNER JOIN post ON (post.post_id = post_to_taxonomy_item.post_id AND post.admin_id = :admin_id)
+			END @IF
+		WHERE post_to_taxonomy_item.post_id IN (:post_id);
+		
+		DELETE post_to_site FROM post_to_site 
+			@IF isset(:admin_id)
+			THEN
+				INNER JOIN post ON (post.post_id = post_to_site.post_id AND post.admin_id = :admin_id)
+			END @IF
+		WHERE post_to_site.post_id IN (:post_id);
+		
+		DELETE post_content FROM post_content 
+			@IF isset(:admin_id)
+			THEN
+				INNER JOIN post ON (post.post_id = post_content.post_id AND post.admin_id = :admin_id)
+			END @IF
+		WHERE post_content.post_id IN (:post_id);
+		
+		DELETE post FROM post WHERE post_id IN (:post_id)
+			@IF isset(:admin_id)
+			THEN
+				AND admin_id = :admin_id
+			END @IF;
 	 
 	END
 	

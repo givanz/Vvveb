@@ -114,6 +114,13 @@ class Posts extends Listing {
 				'post_id' => $post_id, 'type' => $this->type,
 			] + $this->global;
 
+			$editCapability = 'edit_other_posts';
+
+			if (Admin::hasCapability($editCapability)) {
+				unset($options['admin_id']);
+			} else {
+			}
+
 			$result  = $this->posts->delete($options);
 
 			if ($result && isset($result['post'])) {

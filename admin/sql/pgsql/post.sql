@@ -60,7 +60,7 @@
 				--,MATCH(pd.name, pd.content) AGAINST(:search) as score
 				 ,ts_rank(
 						to_tsvector(name) || to_tsvector(content),
-						plainto_tsquery(:search)
+						websearch_to_tsquery(:search)
 				) AS score
 			END @IF	
 
@@ -112,7 +112,7 @@
 			THEN 
 				-- AND pd.name LIKE CONCAT('%',:search,'%')
 				-- AND MATCH(pd.name, pd.content) AGAINST(:search)
-				  AND to_tsvector(name) || to_tsvector(content) @@ plainto_tsquery(:search)
+				  AND to_tsvector(name) || to_tsvector(content) @@ websearch_to_tsquery(:search)
         	END @IF	     
             
 			-- like
@@ -166,12 +166,18 @@
 			END @IF					
 
 			-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
-			@IF isset(:order_by)
+			@IF isset(:search)
 			THEN
-				ORDER BY post.$order_by $direction		
+				ORDER BY score DESC		
 			@ELSE
-				ORDER BY post.post_id DESC
-			END @IF		
+				@IF isset(:order_by)
+				THEN 
+					-- ORDER BY $order_by $direction
+					ORDER BY post.@ESC(:order_by) @ESC(:direction)		
+				@ELSE
+					ORDER BY post.post_id DESC
+				END @IF	
+			END @IF
 			
 			-- limit
 			@IF isset(:limit)
@@ -359,6 +365,7 @@
 		IN post_field_value ARRAY,
 		IN post_id INT,
 		IN site_id ARRAY,
+		IN admin_id INT,
 		OUT fetch_one,
 		OUT affected_rows,
 		OUT fetch_one,
@@ -424,6 +431,12 @@
 				SET @LIST(:post) 
 				
 			WHERE post_id = :post_id
+			
+			@IF !empty(:admin_id) 
+			THEN			
+				AND admin_id = :admin_id
+			END @IF				
+			
 		END @IF;
 		
 
@@ -453,6 +466,7 @@
 
 	CREATE PROCEDURE delete(
 		IN  post_id ARRAY,
+		IN  admin_id INT,
 		OUT affected_rows,
 		OUT affected_rows,
 		OUT affected_rows,
@@ -460,10 +474,32 @@
 	)
 	BEGIN
 		
-		DELETE FROM post_to_taxonomy_item WHERE post_id IN (:post_id);
-		DELETE FROM post_to_site WHERE post_id IN (:post_id);
-		DELETE FROM post_content WHERE post_id IN (:post_id);
-		DELETE FROM post WHERE post_id IN (:post_id);
+		DELETE post_to_taxonomy_item FROM post_to_taxonomy_item 
+			@IF isset(:admin_id)
+			THEN
+				INNER JOIN post ON (post.post_id = post_to_taxonomy_item.post_id AND post.admin_id = :admin_id)
+			END @IF
+		WHERE post_to_taxonomy_item.post_id IN (:post_id);
+		
+		DELETE post_to_site FROM post_to_site 
+			@IF isset(:admin_id)
+			THEN
+				INNER JOIN post ON (post.post_id = post_to_site.post_id AND post.admin_id = :admin_id)
+			END @IF
+		WHERE post_to_site.post_id IN (:post_id);
+		
+		DELETE post_content FROM post_content 
+			@IF isset(:admin_id)
+			THEN
+				INNER JOIN post ON (post.post_id = post_content.post_id AND post.admin_id = :admin_id)
+			END @IF
+		WHERE post_content.post_id IN (:post_id);
+		
+		DELETE post FROM post WHERE post_id IN (:post_id)
+			@IF isset(:admin_id)
+			THEN
+				AND admin_id = :admin_id
+			END @IF;
 	 
 	END
 	

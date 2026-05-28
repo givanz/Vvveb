@@ -43,6 +43,8 @@ trait Listing {
 	protected $modelName;
 
 	protected $userFilter = false;
+	
+	protected $adminFilter = true;
 
 	protected $options = [];
 
@@ -75,6 +77,11 @@ trait Listing {
 
 			$model               = model($this->modelName);
 			$options             = [$type_id => $data_id] + $this->global;
+
+			if (! $this->adminFilter) {
+				unset($options['admin_id']);
+			}
+			
 			$result              = $model->delete($options);
 			$name                = ucfirst(__($type));
 
@@ -124,6 +131,10 @@ trait Listing {
 			unset($options['user_id']);
 		}
 
+		if (! $this->adminFilter) {
+			unset($options['admin_id']);
+		}
+		
 		if ($this->data_id && ($id = $this->request->get[$this->data_id] ?? false)) {
 			$options[$this->data_id] = $id;
 		}

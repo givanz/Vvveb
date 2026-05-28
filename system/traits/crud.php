@@ -49,6 +49,10 @@ trait Crud {
 
 	//protected $fullPost;
 
+	protected $userFilter = false;
+	
+	protected $adminFilter = true;
+	
 	function delete() {
 		if (APP == 'admin') {
 			$this->checkCsrf();
@@ -186,7 +190,15 @@ trait Crud {
 			}
 
 			$this->options += $this->global + $this->request->get;
-			unset($this->options['user_id']);
+			//unset($this->options['user_id']);
+
+			if (! $this->userFilter) {
+				unset($this->options['user_id']);
+			}
+
+			if (! $this->adminFilter) {
+				unset($this->options['admin_id']);
+			}
 
 			$result = $this->model->get($this->options);
 
