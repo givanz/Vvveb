@@ -33,14 +33,15 @@ class Categories extends ComponentBase {
 		'start'                    => 0,
 		'limit'                    => 7,
 		'site_id'                  => NULL,
+		'language_id'              => NULL,
 		'order'                    => ['url', 'price asc'],
 		'taxonomy_id'              => NULL,
 		'post_id'                  => NULL,
 		'parent_id'                => NULL,
 		'search'                   => NULL,
-		'type'                     => 'categories',
+		'type'                     => 'categories', //tags
 		'post_type'                => 'post',
-		'count'             	      => false, //include number of posts
+		'count'             	   => false, //include number of posts
 		'parents_only'             => false,
 		'parents_children_only'    => false,
 		'parents_without_children' => false,
@@ -49,24 +50,34 @@ class Categories extends ComponentBase {
 	function results() {
 		$category = new CategorySQL();
 
+		$this->options['post_categories'] = true;
 		$results  = $category->getCategories($this->options);
+		$taxonomy_type = 'category';
+
+		if (isset($this->options['type']) && $this->options['type'] == 'tags') {
+			$taxonomy_type = 'tag';
+		}
 
 		//count the number of child categories (subcategories) for each category
 		if (isset($results['categories'])) {
 			foreach ($results['categories'] as $taxonomy_item_id => &$category) {
-				$parent_id = $category['parent_id'] ?? false;
+				$parent_id          = $category['parent_id'] ?? false;
+				$category['active'] = false;
 
 				if (! isset($category['children'])) {
 					$category['children'] = 0;
 				}
 
-				if (isset($category['post_type'])) {
-					$category['type'] = $category['post_type'];
+				if (isset($this->options['post_type']) && $this->options['post_type']) {
+					$category['post_type'] = $this->options['post_type'];
 				}
 
-				//$category['count'] = $category['count'] ?? 0;
+				$url = ['slug' => $category['slug']];
+				if ($category['post_type'] != 'post') {
+					$url['type'] = $category['post_type'];
+				}
 
-				$category['url'] = url('content/category/index', $category);
+				$category['url'] = url('content/' . $taxonomy_type . '/index', $url);
 
 				if (isset($category['image'])) {
 					$category['image_url'] = Images::image($category['image'], 'taxonomy_item');
@@ -98,7 +109,7 @@ class Categories extends ComponentBase {
 			case 'product/category':
 				$categoryId = $this->request->get['category_id'] ?? '';
 
-			break;
+				break;
 		}
 
 		if (isset($results['categories']) && $categoryId) {

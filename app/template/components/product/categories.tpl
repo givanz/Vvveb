@@ -52,6 +52,7 @@ $generate_menu = function ($parent) use (&$_categories, &$generate_menu, $vvveb_
 		@category img[data-v-cat-*]|src = $category['@@__data-v-cat-(*)__@@']
 		
 		@category [data-v-cat-url]|href = $category['url']
+		@category [data-v-cat-img]|src  = $category['images'][0]
 		
 		@category input|id = <?php echo 'm' . $category['taxonomy_item_id'];?>
 		@category input|addNewAttribute = <?php if (isset($category['active']) && $category['active']) echo 'checked';?>

@@ -32,6 +32,7 @@ class Categories extends ComponentBase {
 		'start'                    => 0,
 		'limit'                    => 7,
 		'site_id'                  => NULL,
+		'language_id'              => NULL,
 		'order'                    => ['url', 'price asc'],
 		'taxonomy_id'              => NULL,
 		'product_id'               => NULL,
@@ -39,6 +40,7 @@ class Categories extends ComponentBase {
 		'search'                   => NULL,
 		'type'                     => 'categories',
 		'post_type'                => 'product',
+		'count'             	   => false, //include number of products
 		'parents_only'             => false,
 		'parents_children_only'    => false,
 		'parents_without_children' => false,
@@ -47,8 +49,18 @@ class Categories extends ComponentBase {
 	//public $cacheExpire = 0; //no cache
 
 	function results() {
+		if (isset($this->options['post_type']) && ! $this->options['post_type']) {
+			unset($this->options['post_type']);
+		}
+
 		$category = new \Vvveb\Sql\CategorySQL();
+
 		$results  = $category->getCategories($this->options);
+		$taxonomy_type = 'category';
+
+		if (isset($this->options['type']) && $this->options['type'] == 'tags') {
+			$taxonomy_type = 'tag';
+		}
 
 		//count the number of child categories (subcategories) for each category
 		if (isset($results['categories'])) {
@@ -60,16 +72,16 @@ class Categories extends ComponentBase {
 					$category['children'] = 0;
 				}
 
-				if (isset($this->options['post_type'])) {
-					$category['type'] = $this->options['post_type'];
+				if (isset($this->options['post_type']) && $this->options['post_type']) {
+					$category['post_type'] = $this->options['post_type'];
 				}
 
 				$url = ['slug' => $category['slug']];
-				if ($category['type'] != 'product') {
-					$url['post_type'] = $category['type'];
+				if (isset($category['post_type']) && ($category['post_type'] != 'product')) {
+					$url['type'] = $category['post_type'];
 				}
 
-				$category['url'] = url('product/category/index', $url);
+				$category['url'] = url('product/' . $taxonomy_type . '/index', $url);
 
 				if (isset($category['image'])) {
 					$category['image_url'] = Images::image($category['image'], 'taxonomy_item');
