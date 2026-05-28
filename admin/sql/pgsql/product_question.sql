@@ -2,11 +2,13 @@
 	
 	CREATE PROCEDURE getAll(
 		-- variables
-		IN  language_id INT,
-		IN  site_id INT,
-		IN 	product_id INT,
-        IN 	user_id INT,
-        IN 	status INT,
+		IN language_id INT,
+		IN site_id INT,
+		IN product_id INT,
+		IN slug CHAR,
+		IN user_id INT,
+		IN admin_id INT,
+		IN status INT,
 
 		-- pagination
 		IN start INT,
@@ -20,9 +22,12 @@
 
             SELECT "user".username, "user".email, "user".first_name, "user".last_name, "user".display_name, "user".avatar, "user".bio,  "user".subscribe, product_question.*, "user".user_id as user_id
             FROM product_question
-            LEFT JOIN "user" on "user".user_id = product_question.user_id
-		
-			WHERE 1 = 1
+	    LEFT JOIN "user" on "user".user_id = product_question.user_id
+			@IF isset(:admin_id) AND :admin_id
+			THEN 
+				LEFT JOIN product ON (product.product_id = product_question.product_id)
+			END @IF			
+            WHERE 1 = 1
             
             -- product
             @IF isset(:product_id)
@@ -42,7 +47,13 @@
 				AND product_question.user_id  = :user_id
             END @IF	              
             
-            -- user
+
+            @IF isset(:admin_id)
+            THEN 
+            	AND product.admin_id  = :admin_id
+            END @IF
+
+            -- status
             @IF isset(:status)
             THEN 
 				AND product_question.status  = :status
@@ -78,6 +89,7 @@
 
 	CREATE PROCEDURE add(
 		IN product_question ARRAY,
+		IN admin_id INT,
 		OUT fetch_one
 	)
 	BEGIN
@@ -109,17 +121,28 @@
 			SET  @LIST(:product_question) 
 			
 		WHERE product_question_id = :product_question_id
-	 
+
+		@IF isset(:admin_id)
+		THEN
+			AND product_review.product_id IN (SELECT product_id FROM product WHERE product.admin_id = :admin_id)
+		END @IF;	 
 	END
 	
 	-- Delete product_question
 
 	CREATE PROCEDURE delete(
 		IN  product_question_id ARRAY,
+		IN admin_id INT,
 		OUT affected_rows
 	)
 	BEGIN
 
-		DELETE FROM product_question WHERE product_question_id IN (:product_question_id)
-	 
+		DELETE product_question FROM product_question
+
+		@IF isset(:admin_id)
+		THEN
+			INNER JOIN product ON (product.product_id = product_question_id.product_id AND product.admin_id = :admin_id)
+		END @IF
+
+		WHERE product_question_id IN (:product_question_id)	 
 	END
