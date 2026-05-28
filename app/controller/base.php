@@ -224,7 +224,7 @@ class Base {
 		$this->global['user_id']       = $user['user_id'] ?? false;
 		$this->global['user_group_id'] = $user['user_group_id'] ?? 1;
 		$this->global['site']          = &$site;
-		$this->global['path']          = SITE_PATH;
+		$this->global['path']          = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . (V_SUBDIR_INSTALL && SITE_PATH ? '/' : '' ) . SITE_PATH;
 		$this->global['user']          = $user ?? [];
 		$this->global['admin']         = $admin ?? [];
 		$this->global['current_year']  = date('Y');
@@ -305,7 +305,8 @@ class Base {
 		$view = view :: getInstance();
 		$view :: template(DS . 'login.html');
 
-		die(view :: getInstance()->render());
+		view :: getInstance()->render();
+		die();
 	}
 
 	/**
