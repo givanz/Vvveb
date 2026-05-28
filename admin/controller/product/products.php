@@ -119,6 +119,14 @@ class Products extends Listing {
 
 			$products = new ProductSQL();
 			$options  = ['product_id' => $product_id] + $this->global;
+
+			$editCapability = 'edit_other_products';
+
+			if (Admin::hasCapability($editCapability)) {
+				unset($options['admin_id']);
+			} else {
+			}
+
 			$result   = $products->delete($options);
 
 			if ($result && isset($result['product'])) {

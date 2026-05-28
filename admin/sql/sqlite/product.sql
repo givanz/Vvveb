@@ -4,6 +4,7 @@
 
 	PROCEDURE get(
 		IN product_id INT,
+		IN admin_id INT,
 		IN slug CHAR,
 		IN type CHAR,
 		IN language_id INT,
@@ -175,6 +176,11 @@
             @IF isset(:type) && !empty(:type)
             THEN 
                 AND _.type = :type
+            END @IF		
+
+            @IF isset(:admin_id) && !empty(:admin_id)
+            THEN 
+                AND _.admin_id = :admin_id
             END @IF		
         
         LIMIT 1;
@@ -397,15 +403,59 @@
 
 	PROCEDURE delete(
 		IN  product_id ARRAY,
+		IN  admin_id INT,
 		OUT affected_rows
 	)
 	BEGIN
 
-		DELETE FROM product_to_site WHERE product_id IN (:product_id);
-		DELETE FROM product_image WHERE product_id IN (:product_id);
-		DELETE FROM product_content WHERE product_id IN (:product_id);
-		DELETE FROM product WHERE product_id IN (:product_id);
+		DELETE product_to_taxonomy_item FROM product_to_taxonomy_item 
+			@IF isset(:admin_id)
+			THEN
+				INNER JOIN product ON (product.product_id = product_to_taxonomy_item.product_id AND product.admin_id = :admin_id)
+			END @IF
+		WHERE product_to_taxonomy_item.product_id IN (:product_id);
 		
+		DELETE product_to_site FROM product_to_site 
+			@IF isset(:admin_id)
+			THEN
+				INNER JOIN product ON (product.product_id = product_to_site.product_id AND product.admin_id = :admin_id)
+			END @IF
+		WHERE product_to_site.product_id IN (:product_id);		
+		
+		DELETE product_option_value FROM product_option_value 
+			@IF isset(:admin_id)
+			THEN
+				INNER JOIN product ON (product.product_id = product_option_value.product_id AND product.admin_id = :admin_id)
+			END @IF
+		WHERE product_option_value.product_id IN (:product_id);		
+		
+		DELETE product_option FROM product_option 
+			@IF isset(:admin_id)
+			THEN
+				INNER JOIN product ON (product.product_id = product_option.product_id AND product.admin_id = :admin_id)
+			END @IF
+		WHERE product_option.product_id IN (:product_id);
+		
+		DELETE product_content FROM product_content 
+			@IF isset(:admin_id)
+			THEN
+				INNER JOIN product ON (product.product_id = product_content.product_id AND product.admin_id = :admin_id)
+			END @IF
+		WHERE product_content.product_id IN (:product_id);
+		
+		DELETE product_image FROM product_image 
+			@IF isset(:admin_id)
+			THEN
+				INNER JOIN product ON (product.product_id = product_image.product_id AND product.admin_id = :admin_id)
+			END @IF
+		WHERE product_image.product_id IN (:product_id);
+		
+		DELETE product FROM product WHERE product_id IN (:product_id)
+			@IF isset(:admin_id)
+			THEN
+				AND admin_id = :admin_id
+			END @IF;
+
 	END	
 	
 	-- Edit product
@@ -416,6 +466,7 @@
 		IN taxonomy_item_id ARRAY,
 		IN product_id INT,
 		IN site_id ARRAY,
+		IN admin_id INT,
 		OUT insert_id,
 		OUT affected_rows,
 		OUT insert_id,
@@ -477,6 +528,12 @@
 				SET @LIST(:product_update) 
 				
 			WHERE product_id = :product_id
+			
+			@IF !empty(:admin_id) 
+			THEN			
+				AND admin_id = :admin_id
+			END @IF	
+
 		END @IF;
 		
 	END	
@@ -1166,12 +1223,18 @@
 
 		
 		-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
-		@IF isset(:order_by)
+		@IF isset(:search)
 		THEN
-			ORDER BY product.$order_by $direction		
+			ORDER BY rank
 		@ELSE
-			ORDER BY product.product_id DESC
-		END @IF		
+			@IF isset(:order_by)
+			THEN 
+				-- ORDER BY $order_by $direction
+				ORDER BY product.@ESC(:order_by) @ESC(:direction)		
+			@ELSE
+				ORDER BY product.product_id DESC
+			END @IF	
+		END @IF	
 		
 		
 		@IF isset(:limit)
