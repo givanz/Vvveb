@@ -261,9 +261,29 @@ class Sites {
 		return $host;
 	}
 
+	public static function requestUri($result, $path = '') {
+		$result['host']  = self :: url($result['host']);
+		$result['uri']   = $_SERVER['REQUEST_URI'] ?? '/';
+		$result['path']  = $path;
+		
+		if (V_SUBDIR_INSTALL) {
+			$result['uri']  = substr($result['uri'] , strlen(V_SUBDIR_INSTALL)) ?: '/';
+		}
+		
+		if ($path) {
+			$result['uri']  = substr($result['uri'] , strlen($path)) ?: '/';
+			if ($result['uri'][0] != '/') {
+				$result['uri'] = '/' . $result['uri'];
+			}
+		}	
+		
+		return $result;	
+	}
+	
 	public static function getSiteData($site = false,  $path = '') {
 		if (is_numeric($site)) {
-			return self :: getSiteById($site);
+			$result = self :: getSiteById($site);
+			return self :: requestUri($result, $result['path'] ?? '');
 		}
 
 		if (! $site) {
@@ -288,7 +308,7 @@ class Sites {
 		$cacheKey    = $host;
 
 		if (false && $result = $cacheDriver->get('site', $cacheKey)) {
-			return $result;
+			return self :: requestUri($result, $result['path'] ?? '');
 		} else {
 			$host  = self :: siteKey($host);
 			$first = strpos($host, ' ');
@@ -345,15 +365,7 @@ class Sites {
 			$result = $sites[$match] ?? [];
 
 			if ($result) {
-				$result['host']  = self :: url($result['host']);
-				$result['uri']   = $_SERVER['REQUEST_URI'] ?? '/';
-				$result['path']  = $sub;
-				if ($sub) {
-					$result['uri']  = substr($result['uri'] , strlen($sub)) ?: '/';
-					if ($result['uri'][0] != '/') {
-						$result['uri'] = '/' . $result['uri'];
-					}
-				}
+				return self :: requestUri($result, $sub);
 			} else {
 				if (APP !== 'app') {
 					//if site does not exist use fallback for admin, cli etc
