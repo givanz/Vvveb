@@ -27,6 +27,10 @@ class Response {
 
 	private $done = false;
 
+	public $output = true;
+
+	public $filters = [];
+
 	private $type = ''; //html, json, xml
 
 	private $status = 200;
@@ -47,6 +51,10 @@ class Response {
 
 	private function __construct() {
 		$this->addHeader('X-Powered-By', 'Vvveb ' . V_VERSION);
+	}
+
+	function addFilter($filter) {
+		$this->filters[] = $filter;
 	}
 
 	function getStatus() {
@@ -109,8 +117,10 @@ class Response {
 			}
 		}
 
+		$this->done = true;
+
 		if ($this->type == 'text' && $data !== null) {
-			echo $data;
+			$output = $data;
 		} else {
 			if (($this->type == 'json' || $this->type == 'jsonp' || $this->type == 'ldjson' || $this->type == 'activityjson' || $this->type == 'jrdjson') && $data !== null && (! defined('CLI'))) {
 				if (is_array($data) || is_object($data)) {
@@ -121,7 +131,7 @@ class Response {
 					}
 				}
 
-				echo $data;
+				$output = $data;
 			} else {
 				$view = View :: getInstance();
 
@@ -129,10 +139,20 @@ class Response {
 					$view->setType($this->type);
 				}
 
-				$view->render();
+				$output = $view->render(true, $this->output && ! $this->filters);
 			}
 		}
 
-		$this->done = true;
+		if ($this->filters) {
+			foreach ($this->filters as $filter) {
+				$output = $filter($output);
+			}
+		}
+
+		if ($this->output) {
+			echo $output;
+		}
+
+		return $output;
 	}
 }
