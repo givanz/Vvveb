@@ -67,16 +67,17 @@ const tinymce_image_upload_handler = (blobInfo, progress) => new Promise((resolv
       reject('HTTP Error: ' + xhr.status);
       return;
     }
-	/*
+
     const json = JSON.parse(xhr.responseText);
 
-    if (!json || typeof json.location != 'string') {
+    if (!json || typeof json[0].file != 'string') {
       reject('Invalid JSON: ' + xhr.responseText);
       return;
     }
-
-    resolve(json.location);*/
-	resolve(mediaPath + "/" + xhr.responseText);
+	
+	displayToast((json[0].success ? "success" : "danger"), "Upload", json[0].message);
+	
+    resolve(mediaPath + "/" + json[0].file);
   };
 
   xhr.onerror = () => {
@@ -84,11 +85,11 @@ const tinymce_image_upload_handler = (blobInfo, progress) => new Promise((resolv
   };
 
   const formData = new FormData();
-  formData.append('file', blobInfo.blob(), blobInfo.filename());
-  formData.append('file', blobInfo.blob(), blobInfo.filename());
+  formData.append('files[]', blobInfo.blob(), blobInfo.filename());
 
   formData.append("mediaPath", mediaPath);
   formData.append("onlyFilename", true);
+  formData.append("csrf", document.querySelector("[name=csrf]")?.value);
 
 
   xhr.send(formData);
@@ -266,13 +267,18 @@ var tinyMceOptions = {
 			tooltip: 'Edit',
 			icon: 'edit-block',
 			onAction: function() {
+				let node = editor.selection.getNode();
+
 				if (!Vvveb.MediaModal) {
 					Vvveb.MediaModal = new MediaModal(true);
 					Vvveb.MediaModal.mediaPath = mediaPath;
 				}
 				Vvveb.MediaModal.type = "single";
 				Vvveb.MediaModal.open(null, function (file) {
-						let node = editor.selection.getNode();
+						if (node.tagName == 'FIGURE') {
+							node = node.querySelector("img");
+						}
+						
 						node.setAttribute("src", file);
 						if (node.parentNode && node.parentNode.tagName == 'A') {
 							node.parentNode.setAttribute("href", file);
@@ -507,7 +513,23 @@ var tinyMceOptions = {
 		});
 
 		window.dispatchEvent(new CustomEvent("tinymce.setup", {detail: editor}));
-		
+
+	editor.ui.registry.addButton('Embed', {
+		text: "Embed",
+		icon: 'browse',
+		tooltip: 'Insert oEmbed Url',
+		//enabled: true,
+		onAction: (_) => {
+			
+			const url = prompt('Enter embed URL');
+			
+			if (url) {
+				getOembed(url).then(response => {
+					 editor.insertContent(response.html);
+				}).catch(error => console.log(error));
+			}
+		}
+	});		
 		
     //product and posts/pages autocomplete
     const onAction = (autocompleteApi, rng, value) => {
@@ -821,18 +843,70 @@ var tinyMceOptions = {
 		})
 		.catch(error => {
 			console.log(error);
-			displayToast("danger", "Error", "Error renaming page!");
+			displayToast("danger", "Error", "Error loading!");
 		});	
         });
       }
     });
+	
+
+    // Set up the align-to-left context toolbar button
+    editor.ui.registry.addToggleButton('pulleft', {
+      icon: 'align-left',
+      onAction: function (api) {
+        editor.execCommand('mceToggleFormat', false, 'pullquote_left');
+        editor.formatter.remove('align-right');
+      },
+      onSetup: (buttonApi) => {
+        buttonApi.setActive(editor.formatter.match('pullquote_left'));
+         let change = editor.formatter.formatChanged('pullquote_left', (state) => buttonApi.setActive(state));
+         return () => {change.unbind();};
+      },
+    });
+    
+    // Set up the align-to-right context toolbar button
+    editor.ui.registry.addToggleButton('pullright', {
+      icon: 'align-right',
+      onAction: function (api) {
+        editor.execCommand('mceToggleFormat', false, 'pullquote_right');
+        editor.formatter.remove('align-left');
+      },
+      onSetup: (buttonApi) => {
+        buttonApi.setActive(editor.formatter.match('pullquote_right'));
+         let change = editor.formatter.formatChanged('pullquote_right', (state) => buttonApi.setActive(state));
+         return () => {change.unbind();};
+      },
+    });
+    
+    // Set up the center context toolbar button
+    editor.ui.registry.addToggleButton('putcenter', {
+      icon: 'align-center',
+      onAction: function (api) {
+        editor.execCommand('mceToggleFormat', false, 'pullquote_center');
+        editor.formatter.remove('center');
+      },
+      onSetup: (buttonApi) => {
+        buttonApi.setActive(editor.formatter.match('pullquote_center'));
+         let change = editor.formatter.formatChanged('pullquote_center', (state) => buttonApi.setActive(state));
+         return () => {change.unbind();};
+      },
+    });
+    
+    // Register the blockquote context toolbar
+    editor.ui.registry.addContextToolbar('alignPullquotes', {
+      predicate: function (node) {
+        return node.nodeName.toLowerCase() === 'blockquote'
+      },
+      items: 'pulleft putcenter pullright', position: 'node',scope: 'node'
+    });
+	
     },
     
   plugins: 'preview searchreplace autolink autosave autoresize directionality code visualblocks visualchars fullscreen image media link table charmap lists wordcount quickbars emoticons table accordion advlist anchor paste_from_word',
   //valid_children : '-p[img],h1[img],h2[img],h3[img],h4[img],+body[img],div[img],div[h1],div[h2],div[h3]',
   //editimage_cors_hosts: ['picsum.photos'],
   menubar: false,//'file edit view insert format tools table help',
-  toolbar: 'undo redo | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | insertfile image gallery media link anchor | ltr rtl table accordion | fullscreen preview code print |  charmap emoticons advlist visualblocks searchreplace',
+  toolbar: 'undo redo | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist blockquote | forecolor backcolor removeformat | insertfile image gallery media link anchor | ltr rtl table accordion | fullscreen preview code print |  charmap emoticons advlist visualblocks searchreplace | Embed',
   toolbar_sticky: true,
   //toolbar_sticky_offset: isSmallScreen ? 102 : 108,
   autosave_ask_before_unload: true,
@@ -853,6 +927,10 @@ var tinyMceOptions = {
   */
   image_class_list: [
 	{ title: 'None', value: '' },
+	{ title: 'Thumbnail', value: 'img-thumbnail' },
+	{ title: 'Border', value: 'border' },
+	{ title: 'Shadow', value: 'shadow' },
+	{ title: 'Rounded', value: 'rounded' },
 	{ title: 'Fluid', value: 'img-fluid' }
   ],
   importcss_append: true,
@@ -883,7 +961,7 @@ var tinyMceOptions = {
   template_mdate_format: '[Date Modified (MDATE): %m/%d/%Y : %H:%M:%S]',
   height: 600,
   image_caption: true,
-  quickbars_insert_toolbar: 'quickmedia quicklink quicktable gallery',
+  quickbars_insert_toolbar: 'quickmedia quicklink quicktable gallery | Embed',
   quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 h4 blockquote | quickimage quicktable',
   quickbars_image_toolbar: 'alignleft aligncenter alignright | rotateleft rotateright imageoptions upimage downimage | editimage',
   noneditable_noneditable_class: 'mceNonEditable',
@@ -923,8 +1001,10 @@ var tinyMceOptions = {
 				textAlign: "left"
 			}
 		}, {
-			selector: "img,figure,table,video,audio,dl.caption,iframe",
+			selector: "img,table,video,audio,dl.caption,iframe,blockquote",
 			classes: "align-left"
+		}, {
+			selector: 'figure', collapsed: false, classes: 'align-left', ceFalseOverride: true 
 		}],
 		aligncenter: [{
 			selector: "p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li",
@@ -932,8 +1012,10 @@ var tinyMceOptions = {
 				textAlign: "center"
 			}
 		}, {
-			selector: "img,figure,table,video,audio,dl.caption,iframe",
+			selector: "img,figure,table,video,audio,dl.caption,iframe,blockquote",
 			classes: "align-center"
+		}, {
+			selector: 'figure', collapsed: false, classes: 'align-center', ceFalseOverride: true 
 		}],
 		alignright: [{
 			selector: "p,h1,h2,h3,h4,h5,h6,td,th,div,ul,ol,li",
@@ -941,12 +1023,22 @@ var tinyMceOptions = {
 				textAlign: "right"
 			}
 		}, {
-			selector: "img,figure,table,video,audio,dl.caption,iframe",
+			selector: "img,figure,table,video,audio,dl.caption,iframe,blockquote",
 			classes: "align-right"
+		}, {
+			selector: 'figure', collapsed: false, classes: 'align-right', ceFalseOverride: true 
 		}],
 		strikethrough: {
 			inline: "del"
-		}
+		},
+		blockquote: [
+		   {block: 'blockquote', attributes: {'class': 'align-center'}, wrapper: true, remove: 'all'},
+		   {block: 'blockquote', attributes: {'class': 'align-left'}},
+		   {block: 'blockquote', attributes: {'class': 'align-right'}}
+		],
+		pullquote_left: {selector: 'blockquote', attributes: {'class': 'align-left'}, remove: 'all'},
+		pullquote_right: {selector: 'blockquote', attributes: {'class': 'align-right'}, remove: 'all'},
+		pullquote_center: {selector: 'blockquote', attributes: {'class': 'align-center'}, remove: 'all'}
 	},	
 	
     font_family_formats: "Arial Black=arial black,avant garde; Courier New=courier new,courier;" + tinyThemeFonts,
