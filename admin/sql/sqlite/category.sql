@@ -64,7 +64,7 @@
 			
 			@IF isset(:post_id) THEN
 			
-				@IF :type == "tags"
+				@IF :type == "tags" || isset(:post_categories)
 				THEN 
 				
 					INNER JOIN post_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.post_id = :post_id)  
@@ -78,7 +78,7 @@
 			
 			@IF isset(:product_id) THEN
 			
-				@IF :type == "tags"
+				@IF :type == "tags" || isset(:post_categories)
 				THEN 
 				
 					INNER JOIN product_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.product_id = :product_id)  
@@ -97,7 +97,7 @@
 			@IF isset(:search) && :search
 			THEN 
 			
-				AND tc.name LIKE CONCAT('%',:search,'%')
+				AND tc.name LIKE '%' || :search || '%'
 				
 			END @IF	
 			
@@ -246,7 +246,7 @@
 			@IF isset(:search)
 			THEN 
 			
-				AND tc.name LIKE CONCAT('%',:search,'%')
+				AND tc.name LIKE '%' || :search || '%'
 				
 			END @IF	
 			
@@ -605,7 +605,7 @@
 			@IF isset(:search) && :search
 			THEN 
 			
-				AND tc.name LIKE CONCAT('%',:search,'%')
+				AND tc.name LIKE '%' || :search || '%'
 				
 			END @IF						
 			

@@ -51,21 +51,21 @@
 			@IF isset(:count) AND :count
 			THEN 
 			
-				LEFT JOIN post_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id)  
+				LEFT JOIN post_to_taxonomy_item ptt ON (categories.taxonomy_item_id = ptt.taxonomy_item_id)  
 				
 			END @IF				
 			
 			@IF isset(:post_id) AND :type == "categories"
 			THEN 
 			
-				-- LEFT JOIN post_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.post_id = :post_id)  
+				-- LEFT JOIN post_to_taxonomy_item ptt2 ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND ptt2.post_id = :post_id)  
 				
 			END @IF				
 			
 			
 			@IF isset(:post_id) THEN
 			
-				@IF :type == "tags"
+				@IF :type == "tags" || isset(:post_categories)
 				THEN 
 				
 					INNER JOIN post_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.post_id = :post_id)  
@@ -79,7 +79,7 @@
 			
 			@IF isset(:product_id) THEN
 			
-				@IF :type == "tags"
+				@IF :type == "tags" || isset(:post_categories)
 				THEN 
 				
 					INNER JOIN product_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.product_id = :product_id)  
