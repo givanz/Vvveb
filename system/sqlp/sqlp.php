@@ -574,7 +574,9 @@ class Sqlp {
 					}
 
 					//clean empty sql strings
-					$statement = preg_replace('@\s*\$sql .= \'\s*\';@ms', '', $statement);
+					$statement = preg_replace('@\$sql .= \'\s+\n\s*\';@ms', '$sql .= \' \';', $statement);
+					$statement = preg_replace('@\s*\$sql .= \'\';@ms', '', $statement);
+					//$statement = preg_replace('@\s*\$sql .= \'\s*\';@ms', '', $statement);
 
 					if (isset($fetch[$qIndex])) {
 						$method['fetch'] = $this->fetchType($fetch[$qIndex]);

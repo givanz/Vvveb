@@ -40,7 +40,8 @@
 		-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
 		@IF isset(:order_by)
 		THEN
-			ORDER BY product_variant.$order_by $direction		
+			-- ORDER BY $order_by $direction
+			ORDER BY product_variant.@ESC(:order_by) @ESC(:direction)		
 		@ELSE
 			ORDER BY product_variant.product_variant_id ASC
 		END @IF
@@ -82,7 +83,8 @@
         INSERT INTO product_variant
             ( @KEYS(:product_variant) )
         
-        VALUES (:product_variant );
+        VALUES (:product_variant )
+		ON CONFLICT ("product_variant_id") DO UPDATE SET @LIST(:product_variant);
 		
 	END
 

@@ -55,6 +55,7 @@ return
 		//'END @EACH'         => 'T_EACH_END',
 		'@SQL_COUNT\(.+?\)' => 'T_SQL_COUNT',
 		'@SQL_LIMIT\(.+?\)' => 'T_SQL_LIMIT',
+		'@ESC\(.+?\)'       => 'T_ESC',
 		'.+?'               => 'T_SQL',
 	],
 
@@ -120,6 +121,15 @@ PHP
 			<<<'PHP'
 		'; 
 		$sql .= $this->db->sqlLimit('%start', '%limit'); 
+		$sql .= '
+PHP
+		],
+
+		'T_ESC'      => [
+			'/@ESC\s*\(\s*:?(?<column>.+?)\s*\)/ms',
+			<<<'PHP'
+		'; 
+		$sql .= preg_replace('/\W+/', '', $params['%column'] ?? '');
 		$sql .= '
 PHP
 		],
