@@ -68,6 +68,8 @@ class Cart {
 	protected $total_items = 0;
 
 	protected $controlCache = true;
+	
+	protected $hasChanges = false;
 
 	use TaxTrait, ProductOptionTrait, CouponTrait, TotalTrait, DbTrait;
 
@@ -393,8 +395,8 @@ class Cart {
 		} else {
 			$this->enableCache();
 		}
-		//write is done by addTotal
-		//$this->write();
+
+		$this->hasChanges = true;
 
 		return $results;
 	}
@@ -612,6 +614,12 @@ class Cart {
 		//disable cache back setting the cart cookie
 		if ($this->controlCache && ! isset($_COOKIE['cart'])) {
 			setcookie('cart', '1', 0, '/');
+		}
+	}
+	
+	public function __destruct() {	
+		if ($this->hasChanges) {
+			$this->write();
 		}
 	}
 }

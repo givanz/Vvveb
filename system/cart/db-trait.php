@@ -111,6 +111,8 @@ trait DbTrait {
 		$data['cart_id'] = $this->cart_id;
 
 		$this->session->set($this->sessionKey, $data);
+		
+		$this->hasChanges = false;
 	}
 
 	public function empty() {
