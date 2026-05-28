@@ -1772,7 +1772,7 @@ function download($url) {
 
 function validateUrl($url) {
 	if (strncmp($url, 'http', 4) === 0) {
-		if (preg_match('/https?:\/\/(.+?)\//', $url, $matches)) {
+		if (preg_match('/https?:\/\/([^\/$]+)/', $url, $matches)) {
 			$host = $matches[1];
 
 			//don't allow port number
@@ -1786,7 +1786,7 @@ function validateUrl($url) {
 			}
 
 			//don't allow ip
-			if (false !== filter_var($url, FILTER_VALIDATE_IP)) {
+			if (false !== filter_var($host, FILTER_VALIDATE_IP)) {
 				return '';
 			}
 
