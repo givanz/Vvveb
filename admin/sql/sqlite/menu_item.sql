@@ -106,7 +106,7 @@
 			@IF isset(:search)
 			THEN 
 			
-				AND td.name LIKE CONCAT('%',:search,'%')
+				AND td.name LIKE '%' || :search || '%'
 				
 			END @IF						
 			
@@ -155,7 +155,8 @@
 				( @KEYS(:each), menu_item_id)
 			
 			VALUES ( :each, :menu_item_id)
-				ON DUPLICATE KEY UPDATE @LIST(:each);
+			
+			ON CONFLICT(`menu_item_id`,`language_id`) DO UPDATE SET @LIST(:each);
 
 		-- allow only table fields and set defaults for missing values
 		@FILTER(:menu_item, menu_item)

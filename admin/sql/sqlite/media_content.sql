@@ -153,7 +153,7 @@
 				( @KEYS(:each), media_id)
 			
 			VALUES ( :each, :media_id)
-			ON DUPLICATE KEY UPDATE @LIST(:each);
+			ON CONFLICT(`media_id`,`language_id`) DO UPDATE SET @LIST(:each);
 
 		-- allow only table fields and set defaults for missing values
 		@FILTER(:media, media)

@@ -310,7 +310,7 @@
 			@IF isset(:search)
 			THEN 
 			
-				AND td.name LIKE CONCAT('%',:search,'%')
+				AND td.name LIKE '%' || :search || '%'
 				
 			END @IF						
 			

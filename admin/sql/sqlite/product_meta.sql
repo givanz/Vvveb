@@ -43,8 +43,7 @@
         
         VALUES (:product_id, :namespace, :key, :value )
         
-        ON DUPLICATE KEY 
-            UPDATE value = values(value);
+		ON CONFLICT(`product_id`,`language_id`,`namespace`,`key`) DO UPDATE SET @LIST(:each);
 		
 	END
 

@@ -124,9 +124,8 @@
 			( @KEYS(:cart))
 		
 		VALUES ( :cart )
-				
-		ON DUPLICATE KEY 
-			UPDATE data = values(data), user_id = values(user_id);
+
+		ON CONFLICT(`cart_id`,`user_id`) DO UPDATE SET @LIST(:each);
 
 	END
 	

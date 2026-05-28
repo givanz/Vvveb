@@ -44,7 +44,7 @@
             	-- search
         	@IF isset(:search) AND !empty(:search)
         	THEN 
-				AND admin.username LIKE CONCAT('%',:search,'%') || admin.first_name LIKE CONCAT('%',:search,'%') || admin.last_name LIKE CONCAT('%',:search,'%')
+				AND admin.username LIKE '%' || :search || '%' || admin.first_name LIKE '%' || :search || '%' || admin.last_name LIKE '%' || :search || '%'
         	END @IF	       
             
 			ORDER BY admin.status DESC, admin.admin_id

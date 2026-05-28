@@ -13,7 +13,7 @@
 	BEGIN
 
 		SELECT value
-            FROM post_content_meta AS _
+			FROM post_content_meta AS _
 		WHERE 1 = 1
 		
 		@IF !empty(:post_id) 
@@ -44,7 +44,7 @@
 		IN namespace CHAR,
 		IN key CHAR,
 		IN value CHAR,
-        IN language_id INT,
+		IN language_id INT,
 		
 		OUT insert_id
 	)

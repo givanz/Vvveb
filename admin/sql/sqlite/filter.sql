@@ -46,7 +46,7 @@
 		-- search
 		@IF isset(:search) AND !empty(:search)
 		THEN 
-			AND attribute_content.name LIKE CONCAT('%',:search,'%')
+			AND attribute_content.name LIKE '%' || :search || '%'
 		END @IF	  
 		
 		-- limit

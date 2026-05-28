@@ -117,7 +117,7 @@
 			@IF isset(:search)
 			THEN 
 			
-				AND name LIKE CONCAT('%',:search,'%')
+				AND name LIKE '%' || :search || '%'
 				
 			END @IF			
 
