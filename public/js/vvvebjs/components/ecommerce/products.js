@@ -23,57 +23,174 @@ import {ServerComponent} from '../server-component.js';
 
 let template = 
 `
-<div class="container" data-v-component-products="popular" data-v-limit="1">
-	<div class="row">
-		<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-product>
-			<article class="single-product-wrapper">
-				<!-- Product Image -->
-				<a href="product/product.html" data-v-product-url> </a>
-				<div class="product-image">
-					<a href="product/product.html" data-v-product-url>
+<div class="container" data-v-component-products="popular" data-v-limit="3">
+    <div class="row">
+        <div class="col-sm-12 col-md-6 col-lg mb-2" data-v-product="" data-v-id="19">
+            <article class="single-product-wrapper">
 
-						<img src="img/demo/product.jpg" data-v-product-alt alt="" data-v-product-image="thumb"/>
+                <a href="/product/product-nineteen" data-v-product-url="" title="Product 19"> </a>
+                <div class="product-image">
+                    <a href="/product/product-nineteen" data-v-product-url="" title="Product 19">
 
-						<!-- Hover Thumb -->
-						<img class="hover-img" src="img/demo/product-2.jpg" data-v-product-alt alt="" data-v-product-image-1="thumb" />
-					</a>
+                        <img src="../../media/demo/products/1-1.webp" data-v-product-alt="" alt="Product 19"
+                            data-v-product-image="thumb">
 
-					<!-- Favourite -->
-					<div class="product-favourite">
-						<a href="product/product.html" data-v-product-url data-v-product-title class="la la-heart"></a>
-					</div>
-				</div>
 
-				<!-- Product Description -->
-				<div class="product-content">
-					
-					<a href="product/product.html" data-v-product-url>
-						<h6 data-v-product-name>Product 8</h6>
-					</a>
-					
-					<p class="product-price" data-v-product-price_tax_formatted>100.0000</p>
+                        <img class="hover-img" src="../../media/demo/products/1-2.webp"
+                            data-v-product-alt="" alt="Product 19" data-v-product-image-1="thumb" data-v-id="52"
+                            data-v-type="product_image">
+                    </a>
 
-					<!-- Hover Content -->
-					<div class="hover-content">
-						<!-- Add to Cart -->
-						<div class="add-to-cart-btn">
-							<input type="hidden" name="product_id" value="" data-v-product-product_id />
-							<a href="" class="btn btn-primary w-100" data-v-product-url="cart/cart/index" data-v-vvveb-action="addToCart" data-product_id="1">
-								<span class="loading d-none">
-									<span class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"> </span>
-									<span>Add to cart</span>...
-								</span>
 
-								<span class="button-text">
-									Add to cart
-								</span>
-							</a>
-						</div>
-					</div>
-				</div>
-			</article>
-		</div>
-	</div>
+                    <div class="product-favourite">
+                        <a href="/product/product-nineteen" data-v-product-url="" data-v-product-title=""
+                            class="la la-heart" title="Product 19"></a>
+                    </div>
+                </div>
+
+
+                <div class="product-content">
+
+                    <a href="/product/product-nineteen" data-v-product-url="" title="Product 19">
+                        <h6 data-v-product-name="">Product 19</h6>
+                    </a>
+
+                    <p class="product-price" data-v-product-price_tax_formatted="">$256.99</p>
+
+
+                    <div class="hover-content">
+
+                        <div class="add-to-cart-btn">
+                            <input type="hidden" name="product_id" value="19" data-v-product-product_id="">
+                            <a href="/product/product-nineteen" class="btn btn-primary w-100"
+                                data-v-product-url="cart/cart/index" data-v-vvveb-action="addToCart"
+                                data-product_id="19" title="Product 19">
+                                <span class="loading d-none">
+                                    <span class="spinner-border spinner-border-sm align-middle" role="status"
+                                        aria-hidden="true"> </span>
+                                    <span>Add to cart</span>...
+                                </span>
+
+                                <span class="button-text">
+                                    Add to cart
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+        <div class="col-sm-12 col-md-6 col-lg mb-2" data-v-product="" data-v-id="18">
+            <article class="single-product-wrapper">
+
+                <a href="/product/product-eighteen" data-v-product-url="" title="Product 18"> </a>
+                <div class="product-image">
+                    <a href="/product/product-eighteen" data-v-product-url="" title="Product 18">
+
+                        <img src="../../media/demo/products/1-1.webp" data-v-product-alt="" alt="Product 18"
+                            data-v-product-image="thumb">
+
+
+                        <img class="hover-img" src="../../media/demo/products/1-2.webp"
+                            data-v-product-alt="" alt="Product 18" data-v-product-image-1="thumb" data-v-id="49"
+                            data-v-type="product_image">
+                    </a>
+
+
+                    <div class="product-favourite">
+                        <a href="/product/product-eighteen" data-v-product-url="" data-v-product-title=""
+                            class="la la-heart" title="Product 18"></a>
+                    </div>
+                </div>
+
+
+                <div class="product-content">
+
+                    <a href="/product/product-eighteen" data-v-product-url="" title="Product 18">
+                        <h6 data-v-product-name="">Product 18</h6>
+                    </a>
+
+                    <p class="product-price" data-v-product-price_tax_formatted="">$129.00</p>
+
+
+                    <div class="hover-content">
+
+                        <div class="add-to-cart-btn">
+                            <input type="hidden" name="product_id" value="18" data-v-product-product_id="">
+                            <a href="/product/product-eighteen" class="btn btn-primary w-100"
+                                data-v-product-url="cart/cart/index" data-v-vvveb-action="addToCart"
+                                data-product_id="18" title="Product 18">
+                                <span class="loading d-none">
+                                    <span class="spinner-border spinner-border-sm align-middle" role="status"
+                                        aria-hidden="true"> </span>
+                                    <span>Add to cart</span>...
+                                </span>
+
+                                <span class="button-text">
+                                    Add to cart
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+        <div class="col-sm-12 col-md-6 col-lg mb-2" data-v-product="" data-v-id="17">
+            <article class="single-product-wrapper">
+
+                <a href="/product/product-seventeen" data-v-product-url="" title="Product 17"> </a>
+                <div class="product-image">
+                    <a href="/product/product-seventeen" data-v-product-url="" title="Product 17">
+
+                        <img src="../../media/demo/products/1-1.webp" data-v-product-alt="" alt="Product 17"
+                            data-v-product-image="thumb">
+
+
+                        <img class="hover-img" src="../../media/demo/products/1-1.webp"
+                            data-v-product-alt="" alt="Product 17" data-v-product-image-1="thumb" data-v-id="47"
+                            data-v-type="product_image">
+                    </a>
+
+
+                    <div class="product-favourite">
+                        <a href="/product/product-seventeen" data-v-product-url="" data-v-product-title=""
+                            class="la la-heart" title="Product 17"></a>
+                    </div>
+                </div>
+
+
+                <div class="product-content">
+
+                    <a href="/product/product-seventeen" data-v-product-url="" title="Product 17">
+                        <h6 data-v-product-name="">Product 17</h6>
+                    </a>
+
+                    <p class="product-price" data-v-product-price_tax_formatted="">$129.00</p>
+
+
+                    <div class="hover-content">
+
+                        <div class="add-to-cart-btn">
+                            <input type="hidden" name="product_id" value="17" data-v-product-product_id="">
+                            <a href="/product/product-seventeen" class="btn btn-primary w-100"
+                                data-v-product-url="cart/cart/index" data-v-vvveb-action="addToCart"
+                                data-product_id="17" title="Product 17">
+                                <span class="loading d-none">
+                                    <span class="spinner-border spinner-border-sm align-middle" role="status"
+                                        aria-hidden="true"> </span>
+                                    <span>Add to cart</span>...
+                                </span>
+
+                                <span class="button-text">
+                                    Add to cart
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
 </div>			
 `;
 

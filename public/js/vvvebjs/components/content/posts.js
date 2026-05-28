@@ -26,22 +26,20 @@ let template =
 <div class="container" data-v-component-posts="popular" data-v-limit="4">      
 <div class="row">
 
-	<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-post="" data-v-id="6" data-v-type="post">
+	<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-post data-v-id="6" data-v-type="post">
 
 	  <article class="card">
-		<div class="card-img-top">
-		  <img src="../../media/demo/posts/6.jpg" alt="" data-v-post-image="">
-		</div>
+		<img src="../../media/demo/posts/6.jpg" alt="" class="card-img-top" data-v-post-image>
 		
 		<div class="card-body">
 		  <div class="post-title card-title">
-			<a href="/hello-world-6" data-v-post-url="" title="">
-			  <h3 data-v-post-name="">Mauris viverra cursus ante laoreet eleifend</h3>
+			<a href="/hello-world-6" data-v-post-url title>
+			  <h3 data-v-post-name>Mauris viverra cursus ante laoreet eleifend</h3>
 			</a>
 		  </div>
 		  
-		  <p class="card-text text-muted" data-v-post-excerpt="">Et et saepe suscipit debitis a accusamus nulla in amet molestiae voluptates dolor autem vitae optio ipsa mollitia voluptatem vitae.</p>
-		  <a href="/hello-world-6" data-v-post-url="" title="">
+		  <p class="card-text text-muted" data-v-post-excerpt>Et et saepe suscipit debitis a accusamus nulla in amet molestiae voluptates dolor autem vitae optio ipsa mollitia voluptatem vitae.</p>
+		  <a href="/hello-world-6" data-v-post-url title>
 			<span>Read more</span>
 			<i class="la la-angle-right"></i>
 		  </a>
@@ -51,22 +49,20 @@ let template =
 
 	</div>
 	
-	<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-post="" data-v-id="5" data-v-type="post">
+	<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-post data-v-id="5" data-v-type="post">
 
 	  <article class="card">
-		<div class="card-img-top">
-		  <img src="../../media/demo/posts/5.jpg" alt="" data-v-post-image="">
-		</div>
+		<img src="../../media/demo/posts/5.jpg" alt="" class="card-img-top" data-v-post-image>
 		
 		<div class="card-body">
 		  <div class="post-title card-title">
-			<a href="/hello-world-5" data-v-post-url="" title="">
-			  <h3 data-v-post-name="">Sed viverra pellentesque dictum. Aenean ligula justo, viverra in lacus porttitor</h3>
+			<a href="/hello-world-5" data-v-post-url title>
+			  <h3 data-v-post-name>Sed viverra pellentesque dictum. Aenean ligula justo, viverra in lacus porttitor</h3>
 			</a>
 		  </div>
 		  
-		  <p class="card-text text-muted" data-v-post-excerpt="">Et ut aliquid blanditiis id sit et. Est ea ut tenetur veritatis recusandae est voluptatem.</p>
-		  <a href="/hello-world-5" data-v-post-url="" title="">
+		  <p class="card-text text-muted" data-v-post-excerpt>Et ut aliquid blanditiis id sit et. Est ea ut tenetur veritatis recusandae est voluptatem.</p>
+		  <a href="/hello-world-5" data-v-post-url title>
 			<span>Read more</span>
 			<i class="la la-angle-right"></i>
 		  </a>
@@ -76,24 +72,22 @@ let template =
 
 	</div>
 	
-	<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-post="" data-v-id="4" data-v-type="post">
+	<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-post data-v-id="4" data-v-type="post">
 
 	  <article class="card">
-		<div class="card-img-top">
-		  <img src="../../media/demo/posts/4.jpg" alt="" data-v-post-image="">
-		</div>
+		<img src="../../media/demo/posts/4.jpg" alt="" class="card-img-top" data-v-post-image>
 		
 		<div class="card-body">
 		  <div class="post-title card-title">
-			<a href="/hello-world-4" data-v-post-url="" title="">
-			  <h3 data-v-post-name="">Etiam leo nibh, consectetur nec orci et, tempus tempus ex</h3>
+			<a href="/hello-world-4" data-v-post-url title>
+			  <h3 data-v-post-name>Etiam leo nibh, consectetur nec orci et, tempus tempus ex</h3>
 			</a>
 		  </div>
 		  
-		  <p class="card-text text-muted" data-v-post-excerpt="">
+		  <p class="card-text text-muted" data-v-post-excerpt>
 			Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis perferendis rem accusantium ducimus animi nesciunt expedita omnis aut quas molestias!
 			Mauris viverra</p>
-		  <a href="/hello-world-4" data-v-post-url="" title="">
+		  <a href="/hello-world-4" data-v-post-url title>
 			<span>Read more</span>
 			<i class="la la-angle-right"></i>
 		  </a>
@@ -103,23 +97,21 @@ let template =
 
 	</div>
 	
-	<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-post="" data-v-id="3" data-v-type="post">
+	<div class="col-sm-12 col-md-6 col-lg mb-2" data-v-post data-v-id="3" data-v-type="post">
 
 	  <article class="card">
-		<div class="card-img-top">
-		  <img src="../../media/demo/posts/3.jpg" alt="" data-v-post-image="">
-		</div>
+		<img src="../../media/demo/posts/3.jpg" alt="" class="card-img-top" data-v-post-image>
 		
 		<div class="card-body">
 		  <div class="post-title card-title">
-			<a href="/hello-world-3" data-v-post-url="" title="">
-			  <h3 data-v-post-name="">The work is accomplished, and there is no resting in it</h3>
+			<a href="/hello-world-3" data-v-post-url title>
+			  <h3 data-v-post-name>The work is accomplished, and there is no resting in it</h3>
 			</a>
 		  </div>
 		  
-		  <p class="card-text text-muted" data-v-post-excerpt="">
+		  <p class="card-text text-muted" data-v-post-excerpt>
 All in the world know the beauty of the beautiful, and in doing this they have (the idea of) what ugliness is; they all know the skill of the skilful, and in doing this they have (the idea of) what t</p>
-		  <a href="/hello-world-3" data-v-post-url="" title="">
+		  <a href="/hello-world-3" data-v-post-url title>
 			<span>Read more</span>
 			<i class="la la-angle-right"></i>
 		  </a>
