@@ -7,6 +7,7 @@
 		IN language_id INT,
 		IN created_at INT,
 		IN content INT,
+		IN admin INT,
 		IN start INT,
 		IN limit INT,
 		OUT fetch_all, 
@@ -33,6 +34,11 @@
 		@IF !empty(:language_id) 
 		THEN			
 			AND product_content_revision.language_id = :language_id
+		END @IF	
+					
+		@IF !empty(:admin_id) 
+		THEN			
+			AND product_content_revision.admin_id = :admin_id
 		END @IF	
 					
 		@IF !empty(:created_at) 
@@ -62,6 +68,7 @@
 	PROCEDURE get(
 		IN product_id INT,
 		IN language_id INT,
+		IN admin_id INT,
 		IN created_at CHAR,
 		OUT fetch_row, 
 	)
@@ -82,7 +89,12 @@
 			THEN			
 				AND _.language_id = :language_id
 			END @IF
-			
+
+			@IF !empty(:admin_id) 
+			THEN			
+				AND _.admin_id = :admin_id
+			END @IF	
+		
 			@IF !empty(:created_at) 
 			THEN			
 				AND _.created_at = :created_at
@@ -117,6 +129,7 @@
 		IN revision ARRAY,
 		IN product_id INT,
 		IN language_id INT,
+		IN admin_id INT,
 		IN created_at INT,
 		OUT affected_rows
 	)
@@ -132,8 +145,12 @@
 		 WHERE 
 			product_id = :product_id AND
 			language_id = :language_id AND
-			created_at = :created_at; 
+			created_at = :created_at
 
+			@IF !empty(:admin_id) 
+			THEN			
+				AND admin_id = :admin_id
+			END @IF;	
 
 	END
 	
@@ -142,6 +159,7 @@
 	PROCEDURE delete(
 		IN product_id INT,
 		IN language_id INT,
+		IN admin_id INT,
 		IN created_at CHAR,
 		OUT affected_rows
 	)
@@ -151,4 +169,9 @@
 			product_id = :product_id AND
 			language_id = :language_id AND
 			created_at = :created_at 
+			
+			@IF !empty(:admin_id) 
+			THEN			
+				AND admin_id = :admin_id
+			END @IF;				
 	END
