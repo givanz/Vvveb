@@ -29,7 +29,6 @@ trait TotalTrait {
 		$data = ['namespace' => $namespace, 'key' => $key, 'title' => $title, 'value' => $value, 'value_formatted' => $this->currency->format($value), 'text' => $text];
 
 		$this->totals[$key] = $data;
-		$this->write();
 	}
 
 	function removeTotal($namespace, $key = false) {
@@ -37,7 +36,9 @@ trait TotalTrait {
 			unset($this->totals[$key]);
 		} else {
 			foreach ($this->totals as $key => $total) {
-				if ($total['namespace'] == $namespace) unset($this->totals[$key]); 
+				if ($total['namespace'] == $namespace) {
+					unset($this->totals[$key]);
+				}
 			}
 		}
 	}
@@ -58,16 +59,18 @@ trait TotalTrait {
 		} else if ($namespace) {
 			$totals = [];
 			foreach ($this->totals as $key => $total) {
-				if ($total['namespace'] == $namespace) $totals[$key] = $total; 
+				if ($total['namespace'] == $namespace) {
+					$totals[$key] = $total;
+				}
 			}
-			
+
 			return $totals;
 		}
-		
+
 		return $this->totals;
 	}
-	
-	function getAllTotals() {	
+
+	function getAllTotals() {
 		//include taxes
 		$this->addTaxTotal();
 		$this->addCouponTotal();
