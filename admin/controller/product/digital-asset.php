@@ -25,6 +25,7 @@ namespace Vvveb\Controller\Product;
 use Vvveb\Controller\Crud;
 use Vvveb\System\Images;
 use Vvveb\System\Traits\Media as MediaTrait;
+use Vvveb\System\User\Admin;
 
 class DigitalAsset extends Crud {
 	use MediaTrait;
@@ -37,7 +38,25 @@ class DigitalAsset extends Crud {
 
 	protected $module = 'product';
 
+	function save() {
+		$editCapability = 'edit_other_products';
+
+		if (Admin::hasCapability($editCapability)) {
+			$this->adminFilter = false;
+		} else {
+		}
+
+		parent::save();
+	}
+
 	function index() {
+		$editCapability = 'view_other_products';
+
+		if (Admin::hasCapability($editCapability)) {
+			$this->adminFilter = false;
+		} else {
+		}
+
 		parent::index();
 
 		$adminPath = \Vvveb\adminPath();

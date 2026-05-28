@@ -5,6 +5,7 @@
 	PROCEDURE getAll(
 		IN language_id INT,
 		IN user_id INT,
+		IN admin_id INT,
 		IN product_id INT,
 		IN order_status_id INT,
 		IN start INT,
@@ -40,7 +41,13 @@
 			END @IF
 
 		WHERE 1 = 1
-			
+
+		-- admin_id 
+		@IF isset(:admin_id)
+		THEN	
+			AND digital_asset.admin_id = :admin_id
+		END @IF
+
 		-- limit
 		@IF isset(:limit)
 		THEN		
@@ -60,6 +67,7 @@
 	PROCEDURE get(
 		IN digital_asset_id INT,
 		IN user_id INT,
+		IN admin_id INT,
 		IN language_id INT,
 		OUT fetch_row, 
 	)
@@ -78,7 +86,14 @@
 			INNER JOIN `order` o ON o.order_id = op.order_id AND o.user_id = :user_id AND o.order_status_id = :order_status_id
 		END @IF
 
-		WHERE _.digital_asset_id = :digital_asset_id;
+		WHERE _.digital_asset_id = :digital_asset_id
+
+		-- admin_id 
+		@IF isset(:admin_id)
+		THEN	
+			AND _.admin_id = :admin_id
+		END @IF;
+		
 		
 	END	
 	
@@ -117,6 +132,7 @@
 	CREATE PROCEDURE edit(
 		IN digital_asset ARRAY,
 		IN digital_asset_id INT,
+		IN admin_id INT,
 		OUT affected_rows
 		OUT affected_rows
 	)
@@ -129,7 +145,13 @@
 			
 			SET @LIST(:digital_asset_data) 
 			
-		WHERE digital_asset_id = :digital_asset_id;
+		WHERE digital_asset_id = :digital_asset_id
+		
+		-- admin_id 
+		@IF isset(:admin_id)
+		THEN	
+			AND digital_asset.admin_id = :admin_id
+		END @IF;
 		
 		-- allow only table fields and set defaults for missing values
 		:digital_asset_content = @FILTER(:digital_asset, digital_asset_content)
@@ -138,7 +160,12 @@
 			
 			SET @LIST(:digital_asset_content) 
 			
-		WHERE digital_asset_id = :digital_asset_id;
+		WHERE digital_asset_id = :digital_asset_id
+		
+		@IF isset(:admin_id)
+		THEN
+			AND digital_asset_content.digital_asset_id IN (SELECT digital_asset_id FROM digital_asset WHERE digital_asset.admin_id = :admin_id)
+		END @IF;
 
 	END
 	
@@ -147,11 +174,23 @@
 
 	PROCEDURE delete(
 		IN digital_asset_id ARRAY,
+		IN admin_id INT,
 		OUT affected_rows, 
 		OUT affected_rows, 
 	)
 	BEGIN
 		-- digital_asset
-		DELETE FROM digital_asset_content WHERE digital_asset_id IN (:digital_asset_id);
-		DELETE FROM digital_asset WHERE digital_asset_id IN (:digital_asset_id);
+		DELETE digital_asset_content FROM digital_asset_content WHERE digital_asset_id IN (:digital_asset_id)
+		
+		@IF isset(:admin_id)
+		THEN
+			INNER JOIN product ON (product.product_id = digital_asset_content.product_id AND digital_asset_content.admin_id = :admin_id)
+		END @IF;
+		
+		DELETE FROM digital_asset WHERE digital_asset_id IN (:digital_asset_id)		
+		-- admin_id 
+		@IF isset(:admin_id)
+		THEN	
+			AND _.admin_id = :admin_id
+		END @IF;
 	END

@@ -23,6 +23,7 @@
 namespace Vvveb\Controller\Product;
 
 use Vvveb\Controller\Listing;
+use Vvveb\System\User\Admin;
 
 class DigitalAssets extends Listing {
 	protected $additionalPermissionCheck = ['product/digital-asset/save'];
@@ -36,4 +37,26 @@ class DigitalAssets extends Listing {
 	protected $list = 'digital_asset';
 
 	protected $module = 'product';
+
+	function delete() {
+		$editCapability = 'edit_other_products';
+
+		if (Admin::hasCapability($editCapability)) {
+			$this->adminFilter = false;
+		} else {
+		}
+
+		parent::delete();
+	}
+
+	function index() {
+		$editCapability = 'view_other_products';
+
+		if (Admin::hasCapability($editCapability)) {
+			$this->adminFilter = false;
+		} else {
+		}
+		$this->adminFilter = false;
+		parent::index();
+	}
 }
