@@ -27,6 +27,7 @@ use Vvveb\Controller\Base;
 use function Vvveb\humanReadable;
 use function Vvveb\model;
 use Vvveb\System\Images;
+use Vvveb\System\User\Admin;
 
 class Revisions extends Base {
 	protected $type = 'post';
@@ -63,7 +64,19 @@ class Revisions extends Base {
 	}
 
 	function delete() {
-		$results = $this->revisions->delete($this->options + $this->global);
+		$options = $this->options + $this->global;
+		$editCapability = 'edit_other_posts';
+
+		if ($this->object == 'product') {
+			$editCapability = 'edit_other_products';
+		}
+
+		if (Admin::hasCapability($editCapability)) {
+			unset($options['admin_id']);
+		} else {
+		}
+
+		$results = $this->revisions->delete($options);
 
 		if ($results) {
 			$message[] = __('Revision deleted!');
@@ -77,10 +90,22 @@ class Revisions extends Base {
 		$content = $this->request->post['content'] ?? false;
 
 		if ($content) {
+			$options = $this->options + $this->global;
+			$editCapability = 'edit_other_posts';
+
+			if ($this->object == 'product') {
+				$editCapability = 'edit_other_products';
+			}
+
+			if (Admin::hasCapability($editCapability)) {
+				unset($options['admin_id']);
+			} else {
+			}
+
+
 			$result = $this->post->editContent(
 				[$this->type . '_content' => ['content' => $content]] +
-				$this->options +
-				$this->global
+				$options
 			);
 
 			if ($result) {
@@ -94,6 +119,17 @@ class Revisions extends Base {
 	}
 
 	function revision() {
+		$editCapability = 'view_other_posts';
+
+		if ($this->object == 'product') {
+			$editCapability = 'view_other_products';
+		}
+
+		if (Admin::hasCapability($editCapability)) {
+			unset($this->options['admin_id']);
+		} else {
+		}
+
 		$view     = $this->view;
 		$results  = $this->revisions->get($this->options);
 		$revision = [];
@@ -113,20 +149,38 @@ class Revisions extends Base {
 			$this->notFound();
 		}
 
+
 		$view           = $this->view;
 		$modelName      = $this->object . '_content_revision';
 		$revisions      = model($modelName);
 		$this->options += $this->global;
+
+		$editCapability = 'view_other_posts';
+
+		if ($this->object == 'product') {
+			$editCapability = 'view_other_products';
+		}
+
+		if (Admin::hasCapability($editCapability)) {
+			unset($this->options['admin_id']);
+		} else {
+		}
+
 		$allOptions     = $this->options;
 		unset($allOptions['created_at']);
 
-		$revisions = $this->revisions->getAll($allOptions); // all post/product revisions
-		$revision  = $this->revisions->get($this->options); // latest or selected revision
 		$post      = $this->post->get($this->options); // post/product content
+
+		if (! isset($post[$this->object . '_id'])) {
+			return $this->notFound();
+		}
 
 		if (isset($post['image'])) {
 			$post['image'] = $post['image'] = Images::image($post['image'], $this->object, 'thumb');
 		}
+
+		$revisions = $this->revisions->getAll($allOptions); // all post/product revisions
+		$revision  = $this->revisions->get($this->options); // latest or selected revision
 
 		$results = [
 			'revisions' => $revisions[$modelName] ?? [],

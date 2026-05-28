@@ -7,6 +7,7 @@
 		IN language_id INT,
 		IN created_at INT,
 		IN content INT,
+		IN admin INT,
 		IN start INT,
 		IN limit INT,
 		OUT fetch_all, 
@@ -29,12 +30,17 @@
 		THEN			
 			AND post_content_revision.post_id = :post_id
 		END @IF		
-			
+				
 		@IF !empty(:language_id) 
 		THEN			
 			AND post_content_revision.language_id = :language_id
-		END @IF
-		
+		END @IF	
+					
+		@IF !empty(:admin_id) 
+		THEN			
+			AND post_content_revision.admin_id = :admin_id
+		END @IF	
+					
 		@IF !empty(:created_at) 
 		THEN			
 			AND post_content_revision.created_at = :created_at
@@ -51,17 +57,18 @@
 		
 		SELECT count(*) FROM (
 			
-			@SQL_COUNT(post_content_revision.post_id, post_content_revision) -- this takes previous query removes limit and replaces select columns with parameter product_id
+			@SQL_COUNT(post_content_revision.post_id, post_content_revision) -- this takes previous query removes limit and replaces select columns with parameter post_id
 			
 		) as count;		
 			
 	END	
 	
-	-- get post_content_revision
+	-- get post content revision
 
 	PROCEDURE get(
 		IN post_id INT,
 		IN language_id INT,
+		IN admin_id INT,
 		IN created_at CHAR,
 		OUT fetch_row, 
 	)
@@ -82,7 +89,12 @@
 			THEN			
 				AND _.language_id = :language_id
 			END @IF
-			
+
+			@IF !empty(:admin_id) 
+			THEN			
+				AND _.admin_id = :admin_id
+			END @IF	
+		
 			@IF !empty(:created_at) 
 			THEN			
 				AND _.created_at = :created_at
@@ -111,11 +123,13 @@
 
 	END
 	
-	-- edit post_content_revision
+	-- edit post content revision
+
 	CREATE PROCEDURE edit(
 		IN revision ARRAY,
 		IN post_id INT,
 		IN language_id INT,
+		IN admin_id INT,
 		IN created_at INT,
 		OUT affected_rows
 	)
@@ -131,16 +145,21 @@
 		 WHERE 
 			post_id = :post_id AND
 			language_id = :language_id AND
-			created_at = :created_at; 
+			created_at = :created_at
 
+			@IF !empty(:admin_id) 
+			THEN			
+				AND admin_id = :admin_id
+			END @IF;	
 
 	END
 	
-	-- delete post_content_revision
+	-- delete post content revision
 
 	PROCEDURE delete(
 		IN post_id INT,
 		IN language_id INT,
+		IN admin_id INT,
 		IN created_at CHAR,
 		OUT affected_rows
 	)
@@ -150,4 +169,9 @@
 			post_id = :post_id AND
 			language_id = :language_id AND
 			created_at = :created_at 
+			
+			@IF !empty(:admin_id) 
+			THEN			
+				AND admin_id = :admin_id
+			END @IF;				
 	END
