@@ -100,7 +100,7 @@ class Language extends ComponentBase {
 				$params               = ['language' => $language['slug'], 'host' => $_SERVER['HTTP_HOST'] ?? '', 'scheme' => $scheme] + $content + $request->get;
 
 
-				if ($language['language_id'] == $options['default_language_id']) {
+				if (($language['language_id'] == $options['default_language_id']) && !self :: $global['default_lang_slug']) {
 					unset($params['language']);
 				}
 

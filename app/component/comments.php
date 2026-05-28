@@ -94,6 +94,16 @@ class Comments extends ComponentBase {
 			$level 	   = 0;
 			$parent_id = 0;
 
+
+			$language  = ['language'=> $this->options['language']];
+
+			if (self :: $global['default_language'] != self :: $global['language']) {
+			} else {
+				if (!self :: $global['default_lang_slug']) {
+					$language  = [];
+				}
+			}
+			
 			foreach ($results[$this->type] as $id => &$comment) {
 				if ($comment['parent_id'] == 0) {
 					$level     = 0;
@@ -118,8 +128,24 @@ class Comments extends ComponentBase {
 					$comment['pubDate'] = date('r', strtotime($comment['created_at']));
 
 					$anchor                = '#comment-' . $comment[$this->type . '_id'];
-					$comment['url']        =  url($this->route, $comment) . $anchor;
-					$comment['full-url']   =  url($this->route, $comment + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http']) . $anchor;
+					
+					//url
+					$url                  = $language;
+
+					if ($comment['type'] != 'post' && $comment['type'] != 'page') {
+						$url['type'] = $comment['type'];
+						$type        = 'post';
+					}
+					
+					//if translation is missing slug is not available
+					if (isset($comment['slug']) && $comment['slug']) {
+						$url['slug'] = $comment['slug'];
+					} else {
+						$url['post_id'] = $comment['post_id'];
+					}
+					
+					$comment['url']        =  url($this->route, $url) . $anchor;
+					$comment['full-url']   =  url($this->route, $url + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http']) . $anchor;
 				}
 
 				$comment['level']      =  $level;

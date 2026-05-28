@@ -57,11 +57,24 @@ trait Product {
 			$this->currency        = Currency::getInstance($options);
 		}
 
-		if ($product['language_id'] != $options['default_language_id']) {
-			$language          = ['language' => $options['language']];
 
-			if (! $product['name']) {
-				$product['name']   = '[' . __('No translation') . ']';
+		if (($product['language_id'] != $options['default_language_id'])) {
+			$language = ['language' => $options['language']];
+
+			if ($product['name'] === null && isset($product['post_content'][$this->options['default_language_id']])) {
+				$langFallback = $product['product_content'][$this->options['default_language_id']];
+				$product['name']  = $langFallback['name'];
+				$product['slug']  = $langFallback['slug'];
+				$product['content']  = $langFallback['content'];
+				$product['language_id']  = $langFallback['language_id'];
+			} else {
+				if (! $product['name']) {
+					$product['name']   = '[' . __('No translation') . ']';
+				}
+			}
+		} else {
+			if (self :: $global['default_lang_slug']) {
+				$language = ['language' => $options['language']];
 			}
 		}
 
@@ -83,10 +96,17 @@ trait Product {
 		$product['modDate'] = date('r', strtotime($product['updated_at']));
 		$product['lastMod'] = date('Y-m-d\TH:i:sP', strtotime($product['updated_at']));
 
-		$url                         = ['type' => $product['type'], 'product_id' => $product['product_id']] + $language;
+		$url                         = $language;
+
+		if ($product['type'] != 'product') {
+			$url['type'] = $product['type'];
+		}
+
 		//if translation is missing slug is not available
 		if (isset($product['slug'])) {
 			$url['slug'] = $product['slug'];
+		} else {
+			$url['product_id'] = $product['product_id'];
 		}
 
 		$product['url']      	       = url('product/product/index', $url);

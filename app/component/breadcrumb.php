@@ -60,7 +60,7 @@ class Breadcrumb extends ComponentBase {
 			$urlOptions += ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http'];
 		}
 
-		if ($this->options['default_language'] != $this->options['language']) {
+		if (($this->options['default_language'] != $this->options['language']) || self :: $global['default_lang_slug']) {
 			$urlOptions += ['language'=> $this->options['language']];
 		}
 

@@ -57,11 +57,14 @@ class Menu extends ComponentBase {
 		$noTranslationText     = '[' . __('No translation') . ']';
 
 		$defaultLanguage = true;
-		$languageOption  = [];
+		$language  = ['language'=> $options['language']];
 
 		if (self :: $global['default_language'] != self :: $global['language']) {
-			$languageOption  = ['language'=> $options['language']];
 			$defaultLanguage = false;
+		} else {
+			if (!self :: $global['default_lang_slug']) {
+				$language  = [];
+			}
 		}
 
 		//count the number of child menus (subcategories) for each category
@@ -114,17 +117,17 @@ class Menu extends ComponentBase {
 				}
 
 				if ($type == 'home') {
-					$category['url']  = url('index/index', $languageOption);
+					$category['url']  = url('index/index', $language);
 					$category['name'] = $category['name'] ?: __('Home');
 				}
 
 				if ($type == 'blog') {
-					$category['url']  = url('content', $languageOption);
+					$category['url']  = url('content', $language);
 					$category['name'] = $category['name'] ?: __('Blog');
 				}
 
 				if ($type == 'shop') {
-					$category['url']  = url('product/index', $languageOption);
+					$category['url']  = url('product/index', $language);
 					$category['name'] = $category['name'] ?: __('Shop');
 				}
 
@@ -153,7 +156,21 @@ class Menu extends ComponentBase {
 							$taxonomy_item_id          = $productTaxonomy[$product['product_id']];
 							$category                  = &$results['menu_item'][$taxonomy_item_id];
 							$route                     = "product/{$category['type']}/index";
-							$category['url']           = url($route, ['slug'=> $product['slug'], 'product_id'=> $product['product_id']] + $languageOption);
+							
+							$url                       = $language;
+
+							if ($product['type'] != 'product') {
+								$url['type'] = $product['type'];
+							}
+
+							//if translation is missing slug is not available
+							if (isset($product['slug'])) {
+								$url['slug'] = $product['slug'];
+							} else {
+								$url['product_id'] = $product['product_id'];
+							}	
+						
+							$category['url']           = url($route, $url);
 							$category['name']          = $product['name'] ?? (! $defaultLanguage ? $noTranslationText : null);
 							$category['language_id']   = $product['language_id'] ?: $options['language_id'];
 						}
@@ -177,8 +194,24 @@ class Menu extends ComponentBase {
 						foreach ($taxonomyPosts[$post['post_id']] as $taxonomy_item_id) {
 							$category                  = &$results['menu_item'][$taxonomy_item_id];
 							$route                     = "content/{$category['type']}/index";
-							$url                       = $post['slug'] ? url($route, ['slug'=> $post['slug'], 'post_id'=> $post['post_id']] + $languageOption) : '/';
-							$category['url']           = $url;
+							$url                       = $post['slug'] ? url($route, ['slug'=> $post['slug'], 'post_id'=> $post['post_id']] + $language) : '/';
+
+							//url
+							$url                  = $language;
+
+							if ($post['type'] != 'post' && $post['type'] != 'page') {
+								$url['type'] = $post['type'];
+								$type        = 'post';
+							}
+							
+							//if translation is missing slug is not available
+							if (isset($post['slug']) && $post['slug']) {
+								$url['slug'] = $post['slug'];
+							} else {
+								$url['post_id'] = $post['post_id'];
+							}		
+					
+							$category['url']           = url($route, $url);
 							$category['name']          = $post['name'] ?? (! $defaultLanguage ? $noTranslationText : null);
 							$category['language_id']   = $post['language_id'] ?? $options['language_id'];
 						}
@@ -218,25 +251,31 @@ class Menu extends ComponentBase {
 			$name  = $field['name'];
 			$value = $field['value'];
 
-			$name = str_replace('item-', '', $name);
+			$name = trim(str_replace('item', '', $name), '- ');
+
+			if (! $name) {
+				continue;
+			}
 
 			if ($name == 'name') {
 				$menu_item_content[$name] = strip_tags($value);
 			} else {
 				if ($name == 'content') {
 					$menu_item_content[$name] = sanitizeHTML($value);
+				} else if ($name == 'img') {
 				} else {
 					$menu_item[$name] = $value;
 				}
 			}
 		}
 
-		//$menu_item['menu_item_content']['post_id'] = $id;
 		$menu_item_content['language_id']      = self :: $global['language_id'];
-		$menu_item_content['content']          = $menu_item_content['content'] ?? '';
-		$menu_item['menu_item_content'][]      = $menu_item_content;
 		$menu_item['menu_item_id']             = $id;
 
+		if ($menu_item_content) {
+			$menu_item_content['content'] = $menu_item_content['content'] ?? '';
+			$menu_item['menu_item_content'][] = $menu_item_content;
+		}
 
 		if ((isset($menu_item_content['name']) && $menu_item_content['name']) ||
 			(isset($menu_item_content['content']) && $menu_item_content['content'])) {

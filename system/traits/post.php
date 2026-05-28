@@ -91,7 +91,10 @@ trait Post {
 		}
 
 		//date formatting that can be used for url parameters
-		$date = date_parse($post['created_at']);
+		$date = [];
+		if (isset($post['created_at']) && $post['created_at']) {
+			$date = date_parse($post['created_at']);
+		}
 
 		foreach (['year', 'day', 'month', 'hour', 'minute'] as $key) {
 			$post[$key] = $date[$key] ?? '';
@@ -99,7 +102,7 @@ trait Post {
 
 		$language = [];
 
-		if ($post['language_id'] != $options['default_language_id']) {
+		if (($post['language_id'] != $options['default_language_id'])) {
 			$language = ['language' => $options['language']];
 
 			if ($post['name'] === null && isset($post['post_content'][$this->options['default_language_id']])) {
@@ -113,11 +116,15 @@ trait Post {
 					$post['name']   = '[' . __('No translation') . ']';
 				}
 			}
+		} else {
+			if (self :: $global['default_lang_slug']) {
+				$language = ['language' => $options['language']];
+			}
 		}
 
 		//rfc
-		$createdTime = strtotime($post['created_at']);
-		$updatedTime = strtotime($post['updated_at']);
+		$createdTime = strtotime($post['created_at'] ?? '');
+		$updatedTime = strtotime($post['updated_at'] ?? '');
 
 		$post['pubDate'] = date('r', $createdTime);
 		$post['modDate'] = date('r', $updatedTime);
@@ -130,14 +137,18 @@ trait Post {
 		}
 
 		//url
-		$url                  = ['post_id' => $post['post_id']] + $language;
-		//if translation is missing slug is not available
-		if (isset($post['slug'])) {
-			$url['slug'] = $post['slug'];
-		}
+		$url                  = $language;
 
-		if ($post['type'] != 'post') {
+		if ($type != 'post' && $type != 'page') {
 			$url['type'] = $post['type'];
+			$type        = 'post';
+		}
+		
+		//if translation is missing slug is not available
+		if (isset($post['slug']) && $post['slug']) {
+			$url['slug'] = $post['slug'];
+		} else {
+			$url['post_id'] = $post['post_id'];
 		}
 
 		$post['url']          = url("content/$type/index", $url);

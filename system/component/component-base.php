@@ -57,8 +57,9 @@ class ComponentBase {
 			self :: $global['user_id']             = $user['user_id'] ?? null;
 			self :: $global['user_group_id']       = $user['user_group_id'] ?? 1;
 			self :: $global['languages']           = $site['languages'] ?? [];
-			self :: $global['default_language']    = sess('default_language') ?? $site['language'] ?? 'en';
-			self :: $global['default_language_id'] = (int)(sess('default_language_id') ?? $site['language_id'] ?? 1);
+			self :: $global['default_language']    = $site['language'] ?? 'en';
+			self :: $global['default_language_id'] = $site['language_id'] ?? 1;
+			self :: $global['default_lang_slug']   = $site['default_lang_slug'] ?? false;
 			self :: $global['language']            = ($site['language'] ?? '') ?: 'en';
 			self :: $global['language_id']         = (int)($site['language_id'] ?? '') ?: 1;
 			self :: $global['currency_id']         = (int)(sess('currency_id') ?? $site['currency_id'] ?? 1);
