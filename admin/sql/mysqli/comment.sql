@@ -7,6 +7,7 @@
 		IN language_id INT,
 		IN post_id INT,
 		IN user_id INT,
+		IN admin_id INT,
 		IN status INT,
 		IN post_title INT,
 
@@ -30,6 +31,11 @@
 			FROM comment
 			LEFT JOIN user ON (user.user_id = comment.user_id)	
 			
+			@IF isset(:admin_id) AND :admin_id
+			THEN 
+				LEFT JOIN post ON (post.post_id = comment.post_id)
+			END @IF			
+			
 			@IF isset(:post_title) AND :post_title
 			THEN 
 				LEFT JOIN post_content ON (post_content.post_id = comment.post_id)
@@ -38,33 +44,39 @@
             
             -- post
             @IF isset(:post_id)
-			THEN 
-				AND comment.post_id  = :post_id
-        	END @IF	            
+            THEN 
+            	AND comment.post_id  = :post_id
+            END @IF	            
             
 			-- post slug
             @IF isset(:slug)
-			THEN 
-				AND comment.post_id  = (SELECT post_id FROM post_content WHERE slug = :slug LIMIT 1) 
-			END @IF
+            THEN 
+            	AND comment.post_id  = (SELECT post_id FROM post_content WHERE slug = :slug LIMIT 1) 
+            END @IF
 
             -- user
             @IF isset(:user_id)
-			THEN 
-				AND comment.user_id  = :user_id
-        	END @IF	            
+            THEN 
+            	AND comment.user_id  = :user_id
+            END @IF	 
 			
-			-- user
+            -- admin
+            @IF isset(:admin_id)
+            THEN 
+            	AND post.admin_id  = :admin_id
+            END @IF	            
+			
+            -- user
             @IF isset(:language_id) AND isset(:post_title)
-			THEN 
-				AND post_content.language_id  = :language_id
-        	END @IF	              
+            THEN 
+            	AND post_content.language_id  = :language_id
+            END @IF	              
             
-			-- user
+            -- status
             @IF isset(:status)
-			THEN 
-				AND comment.status  = :status
-        	END @IF	            
+            THEN 
+            	AND comment.status  = :status
+            END @IF	            
 
 		ORDER BY parent_id, comment_id 
 		
@@ -87,6 +99,7 @@
 
 	CREATE PROCEDURE get(
 		IN comment_id INT,
+		IN admin_id INT,
 		OUT fetch_row,
 	)
 	BEGIN
@@ -94,6 +107,12 @@
 		SELECT * 
 			FROM comment AS _
 			LEFT JOIN user ON user.user_id = _.user_id
+			
+		@IF isset(:admin_id)
+		THEN
+			INNER JOIN post ON post.post_id = _.post_id AND post.admin_id = :admin_id
+        	END @IF	
+			
 		WHERE 1 = 1
 
             @IF isset(:comment_id)
@@ -133,7 +152,8 @@
 
 	CREATE PROCEDURE edit(
 		IN comment ARRAY,
-		IN  id_comment INT,
+		IN comment_id INT,
+		IN admin_id INT,
 		OUT affected_rows
 	)
 	BEGIN
@@ -141,21 +161,33 @@
 		@FILTER(:comment, comment)
 
 		UPDATE comment 
-			
-			SET  @LIST(:comment) 
+		
+			SET @LIST(:comment) 
 			
 		WHERE comment_id = :comment_id
-	 
+		
+		@IF isset(:admin_id)
+		THEN
+			AND comment.post_id IN (SELECT post_id FROM post WHERE post.admin_id = :admin_id)
+		END @IF;
 	END
 	
 	-- Delete comment
 
 	CREATE PROCEDURE delete(
-		IN  comment_id ARRAY,
+		IN comment_id ARRAY,
+		IN admin_id INT,
 		OUT affected_rows
 	)
 	BEGIN
 
-		DELETE FROM comment WHERE comment_id IN (:comment_id)
+		DELETE comment FROM comment 
+		
+		@IF isset(:admin_id)
+		THEN
+			INNER JOIN post ON (post.post_id = comment.post_id AND post.admin_id = :admin_id)
+		END @IF
+
+		WHERE comment_id IN (:comment_id)
 	 
 	END

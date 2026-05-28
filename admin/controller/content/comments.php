@@ -30,6 +30,7 @@ use Vvveb\Sql\commentSQL;
 use Vvveb\System\CacheManager;
 use Vvveb\System\Core\View;
 use Vvveb\System\Images;
+use Vvveb\System\User\Admin;
 
 class Comments extends Listing {
 	protected $type = 'comment';
@@ -40,15 +41,44 @@ class Comments extends Listing {
 
 	protected $listController = 'comments';
 
+	function delete() {
+		$editCapability = 'edit_other_posts';
+
+		if ($this->module == 'product') {
+			$editCapability = 'edit_other_products';
+		}
+
+		if (Admin::hasCapability($editCapability)) {
+			$this->userFilter = false;
+		} else {
+		}
+
+		parent::delete();
+	}
+
 	function save() {
 		$type       = $this->type;
 		$comment_id = $this->request->get[$type . '_id'] ?? $this->request->post[$type . '_id'] ?? false;
 		$status     = $this->request->get['newstatus'] ?? $this->request->post['newstatus'] ?? false;
 
 		if ($comment_id) {
+			$data = [$type => ['status' => (int) $status], $type . '_id' => $comment_id];
+
+			$editCapability = 'edit_other_posts';
+
+			if ($this->module == 'product') {
+				$editCapability = 'edit_other_products';
+			}
+
+			if (Admin::hasCapability($editCapability)) {
+				unset($data['admin_id']);
+			} else {
+				$data['admin_id'] = $this->global['admin_id'];
+			}
+
 			$comments = model($type);
 
-			if ($comments->edit([$type => ['status' => (int) $status], $type . '_id' => $comment_id])) {
+			if ($comments->edit($data)) {
 				//CacheManager::delete($type);
 				CacheManager::delete();
 				$this->view->success[] = sprintf(__('%s status changed!'), humanReadable(__($type)));
@@ -88,6 +118,17 @@ class Comments extends Listing {
 			$options['status'] = $status;
 		}
 
+		$viewCapability = 'view_other_posts';
+		if ($this->module == 'product') {
+			$viewCapability = 'view_other_products';
+		}
+
+		if (Admin::hasCapability($viewCapability)) {
+			unset($options['admin_id']);
+		} else {
+			$options['admin_id'] = $this->global['admin_id'];
+		}
+
 		$results        = $comments->getAll($options);
 		$results[$type] = $results[$type] ?? [];
 
@@ -102,12 +143,12 @@ class Comments extends Listing {
 
 			$url                    = ['module' => "$module/$listController", 'action' => 'save', 'status' => $status, $type . '_id' => $comment[$type . '_id']];
 			$postUrl                = ['module' => "$module/$controller", $type . '_id' => $comment[$type . '_id']];
-			
+
 			$comment['author-url']  = '';
 			if ($comment['user_id']) {
 				$comment['author-url'] = \Vvveb\url(['module' => 'user/user', 'user_id' => $comment['user_id']]);
 			}
-			
+
 			$comment['edit-url']    = \Vvveb\url($postUrl);
 			$comment['delete-url']  = \Vvveb\url(['module' => "$module/$listController", 'action' => 'delete'] + $url);
 			$comment['approve-url'] = \Vvveb\url(['newstatus' => 1] + $url);

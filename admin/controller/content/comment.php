@@ -25,6 +25,7 @@ namespace Vvveb\Controller\Content;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use function Vvveb\model;
+use Vvveb\System\User\Admin;
 
 class Comment extends Base {
 	protected $type = 'comment';
@@ -35,10 +36,24 @@ class Comment extends Base {
 		$comment    = $this->request->post[$type] ?? false;
 
 		if ($comment) {
+			$data = [$type => $comment, $type . '_id' => $comment_id];
+
+			$editCapability = 'edit_other_posts';
+
+			if ($this->type != 'comment') {
+				$editCapability = 'edit_other_products';
+			}
+
+			if (Admin::hasCapability($editCapability)) {
+				//unset($data['admin_id']);
+			} else {
+				$data['admin_id'] = $this->global['admin_id'];
+			}
+
 			$comments = model($type);
 
 			if ($comment_id) {
-				$result   = $comments->edit([$type => $comment, $type . '_id' => $comment_id]);
+				$result   = $comments->edit($data);
 			} else {
 				$result   = $comments->add([$type => $comment]);
 			}
@@ -64,6 +79,21 @@ class Comment extends Base {
 		] + $this->global;
 		unset($options['user_id']);
 
+		$viewCapability = 'view_other_posts';
+		if ($this->type != 'comment') {
+			$viewCapability = 'view_other_products';
+		}
+
+		if (Admin::hasCapability($viewCapability)) {
+			unset($options['admin_id']);
+		} else {
+			$options['admin_id'] = $this->global['admin_id'];
+		}
+
 		$this->view->$type = $comments->get($options);
+
+		if (! $this->view->$type) {
+			$this->notFound();
+		}
 	}
 }
