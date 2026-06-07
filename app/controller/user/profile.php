@@ -23,6 +23,7 @@
 namespace Vvveb\Controller\User;
 
 use function Vvveb\__;
+use function Vvveb\sanitizeHTML;
 use Vvveb\Sql\UserSQL;
 use Vvveb\System\User\User;
 use Vvveb\System\Validator;
@@ -66,8 +67,9 @@ class Profile extends Base {
 			if (($errors = $validator->validate($this->request->post['user'])) === true) {
 				$user            = $this->request->post['user'];
 				$user['user_id'] = $this->global['user_id'];
+				$user['bio']     = sanitizeHTML($user['bio'] ?? '');
 				unset($user['username'], $user['status'], $user['user'], $user['token'], $user['created_at']);
-
+				
 				$result = User::update($user, ['user_id' => $this->global['user_id']]);
 
 				if (! $result) {

@@ -1429,7 +1429,7 @@ function stripTagsArray($array, $tags) {
 	return $array;
 }
 
-function stripChars($string, $chars = ['(', ')' , '{' , '}', ':', '<' , '>']) {
+function stripChars($string, $chars = ['(', ')', '{', '}', ':', '<', '>']) {
 	return str_replace($chars, '', $string);
 }
 
@@ -1447,7 +1447,7 @@ function sanitizeHTML($string) {
 	$string = html_entity_decode($string, ENT_COMPAT, 'UTF-8');
 
 	// Remove any attribute starting with "on" or xmlns
-	$string = preg_replace('#(<[^>]+?[\x00-\x20"\'])(?:on|xmlns)[^>]*+>#iu', '$1>', $string);
+	$string = preg_replace('#(<[^>]+?[\x00-\x20"\'/])(?:on|xmlns)[^>]*+>#iu', '$1>', $string);
 
 	// Remove javascript: and vbscript: protocols
 	$string = preg_replace('#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([`\'"]*)[\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2nojavascript...', $string);
@@ -1467,7 +1467,7 @@ function sanitizeHTML($string) {
 		$old_data = $string;
 		//$string   = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $string);
 		$string   = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $string);
-	} while ($string !== $string);
+	} while ($old_data !== $string);
 
 	//restore entities
 	$string = str_replace(['&lt;<', '>&gt;'], ['&lt;', '&gt;'], $string);
