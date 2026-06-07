@@ -50,7 +50,7 @@ function url($parameters, $mergeParameters = false, $useCurrentUrl = true) {
 		static $urlParams = [];
 
 		if ($useCurrentUrl) {
-			$url = parse_url(SITE_URI ?? $_SERVER['REQUEST_URI'] ?? '');
+			$url = parse_url($_SERVER['REQUEST_URI'] ?? '');
 
 			if (isset($url['query'])) {
 				parse_str($url['query'], $urlParams);
@@ -1730,7 +1730,7 @@ function download($url) {
 	$result = false;
 
 	$url = html_entity_decode($url);
-	$url = validateUrl($url);
+	$ip = validateUrl($url);
 
 	if (! $url) {
 		return;
@@ -1741,7 +1741,9 @@ function download($url) {
 
 		if ($ch) {
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_RESOLVE, $ip);
 			curl_setopt($ch, CURLOPT_FAILONERROR, true);
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 			curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT'] ?? 'Vvveb ' . V_VERSION);
 			$result   = curl_exec($ch);
 			$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -1771,30 +1773,16 @@ function download($url) {
 }
 
 function validateUrl($url) {
-	if (strncmp($url, 'http', 4) === 0) {
-		if (preg_match('/https?:\/\/([^\/$]+)/', $url, $matches)) {
-			$host = $matches[1];
-
-			//don't allow port number
-			if (strpos($host, ':') !== false) {
-				return '';
-			}
-
-			//don't allow hostname without tld
-			if (strpos($host, '.') === false) {
-				return '';
-			}
-
-			//don't allow ip
-			if (false !== filter_var($host, FILTER_VALIDATE_IP)) {
-				return '';
-			}
-
-			return $url;
-		}
-	}
-
-	return '';
+    $p = parse_url($url);
+    if (! $p || ! in_array($p['scheme'] ?? '', ['http', 'https'], true) || empty($p['host'])) {
+        return '';
+    }
+    foreach (gethostbynamel($p['host']) ?: [] as $ip) {
+        if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            return ''; // private / reserved / loopback / link-local
+        }
+    }
+    return $url; // then fetch pinned to the validated $ip
 }
 
 function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception = true) {
