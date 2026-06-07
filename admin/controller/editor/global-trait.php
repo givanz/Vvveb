@@ -22,6 +22,8 @@
 
 namespace Vvveb\Controller\Editor;
 
+use function Vvveb\sanitizeFileName;
+
 trait GlobalTrait {
 	private function saveGlobalElements($content, $options = []) {
 		$document                      = new \DomDocument();
@@ -85,7 +87,7 @@ trait GlobalTrait {
 				if (strpos($attribute, ',') !== false) {
 					list($file, $selector) = explode(',', $attribute);
 
-					$file     = html_entity_decode($file);
+					$file     = sanitizeFileName(html_entity_decode($file));
 					$selector = html_entity_decode($selector);
 					$file     = $themeFolder . DS . $file;
 
@@ -110,10 +112,10 @@ trait GlobalTrait {
 								} else {
 									$parent->replaceChild($importedNode, $externalNode);
 								}*/
-								if (!$parent->replaceChild($importedNode, $externalNode)) {
+								if (! $parent->replaceChild($importedNode, $externalNode)) {
 									$externalNode->replaceWith($importedNode);
 								}
-								
+
 								$externalNode = $importedNode;
 								$parent       = $externalNode->parentNode;
 								$count++;
