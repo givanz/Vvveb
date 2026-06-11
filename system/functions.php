@@ -1209,7 +1209,11 @@ function sanitizeFileName($file, $normalizePath = true) {
 	//remove null bytes
 	$file = str_replace(chr(0), '', $file);
 	//sanitize, remove double dot .. and remove get parameters if any
-	$file = preg_replace('@\?.*$|\.{2,}|[^\w\-\./\\\]@' , '', $file);
+	$prev = '';
+	while ($prev != $file) {
+		$prev = $file;
+		$file = preg_replace('@\?.*$|\.{2,}|[^\w\-\./\\\]@' , '', $file);
+	}
 	//replace directory separators with OS specific separator
 	if ($normalizePath) {
 		$file = str_replace(['\\', '/'], DS, $file);
