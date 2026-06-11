@@ -1735,9 +1735,9 @@ function download($url) {
 	$result = false;
 
 	$url = html_entity_decode($url);
-	$ip = validateUrl($url);
+	$ips = validateUrl($url);
 
-	if (! $url) {
+	if (! $ips) {
 		return;
 	}
 
@@ -1746,7 +1746,7 @@ function download($url) {
 
 		if ($ch) {
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_RESOLVE, $ip);
+			curl_setopt($ch, CURLOPT_RESOLVE, $ips);
 			curl_setopt($ch, CURLOPT_FAILONERROR, true);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 			curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT'] ?? 'Vvveb ' . V_VERSION);
@@ -1782,12 +1782,19 @@ function validateUrl($url) {
     if (! $p || ! in_array($p['scheme'] ?? '', ['http', 'https'], true) || empty($p['host'])) {
         return '';
     }
-    foreach (gethostbynamel($p['host']) ?: [] as $ip) {
+    
+    $ips = gethostbynamel($p['host']) ?: [];
+    
+    $results = [];
+    foreach ($ips as $ip) {
+		$results[] = $p['host'] . ':443:[' . $ip .']';
+		
         if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-            return ''; // private / reserved / loopback / link-local
+            return []; // private / reserved / loopback / link-local
         }
     }
-    return $url; // then fetch pinned to the validated $ip
+    
+    return $results;
 }
 
 function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception = true) {
@@ -1795,9 +1802,9 @@ function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception 
 	$cacheKey     = md5($url);
 	$result       = false;
 
-	$url = validateUrl($url);
+	$ips = validateUrl($url);
 
-	if (! $url) {
+	if (! $ips) {
 		return;
 	}
 
@@ -1811,6 +1818,7 @@ function getUrl($url, $cache = true, $expire = 604800, $timeout = 5, $exception 
 			$ch = curl_init($url);
 
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_RESOLVE, $ips);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
 			curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
 			curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT'] ?? 'Vvveb ' . V_VERSION);
