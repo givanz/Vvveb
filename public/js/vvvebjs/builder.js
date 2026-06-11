@@ -906,8 +906,12 @@ Vvveb.Builder = {
 		self.highlightEl = null;
 		self.initCallback = callback;
 		
-        self.documentFrame = document.querySelector("#iframe-wrapper > iframe");
-        self.canvas = document.getElementById("canvas");
+		self.documentFrame = document.querySelector("#iframe-wrapper > iframe");
+		self.canvas = document.getElementById("canvas");
+		
+		if (!url) {
+			url = 'about:blank';
+		}
 
 		self._loadIframe(url + (url.indexOf('?') > -1 ? '&r=':'?r=') + Math.random());
 		
@@ -1920,22 +1924,61 @@ Vvveb.Builder = {
 
 			fetch(namespaceUrl + "/translate&action=save", {method: "POST",  body: new URLSearchParams(data)})
 			.then((response) => {
-				if (!response.ok) { throw new Error(response) }
-				return response.json()
+				if (!response.ok) {
+					return Promise.resolve(response.text()).then((responseInText) => {
+						return Promise.reject([response, responseInText]);
+					});
+				}
+				return response.json();
 			})
 			.then((data) => {
+				//use toast to show save status
+				let success = true;
 				let bg = "success";
 				
-				if (data.success || text == "success") {		
+				if (data.success || data == "success") {		
 				} else {
 					bg = "danger";
 				}
 				
-				displayToast(bg, "Save", data.message ?? data);		
+				if (typeof data.message === "string") {
+					displayToast(bg, "Save", data.message ?? data);
+				} else if (Array.isArray(data.message)) {
+					for (let message of data.message) {
+
+						if (message.success || data == "success") {	
+							bg = "success"
+						} else {
+							bg = "danger";
+							success = false;
+						}
+						
+						displayToast(bg, "Save", message.message);
+					}
+				} else if (typeof data === "string") {
+					displayToast(bg, "Save", data);
+				}
+	
 			})
-			.catch(error => {
-				console.log(error.statusText);
+			.catch(err => {
 				displayToast("danger", "Error", "Error saving translations!");
+
+				let message = err;
+				try {
+					let [response, responseInText] = err;
+					message = responseInText ?? response.statusText ?? "Error uploading!";
+				} catch (e) {
+				}
+
+				if (err.hasOwnProperty('text')) err.text().then( errorMessage => {
+					let message = errorMessage.substr(0, 200);
+					displayToast("danger", "Error", message);
+				});
+
+				if (typeof message == "string") {
+					displayToast("danger", "Error", message.substr(0, 200));
+				}
+				
 			});
 			/*
 			Vvveb.Builder.frameBody.querySelectorAll("form").forEach(f => {
@@ -3042,7 +3085,7 @@ Vvveb.Gui = {
 			treeList.style.width = "";
 			btnIcon.className = "icon-stop-outline";
 		} else {
-			treeList.style.height = "100%";
+			treeList.style.height = "auto";
 			treeList.style.right = "0";
 			treeList.style.top = "0";
 			treeList.style.left = "auto";
@@ -3929,9 +3972,9 @@ Vvveb.TreeList = {
 		});
 
 		document.querySelector(this.selector).addEventListener("click", function (e) {
-			let element = e.target.closest("li[data-component]");
+			let element = e.target.closest("li[data-component] label");
 			if (element) {
-				const node = element._treeNode;
+				const node = element.parentNode._treeNode;
 				node.scrollIntoView({behavior: "smooth", block: "center", inline: "center"});
 				//node.click();
 				Vvveb.Builder.selectNode(node);
