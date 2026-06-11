@@ -1452,6 +1452,7 @@ function sanitizeHTML($string) {
 
 	// Remove any attribute starting with "on" or xmlns
 	$string = preg_replace('#(<[^>]+?[\x00-\x20"\'/])(?:on|xmlns)[^>]*+>#iu', '$1>', $string);
+	$string = preg_replace('#[\x00-\x20"\'/](on|xmlns)[:\w]+[\x00-\x20"\'/]*=[\x00-\x20"\'/]*([\'"]+).+?\2#iu', '', $string);
 
 	// Remove javascript: and vbscript: protocols
 	$string = preg_replace('#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([`\'"]*)[\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2nojavascript...', $string);
