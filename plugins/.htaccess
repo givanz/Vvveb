@@ -1,4 +1,4 @@
-Options +SymLinksIfOwnerMatch -Indexes
+Options -Indexes -ExecCGI -Includes -MultiViews
 
 <IfModule !mod_authz_core.c>
 	<Files *.php>

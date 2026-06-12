@@ -1,4 +1,4 @@
-Options +SymLinksIfOwnerMatch -Indexes
+Options -Indexes -ExecCGI -Includes -MultiViews
 
 <Files *.php>
  order allow,deny
