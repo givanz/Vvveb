@@ -1,0 +1,6443 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-02-11 02:57+0100\n"
+"PO-Revision-Date: 2025-02-18 19:30+0100\n"
+"Last-Translator: 0dd_L33\n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n==0 || (n!=1 && n%100>=1 && n%100<=19) ? 1 : 2);\n"
+"X-Generator: Poedit 3.4.4\n"
+
+msgid "Vvveb install"
+msgstr "Instalación Vvveb"
+
+msgid "English"
+msgstr "Inglés"
+
+msgid "Romanian"
+msgstr "Rumano"
+
+msgid "Minimum requirements not met"
+msgstr "No se cumplen los requisitos mínimos"
+
+msgid "Requirement not met"
+msgstr "No se cumple el requisito"
+
+msgid "Errors"
+msgstr "Errores"
+
+msgid "Can't connect to database"
+msgstr "No es posible conectar a la base de datos"
+
+msgid "Please fill the form, contact your hosting provider for details"
+msgstr "Por favor complete el formulario. Contacte con su proveedor de alojamiento para obtener más detalles"
+
+msgid "Database engine"
+msgstr "Motor de base de datos"
+
+msgid "MySQL / MariaDB"
+msgstr "MySQL / MariaDB"
+
+msgid "SQLite"
+msgstr "SQLite"
+
+msgid "PgSql"
+msgstr "PostgreSQL"
+
+msgid "Database host"
+msgstr "Anfitrión del banco de datos"
+
+msgid "Database name"
+msgstr "Nombre del banco de datos"
+
+msgid "Database username"
+msgstr "Usuario del banco de datos"
+
+msgid "Database password"
+msgstr "Contraseña del banco de datos"
+
+msgid "&#128274;"
+msgstr ""
+
+msgid "Do not import basic configuration and demo data"
+msgstr "No importe los datos básicos de configuración y demostración"
+
+msgid "(Not recommended, check for total empty site only)"
+msgstr "(No recomendado, verifique solo si el sitio está completamente vacío)"
+
+msgid "I agree to AGPL 3 license terms"
+msgstr "Acuerdo con los términos de la licencia AGPL 3"
+
+msgid "license"
+msgstr "licencia"
+
+msgid "&#8599;"
+msgstr ""
+
+msgid "Continue install"
+msgstr "Continuar instalación"
+
+msgid "&rarr;"
+msgstr ""
+
+msgid "These can be later changed from admin."
+msgstr "Estos pueden ser alterados posteriormente por el administrador."
+
+msgid "Website name"
+msgstr "Nombre del sitio web"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "User"
+msgstr "Usuario"
+
+msgid "User name"
+msgstr "Nombre de usuario"
+
+msgid "Password"
+msgstr "Contraseña"
+
+msgid "Store your password in a safe place"
+msgstr "Guardar su contraseña en un lugar seguro"
+
+msgid "Theme"
+msgstr "Tema"
+
+msgid "Theme name"
+msgstr "Nombre del tema"
+
+msgid "Install"
+msgstr "Instalar"
+
+msgid "Preview"
+msgstr "Previa"
+
+msgid "Finish install"
+msgstr "Terminar la instalación"
+
+msgid "Page not found!"
+msgstr "Página no encontrada!"
+
+msgid "The page you are looking for is not available."
+msgstr "La página que estás buscando no está disponible."
+
+msgid "Your installation is probably broken, reinstall the application"
+msgstr "Tu instalación probablemente está quebrada, reinstala la aplicación"
+
+msgid "Reinstall"
+msgstr "Reinstalar"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Message"
+msgstr "Mensaje"
+
+msgid "File"
+msgstr "Archivo"
+
+msgid "File on line"
+msgstr "Archivo en línea"
+
+msgid "Code"
+msgstr "Código"
+
+msgid "line"
+msgstr "Línea"
+
+msgid "Trace"
+msgstr "Rastro"
+
+msgid "Page not found"
+msgstr "Página no encontrada"
+
+msgid "Vvveb - Dashboard"
+msgstr "Vvveb - Panel de control" 
+
+msgid "Dashboard"
+msgstr "Panel de control"
+
+msgid "Submenu"
+msgstr "Menú subsecuente"
+
+msgid "Subtitle"
+msgstr "Título subsecuente"
+
+msgid "Edit website"
+msgstr "Editar sitio web"
+
+msgid "Posts"
+msgstr "Artículos"
+
+msgid "Add new"
+msgstr "Añadir nuevo"
+
+msgid "Classification"
+msgstr "Categorización"
+
+msgid "Categories"
+msgstr "Categorías"
+
+msgid "Tags"
+msgstr "Etiquetas"
+
+msgid "General"
+msgstr "General"
+
+msgid "Comments"
+msgstr "Comentarios"
+
+msgid "Pages"
+msgstr "Páginas"
+
+msgid "Add new page"
+msgstr "Añadir nueva página"
+
+msgid "Media library"
+msgstr "Biblioteca de medios"
+
+msgid "Ecommerce"
+msgstr "Tienda en línea"
+
+msgid "Sales"
+msgstr "Ventas"
+
+msgid "Orders"
+msgstr "Pedidos"
+
+msgid "Recurring"
+msgstr "Recurrente"
+
+msgid "Returns"
+msgstr "Devoluciones"
+
+msgid "Products"
+msgstr "Productos"
+
+msgid "Add new product"
+msgstr "Agregar nuevo producto"
+
+msgid "Taxonomy"
+msgstr "Taxonomía"
+
+msgid "Manufacturers"
+msgstr "Fabricantes"
+
+msgid "Vendors"
+msgstr "Proveedores"
+
+msgid "Configuration"
+msgstr "Configuración"
+
+msgid "Custom fields"
+msgstr "Campos personalizados"
+
+msgid "Options"
+msgstr "Opciones"
+
+msgid "Digital content"
+msgstr "Contenido digital"
+
+msgid "Reviews"
+msgstr "Revisión"
+
+msgid "Questions"
+msgstr "Preguntas"
+
+msgid "Users"
+msgstr "Usuarios"
+
+msgid "Add new user"
+msgstr "Agregar nuevo usuario"
+
+msgid "Plugins"
+msgstr "Plugins"
+
+msgid "Installed Plugins"
+msgstr "Plugins instalados"
+
+msgid "Add new plugin"
+msgstr "Agregar ploma nueva"
+
+msgid "CDN for static content"
+msgstr "Servidor de contenido estático (CDN)"
+
+msgid "Contact form"
+msgstr "Formulario de contacto"
+
+msgid "Insert scripts"
+msgstr "Insertar scripts"
+
+msgid "Markdown"
+msgstr "Markdown"
+
+msgid "Themes"
+msgstr "Temas"
+
+msgid "Installed Themes"
+msgstr "Temas instalados"
+
+msgid "Settings"
+msgstr "Configuraciones"
+
+msgid "General Settings"
+msgstr "Configuraciones generales"
+
+msgid "Admin users"
+msgstr "Usuarios administradores"
+
+msgid "Roles"
+msgstr "Roles"
+
+msgid "Manage Roles"
+msgstr "Gestionar roles"
+
+msgid "Add Roles"
+msgstr "Agregar roles"
+
+msgid "Content"
+msgstr "Contenido"
+
+msgid "Taxonomies"
+msgstr "Taxonomías"
+
+msgid "(Hierarchical)"
+msgstr "(Hierárquico)"
+
+msgid "(Flat)"
+msgstr "(Plan)"
+
+msgid "Checkout & payments"
+msgstr "Checkout y pagos"
+
+msgid "Shipping"
+msgstr "Envío"
+
+msgid "Email notifications"
+msgstr "Notificaciones de correo electrónico"
+
+msgid "Discount coupons"
+msgstr "Cupónes de descuento"
+
+msgid "Taxes"
+msgstr "Impuestos"
+
+msgid "Tax classes"
+msgstr "Clases de impuestos"
+
+msgid "Tax rates"
+msgstr "Tasas de impuesto"
+
+msgid "Statuses"
+msgstr "Estado"
+
+msgid "Classes"
+msgstr "Classes"
+
+msgid "Localization"
+msgstr "Localización"
+
+msgid "Languages"
+msgstr "Idiomas"
+
+msgid "Currencies"
+msgstr "Monedas"
+
+msgid "Geo location"
+msgstr "Geolocalización"
+
+msgid "Countries"
+msgstr "Países"
+
+msgid "Zones"
+msgstr "Regiones"
+
+msgid "Zone Groups"
+msgstr "Grupos de regiones"
+
+msgid "Sites"
+msgstr "Sites"
+
+msgid "Tools"
+msgstr "Herramientas"
+
+msgid "Cache"
+msgstr "Cache"
+
+msgid "Import/Export"
+msgstr "Importar/Exportar"
+
+msgid "Import"
+msgstr "Importar"
+
+msgid "Export"
+msgstr "Exportar"
+
+msgid "Backup"
+msgstr "Backup"
+
+msgid "System info"
+msgstr "Información del sistema"
+
+msgid "Error log"
+msgstr "Registro de errores"
+
+msgid "Security"
+msgstr "Seguridad"
+
+msgid "View live website"
+msgstr "Ver sitio en vivo"
+
+msgid "Default website"
+msgstr "Sitio web por defecto"
+
+msgid "Blog"
+msgstr ""
+
+msgid "Manage sites"
+msgstr "Gerenciar sitios"
+
+msgid "Clear cache"
+msgstr "Limpar cache"
+
+msgid "Assets"
+msgstr "Ativos"
+
+msgid "Templates"
+msgstr "Plantillas"
+
+msgid "Database"
+msgstr "Banco de datos"
+
+msgid "Page cache"
+msgstr "Cache de página"
+
+msgid "All cache"
+msgstr "Toda la cache"
+
+msgid "0.0.5"
+msgstr "0.0.5"
+
+msgid "Update available"
+msgstr "Actualización disponible"
+
+msgid "Up to date"
+msgstr "Atualizado"
+
+msgid "Default site"
+msgstr "Sitio por defecto"
+
+msgid "Live"
+msgstr "En vivo"
+
+msgid "Maintenance"
+msgstr "Mantenimiento"
+
+msgid "Coming soon"
+msgstr "En breve"
+
+msgid "Docs"
+msgstr "Documentos"
+
+msgid "Admin"
+msgstr "Administrador"
+
+msgid "Edit Profile"
+msgstr "Editar perfil"
+
+msgid "Loading ..."
+msgstr "Cargando..."
+
+msgid "..."
+msgstr "..."
+
+msgid "Logout"
+msgstr "Saliendo"
+
+msgid "Vvveb 0.2 is now available!"
+msgstr "Vvveb 0.2 está disponible ahora!"
+
+msgid "Update now"
+msgstr "Actualizar ahora"
+
+msgid "You successfully read this important alert message."
+msgstr "Leíste con éxito este importante mensaje de advertencia."
+
+msgid "Total new orders"
+msgstr "Pedidos totales nuevos"
+
+msgid "Refunds"
+msgstr "Reembolsos"
+
+msgid "Total users"
+msgstr "Total de usuarios"
+
+msgid "37"
+msgstr ""
+
+msgid "this month"
+msgstr "este mes"
+
+msgid "this year"
+msgstr "este año"
+
+msgid "Total Comments"
+msgstr "Comentarios totales"
+
+msgid "pending"
+msgstr "pendiente"
+
+msgid "approved"
+msgstr "aprobado"
+
+msgid "approved"
+msgstr "aprobado"
+
+msgid "spam"
+msgstr "spam"
+
+msgid "Total reviews"
+msgstr "Reseñas totales"
+
+msgid "Latest orders"
+msgstr "Últimos pedidos"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "Date added"
+msgstr "Datos añadidos"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "Action"
+msgstr "Accion"
+
+msgid "John"
+msgstr "Juan"
+
+msgid "Doe"
+msgstr "Doe"
+
+msgid "Pending"
+msgstr "Pendente"
+
+msgid "31/05/2018"
+msgstr "31/05/2018"
+
+msgid "100%"
+msgstr "100%"
+
+msgid "John Doe"
+msgstr "Juan Doe"
+
+msgid "\\$1,005.00"
+msgstr "$1,005.00"
+
+msgid "No orders to display!"
+msgstr "Ningun pedido para mostrar!"
+
+msgid "Top products sales"
+msgstr "Productos en promocion"
+
+msgid "Thumb"
+msgstr ""
+
+msgid "Product"
+msgstr "Producto"
+
+msgid "Price"
+msgstr "Precio"
+
+msgid "Product name"
+msgstr "Nombre del Producto"
+
+msgid "No prodcuts to display!"
+msgstr "Ningun producto para mostrar!"
+
+msgid "New users"
+msgstr "Nuevos usuarios"
+
+msgid "Date joined"
+msgstr "Fecha de ingreso"
+
+msgid "No users to display!"
+msgstr "Ningun usuario para mostrar!"
+
+msgid "New comments"
+msgstr "Nuevis comentarios"
+
+msgid "Comment"
+msgstr "Comentario"
+
+msgid "No comments to display!"
+msgstr "Ningun comentario para mostrar!"
+
+msgid "News"
+msgstr "Notícias"
+
+msgid "What's new in 0.1"
+msgstr Que hay de nuevo en 0.1"
+
+msgid "New features planned for the next version"
+msgstr "Nuevo recursos planificados para la próxima version"
+
+msgid "Introducing the new multi site feature"
+msgstr "Presentando un nuevo recurso multisite"
+
+msgid "How to use media library"
+msgstr "Como usar la biblioteca de media"
+
+msgid "No news to display!"
+msgstr "Ninguna notícia para mostrar!"
+
+msgid "Widgets"
+msgstr "Elementos"
+
+msgid "Published"
+msgstr "Publicado"
+
+msgid "Draft"
+msgstr "Boceto"
+
+msgid "Pending preview"
+msgstr "Prevista pendiente"
+
+msgid "Close"
+msgstr "Cerrar"
+
+msgid "Add widget"
+msgstr "Añadir elemento"
+
+msgid "Session has expired"
+msgstr "sesión caducada"
+
+msgid "Login to resume your work"
+msgstr "Inicio de sesión para continuar con su trabajo"
+
+msgid "Vvveb - Recover password"
+msgstr "Vvveb - Recuperar contraseña"
+
+msgid "Login succesfull!"
+msgstr "Inicio de sesión efectuado!"
+
+msgid "Username or email"
+msgstr "Nombre de usuario u e-mail"
+
+msgid "Send reset link"
+msgstr "Enviar enlace de reseteo"
+
+msgid "&#10003;"
+msgstr "" 
+
+msgid "asdasd"
+msgstr ""
+
+msgid "Vvveb - User"
+msgstr "Vvveb - Usuario"
+
+msgid "&ensp;"
+msgstr "" 
+
+msgid "Admin list"
+msgstr "Lista de administradores"
+
+msgid "Save user"
+msgstr "Guardar usuario"
+
+msgid "Display name"
+msgstr "Nombre"
+
+msgid "Inactive"
+msgstr "Inactivo"
+
+msgid "Active"
+msgstr "Activo"
+
+msgid "Enter new password to reset"
+msgstr "Pon nueva contraseña para reseteo"
+
+msgid "Role"
+msgstr "Role"
+
+msgid "Vvveb - Users"
+msgstr "Vvveb - Usuarios"
+
+msgid "&nbsp;"
+msgstr "" 
+
+msgid "Add user"
+msgstr "Añadir usuario"
+
+msgid "Search"
+msgstr "Busqueda"
+
+msgid "Phone number"
+msgstr "Número de telefono"
+
+msgid "- All -"
+msgstr "- Todos -"
+
+msgid "Filter"
+msgstr "Filtro"
+
+msgid "Delete selected"
+msgstr "Excluir selecionado"
+
+msgid "First name"
+msgstr "Nombre"
+
+msgid "Last name"
+msgstr "Apellidos"
+
+msgid "Actions"
+msgstr "Acciones"
+
+msgid "joe"
+msgstr "joe"
+
+msgid "mail@mail.com"
+msgstr "mail@mail.com"
+
+msgid "Edit"
+msgstr "Editar"
+
+msgid "Toggle primary"
+msgstr "Alternar principal"
+
+msgid "Delete"
+msgstr "Eliminar"
+
+msgid "&nbsp; Add user"
+msgstr "&nbsp; Agregar usuario"
+
+msgid "100"
+msgstr "100"
+
+msgid "items, page"
+msgstr "elementos, página"
+
+msgid "of"
+msgstr "de"
+
+msgid "First"
+msgstr "Primero"
+
+msgid "Previous"
+msgstr "Anterior"
+
+msgid "Next"
+msgstr "Siguiente"
+
+msgid "Last"
+msgstr "Último"
+
+msgid "Send reset link &nbsp;"
+msgstr "Enviar enlace de restablecimiento &nbsp;"
+
+msgid "Vvveb - Roles"
+msgstr "Vvveb - Funciones"
+
+msgid "&nbsp; Add role"
+msgstr "&nbsp; Agregar función"
+
+msgid "Product Name"
+msgstr "Nombre del producto"
+
+msgid "Product 1 23"
+msgstr "Producto 123"
+
+msgid "Product 2"
+msgstr "Producto 2"
+
+msgid "Product 3"
+msgstr "Producto 3"
+
+msgid "Product 4"
+msgstr "Producto 4"
+
+msgid "Product 5"
+msgstr "Producto 5"
+
+msgid "Model"
+msgstr "Modelo"
+
+msgid "Product 15"
+msgstr "Producto 15"
+
+msgid "Product 21"
+msgstr "Producto 21"
+
+msgid "Product 1"
+msgstr "Producto 1"
+
+msgid "Product 14"
+msgstr "Producto 14"
+
+msgid "Quantity"
+msgstr "Cantidad"
+
+msgid "Enabled"
+msgstr "Activado"
+
+msgid "Disabled"
+msgstr "Desactivado"
+
+msgid "Check this custom checkbox"
+msgstr "Marque esta casilla de verificación personalizada"
+
+msgid "Toggle this custom radio"
+msgstr "Altere el estado de este botón de radio personalizado"
+
+msgid "Or toggle this other custom radio"
+msgstr "Ou altere el estado de otro botón de radio personalizado"
+
+msgid "Edit selected"
+msgstr "Editar seleccionado"
+
+msgid "Name"
+msgstr "Nombre"
+
+msgid "Role name"
+msgstr "Nombre de función"
+
+msgid "View"
+msgstr "Vista"
+
+msgid "Design"
+msgstr ""
+
+msgid "No roles to display!"
+msgstr "¡No hay funciones para mostrar!"
+
+msgid "Vvveb - Role"
+msgstr "Vvveb - Función"
+
+msgid "Role list"
+msgstr "Lista de funciones"
+
+msgid "Save settings"
+msgstr "Guardar configuraciones"
+
+msgid "Add"
+msgstr "Agregar"
+
+msgid "Home page"
+msgstr "Página principal"
+
+msgid "Contact us page"
+msgstr "Página de contacto"
+
+msgid "Supporters"
+msgstr "Apoiantes"
+
+msgid "Checkout"
+msgstr "Procesar pedido"
+
+msgid "Confirm"
+msgstr "Confirmar"
+
+msgid "Order"
+msgstr "Orden"
+
+msgid "Module access control"
+msgstr "Control de acceso a módulo"
+
+msgid "Click"
+msgstr "Hacer clic"
+
+msgid "to choose module and action or write the path directly and click"
+msgstr "para elegir el módulo y la acción o escribir el camino directamente y hacer clic"
+
+msgid "You can use * wildcard to allow/deny multiple modules."
+msgstr "Puede usar el carácter * como curinga para permitir/denegar varios módulos."
+
+msgid "Ex:"
+msgstr ""
+
+msgid "content/*"
+msgstr "contenido/*"
+
+msgid "will apply for all content modules like post and page add/edit, menu categories etc"
+msgstr "se aplicará a todos los módulos de contenido como post y página agregar/modificar, categorías de menú, etc."
+
+msgid "To deny saving for content modules use"
+msgstr "Para denegar guardar el uso de módulos de contenido"
+
+msgid "content/*/save"
+msgstr "contenido/*/salvar"
+
+msgid "this rule will apply for save actions for content modules, and editing and adding posts/pages/categories etc will be denied."
+msgstr "esta regla se aplicará a las acciones de salvamento de módulos de contenido, y la edición y agregación de post y página categorías, etc. serán negadas."
+
+msgid "To deny delete for all modules use"
+msgstr "Para denegar la exclusión de todos los módulos use"
+
+msgid "*/delete"
+msgstr "*/excluir"
+
+msgid "this rule will apply for delete actions for all modules."
+msgstr "esta regla se aplicará a las acciones de exclusión de todos los módulos."
+
+msgid "Allow list is checked first then the deny list, if a rule allows access a deny rule can limit it."
+msgstr "La lista de permisos se verifica primero y luego la lista de denegación. Si una regla permite el acceso, una regla de denegación puede limitarlo."
+
+msgid "For example you can add access to products section with"
+msgstr "Por ejemplo, puede agregar acceso a la sección de productos con"
+
+msgid "products/*"
+msgstr "productos/*"
+
+msgid "and only restrict product categories and delete with"
+msgstr "y solo restringir categorías de producto y eliminar con"
+
+msgid "products/*/delete"
+msgstr "productos/*/eliminar"
+
+msgid "and"
+msgstr "y"
+
+msgid "product/categories"
+msgstr "categorías de producto"
+
+msgid "deny rules."
+msgstr "denegar reglas."
+
+msgid "With"
+msgstr "Con"
+
+msgid "plugins/*"
+msgstr "plug-ins/*"
+
+msgid "you can restrict or allow access to plugins section and all plugins settings."
+msgstr "puede restringir o permitir acceso a la sección de plug-ins y a todas las configuraciones de plug-ins."
+
+msgid "plugins/insert-scripts"
+msgstr "plug-ins/inserción-de-scripts"
+
+msgid "you can restrict or allow access only to a specific plugin."
+msgstr "puede restringir o permitir acceso solo a un plug-in específico."
+
+msgid "Allow list"
+msgstr "Lista de permisos"
+
+msgid "admin/*"
+msgstr "administrador/*"
+
+msgid "Add rule"
+msgstr "Agregar regla"
+
+msgid "Deny list"
+msgstr "Lista de denegados"
+
+msgid "Capabilities"
+msgstr "Capacidades"
+
+msgid "Vvveb - Login"
+msgstr ""
+
+msgid "Remember me"
+msgstr "Recuérdame"
+
+msgid "Forgot your password?"
+msgstr "¿Olvidó su contraseña?"
+
+msgid "Sign In &nbsp;"
+msgstr "Iniciar sesión"
+
+msgid "Vvveb - Reviews"
+msgstr "Vvveb - Revisión"
+
+msgid "All"
+msgstr "Todos"
+
+msgid "Approved"
+msgstr "Aprobado"
+
+msgid "Spam"
+msgstr ""
+
+msgid "Trash"
+msgstr "Basura"
+
+msgid "Author"
+msgstr "Autor"
+
+msgid "Date"
+msgstr "Fecha"
+
+msgid "Approve"
+msgstr "Aprobar"
+
+msgid "No product_reviews to display!"
+msgstr "No hay reseñas_de_productos para mostrar!"
+
+msgid "Vvveb - Edit product"
+msgstr "Vvveb - Edición de producto"
+
+msgid "list"
+msgstr "lista"
+
+msgid "Save"
+msgstr "Guardar"
+
+msgid "product"
+msgstr "producto"
+
+msgid "Image"
+msgstr "Imagen"
+
+msgid "Inventory"
+msgstr "Inventario"
+
+msgid "Product Url"
+msgstr "URL del producto"
+msgid "url"
+msgstr ""
+
+msgid "Product Slug"
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+msgid "&nbsp; Open in Page Editor"
+msgstr "&nbsp; Abrir en Editor de Página"
+
+msgid "Manufacturer"
+msgstr "Fabricante"
+
+msgid "Vendor"
+msgstr "Vendedor"
+
+msgid "Related Products"
+msgstr "Produtos Relacionados"
+
+msgid "Product 10"
+msgstr ""
+
+msgid "Attribute"
+msgstr "Atributo"
+
+msgid "Text"
+msgstr "Texto"
+
+msgid "100mhz"
+msgstr ""
+
+msgid "Checkbox"
+msgstr "Casilla de selección"
+
+msgid "Select"
+msgstr "Seleccionar"
+
+msgid "Textarea"
+msgstr ""
+
+msgid "Radio"
+msgstr ""
+
+msgid "Time"
+msgstr "Hora"
+
+msgid "Date & Time"
+msgstr "Fecha & Hora"
+
+msgid "Required"
+msgstr "Obligatorio"
+
+msgid "Yes"
+msgstr "Sí"
+
+msgid "No"
+msgstr "No"
+
+msgid "Option Value"
+msgstr "Valor de Opción"
+
+msgid "Subtract Stock"
+msgstr "Restar existencias"
+
+msgid "Points"
+msgstr "Puntos"
+
+msgid "Weight"
+msgstr "Peso"
+
+msgid "Recurring Profile"
+msgstr "Perfil Recurrente"
+
+msgid "User Group"
+msgstr "Grupo de Usuarios"
+
+msgid "Priority"
+msgstr "Prioridad"
+
+msgid "Date Start"
+msgstr "Fecha Inicio"
+
+msgid "Date End"
+msgstr "Fecha Final"
+
+msgid "Default"
+msgstr "Predeterminado"
+
+msgid "SKU"
+msgstr ""
+
+msgid "UPC"
+msgstr ""
+
+msgid "EAN"
+msgstr ""
+
+msgid "JAN"
+msgstr ""
+
+msgid "ISBN"
+msgstr ""
+
+msgid "MPN"
+msgstr ""
+
+msgid "Location"
+msgstr ""
+
+msgid "Tax Class"
+msgstr "Clase Fiscal"
+
+msgid "--- None ---"
+msgstr "--- Ninguno ---"
+
+msgid "Taxable Goods"
+msgstr "Bienes Tributables"
+
+msgid "Downloadable Products"
+msgstr "Productos Descargables"
+
+msgid "Stock"
+msgstr "Existencia"
+
+msgid "Minimum Quantity"
+msgstr "Cantidad Mínima"
+
+msgid "Out Of Stock Status"
+msgstr "Estado fuera de existencia"
+
+msgid "2-3 Days"
+msgstr "2-3 días"
+
+msgid "In Stock"
+msgstr "En existencia"
+
+msgid "Out Of Stock"
+msgstr "Agotado"
+
+msgid "Pre-Order"
+msgstr "Preorden"
+
+msgid "Date Available"
+msgstr "Fecha Disponible"
+
+msgid "Requires Shipping"
+msgstr "Requiere Envío"
+
+msgid "Dimensions"
+msgstr "Dimensiones"
+
+msgid "Width"
+msgstr "Anchura"
+
+msgid "Height"
+msgstr "Altura"
+
+msgid "Length"
+msgstr "Longitud"
+
+msgid "Length Class"
+msgstr "Clase de Longitud"
+
+msgid "Centimeter"
+msgstr "Centímetro"
+
+msgid "Millimeter"
+msgstr "Milímetro"
+
+msgid "Inch"
+msgstr "Pulgada"
+
+msgid "Weight Class"
+msgstr "Clase de Peso"
+
+msgid "Kilogram"
+msgstr "Kilogramo"
+
+msgid "Gram"
+msgstr "Gramo"
+
+msgid "Pound"
+msgstr "Libra"
+
+msgid "Ounce"
+msgstr "Onza"
+
+msgid "Reward Points"
+msgstr "Puntos de Recompensa"
+
+msgid "Featured Media"
+msgstr "Média en Destaque"
+
+msgid "Set featured media"
+msgstr "Establecer medios en destaque"
+
+msgid "Template"
+msgstr "Plantilla"
+
+msgid "-- Default template --"
+msgstr "-- Modelo predeterminado --"
+
+msgid "Private"
+msgstr "Privado"
+
+msgid "Vvveb - Vendor"
+msgstr "Vvveb - Proveedor"
+
+msgid "Vendor list"
+msgstr "Lista de proveedores"
+
+msgid "Slug"
+msgstr "Slug"
+
+msgid "Set image"
+msgstr "Establecer imagen"
+
+msgid "Vvveb - Manufacturer"
+msgstr "Vvveb - Fabricante"
+
+msgid "Manufacturer list"
+msgstr "Lista de fabricantes"
+
+msgid "Vvveb - Manufactuers"
+msgstr "Vvveb - Fabricantes"
+
+msgid "Add manufacturer"
+msgstr "Agregar fabricante"
+
+msgid "Thumbnail"
+msgstr "Miniatura"
+
+msgid "No manufacturers to display!"
+msgstr "No hay fabricantes para mostrar!"
+
+msgid "Vvveb - Review"
+msgstr "Vvveb - Revisión"
+
+msgid "Review"
+msgstr "Revisión"
+
+msgid "Review list"
+msgstr "Lista de revisiones"
+
+msgid "&nbsp; Save"
+msgstr "&nbsp; Guardar"
+
+msgid "Url"
+msgstr ""
+
+msgid "Vvveb - Option"
+msgstr "Vvveb - Opción"
+
+msgid "Option"
+msgstr "Opción"
+
+msgid "Option list"
+msgstr "Lista de opciones"
+
+msgid "Vvveb - Fields"
+msgstr "Vvveb - Campos"
+
+msgid "Fields"
+msgstr "Campos"
+
+msgid "&nbsp; Add field"
+msgstr "&nbsp; Agregar campo"
+
+msgid "No fields to display!"
+msgstr "No hay campos para mostrar!"
+
+msgid "Vvveb - Products"
+msgstr "Vvveb - Productos"
+
+msgid "Add product"
+msgstr "Agregar producto"
+
+msgid "Sku"
+msgstr ""
+
+msgid "Upc"
+msgstr ""
+
+msgid "Isbn"
+msgstr ""
+
+msgid "\\$50"
+msgstr "$50"
+
+msgid "10"
+msgstr "10"
+
+msgid "No products to display!"
+msgstr "No hay productos para mostrar!"
+
+msgid "&nbsp; Add product"
+msgstr "&nbsp; Agregar producto"
+
+msgid "Vvveb - Vendors"
+msgstr "Vvveb - Provedores"
+
+msgid "Add vendor"
+msgstr "Agregar proveedor"
+
+msgid "Article title"
+msgstr "Título del artículo"
+
+msgid "No vendors to display!"
+msgstr "No hay proveedores para mostrar!"
+
+msgid "005.jpg"
+msgstr ""
+
+msgid "46 KB"
+msgstr ""
+
+msgid "Vvveb - Question"
+msgstr "Vvveb - Pregunta"
+
+msgid "Question"
+msgstr "Pregunta"
+
+msgid "Question list"
+msgstr "Lista de preguntas"
+
+msgid "Vvveb - Categories"
+msgstr "Vvveb - Categorías"
+
+msgid "Menu list"
+msgstr "Lista de menús"
+
+msgid "Add item"
+msgstr "Agregar ítem"
+
+msgid "New item"
+msgstr "Nuevo ítem"
+
+msgid "Title"
+msgstr "Título"
+
+msgid "Category Url"
+msgstr "URL de la categoría"
+
+msgid "Meta title"
+msgstr "Meta título"
+
+msgid "Meta description"
+msgstr "Meta descripción"
+
+msgid "Meta keywords"
+msgstr "Meta palabras clave"
+
+msgid "Saving ..."
+msgstr "Guardando..."
+
+msgid "Save changes"
+msgstr "Guardar cambios"
+
+msgid "No taxonomies to display!"
+msgstr "No hay taxonomías para mostrar!"
+
+msgid "Hello, world! This is a toast message."
+msgstr ""
+
+msgid "Vvveb - Editor"
+msgstr ""
+
+msgid "View page"
+msgstr "Ver página"
+
+msgid "Saving"
+msgstr "Guardando"
+
+msgid "New template"
+msgstr "Nuevo modelo"
+
+msgid "Add section"
+msgstr "Agregar sección"
+
+msgid "Page Sections"
+msgstr "Secciones de la página"
+
+msgid "Components"
+msgstr "Componentes"
+
+msgid "Blocks"
+msgstr "Blocos"
+
+msgid "Style"
+msgstr "Estilo"
+
+msgid "Advanced"
+msgstr "Avanzado"
+
+msgid "No selected element!"
+msgstr "Ningún elemento seleccionado!"
+
+msgid "Click on an element to edit."
+msgstr "Clickea en un elemento para editar."
+
+msgid "Background Color"
+msgstr "Color de fondo"
+
+msgid "Align Left"
+msgstr "Alinear a la izquierda"
+
+msgid "Align Center"
+msgstr "Centrar el alineamiento"
+
+msgid "Align Right"
+msgstr "Alinear a la derecha"
+
+msgid "Align Justify"
+msgstr "Justificar el alineamiento"
+
+msgid "After"
+msgstr "Después"
+
+msgid "Inside"
+msgstr "Dentro"
+
+msgid "body"
+msgstr "cuerpo"
+
+msgid "section"
+msgstr "sección"
+
+msgid "img"
+msgstr ""
+
+msgid "Run javascript code on edit"
+msgstr "Ejecutar código javascript en la edición"
+
+msgid "Code editor"
+msgstr "Editor de código"
+
+msgid "Export html"
+msgstr "Exportar HTML"
+
+msgid "VvvebJs"
+msgstr ""
+
+msgid "Page was successfully saved!."
+msgstr "La página se salvó con éxito!."
+
+msgid "New template page"
+msgstr "Nueva página de modelo"
+
+msgid "Blank Template"
+msgstr "Modelo en blanco"
+
+msgid "Narrow jumbotron"
+msgstr "Jumbotron estrecho"
+
+msgid "Album"
+msgstr "Álbum"
+
+msgid "File name"
+msgstr "Nombre del archivo"
+
+msgid "Save to folder"
+msgstr "Guardar en carpeta"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Create template"
+msgstr "Crear modelo"
+
+msgid "Page save"
+msgstr "Página guardada"
+
+msgid "Elements saved!"
+msgstr "Elementos guardados!"
+
+msgid "Template backup was saved!"
+msgstr "El backup del modelo se guardó con éxito!"
+
+msgid "Template was saved!"
+msgstr "El modelo se guardó con éxito!"
+
+msgid "Saving changes"
+msgstr "Guardando cambios"
+
+msgid "Default template"
+msgstr "Modelo predeterminado"
+
+msgid "Applies to all pages using template"
+msgstr "Se aplica a todas las páginas que usan el modelo"
+
+msgid "product/product.html"
+msgstr "producto/producto.html"
+
+msgid "Save as new template"
+msgstr "Guardar como nuevo modelo"
+
+msgid "Applies to this page only"
+msgstr "Solo aplica a esta página"
+
+msgid "Set as template for this page"
+msgstr "Definir como modelo para esta página"
+
+msgid "Vvveb - Code Editor"
+msgstr "Vvveb - Editor de código"
+
+msgid "Upload new file"
+msgstr "Subir un nuevo archivo"
+
+msgid "Drop or choose files to upload"
+msgstr "Soltar o elegir archivos para subir"
+
+msgid "No files here."
+msgstr "Aquí no hay archivos."
+
+msgid "Editing:"
+msgstr "Edición:"
+
+msgid "Save status"
+msgstr "Estado de guardado"
+
+msgid "Vvveb - Length class"
+msgstr "Vvveb - Clase de longitud"
+
+msgid "Length class"
+msgstr "Clase de duración"
+
+msgid "Add length class"
+msgstr "Agregar clase de longitud"
+
+msgid "Unit"
+msgstr "Unidad"
+
+msgid "Value"
+msgstr "Valor"
+
+msgid "No length_class to display!"
+msgstr "¡No hay clase de longitud para mostrar!"
+
+msgid "Vvveb - Order status"
+msgstr "Vvveb - Estado del pedido"
+
+msgid "Order status"
+msgstr "Estado del pedido"
+
+msgid "Order status list"
+msgstr "Lista de estados del pedido"
+
+msgid "Vvveb - Return reason"
+msgstr "Vvveb - Razón de devolución"
+
+msgid "Return reason"
+msgstr "Razón de devolución"
+
+msgid "Return reason list"
+msgstr "Lista de razones de devolución"
+
+msgid "Add return reason"
+msgstr "Agregar razón de devolución"
+
+msgid "No return_reason to display!"
+msgstr "¡No hay razón de devolución para mostrar!"
+
+msgid "Vvveb - Themes"
+msgstr "Vvveb - Temas"
+
+msgid "Home"
+msgstr "Home"
+
+msgid "Profile"
+msgstr "Perfil"
+
+msgid "Contact"
+msgstr "Contacto"
+
+msgid "Site title"
+msgstr "Título del sitio"
+
+msgid "Site description"
+msgstr "Descripción del sitio"
+
+msgid "Vvveb - Stock status"
+msgstr "Vvveb - Estado del stock"
+
+msgid "Stock status"
+msgstr "Estado del stock"
+
+msgid "Stock status list"
+msgstr "Lista de estados del stock"
+
+msgid "Vvveb - Weight class"
+msgstr "Vvveb - Clase de peso"
+
+msgid "Weight class"
+msgstr "Clase de peso"
+
+msgid "Weight class list"
+msgstr "Lista de clases de peso"
+
+msgid "Vvveb - Email settings"
+msgstr "Vvveb - Configuraciones de e-mail"
+
+msgid "Email settings"
+msgstr "Configuraciones de e-mail"
+
+msgid "Mail Engine"
+msgstr "Mecanismo de Correio"
+
+msgid "Email"
+msgstr "Correo electrónico"
+
+msgid "SMTP"
+msgstr "SMTP"
+
+msgid "Mail Parameters"
+msgstr "Parámetros del correo"
+
+msgid "e.g. -f email@mysite.com"
+msgstr "por ejemplo -f email@mysite.com"
+
+msgid "Hostname"
+msgstr "Nombre de host"
+
+msgid "Use 'tls://' or 'ssl://' prefix for secure connection."
+msgstr "Utilice el prefijo 'tls://' o 'ssl://' para conexión segura."
+
+msgid "Username"
+msgstr "Nombre de usuario"
+
+msgid "Port"
+msgstr "Puerto"
+
+msgid "Timeout"
+msgstr "Tiempo límite"
+
+msgid "Send test email"
+msgstr "Enviar correo electrónico de prueba"
+
+msgid "Send to email address"
+msgstr "Enviar a la dirección de correo electrónico"
+
+msgid "Send email"
+msgstr "Enviar correo electrónico"
+
+msgid "Vvveb - Return status"
+msgstr "Vvveb - Estado de retorno"
+
+msgid "Return status"
+msgstr "Estado de retorno"
+
+msgid "Return status list"
+msgstr "Lista de estados de retorno"
+
+msgid "Vvveb - Taxonomies"
+msgstr "Vvveb - Taxonomías"
+
+msgid "Add taxonomy"
+msgstr "Agregar taxonomía"
+
+msgid "Type"
+msgstr "Tipo"
+
+msgid "Post type"
+msgstr "Tipo de publicación"
+
+msgid "Site id"
+msgstr "ID del sitio"
+
+msgid "Global"
+msgstr ""
+
+msgid "&nbsp; Add post"
+msgstr "&nbsp; Agregar publicación"
+
+msgid "Add return status"
+msgstr "Agregar estado de devolución"
+
+msgid "No return_status to display!"
+msgstr "Ningún estado de retorno para mostrar!"
+
+msgid "Vvveb - Settings"
+msgstr "Vvveb - Configuraciones"
+
+msgid "Local"
+msgstr ""
+
+msgid "Address"
+msgstr "Dirección"
+
+msgid "Geocode"
+msgstr "Código geográfico"
+
+msgid "Country"
+msgstr "País"
+
+msgid "Country 2"
+msgstr "País 2"
+
+msgid "Region / State"
+msgstr "Región/Provincia"
+
+msgid "--- Please Select ---"
+msgstr "--- Seleccionar ---"
+
+msgid "Defaults"
+msgstr "Por Defecto"
+
+msgid "Default Language"
+msgstr "Idioma por defecto"
+
+msgid "Default Currency"
+msgstr "Moneda por defecto"
+
+msgid "Timezone"
+msgstr "Zona horaria"
+
+msgid "Date format"
+msgstr "Formato de fecha"
+
+msgid "Custom:"
+msgstr "Personalizado:"
+
+msgid "enter a custom date format in the following field"
+msgstr "introducir un formato de fecha personalizado en el campo siguiente"
+
+msgid "Custom date format:"
+msgstr "Formato de fecha personalizado:"
+
+msgid "Preview:"
+msgstr "Vista previa:"
+
+msgid "Time format"
+msgstr "Formato de hora"
+
+msgid "Time Format"
+msgstr "Formato de hora"
+
+msgid "9:45 am"
+msgstr ""
+
+msgid "g:i a"
+msgstr ""
+
+msgid "9:45 AM"
+msgstr ""
+
+msgid "g:i A"
+msgstr ""
+
+msgid "09:45"
+msgstr ""
+
+msgid "H:i"
+msgstr ""
+
+msgid "Default post comments"
+msgstr "Comentarios de publicacion por defecto"
+
+msgid "Allow comments"
+msgstr " Permitir comentarios"
+
+msgid "Individual posts may override these settings."
+msgstr "Las publicaciones individuales pueden superar estas configuraciones."
+
+msgid "Anonymous comments"
+msgstr "Comentarios anónimos"
+
+msgid "Allow comments only from logged in users"
+msgstr "Permitir comentarios solo de usuarios conectados"
+
+msgid "Automatically close comments"
+msgstr "Cerrar comentarios automáticamente"
+
+msgid "On posts older than"
+msgstr "En publicaciones con mas de"
+
+msgid "days"
+msgstr "dias"
+
+msgid "Invoice Prefix"
+msgstr "Prefijo de factura"
+
+msgid "Display Weight on Cart Page"
+msgstr "Mostrar peso en la pagina del carrito"
+
+msgid "Allow guest checkout"
+msgstr "Permitir check-out de invitado"
+
+msgid "New Order Status"
+msgstr "Nuevo estado del pedido"
+
+msgid "Canceled"
+msgstr "Cancelado"
+
+msgid "Canceled Reversal"
+msgstr "Reversión cancelada"
+
+msgid "Chargeback"
+msgstr "devolución de cargo"
+
+msgid "Complete"
+msgstr "Completo"
+
+msgid "Denied"
+msgstr "Denegado"
+
+msgid "Expired"
+msgstr "Expirado"
+
+msgid "Failed"
+msgstr "Fallido"
+
+msgid "Processed"
+msgstr "Procesado"
+
+msgid "Processing"
+msgstr "En proceso"
+
+msgid "Refunded"
+msgstr "Reembolsado"
+
+msgid "Reversed"
+msgstr "Invertido"
+
+msgid "Shipped"
+msgstr "Enviado"
+
+msgid "Voided"
+msgstr "Nulo"
+
+msgid "Vvveb - taxonomies"
+msgstr "Vvveb - taxonomías"
+
+msgid "Add order status"
+msgstr "Agregar estado de pedido"
+
+msgid "No order_status to display!"
+msgstr "No hay estados de pedido para mostrar!"
+
+msgid "Length class list"
+msgstr "Lista de clases de longitud"
+
+msgid "Vvveb - Tax rate"
+msgstr "Vvveb - Tasa de impuesto"
+
+msgid "Tax rate"
+msgstr "Tasa de impuesto"
+
+msgid "Return to tax rates"
+msgstr "Volver a las tasas de impuesto"
+
+msgid "Rate"
+msgstr "Tasa"
+
+msgid "Fixed"
+msgstr "Fijo"
+
+msgid "Percent"
+msgstr "Porcentaje"
+
+msgid "Zone group"
+msgstr "Grupo de zonas"
+
+msgid "Vvveb - Edit site"
+msgstr "Vvveb - Editar sitio"
+
+msgid "Add site"
+msgstr "Agregar sitio"
+
+msgid "Site"
+msgstr "Sitio web"
+
+msgid "Key"
+msgstr "Llave"
+
+msgid "Host"
+msgstr "Anfitrión"
+
+msgid "template"
+msgstr ""
+
+msgid "Site name"
+msgstr "Nombre del sitio"
+
+msgid "www.vvveb.com"
+msgstr "www.vvveb.com"
+
+msgid "Landing"
+msgstr "Página de aterrizaje"
+
+msgid "index.html"
+msgstr "index.html"
+
+msgid "No sites to display!"
+msgstr "No hay sitios para mostrar!"
+
+msgid "Vvveb - Return action"
+msgstr "Vvveb - Acción de retorno"
+
+msgid "Return action"
+msgstr "Acción de retorno"
+
+msgid "Return action list"
+msgstr "Lista de acción de retorno"
+
+msgid "Vvveb - Subscription status"
+msgstr "Vvveb - Estado de la suscripción"
+
+msgid "Subscription status"
+msgstr "Estado de la suscripción"
+
+msgid "Subscription status list"
+msgstr "Lista de estados de la suscripción"
+
+msgid "Add subscription status"
+msgstr "Agregar estado de la suscripción"
+
+msgid "No subscription_status to display!"
+msgstr "No hay estado de suscripción para mostrar!"
+
+msgid "Add return action"
+msgstr "Agregar acción de retorno"
+
+msgid "No return_action to display!"
+msgstr "No hay acciones de retorno para mostrar!"
+
+msgid "Add stock status"
+msgstr "Agregar estado del stock"
+
+msgid "No stock_status to display!"
+msgstr "No hay estados del stock para mostrar!"
+
+msgid "Add stock_status"
+msgstr "Agregar estados del stock"
+
+msgid "Vvveb - Site"
+msgstr "Vvveb - Sitio"
+
+msgid "Sites list"
+msgstr "Lista de sitios"
+
+msgid "Save site"
+msgstr "Guardar sitio"
+
+msgid "Mail notifications"
+msgstr "Notificaciones por correo electrónico"
+
+msgid "Site key"
+msgstr "Clave del sitio"
+
+msgid "Used to match the host from the url to the site"
+msgstr "Se utiliza para emparejar el host de la URL con el sitio"
+
+msgid "Use * as wildcard to match a portion of hostname for example:"
+msgstr "Utilice * como comodin para emparejar a una parte del nombre del host, por ejemplo:"
+
+msgid "shop *"
+msgstr "tienda *"
+
+msgid "for your shop subdomain or"
+msgstr "para el subdominio de su tienda o"
+
+msgid "blog mydomain *"
+msgstr "blog midominio *"
+
+msgid "to match blog on all tld's or"
+msgstr "para corresponder al blog en todos los tlds o"
+
+msgid "* mydomain *"
+msgstr "* midominio *"
+
+msgid "to match all subdomains and tld."
+msgstr "para corresponder a todos los subdominios y tld."
+
+msgid "Use"
+msgstr "Utilizar"
+
+msgid "default"
+msgstr "por defecto"
+
+msgid "to select the site if no other site matches."
+msgstr "para seleccionar el sitio si ningún otro sitio coincide."
+
+msgid "Use space instead of dots to separate subdomain domain and tld."
+msgstr "Utilice espacio en lugar de puntos para separar el dominio del subdominio y el tld."
+
+msgid "Must be unique for each site."
+msgstr "Debe ser único para cada sitio."
+
+msgid "Site domain/subdomain"
+msgstr "Dominio/subdominio del sitio"
+
+msgid "Used to generate links for the site"
+msgstr "Se utiliza para generar enlaces para el sitio"
+
+msgid "Use _for wildcard for subdomain, domain or tld like_ .mysite.com, subdomain._.com, subdomain.mysite._"
+msgstr "Utilice _como comodin para subdominio, dominio o tld como_ .misitio.com, subdominio._.com, subdominio.misitio._"
+
+msgid "Theme 1"
+msgstr "Tema 1"
+
+msgid "Theme 2"
+msgstr "Tema 2"
+
+msgid "Home template"
+msgstr "Modelo inicial"
+
+msgid "Administration Email Address"
+msgstr "dirección de e-mail de administracion"
+
+msgid "Contact Email Address"
+msgstr "dirección de e-mail de contato"
+
+msgid "Logo"
+msgstr "Logotipo"
+
+msgid "Site logo"
+msgstr "Logotipo do site"
+
+msgid "Fav icon"
+msgstr "Ícone favorito"
+
+msgid "Logo sticky"
+msgstr "Logotipo pegajoso"
+
+msgid "Logo dark"
+msgstr "Logotipo escuro"
+
+msgid "Logo dark sticky"
+msgstr "Logotipo escuro pegajoso"
+
+msgid "Notify on"
+msgstr "Notificar on"
+
+msgid "New user account"
+msgstr "Nueva cuenta de usuario"
+
+msgid "New order"
+msgstr "Nuevo pedido"
+
+msgid "New post comment"
+msgstr "Nuevo comentario en publicacion"
+
+msgid "New product question"
+msgstr "Pregunta sobre producto nuevo"
+
+msgid "New product review"
+msgstr "Análise de producto nuevo"
+
+msgid "Vvveb - Tax rates"
+msgstr "Vvveb - Taxas de impuesto"
+
+msgid "Add tax rate"
+msgstr "Añadir taxa de impuesto"
+
+msgid "No tax rate to display!"
+msgstr "Ninguna tasa de impuesto para mostrar!"
+
+msgid "Vvveb - Taxonomy"
+msgstr "Vvveb - Taxonomia"
+
+msgid "Post Type"
+msgstr "Tipo de Publicacion"
+
+msgid "Global (all sites)"
+msgstr "Global (todos los sitios)"
+
+msgid "Add weight class"
+msgstr "Añadir clase de peso"
+
+msgid "No weight_class to display!"
+msgstr "No hay clase de peso para mostrar!"
+
+msgid "Vvveb - Tax class"
+msgstr "Vvveb - Clase fiscal"
+
+msgid "Tax class"
+msgstr "Clase fiscal"
+
+msgid "Return to tax classes"
+msgstr "Retorno às classes fiscais"
+
+msgid "Add tax rule"
+msgstr "Añadir regla fiscal"
+
+msgid "Tax Rate"
+msgstr "Tasa de Impuesto"
+
+msgid "Tax 1 (-2.00)"
+msgstr "Impuesto 1 (-2,00)"
+
+msgid "Tax 2 (19%)"
+msgstr "Impuesto 2 (19%)"
+
+msgid "Shipping Address"
+msgstr "Dirección de Envio"
+
+msgid "Payment Address"
+msgstr "Dirección de Pago"
+
+msgid "Store Address"
+msgstr "Dirección del Almacén"
+
+msgid "Vvveb - Tax classes"
+msgstr "Vvveb - Clases de Impuestos"
+
+msgid "Add tax class"
+msgstr "Agregar clase fiscal"
+
+msgid "No tax class to display!"
+msgstr "¡Ninguna clase fiscal para mostrar!"
+
+msgid "Taxonomys"
+msgstr "Taxonomías"
+
+msgid "Taxonomy list"
+msgstr "Lista de Taxonomías"
+
+msgid "Save taxonomy"
+msgstr "Guardar taxonomía"
+
+msgid "Vvveb - Order"
+msgstr "Vvveb - Pedido"
+
+msgid "Order list"
+msgstr "Lista de Pedidos"
+
+msgid "Print Preview"
+msgstr "Previsualización de Impresión"
+
+msgid "Print shipping details"
+msgstr "Imprimir detalles de envío"
+
+msgid "&nbsp; Save order"
+msgstr "&nbsp; Guardar pedido"
+
+msgid "Order ID: #VI"
+msgstr "ID del Pedido: #VI"
+
+msgid "001"
+msgstr ""
+
+msgid "Customer Details"
+msgstr "Detalles del Cliente"
+
+msgid "First Name"
+msgstr "Nombre"
+
+msgid "Last Name"
+msgstr "Apellido"
+
+msgid "12345678"
+msgstr ""
+
+msgid "View Profile"
+msgstr "Ver Perfil"
+
+msgid "Order note"
+msgstr "Nota de Pedido"
+
+msgid "Order Details"
+msgstr "Detalles del Pedido"
+
+msgid "Order ID:"
+msgstr "ID del Pedido:"
+
+msgid "V001"
+msgstr ""
+
+msgid "Order Date:"
+msgstr "Fecha del Pedido:"
+
+msgid "23/10/2019"
+msgstr ""
+
+msgid "Payment method:"
+msgstr "Método de Pago:"
+
+msgid "Cash data-payment_title>Cash-text On Delivery"
+msgstr "Datos en efectivo-payment_title>Texto en efectivo en entrega"
+
+msgid "Cash data-payment_method>Cash-text On Delivery"
+msgstr ""
+
+msgid "Flat data-payment_description>Flat-text Shipping Rate"
+msgstr "Tarifa de envío Flat-data-payment_description>Tarifa de envío texto simple"
+
+msgid "Shipping method:"
+msgstr "Método de Envío:"
+
+msgid ">Flat data-shipping_title>>Flat-text Shipping Rate"
+msgstr ">Flat data-shipping_title>>Tarifa de envío texto simple"
+
+msgid "Flat data-shipping_method>Flat-text Shipping Rate"
+msgstr "Tarifa de envío Flat-data-shipping_method>Tarifa de envío texto simple"
+
+msgid "Flat data-shipping_description>Flat-text Shipping Rate"
+msgstr "Tarifa de envío Flat-data-shipping_description>Tarifa de envío texto simple"
+
+msgid "Order Total:"
+msgstr "Total del pedido:"
+
+msgid "\\$734.28"
+msgstr "\\$734,28"
+
+msgid "Reward points:"
+msgstr "Puntos de recompensa:"
+
+msgid "Completed"
+msgstr "Completado"
+
+msgid "Payment"
+msgstr "Pago"
+
+msgid "Default payment"
+msgstr "Pago por defecto"
+
+msgid "Payment description"
+msgstr "Descripción del pago"
+
+msgid "Credit card payment"
+msgstr "Pago con tarjeta de crédito"
+
+msgid "Credit cart description"
+msgstr "Descripción del carrito de crédito"
+
+msgid "No payment methods enabled!"
+msgstr "¡Ningún método de pago habilitado!"
+
+msgid "Default shipping"
+msgstr "Envío por defecto"
+
+msgid "Shipping description"
+msgstr "Descripción del envío"
+
+msgid "Fast shipping"
+msgstr "Envío rápido"
+
+msgid "No shipping methods enabled!"
+msgstr "¡Ningún método de envío activado!"
+
+msgid "Billing Address"
+msgstr "Dirección de facturación"
+
+msgid "Company"
+msgstr "Compañía"
+
+msgid "Address 1"
+msgstr "Dirección 1"
+
+msgid "Address 2"
+msgstr "Dirección 2"
+
+msgid "City"
+msgstr "Ciudad"
+
+msgid "Post code"
+msgstr "Código postal"
+
+msgid "Country id"
+msgstr "ID del país"
+
+msgid "Country name"
+msgstr "Nombre del país"
+
+msgid "Zone id"
+msgstr "ID de la zona"
+
+msgid "iPhone 5"
+msgstr ""
+
+msgid "\\$246.40"
+msgstr "\\$246,40"
+
+msgid "Sub-Total"
+msgstr "Subtotal"
+
+msgid ":"
+msgstr ""
+
+msgid "\\$101.00"
+msgstr "\\$101,00"
+
+msgid "Eco Tax (2.00):"
+msgstr "Impuesto Ecológico (2,00):"
+
+msgid "\\$2.00"
+msgstr "\\$2,00"
+
+msgid "VAT (19%):"
+msgstr "IVA (19%):"
+
+msgid "\\$20.20"
+msgstr "\\$20,20"
+
+msgid "Total:"
+msgstr ""
+
+msgid "\\$123.20"
+msgstr "\\$123,20"
+
+msgid "\\$0"
+msgstr ""
+
+msgid "Vvveb - Voucher"
+msgstr "Vvveb - Cupón"
+
+msgid "Voucher"
+msgstr "Cupón"
+
+msgid "Return to vouchers"
+msgstr "Devolver los cupónes"
+
+msgid "Vvveb - Pedidos"
+msgstr "Vvveb - Pedidos"
+
+msgid "Add return"
+msgstr "Añadir devolucion"
+
+msgid "Order Name"
+msgstr "Nombre del pedido"
+
+msgid "ID"
+msgstr ""
+
+msgid "Added"
+msgstr "Adicionado"
+
+msgid "Modified"
+msgstr "Modificado"
+
+msgid "New"
+msgstr "Nuevo"
+
+msgid "Today 17:10"
+msgstr "Hoy 17:10"
+
+msgid "No subscriptions to display!"
+msgstr "¡No hay suscripciones para mostrar!"
+
+msgid "&nbsp; Add order"
+msgstr "&nbsp; Agregar pedido"
+
+msgid "Shipping address"
+msgstr "Dirección de envío"
+
+msgid "Shipping address 1"
+msgstr "Dirección de envío 1"
+
+msgid "shipping_address_1"
+msgstr "direccion_de_envio_1"
+
+msgid "Shipping address 2"
+msgstr "Dirección de envío 2"
+
+msgid "shipping_address_2"
+msgstr "direccion_de_envio_2"
+
+msgid "city"
+msgstr "ciudad"
+
+msgid "Postcode"
+msgstr "Código postal"
+
+msgid "postcode"
+msgstr "codigo_postal"
+
+msgid "country"
+msgstr "país"
+
+msgid "Zone"
+msgstr "Zona"
+
+msgid "zone"
+msgstr "zona"
+
+msgid "Order details"
+msgstr "Detalles del pedido"
+
+msgid "Cash On Delivery"
+msgstr "Pago en entrega"
+
+msgid "Flat Shipping Rate"
+msgstr "Tasa fija de envío"
+
+msgid "Shipping:"
+msgstr "Envío:"
+
+msgid ">Flat Shipping Rate"
+msgstr "> Tasa fija de envío"
+
+msgid "Billing address"
+msgstr "Dirección de facturación"
+
+msgid "Vvveb - Coupon"
+msgstr "Vvveb - Cupón"
+
+msgid "Coupon"
+msgstr "Cupón"
+
+msgid "Return to coupons"
+msgstr "Volver a los cupónes"
+
+msgid "Discount"
+msgstr "Descuento"
+
+msgid "Free Shipping"
+msgstr "Envío gratis"
+
+msgid "Restrictions"
+msgstr "Restricciones"
+
+msgid "Cart total"
+msgstr "Total del carrito"
+
+msgid "The total cart value that must be reached for the coupon to be applied."
+msgstr "El valor total del carrito que debe ser alcanzado para que el cupón se aplique."
+
+msgid "Category"
+msgstr "Categoría"
+
+msgid "Date start"
+msgstr "Fecha de inicio"
+
+msgid "Date end"
+msgstr "Fecha final"
+
+msgid "Limits"
+msgstr "Límites"
+
+msgid "Coupon limit"
+msgstr "Límite de cupón"
+
+msgid "The maximum number of times the coupon can be used. Leave blank for unlimited"
+msgstr "El número máximo de veces que el cupón puede ser utilizado. Deje en blanco para ilimitado."
+
+msgid "Coupon customer limit"
+msgstr "Límite de cliente del cupón"
+
+msgid "The maximum number of times the coupon can be used by a customer. Leave blank for unlimited."
+msgstr "El número máximo de veces que el cupón puede ser utilizado por un cliente. Deje en blanco para ilimitado."
+
+msgid "Subscriptions"
+msgstr "Suscripciones"
+
+msgid "Add subscription"
+msgstr "Agregar suscripción"
+
+msgid "Vvveb - Coupons"
+msgstr "Vvveb - Cupónes"
+
+msgid "Coupons"
+msgstr "Cupónes"
+
+msgid "Add coupon"
+msgstr "Agregar cupón"
+
+msgid "No coupon to display!"
+msgstr "Ningún cupón para mostrar!"
+
+msgid "Vvveb - Vouchers"
+msgstr ""
+
+msgid "Vouchers"
+msgstr ""
+
+msgid "Add voucher"
+msgstr "Agregar comprobante"
+
+msgid "No voucher to display!"
+msgstr "Ningún comprobante para mostrar!"
+
+msgid "Add order"
+msgstr "Agregar pedido"
+
+msgid "Vvveb - Page not found"
+msgstr "Vvveb - Página no encontrada"
+
+msgid "Error 404"
+msgstr "Error 404"
+
+msgid "on line"
+msgstr "en línea"
+
+msgid "Use this link to reset your password. The link is only valid for 24 hours."
+msgstr "Utilice este enlace para cambiar su contraseña. El enlace solo es válido durante 24 horas."
+
+msgid "Hi"
+msgstr "Hola"
+
+msgid "Joe"
+msgstr "Joel"
+
+msgid ","
+msgstr ""
+
+msgid "You recently requested to reset your password for your"
+msgstr "Usted solicitó recientemente un cambio de contraseña para su"
+
+msgid "Vvveb"
+msgstr ""
+
+msgid "account. Use the button below to reset it."
+msgstr "conta. Utilice el botón debajo para redefinirla."
+
+msgid "This password reset is only valid for the next 24 hours."
+msgstr "Esta redefinição de contraseña solo es válida durante las próximas 24 horas."
+
+msgid "Reset your password"
+msgstr "Redefinir su contraseña"
+
+msgid "For security, this request was received from a"
+msgstr "Por seguridad, esta solicitud fue recibida desde un"
+
+msgid "Linux"
+msgstr ""
+
+msgid "device using"
+msgstr "dispositivo utilisado"
+
+msgid "Firefox"
+msgstr ""
+
+msgid " If you did not request a password reset, please ignore this email or"
+msgstr "Si no solicitó una redefinición de contraseña, por favor ignore este correo electrónico o"
+
+msgid "contact support"
+msgstr "contactar con el soporte"
+
+msgid "if you have questions."
+msgstr "si tiene alguna duda."
+
+msgid "Thanks,"
+msgstr "Gracias,"
+
+msgid "The"
+msgstr "El"
+
+msgid "team"
+msgstr "el equipo"
+
+msgid "If you’re having trouble with the button above, copy and paste the URL below into your web browser."
+msgstr "Si está teniendo problemas con el botón anterior, copie y pegue la URL debajo en su navegador."
+
+msgid "https://www.vvveb.com"
+msgstr ""
+
+msgid "Company name"
+msgstr "Nombre de la empresa"
+
+msgid "Vvveb - Internal server error"
+msgstr "Vvveb – Error interno del servidor"
+
+msgid "Internal server error!"
+msgstr "Error interno del servidor!"
+
+msgid "(error 500)"
+msgstr "(erro 500)"
+
+msgid "Vvveb - Translations"
+msgstr "Vvveb – Traducciones"
+
+msgid "Add language"
+msgstr "Agregar idioma"
+
+msgid "Language name"
+msgstr "Nombre del idioma"
+
+msgid "(default)"
+msgstr "(por defecto)"
+
+msgid "Vvveb - Language"
+msgstr "Vvveb – Idioma"
+
+msgid "Language"
+msgstr "Idioma"
+
+msgid "Language list"
+msgstr "Lista de idiomas"
+
+msgid "Custom"
+msgstr "Personalizado"
+
+msgid "Language pack"
+msgstr "Paquete de idiomas"
+
+msgid "Translations"
+msgstr "Traducciones"
+
+msgid "&#9989; Installed"
+msgstr "&#9989; Instalado"
+
+msgid "Install language pack"
+msgstr "Instalar paquete de idiomas"
+
+msgid "Locale"
+msgstr "Local"
+
+msgid "Vvveb - Zone Groups"
+msgstr "Vvveb - Grupos de Zonas"
+
+msgid "Add zone group"
+msgstr "Adicionar grupo de zonas"
+
+msgid "Geo zone"
+msgstr "Zona geográfica"
+
+msgid "No zone group to display!"
+msgstr "Ningún grupo de zonas para mostrar!"
+
+msgid "Vvveb - Zone"
+msgstr "Vvveb - Zona"
+
+msgid "Return to zones"
+msgstr "Retornar a las zonas"
+
+msgid "Zone code"
+msgstr "Código de zona"
+
+msgid "Vvveb - Currencies"
+msgstr "Vvveb - Monedas"
+
+msgid "Add currency"
+msgstr "Adicionar moneda"
+
+msgid "Symbol"
+msgstr "Símbolo"
+
+msgid "Last updated"
+msgstr "Última actualización"
+
+msgid "Ron"
+msgstr ""
+
+msgid "No currencies to display!"
+msgstr "Ninguna moneda para mostrar!"
+
+msgid "Vvveb - Zone Group"
+msgstr "Vvveb - Grupo de Zonas"
+
+msgid "Zone Group"
+msgstr "Grupo de Zonas"
+
+msgid "Return to zone groups"
+msgstr "Volver a los grupos de zonas"
+
+msgid "Add zone"
+msgstr "Adicionar zona"
+
+msgid "All Zones"
+msgstr "Todas las zonas"
+
+msgid "Zone 3"
+msgstr "Zona 3"
+
+msgid "Vvveb - Currency"
+msgstr "Vvveb - Moneda"
+
+msgid "Currency"
+msgstr "Moneda"
+
+msgid "Currency list"
+msgstr "Lista de monedas"
+
+msgid "Symbol left"
+msgstr "Símbolo izquierdo"
+
+msgid "Symbol right"
+msgstr "Símbolo derecho"
+
+msgid "Decimal place"
+msgstr "Lugar decimal"
+
+msgid "Vvveb - Country"
+msgstr "Vvveb - País"
+
+msgid "Return countries"
+msgstr "Países de regreso"
+
+msgid "Iso code 2"
+msgstr "Código ISO 2"
+
+msgid "Iso code 3"
+msgstr "Código ISO 3"
+
+msgid "Vvveb - Languages"
+msgstr "Vvveb - Idiomas"
+
+msgid "en_US"
+msgstr ""
+
+msgid "active"
+msgstr "activo"
+
+msgid "inactive"
+msgstr "inactivo"
+
+msgid "No languages to display!"
+msgstr "Ningún idioma para mostrar!"
+
+msgid "Vvveb - Zones"
+msgstr "Vvveb - Zonas"
+
+msgid "No zone to display!"
+msgstr "Ninguna zona para mostrar!"
+
+msgid "Vvveb - Countries"
+msgstr "Vvveb - Países"
+
+msgid "Add country"
+msgstr "Adicionar país"
+
+msgid "ISO"
+msgstr "ISO"
+
+msgid "No country to display!"
+msgstr "Ningún país para mostrar!"
+
+msgid "Vvveb - Media popup"
+msgstr "Vvveb - pop-up de medios"
+
+msgid "Vvveb - Media"
+msgstr "Vvveb - Medios"
+
+msgid "Vvveb - Field"
+msgstr "Vvveb - Campo"
+
+msgid "Field"
+msgstr "Campo"
+
+msgid "Field list"
+msgstr "Lista de campos"
+
+msgid "Save field"
+msgstr "Guardar campo"
+
+msgid "Vvveb - fields"
+msgstr "Vvveb - Campos"
+
+msgid "Field groups"
+msgstr "Grupos de campos"
+
+msgid "Add field"
+msgstr "Adicionar campo"
+
+msgid "Vvveb - Field groups"
+msgstr "Vvveb - Grupos de Campos"
+
+msgid "Add field group"
+msgstr "Adicionar grupo de campos"
+
+msgid "No field_groups to display!"
+msgstr "Ningún grupo de campos para mostrar!"
+
+msgid "Recover password"
+msgstr "Recuperar contraseña"
+
+msgid "User list"
+msgstr "Lista de usuarios"
+
+msgid "Website"
+msgstr "Sitio web"
+
+msgid "Powered by Vvveb"
+msgstr "Alimentado por Vvveb"
+
+msgid "Authenticating"
+msgstr "Autenticando"
+
+msgid "Log In"
+msgstr "Iniciar sesión"
+
+msgid "Safe mode"
+msgstr "Modo seguro"
+
+msgid "New password"
+msgstr "Nueva contraseña"
+
+msgid "Change password"
+msgstr "Cambiar contraseña"
+
+msgid "Vvveb - Plugins"
+msgstr "Vvveb - Plug-ins"
+
+msgid "&nbsp; Upload plugin"
+msgstr "&nbsp; Subir plug-in"
+
+msgid "&nbsp; Install plugin"
+msgstr "&nbsp; Instalar plug-in" 
+
+msgid "Safe mode is active and plugins are not loaded, if you have trouble with a plugin you can disable it below."
+msgstr "El modo seguro está activo y los plug-ins no están cargados. Si tienes problemas con un plug-in puedes desactivarlo abajo."
+
+msgid "Activating plugin"
+msgstr "Activantando plug-in"
+
+msgid "Development"
+msgstr "Desarrollo"
+
+msgid "Seo"
+msgstr "SEO"
+
+msgid "Extension"
+msgstr "Extensión"
+
+msgid "Plugin name"
+msgstr "Nombre del plug-in"
+
+msgid "Speed cache"
+msgstr "Caché de velocidad"
+
+msgid "The most advanced frontend drag & drop page builder. Create high-end, pixel perfect websites at record speeds. Any theme, any page, any design."
+msgstr "El más avanzado frontend y creador de página. Crea sitios web de alto nivel, perfectos en velocidad récord. Cualquier tema, cualquier página y diseño."
+
+msgid "Plugin homepage"
+msgstr "Página inicial del plug-in"
+
+msgid "|"
+msgstr "|"
+
+msgid "Support"
+msgstr "Soporte"
+
+msgid "Changelog"
+msgstr "Registro de cambios"
+
+msgid "Version"
+msgstr "Versión"
+
+msgid "Version 1.01"
+msgstr "Versión 1.01"
+
+msgid "By"
+msgstr "Por"
+
+msgid "Visit homepage"
+msgstr "Visite la página inicial"
+
+msgid "Deactivate"
+msgstr "Desactivar"
+
+msgid "Activate"
+msgstr "Activar"
+
+msgid "Activate on all sites"
+msgstr "Activar en todos los sitios"
+
+msgid "Deactivate on all sites"
+msgstr "Desactivar en todos los sitios"
+
+msgid "Vvveb - Plugins Marketplace"
+msgstr "Vvveb - Mercado de plug-ins"
+
+msgid "Plugin install"
+msgstr "Instalación del plug-in"
+
+msgid "Last Updated:"
+msgstr "Última actualización:"
+
+msgid "3 weeks ago"
+msgstr "3 semanas atrás"
+
+msgid "Compatible"
+msgstr "Compatível"
+
+msgid "with your version of Vvveb"
+msgstr "con su versión de Vvveb"
+
+msgid "Plugin details"
+msgstr "Detalles del plug-in"
+
+msgid "Downloading"
+msgstr "Descargando"
+
+msgid "Installed"
+msgstr "Instalado"
+
+msgid "by"
+msgstr "por"
+
+msgid "(error 404)"
+msgstr "(error 404)"
+
+msgid "Vvveb - Import"
+msgstr "Vvveb - Importación"
+
+msgid " Import content"
+msgstr "Importar contenido"
+
+msgid "Import local Vvveb data"
+msgstr "Importar datos Vvveb locales"
+
+msgid "Upload a Vvveb export file to start importing"
+msgstr "Cargar un archivo de exportación Vvveb para iniciar la importación"
+
+msgid "&nbsp; Upload file"
+msgstr "&nbsp; Cargar archivo"
+
+msgid "Online import"
+msgstr "Importación en línea"
+
+msgid "Import content from another Vvveb website"
+msgstr "Importe contenido de otro sitio Vvveb"
+
+msgid "Enable online import"
+msgstr "Habilite la importación en línea"
+
+msgid "Website Url:"
+msgstr "URL del sitio:"
+
+msgid "Password:"
+msgstr "Contraseña:"
+
+msgid "Start import"
+msgstr "Iniciar importación"
+
+msgid "Theme details"
+msgstr "Detalles del tema"
+
+msgid "Upload theme"
+msgstr "Subir tema"
+
+msgid "Install theme"
+msgstr "Instalar tema"
+
+msgid "Downloading 10%"
+msgstr "Descargando 10%"
+
+msgid "Installing"
+msgstr "Instalando"
+
+msgid "Edit theme"
+msgstr "Editar tema"
+
+msgid "Install resources"
+msgstr "Instalar recursos"
+
+msgid "&times;"
+msgstr "&vezes;"
+
+msgid "Import Demo Content"
+msgstr "Importar contenido de demostración"
+
+msgid "Media"
+msgstr "Materiales"
+
+msgid "Required Plugins"
+msgstr "Plug-ins necesarios"
+
+msgid "Recommended Plugins"
+msgstr "Plug-ins recomendados"
+
+msgid "Install theme resources"
+msgstr "Instalar recursos del tema"
+
+msgid "Vvveb - Menus"
+msgstr "Vvveb - Menús"
+
+msgid "Menus"
+msgstr "Menús"
+
+msgid "Add menu"
+msgstr "Agregar menú"
+
+msgid "No menus to display!"
+msgstr "No hay menús para mostrar!"
+
+msgid "Vvveb - Comments"
+msgstr "Vvveb - Comentarios"
+
+msgid "Vvveb - Edit post"
+msgstr "Vvveb - Editar publicación"
+
+msgid "Post"
+msgstr "Publicar"
+
+msgid "post"
+msgstr "publicación"
+
+msgid "Post Url"
+msgstr "URL de la publicación"
+
+msgid "Open in Page Editor"
+msgstr "Abrir en Editor de Página"
+
+msgid "Excerpt"
+msgstr "Extracto"
+
+msgid "(optional)"
+msgstr "(opcional)"
+
+msgid "options"
+msgstr "opciones"
+
+msgid "Publish date"
+msgstr "Fecha de publicación"
+
+msgid "Password protected"
+msgstr "Protegido por contraseña"
+
+msgid "Link"
+msgstr "Enlace"
+
+msgid "Vvveb - tags"
+msgstr "Vvveb - etiquetas"
+
+msgid "Add tag"
+msgstr "Agregar etiqueta"
+
+msgid "No tags to display!"
+msgstr "¡No hay etiquetas para mostrar!"
+
+msgid "Vvveb - Posts"
+msgstr "Vvveb - Publicaciones"
+
+msgid "Month"
+msgstr "Mes"
+
+msgid "- All dates -"
+msgstr "- Todas las fechas -"
+
+msgid "January 2030"
+msgstr "enero de 2030"
+
+msgid "February 2023"
+msgstr "febrero de 2023"
+
+msgid "January 2023"
+msgstr "enero de 2023"
+
+msgid "November 2018"
+msgstr "noviembre de 2018"
+
+msgid "October 2018"
+msgstr "octubre de 2018"
+
+msgid "April 2013"
+msgstr "abril de 2013"
+
+msgid "January 2013"
+msgstr "enero de 2013"
+
+msgid "March 2012"
+msgstr "marzo de 2012"
+
+msgid "January 2012"
+msgstr "enero de 2012"
+
+msgid "March 2011"
+msgstr "marzo de 2011"
+
+msgid "October 2010"
+msgstr "octubre de 2010"
+
+msgid "September 2010"
+msgstr "septiembre de 2010"
+
+msgid "August 2010"
+msgstr "agosto de 2010"
+
+msgid "July 2010"
+msgstr "julio de 2010"
+
+msgid "June 2010"
+msgstr "junio de 2010"
+
+msgid "May 2010"
+msgstr "mayo de 2010"
+
+msgid "April 2010"
+msgstr "abril de 2010"
+
+msgid "March 2010"
+msgstr "marzo de 2010"
+
+msgid "February 2010"
+msgstr "febrero de 2010"
+
+msgid "January 2010"
+msgstr "enero de 2010"
+
+msgid "October 2009"
+msgstr "octubre de 2009"
+
+msgid "September 2009"
+msgstr "septiembre de 2009"
+
+msgid "August 2009"
+msgstr "agosto de 2009"
+
+msgid "July 2009"
+msgstr "julio de 2009"
+
+msgid "June 2009"
+msgstr "junio de 2009"
+
+msgid "May 2009"
+msgstr "mayo de 2009"
+
+msgid "Post name"
+msgstr "Nombre de la publicación"
+
+msgid "s to display!"
+msgstr "s para mostrar!"
+
+msgid "Field Groups"
+msgstr "Grupos de campos"
+
+msgid "Vvveb - Edit taxonomy"
+msgstr "Vvveb - Editar taxonomía"
+
+msgid "type"
+msgstr "tipo"
+
+msgid "categories"
+msgstr "categorías"
+
+msgid "No taxonomy to display!"
+msgstr "¡Ninguna taxonomía para mostrar!"
+
+msgid "Vvveb - Comment"
+msgstr "Vvveb - Comentario"
+
+msgid "Comment list"
+msgstr "Lista de comentarios"
+
+msgid "Vvveb - Tag"
+msgstr "Vvveb - Etiqueta"
+
+msgid "Tag"
+msgstr "Etiqueta"
+
+msgid "Tag list"
+msgstr "Lista de etiquetas"
+
+msgid "Save tag"
+msgstr "Guardar etiqueta"
+
+msgid "Vvveb - System info"
+msgstr "Vvveb - Información del sistema"
+
+msgid "Copy to clipboard"
+msgstr "Copiar a la papelera"
+
+msgid "Application Info"
+msgstr "Información de la aplicación"
+
+msgid "PHP version"
+msgstr "Versión de PHP"
+
+msgid "7.4.18"
+msgstr ""
+
+msgid "OS version"
+msgstr "Versión del sistema operativo"
+
+msgid "Linux 5.4.0-73-generic"
+msgstr "Linux 5.4.0-73-genérico"
+
+msgid "Database driver & version"
+msgstr "Conjunto de drivers y versión del base de datos"
+
+msgid "MySQL 5.5.5"
+msgstr ""
+
+msgid "Image driver & version"
+msgstr "Conjunto de drivers e imagen y versión"
+
+msgid "GD 7.4.18"
+msgstr ""
+
+msgid "Vvveb - Security"
+msgstr "Vvveb - Seguridad"
+
+msgid "Check all now"
+msgstr "Verifique todo ahora"
+
+msgid "Integrity check"
+msgstr "Verificación de integridad"
+
+msgid "Core files"
+msgstr "Archivos principales"
+
+msgid "Check now"
+msgstr "Verifique ahora"
+
+msgid "Match"
+msgstr "Coincidencia"
+
+msgid "Mismatch"
+msgstr "Incompatibilidad"
+
+msgid "Unknown files"
+msgstr "Archivos desconocidos"
+
+msgid "Automatic check"
+msgstr "Verificación automatica"
+
+msgid "Enable automatic security check"
+msgstr "Habilitar verificación automatica de seguridad"
+
+msgid "Frequency"
+msgstr "Frecuencia"
+
+msgid "Twice a day"
+msgstr "Dos veces por día"
+
+msgid "Daily"
+msgstr "Diariamente"
+
+msgid "Twice a week"
+msgstr "Dos veces por semana"
+
+msgid "Weekly"
+msgstr "Semanalmente"
+
+msgid "Once two weeks"
+msgstr "Una vez dos semanas"
+
+msgid "Monthly"
+msgstr "Mensualmente"
+
+msgid "Last run log"
+msgstr "Registro de la última ejecución"
+
+msgid "Vvveb - Cron"
+msgstr "Vvveb-Cron"
+
+msgid "Cron"
+msgstr ""
+
+msgid "Automatic"
+msgstr "Automático"
+
+msgid "Activated by site traffic on page load."
+msgstr "Activado por el tráfico del sitio al cargar la página."
+
+msgid "Manual configuration"
+msgstr "Configuración manual"
+
+msgid "You need to run the following command every hour, if you don't have access then you need to call the url bellow every hour. For more info on how to configure cron jobs please read"
+msgstr "Necesitas ejecutar el siguiente comando cada hora, si no tienes acceso entonces necesitas llamar la URL debajo cada hora. Para más información sobre cómo configurar los trabajos de cron por favor lee"
+
+msgid "Cron Documentation"
+msgstr "Documentación Cron"
+
+msgid "Manual call"
+msgstr "Llamada manual"
+
+msgid "CLI option"
+msgstr "Opción CLI"
+
+msgid "Command"
+msgstr "Comando"
+
+msgid "Web url"
+msgstr "URL de la web"
+
+msgid "URL"
+msgstr ""
+
+msgid "not recommended"
+msgstr "no recomendado"
+
+msgid "Some functions that depend on background services may not work properly."
+msgstr "Algunas funciones que dependen de servicios en segundo plano pueden no funcionar correctamente."
+
+msgid "Upload file"
+msgstr "Subir archivo"
+
+msgid "Vvveb - Error log"
+msgstr "Vvveb - Registro de errores"
+
+msgid "Error log:"
+msgstr "Registro de errores:"
+
+msgid "is readable"
+msgstr "es legible"
+
+msgid "is not readable"
+msgstr "no es legible"
+
+msgid "showing last"
+msgstr "mostrando últimos"
+
+msgid "lines"
+msgstr "líneas"
+
+msgid "Clear log"
+msgstr "Limpiar registro"
+
+msgid "Download log"
+msgstr "Descargar registro"
+
+msgid "Vvveb - Updates"
+msgstr "Vvveb - Actualizaciones"
+
+msgid "Updates"
+msgstr "Atualizaciones"
+
+msgid "Processing ..."
+msgstr "Processando..."
+
+msgid "Core"
+msgstr "Núcleo"
+
+msgid "Current version"
+msgstr "Version actual"
+
+msgid "Lastest version"
+msgstr "Ultima version"
+
+msgid "Updating"
+msgstr "Actualizando"
+
+msgid "Updates available"
+msgstr "Atualizaciones disponibles"
+
+msgid "Last check:"
+msgstr "Última verificacion:"
+
+msgid "today"
+msgstr "hoy"
+
+msgid "Total plugins:"
+msgstr "Total de plug-ins:"
+
+msgid "40"
+msgstr ""
+
+msgid "Vvveb - Backup"
+msgstr "Vvveb - Copia de Seguridad"
+
+msgid "Backing up"
+msgstr "Haciendo copia de seguridad"
+
+msgid "Backup now"
+msgstr "Haciendo copia de seguridad ahora"
+
+msgid "-"
+msgstr ""
+
+msgid "/"
+msgstr "/"
+
+msgid "27 May 2023 - 19:05"
+msgstr "27 de mayo de 2023 - 19:05"
+
+msgid "500MB"
+msgstr ""
+
+msgid "Download"
+msgstr "Bajar"
+
+msgid "Restoring backup"
+msgstr "Restaurando copia de seguridad"
+
+msgid "Restore backup"
+msgstr "Restaurar copia de seguridad"
+
+msgid "No backups available yet."
+msgstr "Ninguna copia de seguridad disponible aun."
+
+msgid "Automatic backup"
+msgstr "Copia de seguridad automatica
+
+msgid "Enable automatic backup"
+msgstr "Habilitar copia de seguridad automatica"
+
+msgid "Make sure your server has enough space to store all backups"
+msgstr "Certifique-se de que seu servidor tenha espaço suficiente para armazenar todos os backups"
+
+msgid "Delete backups older than"
+msgstr "Excluir backups anteriores a"
+
+msgid "1 Week"
+msgstr "1 Semana"
+
+msgid "2 Weeks"
+msgstr "2 Semanas"
+
+msgid "1 Month"
+msgstr "1 Mes"
+
+msgid "2 Months"
+msgstr "2 Meses"
+
+msgid "3 Months"
+msgstr "3 Meses"
+
+msgid "6 Months"
+msgstr "6 Meses"
+
+msgid "Year"
+msgstr "Año"
+
+msgid "Never"
+msgstr "Nunca"
+
+msgid "Vvveb - Cache"
+msgstr "Vvveb - Cache"
+
+msgid "Clear old cache"
+msgstr "Limpiar caché antiguo"
+
+msgid "Clear all cache"
+msgstr "Limpiar todo el caché"
+
+msgid "Frontend assets cache"
+msgstr "Cache de activos de front-end"
+
+msgid "Compiled templates"
+msgstr "Plantillas compiladas"
+
+msgid "Full page cache"
+msgstr "Cache de página completa"
+
+msgid "Vvveb - Export"
+msgstr "Vvveb - Exportación"
+
+msgid "Export data"
+msgstr "Exportar datos"
+
+msgid "Toggle all"
+msgstr "Alternar todo"
+
+msgid "1000"
+msgstr ""
+
+msgid "Online export"
+msgstr "Exportación en línea"
+
+msgid "Enable this option if you want to transfer the contents of this website to another Vvveb website, you can use the url and password bellow in the import section on the Vvveb website where you want to transfer content"
+msgstr "Habilite esta opción si desea transferir el contenido de este sitio a otro sitio Vvveb, puede utilizar la URL y contraseña abajo en la sección de importación del sitio Vvveb donde desee transferir contenido"
+
+msgid "Enable online export"
+msgstr "Habilitar exportación en línea"
+
+msgid "Enable plugins and themes export"
+msgstr "Habilitar exportación de complementos y temas"
+
+msgid "Vvveb - Permission denied!"
+msgstr "Vvveb - Permiso denegado!"
+
+msgid "Permission denied!"
+msgstr "Permiso denegado!"
+
+msgid "You don't have permission to access this page."
+msgstr "No tiene permiso para acceder a esta página."
+
+msgid "Go back"
+msgstr "Volver"
+
+msgid "test"
+msgstr "prueba"
+
+msgid "Bodysuits"
+msgstr "Trajes de cuerpo"
+
+msgid "Dresses"
+msgstr "Vestidos"
+
+msgid "Hoodies & Sweats"
+msgstr "Mantiellas y sudaderas"
+
+msgid "Jackets & Coats"
+msgstr "Chaquetas y abrigos"
+
+msgid "Jeans"
+msgstr "Chinos"
+
+msgid "Pants & Leggings"
+msgstr "Pantalones y leggings"
+
+msgid "Rompers & Jumpsuits"
+msgstr "Trajes de baño y pantalones largos"
+
+msgid "Shirts & Blouses"
+msgstr "Camisas y blusas"
+
+msgid "Shirts"
+msgstr "Camisas"
+
+msgid "Sweaters & Knits"
+msgstr "Suéteres y tejidos en rama"
+
+msgid "Post Title"
+msgstr "Título de la publicación"
+
+msgid "No posts in this category!"
+msgstr "Ninguna publicación en esta categoría!"
+
+msgid "Vvveb Landing - Homepage"
+msgstr "Página de inicio Vvveb Landing"
+
+msgid "Begin each day by telling yourself"
+msgstr "Comience cada día diciéndose a sí mismo"
+
+msgid "Services"
+msgstr "Servicios"
+
+msgid "Resources"
+msgstr "Recursos"
+
+msgid "User Documentation"
+msgstr "Documentación del usuario"
+
+msgid "Developer Documentation"
+msgstr "Documentación del desarrollador"
+
+msgid "About us"
+msgstr "Nosotros"
+
+msgid "This is a placeholder for a notification message."
+msgstr "Este es un espacio reservado para una mensaje de notificación."
+
+msgid "This is a placeholder for a success message."
+msgstr "Este es un espacio reservado para una mensaje de éxito."
+
+msgid "This is a placeholder for a info message."
+msgstr "Este es un espacio reservado para una mensaje informativa."
+
+msgid "E-Mail Address"
+msgstr "Dirección de correo electrónico"
+
+msgid "Login"
+msgstr "Iniciar sesión"
+
+msgid "Forgotten Password"
+msgstr "Contraseña olvidada"
+
+msgid "Don’t have an account?"
+msgstr "¿No tiene cuenta?"
+
+msgid "Register Account"
+msgstr "Registrarse"
+
+msgid "Welcome"
+msgstr "Bienvenido/a"
+
+msgid "My account"
+msgstr "Mi cuenta"
+
+msgid "Downloads"
+msgstr ""
+
+msgid "Empty cart"
+msgstr "Cesta vacía"
+
+msgid "No products added yet!"
+msgstr "Aún no se han agregado productos!"
+
+msgid "View cart"
+msgstr "Ver cesta"
+
+msgid "The next generation website builder"
+msgstr "Construcción de sitios web de la próxima generación"
+
+msgid "Powerful and easy to use drag and drop website builder for blogs,"
+msgstr "Construcción de sitios web fácil y poderosa para blogs, presentaciones o tiendas en línea."
+
+msgid "presentation or ecommerce stores."
+msgstr "presentacion o comercio electronico."
+
+msgid "Free Download"
+msgstr "Descarga gratuita"
+
+msgid "Live Demo"
+msgstr "Demostración en vivo"
+
+msgid "Better Security"
+msgstr "Seguridad mejorada"
+
+msgid "Vvveb is 100% safe against sql injections, a vulerability that affects most CMSs."
+msgstr "Vvveb es 100% seguro contra inyecciones de SQL, una vulnerabilidad que afecta la mayoría de los CMS."
+
+msgid "Unlimited customization"
+msgstr "Personalización ilimitada"
+
+msgid "Vvveb uses only html for templating for maximum flexibility."
+msgstr "Vvveb utiliza solo HTML para plantillas para máxima flexibilidad."
+
+msgid "new"
+msgstr "nuevo"
+
+msgid "Code editor with syntax highglighting that updates in real time"
+msgstr "Editor de código con resaltado de sintaxis que se actualiza en tiempo real"
+
+msgid "Learn More"
+msgstr "Más información"
+
+msgid "on sale"
+msgstr "en oferta"
+
+msgid "Intuitive building with simple drag and drop for sections, components and blocks"
+msgstr "Construcción intuitiva con arrastar y soltar sencillo para secciones, componentes y bloques"
+
+msgid "Popular Products"
+msgstr "Productos populares"
+
+msgid "Add to cart"
+msgstr "Agregar al carrito"
+
+msgid "Some of our users"
+msgstr "Algunos de nuestros usuarios"
+
+msgid "Hear what our users have to say"
+msgstr "Escuche lo que nuestros usuarios tienen que decir"
+
+msgid "Jane Doe"
+msgstr "Jane Doe"
+
+msgid "Choose your plan"
+msgstr "Elige tu plan"
+
+msgid "14-day free trial no credit card required."
+msgstr "Prueba gratuita de 14 días sin necesidad de tarjeta de crédito."
+
+msgid "Personal"
+msgstr "Personal"
+
+msgid "Latest Posts"
+msgstr "Últimas publicaciones"
+
+msgid "Read more"
+msgstr "Lee más"
+
+msgid "Contact Us"
+msgstr "Contáctenos"
+
+msgid "Email:"
+msgstr "Correo electrónico:"
+
+msgid "Phone:"
+msgstr "Teléfono:"
+
+msgid "Submit"
+msgstr "Enviar"
+
+msgid "User documentation"
+msgstr "Documentación del usuario"
+
+msgid "Developer documentation"
+msgstr "Documentación del desarrollador"
+
+msgid "Terms and conditions"
+msgstr "Términos y condiciones"
+
+msgid "Privacy Policy"
+msgstr "Política de privacidad"
+
+msgid "&copy;"
+msgstr "&copy;"
+
+msgid "2023"
+msgstr "2023"
+
+msgid "."
+msgstr "."
+
+msgid "Powered by"
+msgstr "Propulsado por"
+
+msgid "Product was added to cart."
+msgstr "El producto fue agregado al carrito."
+
+msgid "Landing - Search page"
+msgstr "Aterrizaje - Página de búsqueda"
+
+msgid "USD"
+msgstr "$"
+
+msgid "&euro;"
+msgstr "&euro;"
+
+msgid "&pound;"
+msgstr "&libra esterlina"
+
+msgid "Results for:"
+msgstr "Resultados para:"
+
+msgid "term"
+msgstr "trm."
+
+msgid "Post author"
+msgstr "Autor de la publicación"
+
+msgid "admin"
+msgstr "administrador"
+
+msgid "Post date"
+msgstr "Fecha de la publicación"
+
+msgid "0 Comments"
+msgstr "0 Comentarios"
+
+msgid "No posts to display!"
+msgstr "¡No hay publicaciones para mostrar!"
+
+msgid "About"
+msgstr "Sobre"
+
+msgid "Recent posts"
+msgstr "Postes recientes"
+
+msgid "Recent comments"
+msgstr "Comentarios recientes"
+
+msgid "on"
+msgstr "en"
+
+msgid "Web Design"
+msgstr "Diseño web"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Freebies"
+msgstr "Regalos"
+
+msgid "Archives"
+msgstr "Archivos"
+
+msgid "Popular tags"
+msgstr "Etiquetas populares"
+
+msgid "Select month"
+msgstr "Seleccione el mes"
+
+msgid "Landing - Product listing"
+msgstr "Landing - Lista de productos"
+
+msgid "Brands"
+msgstr "Marcas"
+
+msgid "Brand name"
+msgstr "Nombre de la marca"
+
+msgid "Color"
+msgstr "Color"
+
+msgid "Library"
+msgstr "Biblioteca"
+
+msgid "Data"
+msgstr "Datos"
+
+msgid "Price high to low"
+msgstr "Precio alto a bajo"
+
+msgid "Price low to high"
+msgstr "Precio bajo a alto"
+
+msgid "Popularity"
+msgstr "Popularidad"
+
+msgid "Category name"
+msgstr "Nombre de la categoría"
+
+msgid "Landing - Product"
+msgstr "Landing - Producto"
+
+msgid "One Shoulder Glitter Midi Dress"
+msgstr "Vestido midi con brillante en un hombro"
+
+msgid "mango"
+msgstr "manga"
+
+msgid "Availability"
+msgstr "Disponibilidad"
+
+msgid "In stock"
+msgstr "En stock"
+
+msgid "(30 reviews)"
+msgstr "(30 reseñas)"
+
+msgid "\\$49.00"
+msgstr "\$49,00"
+
+msgid "\\$350"
+msgstr "\$350,00"
+
+msgid "26% Off"
+msgstr "26% de descuento"
+
+msgid "Buy now"
+msgstr "Comprar ahora"
+
+msgid "Details"
+msgstr "Detalles"
+
+msgid "Questions and Answers"
+msgstr "Preguntas y respuestas"
+
+msgid "Reply"
+msgstr "Responder"
+
+msgid "Leave a reply"
+msgstr "Deja un comentario"
+
+msgid "Email address"
+msgstr "Dirección de correo electrónico"
+
+msgid "Post review"
+msgstr "Publicar reseña"
+
+msgid "Related products"
+msgstr "Productos relacionados"
+
+msgid "Manufacturer name"
+msgstr "Nombre del fabricante"
+
+msgid "Forums"
+msgstr "Foro"
+
+msgid "Contribute"
+msgstr "Contribuir"
+
+msgid "Hosting"
+msgstr "Hospedaje"
+
+msgid "Open Source CMS"
+msgstr "CMS de código abierto"
+
+msgid "Reinvented"
+msgstr "Reinventado"
+
+msgid "Powerful and easy to use drag and drop builder"
+msgstr "Construtor de arrastar y soltar poderoso y fácil de usar"
+
+msgid "for blogs, websites or ecommerce stores."
+msgstr "para blogs, sitios web o tiendas de comercio electronico."
+
+msgid "Free download"
+msgstr "Descarga gratuita"
+
+msgid "Live demo"
+msgstr "Demostración en vivo"
+
+msgid "Page builder"
+msgstr "Construtor de páginas"
+
+msgid "Frontend"
+msgstr "Front-end"
+
+msgid "Admin dashboard"
+msgstr "Painel de administración"
+
+msgid "Demo import"
+msgstr "Importar demo"
+
+msgid "Shop"
+msgstr "Tienda"
+
+msgid "Landing - Cart"
+msgstr "Desembarque - Carrito"
+
+msgid "Comming soon!"
+msgstr "Próximamente!"
+
+msgid "We are still working and will go live soon."
+msgstr "Aún estamos trabajando y entraremos en funcionamiento pronto."
+
+msgid "Vvveb Landing - Section"
+msgstr "Pouso Vvveb - Sección"
+
+msgid "Drag and drop builder"
+msgstr "Construtor de arrastar y soltar"
+
+msgid "Learn more"
+msgstr "Saber más"
+
+msgid "Unlimited theme flexibility"
+msgstr "Flexibilidad de tema ilimitada"
+
+msgid "Unlimited flexibility"
+msgstr "Flexibilidad ilimitada"
+
+msgid "Drag and drop"
+msgstr "Arrastrar y soltar"
+
+msgid "Live code editor"
+msgstr "Editor de código en vivo"
+
+msgid "Code editor with syntax highglighting that updates in real time."
+msgstr "Editor de código con destaque de sintaxe que se actualiza en tiempo real."
+
+msgid "Bootstrap 5 Components"
+msgstr "Componentes del Bootstrap 5"
+
+msgid "Google fonts"
+msgstr "Fuentes de Google"
+
+msgid "Use any of the hundreds fonts from google fonts for your design"
+msgstr "Usar cualquier una de las centenas de fuentes de Google Fonts para su diseño"
+
+msgid "Live code edit"
+msgstr "Edición de código en vivo"
+
+msgid "View Details"
+msgstr "Ver detalles"
+
+msgid "Open Source CMS Reinvented"
+msgstr "CMS de código abierto reinventado"
+
+msgid "Code editor with syntax highlighting that updates in real time"
+msgstr "Editor de código con resaltado de sintaxe que actualiza en tiempo real"
+
+msgid "Search and insert CCO images directly into the page."
+msgstr "Busque e inserta imágenes CCO directamente en la página."
+
+msgid "CTO - Founder"
+msgstr "CTO - Fundador"
+
+msgid "CTO - Tech"
+msgstr "CTO - Tecnología"
+
+msgid "CSO - Financial"
+msgstr "CSO - Financiero"
+
+msgid "CMO - Operations"
+msgstr "CMO - Operaciones"
+
+msgid "CEO - Founder"
+msgstr "CEO - Fundador"
+
+msgid "CTO - Co-Founder"
+msgstr "CTO - Cofundador"
+
+msgid "Send"
+msgstr "Enviar"
+
+msgid "Your Email"
+msgstr "Su e-mail"
+
+msgid "Subject (optional but helpful)"
+msgstr "Asunto (opcional pero útil)"
+
+msgid "How can we help?"
+msgstr "¿Cómo podemos ayudar?"
+
+msgid "Your Email Address"
+msgstr "Su dirección de correo electrónico"
+
+msgid "Subject"
+msgstr "Asunto"
+
+msgid "Showroom"
+msgstr "Salón de exposición"
+
+msgid "71 Pilgrim Avenue"
+msgstr ""
+
+msgid "Chevy Chase, MD 20815"
+msgstr ""
+
+msgid "Contact Form"
+msgstr "Formulario de contacto"
+
+msgid "Email Address"
+msgstr "Dirección de correo electrónico"
+
+msgid "7th St."
+msgstr "Calle 7ª."
+
+msgid "New York, NY 12345"
+msgstr "Nueva York, NY 12345"
+
+msgid "support@vvveb.com"
+msgstr ""
+
+msgid "Quick Contact"
+msgstr "Contacto rápido"
+
+msgid "708 Picadilly Ave."
+msgstr "Avenida Picadilly 708."
+
+msgid "New York"
+msgstr "Nueva York"
+
+msgid "Phone"
+msgstr "Teléfono"
+
+msgid "555 111 333"
+msgstr ""
+
+msgid "hello@vvveb.com"
+msgstr ""
+
+msgid ". Powered by"
+msgstr ""
+
+msgid "For Women"
+msgstr "Para mujeres"
+
+msgid "For Men"
+msgstr "Para hombres"
+
+msgid "Stores"
+msgstr "Tiendas"
+
+msgid "Our Blog"
+msgstr "Nuestro Blog"
+
+msgid "Register"
+msgstr "Registro"
+
+msgid "Wishlist"
+msgstr "Lista de deseos"
+
+msgid "Our Products"
+msgstr "Nuestros Productos"
+
+msgid "Newsletter"
+msgstr "Boletín informativo"
+
+msgid "Nice Heading"
+msgstr "Encabezado agradable"
+
+msgid "News sections"
+msgstr "Secciones de noticias"
+
+msgid "Interdum et malesuada"
+msgstr ""
+
+msgid "From Our Blog"
+msgstr "De nuestro blog"
+
+msgid "The next generation website builder."
+msgstr "El constructor de sitios web de la próxima generación."
+
+msgid "Download Now"
+msgstr "Descargar ahora"
+
+msgid "Blank container"
+msgstr "Contenedor en blanco"
+
+msgid "&acirc;&#128;&ordm;"
+msgstr ""
+
+msgid "CCO - Financial"
+msgstr "CCO - Financiero"
+
+msgid "Don&acirc;&#128;&#153;t have an account?"
+msgstr "¿No tiene una cuenta?"
+
+msgid "&acirc;&#130;&not;"
+msgstr ""
+
+msgid "&Acirc;&pound;"
+msgstr ""
+
+msgid "Order confirmation"
+msgstr "Confirmación del pedido"
+
+msgid "Thanks for your order on"
+msgstr "Gracias por su pedido en "
+
+msgid "View order"
+msgstr "Ver pedido"
+
+msgid "iPhone"
+msgstr ""
+
+msgid "x"
+msgstr ""
+
+msgid "Ipad"
+msgstr ""
+
+msgid "\\$223.20"
+msgstr ""
+
+msgid "\\$300"
+msgstr ""
+
+msgid "Customer information"
+msgstr "Información del cliente"
+
+msgid "Shipping method"
+msgstr "Método de envío"
+
+msgid "Billing method"
+msgstr "Método de facturación"
+
+msgid "Courier name"
+msgstr "Nombre del corredor"
+
+msgid "Transfer method"
+msgstr "Método de transferencia"
+
+msgid "If you have any questions about this order, simply reply to this email or contact us on"
+msgstr "Si tiene alguna pregunta sobre este pedido, basta con responder a este correo electrónico o contactarnos en "
+
+msgid "support team"
+msgstr "equipo de soporte"
+
+msgid "for help."
+msgstr "para ayuda."
+
+msgid "Cheers,"
+msgstr "Felicidades,"
+
+msgid "Order information"
+msgstr "Información del pedido"
+
+msgid "New account"
+msgstr "Nueva cuenta"
+
+msgid "Welcome to"
+msgstr "Bienvenido a"
+
+msgid "This email confirms the creation of your account."
+msgstr "Este correo electrónico confirma la creación de su cuenta."
+
+msgid "User dashboard"
+msgstr "Panel del usuario"
+
+msgid "If you have any questions, simply reply to this email or contact us on"
+msgstr "Si tiene alguna pregunta, responda a este correo electrónico o contáctenos en"
+
+msgid "Landing - Internal server error"
+msgstr "Aterrizaje - Error interno del servidor"
+
+msgid "The site is experiencing some dificulties, please try again, if the problem still persists please contact support."
+msgstr "El sitio está experimentando algunas dificultades, por favor inténtelo de nuevo, si el problema persiste por favor contáctese con soporte."
+
+msgid "Vvveb - Contact form"
+msgstr "Vvveb - Formulario de contacto"
+
+msgid "Contact us"
+msgstr "Contáctenos"
+
+msgid "For support questions please use the"
+msgstr "Para preguntas de soporte, por favor utilice el"
+
+msgid "community forum"
+msgstr "foro comunitario"
+
+msgid "Vvveb Landing - Blog"
+msgstr ""
+
+msgid "Cart"
+msgstr "Cesta"
+
+msgid "No products!"
+msgstr "No hay productos!"
+
+msgid "Apply"
+msgstr "Aplicar"
+
+msgid "No products to display in the cart!"
+msgstr "No hay productos para mostrar en la cesta!"
+
+msgid "Continue shopping"
+msgstr "Continuar comprando"
+
+msgid "Make reservation"
+msgstr "Hacer reserva"
+
+msgid "Make appointment"
+msgstr "Marcar cita"
+
+msgid "Vvveb Themes - Page"
+msgstr "Temas Vvveb - Página"
+
+msgid "My custom page"
+msgstr "Mi página personalizada"
+
+msgid "Your Orders"
+msgstr "Sus pedidos"
+
+msgid "Log out"
+msgstr "Cerrar sesión"
+
+msgid "Order id"
+msgstr "Id del pedido"
+
+msgid "Client"
+msgstr "Cliente"
+
+msgid "Vvveb - User dashboard"
+msgstr "Vvveb - Panel de usuario"
+
+msgid "This is your user dashboard, you can view or manage your content or profile from the sidebar menu."
+msgstr "Este es su panel de usuario, puede vista o gestionar su contenido o perfil desde el menú lateral."
+
+msgid "Vvveb - Address edit"
+msgstr "Vvveb - Edición de dirección"
+
+msgid "Region"
+msgstr "Región"
+
+msgid "Address list"
+msgstr "Lista de direcciones"
+
+msgid "Save address"
+msgstr "Guardar dirección"
+
+msgid "Vvveb - Downloads"
+msgstr "Vvveb - Descargas"
+
+msgid "Addresses"
+msgstr "Direcciones"
+
+msgid "No addresses to display!"
+msgstr "No hay direcciones para mostrar!"
+
+msgid "Vvveb - Password recover"
+msgstr "Vvveb - Recuperar contraseña"
+
+msgid "Reset account password"
+msgstr "Restablecer la contraseña de la cuenta"
+
+msgid "Enter your account email and we will send you a reset link to change your password."
+msgstr "Introduzca el correo electrónico de su cuenta y le enviaremos un enlace para cambiar su contraseña."
+
+msgid "You don't have any comments."
+msgstr "No tiene ningún comentario."
+
+msgid "You don't have any downloads."
+msgstr "No tiene ninguna descarga."
+
+msgid "Vvveb - Signup"
+msgstr "Vvveb - Registrate"
+
+msgid "Sign up"
+msgstr "Regístrate"
+
+msgid "Welcome! Enter your data to create an account."
+msgstr "Bienvenido! Introduzca sus datos para crear una cuenta."
+
+msgid "I agree to"
+msgstr "Estoy de acuerdo en"
+
+msgid "Create Account"
+msgstr "Crear cuenta"
+
+msgid "Have an account?"
+msgstr "Tiene cuenta?"
+
+msgid "Vvveb - Profile"
+msgstr "Vvveb - Perfil"
+
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+msgid "Welcome back! Enter your email to get started."
+msgstr "Bienvenido de nuevo! Introduzca su correo electrónico para empezar."
+
+msgid "Create user account"
+msgstr "Crear cuenta de usuario"
+
+msgid "Reset password"
+msgstr "Restablecer contraseña"
+
+msgid "Enter the new password for your account"
+msgstr "Introduzca la nueva contraseña para su cuenta"
+
+msgid "Vvveb - User edit"
+msgstr "Vvveb - Edición del usuario"
+
+msgid "New User"
+msgstr "Nuevo usuario"
+
+msgid "By creating an account you will be able to shop faster, be up to date on an order's status, and keep track of the orders you have previously made."
+msgstr "Al crear una cuenta podrá comprar más rápido, estar al día sobre el estado de un pedido y seguir las órdenes que ha realizado anteriormente."
+
+msgid "Continue"
+msgstr "Continuar"
+
+msgid "Returning User"
+msgstr "Usuario recurrente"
+
+msgid "I am a returning user"
+msgstr "Soy un usuario recurrente"
+
+msgid "Recover Password"
+msgstr "Recuperar contraseña"
+
+msgid "Landing theme components"
+msgstr "Componentes del tema de destino"
+
+msgid "Slider inputs"
+msgstr "Entradas del control deslizante"
+
+msgid "Landing - Blog page"
+msgstr "Aterrissaje - Página del blog"
+
+msgid "Landing - Category"
+msgstr "Desembarque - Categoría"
+
+msgid "Blog Author Page - Vvveb Default Blog Template"
+msgstr "Página del autor del blog - modelo de blog predeterminado Vvveb"
+
+msgid "Author:"
+msgstr "Autor:"
+
+msgid "Blog Post Page - Vvveb Default Blog Template"
+msgstr "Página de posteo del blog - plantilla de blog por defecto del Vvveb"
+
+msgid "Post title"
+msgstr "Título de la publicación"
+
+msgid "Your comment is awaiting moderation."
+msgstr "Su comentario está pendiente de moderación."
+
+msgid "This is a preview, your comment will be visible after it has been approved."
+msgstr "Esto es una vista previa, su comentario será visible después de haber sido aprobado."
+
+msgid "John doe"
+msgstr "Juan Doe"
+
+msgid "This is a reply comment."
+msgstr "Este es un comentario de respuesta."
+
+msgid "Reply to"
+msgstr "Responder a"
+
+msgid "author"
+msgstr "autor"
+
+msgid "Cancel reply"
+msgstr "Cancelar respuesta"
+
+msgid "Logged in as"
+msgstr "Iniciado sesión como"
+
+msgid "Posting"
+msgstr "Publicando"
+
+msgid "Post comment"
+msgstr "Publicar comentario"
+
+msgid "Vvveb CMS"
+msgstr ""
+
+msgid "Landing - archive"
+msgstr "Landing - archivo"
+
+msgid "Landing - tag"
+msgstr "Landing - etiqueta"
+
+msgid "Tag:"
+msgstr "Etiqueta:"
+
+msgid "tag2"
+msgstr ""
+
+msgid "Your order"
+msgstr "Su pedido"
+
+msgid "#4458"
+msgstr ""
+
+msgid "has been placed!"
+msgstr "se ha registrado!"
+
+msgid "You will soon receive an email to inform you of the status of your order once it's processed."
+msgstr "Pronto recibirá un correo electrónico para informarle el estado de su pedido una vez que sea procesado."
+
+msgid "Landing - Checkout"
+msgstr "Aterrizaje - Check-out"
+
+msgid "I already have an account"
+msgstr "Ya tengo cuenta"
+
+msgid "Register account"
+msgstr "Registrarse en cuenta"
+
+msgid "Guest checkout"
+msgstr "Check-out de invitado"
+
+msgid "Bucharest"
+msgstr "Bucarest"
+
+msgid "9800"
+msgstr ""
+
+msgid "I want to use a new address"
+msgstr "Quiero usar un nuevo dirección"
+
+msgid "Company Name"
+msgstr "Nombre de la empresa"
+
+msgid "Town/City"
+msgstr "Ciudad/Ciudad"
+
+msgid "Phone No"
+msgstr "Número de teléfono"
+
+msgid "Ship To A Different Address"
+msgstr "Enviar a una dirección diferente"
+
+msgid "Province"
+msgstr "Provincia"
+
+msgid "Subscribe to our newsletter"
+msgstr "Suscribirse a nuestra newsletter"
+
+msgid "Order Notes"
+msgstr "Notas de Pedido"
+
+msgid "Place order"
+msgstr "Colocar pedido"
+
+msgid "Thank you!"
+msgstr "Gracias!"
+
+msgid "108"
+msgstr "108"
+
+msgid "We will keep you updated on your order status."
+msgstr "Mantendremos actualizados sobre el estado de su pedido."
+
+msgid "Under maintenance!"
+msgstr "En mantenimiento!"
+
+msgid "Currently under maintenance, we will be live soon."
+msgstr "Actualmente en mantenimiento, estaremos disponibles pronto."
+
+msgid "Blog Home - Vvveb Default Blog Template"
+msgstr "Página inicial del blog - Template de blog por defecto Vvveb"
+
+msgid "Vvveb Blog"
+msgstr "Blog de Vvveb"
+
+msgid "minimal blog template"
+msgstr "modelo de blog mínimo"
+
+msgid "Blog no sidebar"
+msgstr "Blog sin barra lateral"
+
+msgid "Blog with sidebar"
+msgstr "Blog con barra lateral"
+
+msgid "Blog with excerpts"
+msgstr "Blog con resúmenes"
+
+msgid "Post image header"
+msgstr "Header de imagen del post"
+
+msgid "Post image hero"
+msgstr "Hero imagen del post"
+
+msgid "Page"
+msgstr "Página"
+
+msgid "Archive"
+msgstr "Archivo"
+
+msgid "Search - Vvveb Default Blog Template"
+msgstr "Buscar - Modelo de blog por defecto Vvveb"
+
+msgid "Blog - 404 Page not found!"
+msgstr "Blog - Página no encontrada (404)!"
+
+msgid "Not found"
+msgstr "No se encuentra"
+
+msgid "The page you are looking for does not exist, try to use search or go to"
+msgstr "La página que busca no existe, intente usar la búsqueda o ir a"
+
+msgid "homepage"
+msgstr "página de inicio"
+
+msgid "Debug info"
+msgstr "Información de depuración"
+
+msgid "Blog - 500 Internal server error!"
+msgstr "Blog - Error interno del servidor (500)!"
+
+msgid "Server error"
+msgstr "Error en el servidor"
+
+msgid "Contact form - Vvveb Default Blog Template"
+msgstr "Formulario de contacto - Modelo de blog por defecto Vvveb"
+
+msgid "Blog Category Page - Vvveb Default Blog Template"
+msgstr "Página de categoría del blog - Modelo de blog por defecto Vvveb"
+
+msgid "Page - Vvveb Default Blog Template"
+msgstr "Página - Modelo de blog por defecto Vvveb"
+
+msgid "Blog Archive Page - Vvveb Default Blog Template"
+msgstr "Página de archivo del blog - Modelo de blog por defecto Vvveb"
+
+msgid "Blog Tag Page - Vvveb Default Blog Template"
+msgstr "Página de etiquetas del blog - Modelo de blog por defecto Vvveb"
+
+msgid "Average rating"
+msgstr "Calificación promedio"
+
+msgid "Newest"
+msgstr "Más reciente"
+
+msgid "Blog default"
+msgstr "Predeterminado del blog"
+
+msgid "vvveb"
+msgstr "vvveb"
+
+msgid "&lsaquo;"
+msgstr "&lsaquo;"
+
+msgid "Released"
+msgstr "Lanzado"
+
+msgid "License"
+msgstr "Licencia"
+
+msgid "Apache 2.0"
+msgstr "Apache 2.0"
+
+msgid "Updated"
+msgstr "Actualizado"
+
+msgid "0.1"
+msgstr "0.1"
+
+msgid "Bootstrap"
+msgstr "Alza de arranque"
+
+msgid "5.3"
+msgstr "5.3"
+
+msgid "0.1+"
+msgstr "0.1+"
+
+msgid "Repository"
+msgstr "Repositorio"
+
+msgid "github"
+msgstr "github"
+
+msgid "Theme Author"
+msgstr "Autor del tema"
+
+msgid "Contact author"
+msgstr "Ponerse en contacto con el autor"
+
+msgid "test plugin html"
+msgstr "plugin de prueba html"
+
+msgid "Vvveb - Flat rate shipping"
+msgstr "Vvveb - Envío fijo"
+
+msgid "Flat rate shipping"
+msgstr "Envío fijo"
+
+msgid "Cost"
+msgstr "Costo"
+
+msgid "Geo Zone"
+msgstr "Zona geográfica"
+
+msgid "UK Shipping"
+msgstr "Envio al Reino Unido"
+
+msgid "UK VAT Zone"
+msgstr "Zona de IVA del Reino Unido"
+
+msgid "Sort Order"
+msgstr "Orden de clasificación"
+
+msgid "Vvveb - Markdown Plugin"
+msgstr "Vvveb - Plug-in de Markdown"
+
+msgid "Markdown plugin"
+msgstr "Plug-in de Markdown"
+
+msgid "Import markdown path"
+msgstr "Importar camino de Markdown"
+
+msgid "&nbsp; Import"
+msgstr "&nbsp; Importar"
+
+msgid "Vvveb - ChatGPT Plugin"
+msgstr "Vvveb - Plug-in ChatGPT"
+
+msgid "ChatGPT Plugin"
+msgstr "Plug-in ChatGPT"
+
+msgid "&nbsp; Save settings"
+msgstr "&nbsp; Guardar configuraciones"
+
+msgid "Temperature"
+msgstr "Temperatura"
+
+msgid "Max tokens"
+msgstr "Máximo de tokens"
+
+msgid "Vvveb - Debug Plugin"
+msgstr "Vvveb - Plug-in de depuración"
+
+msgid "Debug plugin"
+msgstr "Plug-in de depuración"
+
+msgid "&laquo;"
+msgstr ""
+
+msgid "Tab One"
+msgstr "Pestana Uno"
+
+msgid "Tab One Content"
+msgstr "Contenido de la Pestana Uno"
+
+msgid "Vvveb - Database Management"
+msgstr "Vvveb - Gestión de bases de datos"
+
+msgid "Free shipping treshhold"
+msgstr "Umbral de envío gratis"
+
+msgid "Leave 0 to omit free shipping"
+msgstr "Dejar 0 para omitir envío gratis"
+
+msgid "Free shipping message"
+msgstr "Mensaje de envío gratis"
+
+msgid "Leave empty to hide message"
+msgstr "Dejar en blanco para ocultar mensaje"
+
+msgid "Vvveb - Insert Scripts Plugin"
+msgstr "Vvveb - Plug-in de Inserción de scripts"
+
+msgid "Insert Scripts Plugin"
+msgstr "Inserir plug-in de scripts"
+
+msgid "Header scripts"
+msgstr "Scripts de encabezado"
+
+msgid "Footer scripts"
+msgstr "Scripts de pie de página"
+
+msgid "Vvveb - CDN Plugin"
+msgstr "Vvveb - Plug-in CDN"
+
+msgid "CDN plugin"
+msgstr "Plug-in CDN"
+
+msgid "Vvveb - Akismet Plugin"
+msgstr "Vvveb - Plug-in Akismet"
+
+msgid "Akismet plugin"
+msgstr "Plug-in Akismet"
+
+msgid "Vvveb - Pick up shipping"
+msgstr "Vvveb - Retirar envío"
+
+msgid "Vvveb - Messages"
+msgstr "Vvveb - Mensajes"
+
+msgid "Messages"
+msgstr "Mensajes"
+
+msgid "No messages to display!"
+msgstr "No hay mensajes que mostrar!"
+
+msgid "Add message"
+msgstr "Agregar mensaje"
+
+msgid "Message list"
+msgstr "Lista de mensajes"
+
+msgid "Vvveb - Message"
+msgstr "Vvveb - Mensaje"
+
+msgid "User Meta"
+msgstr "Meta del usuario"
+
+msgid "Vvveb - Gravatar Plugin Settings"
+msgstr "Vvveb - Configuración del plug-in Gravatar"
+
+msgid "Gravatar plugin"
+msgstr "Plug-in Gravatar"
+
+msgid "Avatar size"
+msgstr "Tamaño del avatar"
+
+msgid "Maximum Rating"
+msgstr "Calificación máxima"
+
+msgid "G — Suitable for all audiences"
+msgstr "G — Adecuado para todas las audiencias"
+
+msgid "PG — Possibly offensive, usually for audiences 13 and above"
+msgstr "PG — Posiblemente ofensivo, habitualmente para audiencias de 13 años o más"
+
+msgid "R — Intended for adult audiences above 17"
+msgstr "R — Destinado a audiencias adultas mayores de 17"
+
+msgid "X — Even more mature than above"
+msgstr "X — Audiencias aún más maduras"
+
+msgid "Default Avatar"
+msgstr "Avatar predeterminado"
+
+msgid "For users without a custom avatar of their own, you can either display a generic logo or a generated one based on their email address."
+msgstr "Para los usuarios sin un avatar personalizado propio, se puede mostrar un logotipo genérico o uno generado con base en su dirección de correo electrónico."
+
+msgid "Mystery Person"
+msgstr "Persona Misteriosa"
+
+msgid "Blank"
+msgstr "En blanco"
+
+msgid "Gravatar Logo"
+msgstr "Logotipo de Gravatar"
+
+msgid "Identicon (Generated)"
+msgstr "Identicon (Generado)"
+
+msgid "Wavatar (Generated)"
+msgstr "Wavatar (Generado)"
+
+msgid "MonsterID (Generated)"
+msgstr "MonsterID (Generado)"
+
+msgid "Retro (Generated)"
+msgstr "Retro (Generado)"
+
+msgid "Vvveb - Import Wordpress Plugin"
+msgstr "Vvveb - Importar plugin de Wordpress"
+
+msgid "Import Wordpress content"
+msgstr "Importar contenido de Wordpress"
+
+msgid "Import local Wordpress data"
+msgstr "Importar datos locales de Wordpress"
+
+msgid "Upload a Wordpress xml file to start importing"
+msgstr "Subir un archivo xml de Wordpress para iniciar la importación"
+
+msgid "Vvveb - Server Under Load"
+msgstr "Vvveb - Servidor bajo carga"
+
+msgid "Internal server error, please try again later."
+msgstr "Error interno del servidor, inténtelo de nuevo más tarde."
+
+msgid "Refresh page"
+msgstr "Actualizar página"
+
+msgid "The server is currently under load, please try again later."
+msgstr "El servidor está actualmente bajo carga, inténtelo de nuevo más tarde."
+
+msgid "Buildings"
+msgstr "Edificios"
+
+msgid "Communication"
+msgstr "Comunicación"
+
+msgid "Device"
+msgstr "Dispositivo"
+
+msgid "Document"
+msgstr "Documento"
+
+msgid "Editor"
+msgstr ""
+
+msgid "Finance"
+msgstr "Finanzas"
+
+msgid "Health"
+msgstr "Salud"
+
+msgid "Logos"
+msgstr "Logotipos"
+
+msgid "Map"
+msgstr "Mapa"
+
+msgid "Others"
+msgstr "Otros"
+
+msgid "System"
+msgstr "Sistema"
+
+msgid "Weather"
+msgstr "Clima"
+
+msgid "chart"
+msgstr "gráfico"
+
+msgid "commerce"
+msgstr "comercio"
+
+msgid "core"
+msgstr "núcleo"
+
+msgid "essential"
+msgstr "esencial"
+
+msgid "media"
+msgstr "medios"
+
+msgid "social"
+msgstr "sociales"
+
+msgid "technology"
+msgstr "tecnología"
+
+msgid "text edit"
+msgstr "edición de texto"
+
+msgid "travel"
+msgstr "viaje"
+
+msgid "outline"
+msgstr "esbozo"
+
+msgid "fill"
+msgstr "relleno"
+
+msgid "logos"
+msgstr "logotipos"
+
+msgid "regular"
+msgstr "normal"
+
+msgid "solid"
+msgstr "sólido"
+
+msgid "brand"
+msgstr "marca"
+
+msgid "flag"
+msgstr "bandera"
+
+msgid "free"
+msgstr "gratuito"
+
+msgid "bold"
+msgstr "negrita"
+
+msgid "broken"
+msgstr "quebrado"
+
+msgid "bulk"
+msgstr "en masa"
+
+msgid "crypto"
+msgstr "cifrado"
+
+msgid "linear"
+msgstr "lineal"
+
+msgid "twotone"
+msgstr "dos tonos"
+
+msgid "arrows"
+msgstr "flechas"
+
+msgid "basic"
+msgstr "básico"
+
+msgid "basic elaboration"
+msgstr "elaboración básica"
+
+msgid "ecommerce"
+msgstr "comercio electrónico"
+
+msgid "music"
+msgstr "música"
+
+msgid "software"
+msgstr "software"
+
+msgid "weather"
+msgstr "clima"
+
+msgid "monochrome"
+msgstr "monocromo"
+
+msgid "thinline"
+msgstr "línea fina"
+
+msgid "filled"
+msgstr "relleno"
+
+msgid "outlined"
+msgstr "delineado"
+
+msgid "Accessibility features"
+msgstr "Características de accesibilidad"
+
+msgid "A11Y (accessibility)"
+msgstr "A11Y (accesibilidad)"
+
+msgid "Activity"
+msgstr "Actividad"
+
+msgid "Alarm"
+msgstr "Alarma"
+
+msgid "Anchor"
+msgstr "Ancla"
+
+msgid "Aperture"
+msgstr "Apertura"
+
+msgid "Apps drawer"
+msgstr "Cajon de aplicativos"
+
+msgid "Arrow Down"
+msgstr "Flecha para abajo"
+
+msgid "Arrow Left Bottom"
+msgstr "Flecha Izquierda Inferior"
+
+msgid "Arrow Left"
+msgstr "Flecha hacia la izquierda"
+
+msgid "Arrow Right Bottom"
+msgstr "Flecha Derecha Inferior"
+
+msgid "Arrow Right"
+msgstr "Flecha hacia la derecha"
+
+msgid "Arrow Right Top"
+msgstr "Flecha Superior Derecha"
+
+msgid "Arrow Up"
+msgstr "Flecha hacia arriba"
+
+msgid "Back"
+msgstr "Atrás"
+
+msgid "Turn back"
+msgstr "Volver atrás"
+
+msgid "Turn Back"
+msgstr "Volver Atrás"
+
+msgid "Backwards"
+msgstr "Hacia atrás"
+
+msgid "Bag"
+msgstr "Bolsa"
+
+msgid "Basket"
+msgstr "Cesta"
+
+msgid "Battery"
+msgstr "Batería"
+
+msgid "BatteryCharging"
+msgstr "Cargando la batería"
+
+msgid "Battery Full"
+msgstr "Batería llena"
+
+msgid "Battery Low"
+msgstr "Batería baja"
+
+msgid "Battery 66%"
+msgstr "Batería 66%"
+
+msgid "Bell"
+msgstr "Timbre"
+
+msgid "Bin"
+msgstr "Papelera"
+
+msgid "Bluetooth"
+msgstr "Bluetooth"
+
+msgid "Bolt"
+msgstr "Tornillo"
+
+msgid "Book"
+msgstr "Libro"
+
+msgid "Bookmark"
+msgstr "Marcador"
+
+msgid "Box"
+msgstr "Caja"
+
+msgid "Brightness control"
+msgstr "Control de brillo"
+
+msgid "Bug"
+msgstr "Bug"
+
+msgid "Add to calendar"
+msgstr "Agregar al calendario"
+
+msgid "Decline calendar invite"
+msgstr "Rechazar invitación del calendario"
+
+msgid "Calendar event"
+msgstr "Evento de calendario"
+
+msgid "Calendar"
+msgstr "Calendario"
+
+msgid "Switch the Cameras"
+msgstr "Cambiar las cámaras"
+
+msgid "Camera"
+msgstr "Cámara"
+
+msgid "Cards"
+msgstr "Tarjetas"
+
+msgid "Add do cart"
+msgstr "Añadir al carrito"
+
+msgid "Celluar"
+msgstr "Móvil"
+
+msgid "Chart"
+msgstr "Gráfico"
+
+msgid "New chat"
+msgstr "Nuevo chat"
+
+msgid "Chat"
+msgstr "Chat"
+
+msgid "Delete a chat"
+msgstr "Eliminar un chat"
+
+msgid "Chat with a warning state"
+msgstr "Chat con estado de advertencia"
+
+msgid "Checkbox in intermediate state"
+msgstr "Casilla de selección en estado intermedio"
+
+msgid "Checkbox (selected)"
+msgstr "Casilla de selección (seleccionada)"
+
+msgid "Chevron Down"
+msgstr "Sello hacia abajo"
+
+msgid "Chevron Left"
+msgstr "Sello Izquierdo"
+
+msgid "Chevron Right"
+msgstr "Sello Derecho"
+
+msgid "Chevron Up"
+msgstr "Sello Hacia arriba"
+
+msgid "Chevrons Down"
+msgstr "Sellos hacia abajo"
+
+msgid "Chevrons Right"
+msgstr "Sellos a la derecha"
+
+msgid "Chevrons Up"
+msgstr "Sellos hacia arriba"
+
+msgid "Circle"
+msgstr "Círculo"
+
+msgid "Attachment (paper clip)"
+msgstr "Adjunto (clip de papel)"
+
+msgid "Clipboard"
+msgstr "Portapapeles"
+
+msgid "Cloud/internet services unavailable"
+msgstr "Servicios en la nube/no disponibles"
+
+msgid "Upload to Cloud"
+msgstr "Subir a la nube"
+
+msgid "Cloud"
+msgstr "Nube"
+
+msgid "Colours"
+msgstr "Colores"
+
+msgid "Component"
+msgstr "Componente"
+
+msgid "Contact Book"
+msgstr "Libro de contactos"
+
+msgid "Contrast control"
+msgstr "Control del contraste"
+
+msgid "Controllers"
+msgstr "Controladores"
+
+msgid "Copy"
+msgstr "Copiar"
+
+msgid "Credit Card"
+msgstr "Tarjeta de crédito"
+
+msgid "Crop"
+msgstr "Cortar"
+
+msgid "Crossing"
+msgstr "Cruzamiento"
+
+msgid "Trophy"
+msgstr "Trofeo"
+
+msgid "Cursor"
+msgstr "Puntero"
+
+msgid "Cut"
+msgstr "Cortar"
+
+msgid "Danger"
+msgstr "Peligo"
+
+msgid "Delete (Backspace)"
+msgstr "Borrar (Barra espaciadora)"
+
+msgid "Dialpad"
+msgstr "Teclado de teléfono"
+
+msgid "Turn Left"
+msgstr "Girar a la izquierda"
+
+msgid "Disc"
+msgstr "Disco"
+
+msgid "Dolar"
+msgstr "Dólar"
+
+msgid "Drop"
+msgstr "Soltar"
+
+msgid "Ear (hearing)"
+msgstr "Oído (audición)"
+
+msgid "Ellypsis"
+msgstr "Elipse"
+
+msgid "Entrance"
+msgstr "Ingreso"
+
+msgid "Envelope"
+msgstr "Carta de correos"
+
+msgid "Exit"
+msgstr "Salir"
+
+msgid "Explore"
+msgstr "Explorar"
+
+msgid "Hidden (closed eye)"
+msgstr "Oculto (ojos cerrados)"
+
+msgid "Hidden (crossed eye)"
+msgstr "Oculto (ojos cruzados)"
+
+msgid "Visible (eye)"
+msgstr " Visible (ojos abiertos)"
+
+msgid "Favourite"
+msgstr "Favorito"
+
+msgid "Feed"
+msgstr "Alimentación"
+
+msgid "Film"
+msgstr "Película"
+
+msgid "Flag"
+msgstr "Bandera"
+
+msgid "Add to folder"
+msgstr "Agregar a carpeta"
+
+msgid "Remove from folder"
+msgstr "Eliminar de la carpeta"
+
+msgid "Folder with a warning state"
+msgstr "Carpeta con estado de advertencia"
+
+msgid "Folder"
+msgstr "Carpeta"
+
+msgid "Forward"
+msgstr "Adelante"
+
+msgid "Glasses"
+msgstr "Gafas"
+
+msgid "Grid"
+msgstr "Malla"
+
+msgid "Small Grid"
+msgstr "Malla pequeña"
+
+msgid "Large Grid"
+msgstr "Malla grande"
+
+msgid "Menu"
+msgstr "Menú"
+
+msgid "Happy Face"
+msgstr "Cara Feliz"
+
+msgid "Hash"
+msgstr "Hash"
+
+msgid "HDR"
+msgstr "HDR"
+
+msgid "Headphones"
+msgstr "Auriculares"
+
+msgid "Hearing disability"
+msgstr "Discapacidad auditiva"
+
+msgid "Help"
+msgstr "Ayuda"
+
+msgid "History"
+msgstr "Historia"
+
+msgid "Bullhorn"
+msgstr "Megáfono"
+
+msgid "Hourglass"
+msgstr "Reloj de arena"
+
+msgid "Inbox"
+msgstr "Bandeja de entrada"
+
+msgid "Information"
+msgstr "Información"
+
+msgid "Justify"
+msgstr "Justificar"
+
+msgid "Laptop"
+msgstr "Portátil"
+
+msgid "Layout Left"
+msgstr "Diseño Izquierdo"
+
+msgid "Layout Right"
+msgstr "Diseño Derecho"
+
+msgid "Light Bulb"
+msgstr "Lámpara"
+
+msgid "Line Chart"
+msgstr "Gráfico de Línea"
+
+msgid "List view"
+msgstr "Vista de lista"
+
+msgid "Lock"
+msgstr "Bloquear"
+
+msgid "Mask"
+msgstr "Máscara"
+
+msgid "Maximise View"
+msgstr "Vista máxima"
+
+msgid "Microphone (Voice input)"
+msgstr "Micrófono (entrada de voz)"
+
+msgid "Minimise View"
+msgstr "Vista mínima"
+
+msgid "Minus"
+msgstr "Menos que"
+
+msgid "Moon"
+msgstr "Luna"
+
+msgid "Music"
+msgstr "Música"
+
+msgid "Mute"
+msgstr "Silenciar"
+
+msgid "Neutral Face"
+msgstr "Rosto neutro"
+
+msgid "No Entry"
+msgstr "Sin entrada"
+
+msgid "Not Allowed"
+msgstr "No permitido"
+
+msgid "Notebook"
+msgstr "Cuaderno"
+
+msgid "Octagon"
+msgstr "Octágono"
+
+msgid "OK"
+msgstr "Aceptar"
+
+msgid "Ok"
+msgstr "Vale"
+
+msgid "Pan"
+msgstr "Pan"
+
+msgid "Paperclip"
+msgstr "Clipe de papel"
+
+msgid "Pause"
+msgstr "Pausa"
+
+msgid "People"
+msgstr "Gente"
+
+msgid "Person"
+msgstr "Persona"
+
+msgid "Placeholder"
+msgstr "Espacio reservado"
+
+msgid "Play"
+msgstr "Jugar"
+
+msgid "Plus"
+msgstr "Mas"
+
+msgid "Power"
+msgstr "Potencia"
+
+msgid "print"
+msgstr "imprimir"
+
+msgid "Radio button (selected)"
+msgstr "Botón de opción (seleccionado)"
+
+msgid "Radio button"
+msgstr "Botón de opción"
+
+msgid "Rain"
+msgstr "Lluvia"
+
+msgid "Rectangle"
+msgstr "Rectángulo"
+
+msgid "Redo last undone action"
+msgstr "Rehacer la última acción deshecha"
+
+msgid "Refresh"
+msgstr "Actualizar"
+
+msgid "Remove"
+msgstr "Eliminar"
+
+msgid "Repeat"
+msgstr "Repeticion"
+
+msgid "Restaurant"
+msgstr "Restaurante"
+
+msgid "Return"
+msgstr "Retorno"
+
+msgid "Retweet"
+msgstr "Retwittear"
+
+msgid "Rotate"
+msgstr "Girar"
+
+msgid "RSS"
+msgstr ""
+
+msgid "sad Face"
+msgstr "Cara triste"
+
+msgid "Share"
+msgstr "Compartir"
+
+msgid "Shield"
+msgstr "Escudo"
+
+msgid "Shift"
+msgstr "Cambiar"
+
+msgid "Shuffle"
+msgstr "Barajar"
+
+msgid "Sign language"
+msgstr "Lengua de señas"
+
+msgid "Signal"
+msgstr "Señal"
+
+msgid "Smartphone"
+msgstr ""
+
+msgid "Snow"
+msgstr "Nieve"
+
+msgid "Sort in descending order"
+msgstr "Ordenar en orden descendente"
+
+msgid "Sort in ascending order"
+msgstr "Ordenar en orden ascendente"
+
+msgid "Sorting"
+msgstr "Ordención"
+
+msgid "Stack"
+msgstr "Pila"
+
+msgid "Star"
+msgstr "Estrella"
+
+msgid "Stats"
+msgstr "Estadísticas"
+
+msgid "Sticker"
+msgstr "Adhesivo"
+
+msgid "Stop"
+msgstr "Detener"
+
+msgid "Stopwatch"
+msgstr "Cronómetro"
+
+msgid "Suitcase"
+msgstr "Maleta"
+
+msgid "Sun with clouds"
+msgstr "Sol con nubes"
+
+msgid "Sun"
+msgstr "Sol"
+
+msgid "Sunset"
+msgstr "Puesta de sol"
+
+msgid "Swap items (horizontally)"
+msgstr "Intercambiar elementos (horizontalmente)"
+
+msgid "Swap items (vertically)"
+msgstr "Intercambiar elementos (verticalmente)"
+
+msgid "Switch off"
+msgstr "Apagar"
+
+msgid "Switch on"
+msgstr "Encender"
+
+msgid "Data table"
+msgstr "Tabla de datos"
+
+msgid "Thermometer"
+msgstr "Termómetro"
+
+msgid "Thumb Down"
+msgstr "Pulgar hacia abajo"
+
+msgid "Thumb Up"
+msgstr "Pulgar hacia arriba"
+
+msgid "Thunder"
+msgstr "Trueno"
+
+msgid "Timer"
+msgstr "Reloj"
+
+msgid "Tool"
+msgstr "Herramienta"
+
+msgid "trending"
+msgstr "tendencia"
+
+msgid "Trending Up"
+msgstr "Tendencia ascendente"
+
+msgid "Turn Right"
+msgstr "Girar a la derecha"
+
+msgid "TV"
+msgstr "TV"
+
+msgid "Umbrella"
+msgstr "Paraguas"
+
+msgid "Undo last action"
+msgstr "Deshacer última acción"
+
+msgid "Upload"
+msgstr "Subir"
+
+msgid "Verified"
+msgstr "Verificado"
+
+msgid "Vertical Layout"
+msgstr "Diseño vertical"
+
+msgid "Video"
+msgstr "Vídeo"
+
+msgid "Voicemail"
+msgstr "Correos de voz"
+
+msgid "Volume Loud"
+msgstr "Volumen alto"
+
+msgid "Volume Off"
+msgstr "Volumen apagado"
+
+msgid "Volume Quiet"
+msgstr "Volumen bajo"
+
+msgid "Watch"
+msgstr "Ver"
+
+msgid "Accessibility (wheelchair)"
+msgstr "Accesibilidad (silla de ruedas)"
+
+msgid "Wi-Fi"
+msgstr "WiFi"
+
+msgid "Window"
+msgstr "Ventana"
+
+msgid "Zoom In"
+msgstr "Ampliar"
+
+msgid "Zoom Out"
+msgstr "Reducir zoom"
+
+msgid "brands"
+msgstr "marcas"
+
+msgid "Missing admin table or data, remove config/db.php to reinstall!"
+msgstr "Falta la tabla o datos de administración, elimine config/db.php para reinstalar!"
+
+msgid "Already installed! To reinstall remove config/db.php"
+msgstr "Ya instalado. Para reiniciar el proceso elimine config/db.php"
+
+msgid "Invalid installation. No user with \"super admin\" role found!"
+msgstr "Instalación inválida. No se encontró usuario con rol de 'administrador super'."
+
+msgid "You need at least PHP %s , your current version %s"
+msgstr "Necesita al menos PHP %s, su versión actual es %s"
+
+msgid "PHP extension %s is not installed"
+msgstr "La extensión de PHP %s no está instalada"
+
+msgid "\"%s\" is not writable"
+msgstr "\"%s\" no es editable"
+
+msgid "Db error: \"%s\" Error code: \"%s\""
+msgstr "Error de base de datos: \"%s\" Código de error: \"%s\""
+
+msgid "Installation succesful!"
+msgstr "Instalación exitosa!"
+
+msgid "Vvveb Homepage"
+msgstr "Página principal de Vvveb"
+
+msgid "Documentation"
+msgstr "Documentación"
+
+msgid "Design page"
+msgstr "Página de diseño"
+
+msgid "Edit page"
+msgstr "Página de edición"
+
+msgid "Edit profile"
+msgstr "Editar perfil"
+
+msgid "%s(s) deleted!"
+msgstr "%s(s) eliminados!"
+
+msgid "Error deleting %s!"
+msgstr "Error al eliminar %s!"
+
+msgid "%s not found!"
+msgstr "%s no encontrado!"
+
+msgid "Template missing, choose existing template or <a href=\"%s\" target=\"_blank\">create global template</a> for %s."
+msgstr "Falta un modelo. Elija un modelo existente o cree un modelo global para %s."
+
+msgid "Template missing, <a href=\"%s\" target=\"_blank\">create template</a> for this  %s."
+msgstr "Falta un modelo. Cree un modelo para este %s."
+
+msgid "saved"
+msgstr "guardado"
+
+msgid "Product saved!"
+msgstr "Producto guardado!"
+
+msgid "Product(s) deleted!"
+msgstr "Productos eliminados!"
+
+msgid "Error deleting product!"
+msgstr "Error al eliminar producto!"
+
+msgid "Error saving: %s!"
+msgstr "Error al guardar: %s!"
+
+msgid "File not writable: %s Check if file has write permission."
+msgstr "El archivo no es editable: %s Compruebe si tiene permiso de escritura."
+
+msgid "File saved!"
+msgstr "Archivo guardado!"
+
+msgid "Error uploading file!"
+msgstr "Error al subir archivo!"
+
+msgid "Homepage"
+msgstr "Página principal"
+
+msgid "File deleted!"
+msgstr "Archivo eliminado!"
+
+msgid "Error deleting file!"
+msgstr "Error al eliminar archivo!"
+
+msgid "File copied!"
+msgstr "Archivo copiado!"
+
+msgid "Error copying file!"
+msgstr "Error al copiar archivo!"
+
+msgid "File renamed!"
+msgstr "Archivo renombrado!"
+
+msgid "Error renaming file!"
+msgstr "Error al renombrar archivo!"
+
+msgid "Error saving elements!"
+msgstr "Error al guardar elementos!"
+
+msgid "Error saving backup!"
+msgstr "Error al guardar copia de seguridad!"
+
+msgid "Settings saved!"
+msgstr "Configuraciones guardadas!"
+
+msgid "This is a test email to confirm that email is properly configured!"
+msgstr "Este es un correo electrónico de prueba para confirmar que el correo electrónico está configurado correctamente."
+
+msgid "Error sending mail!"
+msgstr "Error al enviar correo electrónico!"
+
+msgid "Test email"
+msgstr "Correo electrónico de prueba"
+
+msgid "Email sent to %s!"
+msgstr "Correo electrónico enviado a %s!"
+
+msgid "Error saving!"
+msgstr "Error al guardar!"
+
+msgid "Site saved!"
+msgstr "Sitio guardado!"
+
+msgid "Order(s) deleted!"
+msgstr "Pedidos eliminados!"
+
+msgid "Error deleting order!"
+msgstr "Error al eliminar pedido!"
+
+msgid "Order not found!"
+msgstr "Pedido no encontrado!"
+
+msgid "Order saved"
+msgstr "Pedido guardado"
+
+msgid "Order saved!"
+msgstr "Pedido guardado!"
+
+msgid "Language pack installed!"
+msgstr "Paquete de idiomas instalado!"
+
+msgid "Language compilation failed!"
+msgstr "Compilación del idioma fallida!"
+
+msgid "Error writing language files!"
+msgstr "Error al escribir archivos de idioma!"
+
+msgid "Language pack not available!"
+msgstr "Paquete de idiomas no disponible!"
+
+msgid "Check available translations at %s"
+msgstr "Verifique las traducciones disponibles en %s"
+
+msgid "Zone saved!"
+msgstr "Zona guardada!"
+
+msgid "File type not allowed!"
+msgstr "Tipo de archivo no permitido!"
+
+msgid "No file sent."
+msgstr "No se ha enviado ningún archivo."
+
+msgid "Exceeded filesize limit."
+msgstr "Se ha excedido el límite de tamaño de archivo."
+
+msgid "Unknown errors."
+msgstr "Errores desconocidos."
+
+msgid " saved!"
+msgstr "guardado!"
+
+msgid " added!"
+msgstr "añadido!"
+
+msgid "Password was reset!"
+msgstr "La contraseña fue reestablecida!"
+
+msgid "Update failed!"
+msgstr "Falló la actualización!"
+
+msgid "Invalid or expired token!"
+msgstr "Token inválido o expirado!"
+
+msgid "Password reset"
+msgstr "Reestablecimiento de contraseña"
+
+msgid "A reset email was sent, please use it to reset your password!"
+msgstr "Se ha enviado un correo electrónico de reestablecimiento, por favor utilízelo para reestablecer su contraseña."
+
+msgid "Error sending reset email!"
+msgstr "Error al enviar el correo electrónico de reestablecimiento!"
+
+msgid "Email not found!"
+msgstr "Correo electrónico no encontrado!"
+
+msgid "Login successful!"
+msgstr "Inicio de sesión exitosa!"
+
+msgid "Authentication failed, wrong email or password!"
+msgstr "Falló la autenticación, correo electrónico o contraseña incorrectos!"
+
+msgid "Plugin `%s` deactivated!"
+msgstr "El plugin `%s` ha sido desactivado."
+
+msgid "Activating %s plugin ..."
+msgstr "Activando el plugin `%s`..."
+
+msgid "Plugin \"%s\" removed!"
+msgstr "Se ha eliminado el plugin \"%s\"."
+
+msgid "Error removing \"%s\" plugin!"
+msgstr "Error al eliminar el plugin \"%s\"."
+
+msgid "Plugin %s was successfully installed!"
+msgstr "El plugin `%s` se ha instalado con éxito!"
+
+msgid "Activate plugin"
+msgstr "Activar plug-in"
+
+msgid "Failed to install %s plugin!"
+msgstr "Falló la instalación del plug-in `%s`!"
+
+msgid "Error activating plugin `%s`!"
+msgstr "Error al activar el plug-in `%s`!"
+
+msgid "Plugin `%s` activated!"
+msgstr "El plug-in `%s` ha sido activado."
+
+msgid "Error activating plugin!"
+msgstr "Error al activar el plug-in!"
+
+msgid "Check config file permissions!"
+msgstr "Verificar permisos del archivo de configuración!"
+
+msgid "Installing \"%s\""
+msgstr "Instalando \"%s\""
+
+msgid "Downloading \"%s\""
+msgstr "Descargando \"%s\""
+
+msgid "Unpacking \"%s\""
+msgstr "Descomprimiendo \"%s\""
+
+msgid "Error installing \"%s\"!"
+msgstr "Error al instalar \"%s\"!"
+
+msgid "Error downloading \"%s\" from %s!"
+msgstr "Error al descargar \"%s\" desde %s!"
+
+msgid "Plugin \"%s\" not found!"
+msgstr "El plug-in \"%s\" no se encontró!"
+
+msgid "Theme %s was successfully installed!"
+msgstr "El tema `%s` se ha instalado con éxito!"
+
+msgid "Activate theme"
+msgstr "Activar tema"
+
+msgid "Theme <b>%s</b> was activated!"
+msgstr "Se ha activado el tema <b>%s</b>."
+
+msgid "Import theme content"
+msgstr "Importar contenido del tema"
+
+msgid "View website"
+msgstr "Ver sitio"
+
+msgid "Error activating theme, check config/sites.php write permissions"
+msgstr "Error al activar el tema, verifique las permisos de escritura en config/sites.php"
+
+msgid "Theme \"%s\" not found!"
+msgstr "Tema «%s» no encontrado!"
+
+msgid "Menu deleted!"
+msgstr "Menú eliminado!"
+
+msgid "Menu not found!"
+msgstr "Menú no encontrado!"
+
+msgid "Item deleted!"
+msgstr "Elemento eliminado!"
+
+msgid "Item not found!"
+msgstr "Elemento no encontrado!"
+
+msgid "Items reordered!"
+msgstr "Elementos reordenados!"
+
+msgid "Item edited!"
+msgstr "Elemento editado!"
+
+msgid "Item added!"
+msgstr "Elemento agregado!"
+
+msgid "Menu saved!"
+msgstr "Menú guardado!"
+
+msgid "%s status changed!"
+msgstr "El estado de «%s» ha cambiado!"
+
+msgid " deleted!"
+msgstr " eliminado"
+
+msgid "s"
+msgstr ""
+
+msgid "Item removed!"
+msgstr "Elemento eliminado!"
+
+msgid "Template missing, choose existing template or %screate global template%s for %s."
+msgstr "Falta modelo, elija un modelo existente o %screa un modelo global%s para «%s»."
+
+msgid "Template missing, %screate template%s for this  %s."
+msgstr "Falta modelo, %screa modelo%s para este «%s»."
+
+msgid "Tag saved!"
+msgstr "Etiqueta guardada!"
+
+msgid "Saved!"
+msgstr "Guardado!"
+
+msgid "Error checking updates!"
+msgstr "Error al comprobar actualizaciones"
+
+msgid "Updates available!"
+msgstr "Actualizaciones disponibles!"
+
+msgid "No updates available!"
+msgstr "No hay actualizaciones disponibles"
+
+msgid "Failed at "
+msgstr "Falló en "
+
+msgid "Step (%d/%d) %s ..."
+msgstr "Paso («%d»/«%d») «...»
+
+msgid "Update finished"
+msgstr "Actualización finalizada"
+
+msgid "Error downloading update!"
+msgstr "Error al descargar actualización"
+
+msgid "downloaded successfully"
+msgstr "descargado con éxito"
+
+msgid "Backup successful!"
+msgstr "Backup exitoso!"
+
+msgid "Error unzipping update!"
+msgstr "Error al descomprimir actualización"
+
+msgid "Unzip successful!"
+msgstr "Descomprimido con éxito!"
+
+msgid "Error updating core"
+msgstr "Error al actualizar el núcleo"
+
+msgid "Update core successful!"
+msgstr "Actualización del núcleo exitosa!"
+
+msgid "Error updating config"
+msgstr "Error al actualizar la configuración"
+
+msgid "Update config successful!"
+msgstr "Actualización de configuración exitosa!"
+
+msgid "Error updating system"
+msgstr "Error al actualizar el sistema"
+
+msgid "Update system successful!"
+msgstr "Actualización del sistema exitosa!"
+
+msgid "Error updating app"
+msgstr "Error al actualizar la aplicación"
+
+msgid "Update app successful!"
+msgstr "Actualización de la aplicación exitosa!"
+
+msgid "Error updating install"
+msgstr "Error al actualizar la instalación"
+
+msgid "Update install successful!"
+msgstr "Actualización de la instalación exitosa!"
+
+msgid "Error updating public"
+msgstr "Error al actualizar el público"
+
+msgid "Update public successful!"
+msgstr "Actualización pública exitosa!"
+
+msgid "Error updating public admin"
+msgstr "Error al actualizar el administrador público"
+
+msgid "Update public admin successful!"
+msgstr "Actualización del administrador público exitosa!"
+
+msgid "Error updating public media"
+msgstr "Error al actualizar la medios públicos"
+
+msgid "Error setting permissions"
+msgstr "Error al establecer permisos"
+
+msgid "Set permissions successful!"
+msgstr "Permisos establecidos con éxito!"
+
+msgid "Error cleaning up"
+msgstr "Error al limpiar"
+
+msgid "Cleanup successful!"
+msgstr "Limpieza realizada con éxito!"
+
+msgid "Error clearing cache"
+msgstr "Error al limpiar caché"
+
+msgid "Clear cache successful!"
+msgstr "Caché limpiado con éxito!"
+
+msgid "Update in progress, do not close this page ..."
+msgstr "Actualización en progreso, no cierre esta página..."
+
+msgid "Update successful!"
+msgstr "Actualización exitosa!"
+
+msgid "Client library version: %s"
+msgstr "Versión de la biblioteca cliente: %s"
+
+msgid "Server version: %s"
+msgstr "Versión del servidor: %s"
+
+msgid "Vvveb version"
+msgstr "Versión Vvveb"
+
+msgid "Admin path"
+msgstr "Ruta del administrador"
+
+msgid "Server"
+msgstr "Servidor"
+
+msgid "PHP time limit"
+msgstr "Límite de tiempo de PHP"
+
+msgid "PHP memory limit"
+msgstr "Límite de memoria de PHP"
+
+msgid "Max input time"
+msgstr "Tiempo máximo de entrada"
+
+msgid "Upload max filesize"
+msgstr "Tamaño máximo de archivo para subir"
+
+msgid "PHP post max size"
+msgstr "Tamaño máximo de la petición POST en PHP"
+
+msgid "Extensions"
+msgstr "Extensiones"
+
+msgid "enabled"
+msgstr "Habilitado"
+
+msgid "disabled"
+msgstr "Desactivado"
+
+msgid "Debug"
+msgstr "Depuración"
+
+msgid "Sql changes check"
+msgstr "Verificación de cambios en SQL"
+
+msgid "Document root"
+msgstr "Raíz del documento"
+
+msgid "Cache deleted!"
+msgstr "Cache eliminado!"
+
+msgid "Error purging cache!"
+msgstr "Error al eliminar el caché!"
+
+msgid "Import `%s` was successful!"
+msgstr "La importación `%s` fue exitosa!"
+
+msgid "Failed to import `%s` file!"
+msgstr "Falló la importación del archivo `%s`!"
+
+msgid "Error downloading log!"
+msgstr "Error al descargar el registro!"
+
+msgid "Log cleared!"
+msgstr "Registro limpio!"
+
+msgid "Error clearing log!"
+msgstr "Error al limpiar el registro!"
+
+msgid "Log not a valid file!"
+msgstr "El registro no es un archivo válido!"
+
+msgid "empty file"
+msgstr "Archivo vacío"
+
+msgid "PHP error log not readable, make sure that your log is properly configured and that is readable."
+msgstr "El jurnal de errores de PHP no es accesible, asegúrate de que esté configurado correctamente y sea leíble."
+
+msgid "Backup finished!"
+msgstr "Backup finalizado!"
+
+msgid "Restore finished!"
+msgstr "Restauración finalizada!"
+
+msgid "Backup deleted!"
+msgstr "Backup eliminado!"
+
+msgid "Error deleting backup!"
+msgstr "Error al eliminar el backup!"
+
+msgid "Backup does not exist!"
+msgstr "El backup no existe!"
+
+msgid "Your role does not have permission to access this action!"
+msgstr "Tu rol no tiene permiso para acceder a esta acción!"
+
+msgid "%d second"
+msgstr "%d segundo"
+
+msgid "%d minute"
+msgstr "%d minuto"
+
+msgid "%d hour"
+msgstr "%d hora"
+
+msgid "%d day"
+msgstr "%d día"
+
+msgid "%d week"
+msgstr "%d semana"
+
+msgid "%d month"
+msgstr "%d mes"
+
+msgid "%d year"
+msgstr "%d año"
+
+msgid "%d decade"
+msgstr "%d década"
+
+msgid "%d century"
+msgstr "%d siglo"
+
+msgid " ago"
+msgstr "hace"
+
+msgid " from now"
+msgstr "desde ahora"
+
+msgid "Website homepage"
+msgstr "Página principal del sitio web"
+
+msgid "Coming soon message page"
+msgstr "Página de mensaje que viene pronto"
+
+msgid "Under maintenance"
+msgstr "En mantenimiento"
+
+msgid "Website under maintenance message page"
+msgstr "Página de mensaje de sitio en mantenimiento"
+
+msgid "Blank page"
+msgstr "Página en blanco"
+
+msgid "Template page used for new pages"
+msgstr "Página de plantilla utilizada para nuevas páginas"
+
+msgid "Product page"
+msgstr "Página del producto"
+
+msgid "Used to display a product"
+msgstr "Se utiliza para mostrar un producto"
+
+msgid "Shows when a page is not available"
+msgstr "Muestra cuando una página no está disponible"
+
+msgid "Site error display page"
+msgstr "Página de visualización de errores del sitio"
+
+msgid "Blog homepage"
+msgstr "Página principal del blog"
+
+msgid "Blog page with latest posts"
+msgstr "Página del blog con últimos posteos"
+
+msgid "Blog post"
+msgstr "Entrada en el blog"
+
+msgid "Shop page"
+msgstr "Página de la tienda"
+
+msgid "Shop homepage"
+msgstr "Página principal de la tienda"
+
+msgid "Search page"
+msgstr "Página de búsqueda"
+
+msgid "%s is empty"
+msgstr "%s está vacío"
+
+msgid "%s is invalid, valid options are %s"
+msgstr "%s es inválido, las opciones válidas son %s"
+
+msgid "%s is longer than %d"
+msgstr "%s es más largo que %d"
+
+msgid "%s is shorter than %d"
+msgstr "%s es más corto que %d"
+
+msgid "%s does not match %s"
+msgstr "%s no coincide con %s"
+
+msgid "%s is invalid"
+msgstr "%s es inválido"
+
+msgid "%s invalid email"
+msgstr "Correo electrónico %s inválido"
+
+msgid "%s not complex enough, include uppercase letters and digits"
+msgstr "%s no es complejo suficiente, incluya letras mayúsculas y dígitos"
+
+msgid "Disabling '%s' plugin."
+msgstr "Desactivando el plug-in '%s'."
+
+msgid "%s zip should not have other files than %s folder!"
+msgstr "%s zip no debe contener archivos diferentes a la carpeta %s!"
+
+msgid "%s slug `%s` does not match folder %s!"
+msgstr "El identificador de la página `%s` no coincide con la carpeta %s!"
+
+msgid "No `%s.php` info found inside zip!"
+msgstr "No se encontró información en el archivo `%s.php` dentro del zip!"
+
+msgid "File is not a valid zip archive!"
+msgstr "El archivo no es un archivo zip válido!"
+
+msgid "Headless Mode"
+msgstr "Modo sin cabeza"
+
+msgid "Editor complete!"
+msgstr "Editor completado!"
+
+msgid "Seo optimization"
+msgstr "Optimización de SEO"
+
+msgid "Save flat-rate-shipping"
+msgstr "Guardar envío fijo"
+
+msgid "Free shipping"
+msgstr "Envío gratis"
+
+msgid "Cookie notice"
+msgstr "Aviso sobre cookies"
+
+msgid "Added by my plugin test"
+msgstr "Agregado por mi prueba de plug-in"
+
+msgid "Test plugin"
+msgstr "Plug-in de prueba"
+
+Here are the translations with some corrections:
+
+msgid "Validation error"
+msgstr "Error de validación"
+
+msgid "Plugin market"
+msgstr "Mercado de plug-ins"
+
+msgid "Import complete!"
+msgstr "Importación completa!"
+
+msgid "Markdown Import"
+msgstr "Importación de Markdown"
+
+msgid "Minify"
+msgstr "Minificar"
+
+msgid "Message was sent!"
+msgstr "La mensaje fue enviado!"
+
+msgid "Error sending message!"
+msgstr "Error al enviar el mensaje"
+
+msgid "Meta"
+msgstr "Metas"
+
+msgid "Theme market"
+msgstr "Mercado temático"
+
+msgid "Import Wordpress"
+msgstr "Importar WordPress"
+
+msgid "Error sending message"
+msgstr "Error al enviar el mensaje"
+
+msgid "Relations"
+msgstr "Relaciones"
+
+msgid "List"
+msgstr "Lista"
+
+msgid "Add Role"
+msgstr "Agregar rol"
+
+msgid "Custom posts"
+msgstr "Posteos personalizados"
+
+msgid "Custom products"
+msgstr "Productos personalizados"
+
+msgid "Subscription"
+msgstr "Suscripción"
+
+msgid "Return actions"
+msgstr "Acciones de devolución"
+
+msgid "Return reasons"
+msgstr "Motivos de devolución"
+
+msgid "Import content"
+msgstr "Importar contenido"
+
+msgid "Export content"
+msgstr "Exportar contenido"
+
+msgid "Update"
+msgstr "Actualización"
+
+msgid "%d comment"
+msgstr "%d comentario"
+
+msgid "%s must not be greater than 100"
+msgstr "%s no debe ser mayor que 100"
+
+msgid "Vendor not found!"
+msgstr "Proveedor no encontrado!"
+
+msgid "Category not found!"
+msgstr "Categoría no encontrada"
+
+msgid "Manufacturer not found!"
+msgstr "Fabricante no encontrado"
+
+msgid "Product not found!"
+msgstr "Producto no encontrado"
+
+msgid "Profile saved!"
+msgstr "Perfil guardado"
+
+msgid "User created!"
+msgstr "Usuario creado"
+
+msgid "Error sending account creation mail!"
+msgstr "Error al enviar correo de creación de cuenta"
+
+msgid "Your account has been created!"
+msgstr "Su cuenta ha sido creada"
+
+msgid "This email is already in use. Please use another one."
+msgstr "Este correo ya está en uso. Por favor, use otro."
+
+msgid "Error creating user!"
+msgstr "Error al crear usuario"
+
+Here are the translations:
+
+msgid "Logout successful!"
+msgstr "Desconexión exitosa!"
+
+msgid "Address saved!"
+msgstr "Dirección guardada!"
+
+msgid "Comment was posted!"
+msgstr "El comentario fue publicado!"
+
+msgid "Error adding comment!"
+msgstr "Error al agregar comentario!"
+
+msgid "Post not found!"
+msgstr "Publicación no encontrada!"
+
+msgid "Error creating account!"
+msgstr "Error creando cuenta!"
+
+msgid "Order placed!"
+msgstr "Pedido realizado!"
+
+msgid "Error sending order confirmation mail!"
+msgstr "Error enviando correo de confirmación del pedido!"
+
+msgid "Order confirmation #%s"
+msgstr "Confirmación del pedido #%s"
+
+msgid "Error creating checkout!"
+msgstr "Error creando caja de pago!"
+
+msgid "Server overload!"
+msgstr "Sobrecarga del servidor!"
+
+msgid "Cache purged!"
+msgstr "Cache limpio!"
+
+msgid "Unit Price"
+msgstr "Precio unitario"
+
+msgid "credit accordion-item"
+msgstr "item de acordeón de crédito"
+
+msgid "direct bank transfer"
+msgstr "transferencia bancaria directa"
+
+msgid "Enable"
+msgstr "Habilitar"
+
+msgid "Disable"
+msgstr "Desactivar"
+
+msgid "Product list"
+msgstr "Lista de productos"
+
+msgid "Save product"
+msgstr "Guardar producto"
+
+msgid "Table prefix"
+msgstr "Prefixo de la tabla"
+
+msgid "Edit post"
+msgstr "Editar publicación"
+
+msgid "Equipment"
+msgstr "Equipamiento"
+
+msgid "Max File Size"
+msgstr "Tamaño máximo del archivo"
+
+msgid "unapproved"
+msgstr "no aprobado"
+
+msgid "Blog page"
+msgstr "Página del blog"
+
+msgid "posts"
+msgstr "publicaciones"
+
+msgid "pages"
+msgstr "páginas"
+
+msgid "page"
+msgstr "página"
+
+msgid "Popular"
+msgstr ""
+
+msgid "Type for search"
+msgstr "Buscar"
+
+msgid "Bestsellers"
+msgstr "Lo más vendido"
+
+msgid "Shipping & Delivery"
+msgstr "Envío y entrega"
+
+msgid "Term of use"
+msgstr "Términos de uso"
+
+msgid "Subscribe"
+msgstr "Suscribirse"
+
+msgid "Copyright @"
+msgstr "Derechos de autor "
+
+msgid "All rights reserved"
+msgstr "Todos los derechos reservados"
+
+msgid "Total Users"
+msgstr "Usuarios totales"
+
+msgid "%d seconds"
+msgstr "%d segundos"
+
+msgid "%d minutes"
+msgstr "%d minutos"
+
+msgid "%d hours"
+msgstr "%d horas"
+
+msgid "%d days"
+msgstr "%d días"
+
+msgid "%d years"
+msgstr "%d años"
+
+msgid "%d decades"
+msgstr "%d décadas"
+
+msgid "%d centuries"
+msgstr "%d siglos"
+
+msgid " from now"
+msgstr "desde ahora"
+
+msgid "Checkout & payments"
+msgstr "Checkout y pagos"
