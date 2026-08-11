@@ -502,7 +502,22 @@ function slugify($text, $divider = '-') {
 	return $text;
 }
 
-if ((!defined('GETTEXT') || GETTEXT == true) && function_exists('_')) {
+function useNativeGettext() {
+	$enabled = (!defined('GETTEXT') || GETTEXT == true) && function_exists('gettext');
+
+	if (! $enabled) {
+		return false;
+	}
+
+	// Work around PHP-FPM gettext/libintl crashes on macOS.
+	if (PHP_OS_FAMILY == 'Darwin' && PHP_SAPI == 'fpm-fcgi') {
+		return false;
+	}
+
+	return true;
+}
+
+if (useNativeGettext()) {
 	function __($text, $plural = false, $count = false, $nocache = false) {
 
 		if ($plural) {
