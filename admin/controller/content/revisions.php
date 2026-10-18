@@ -30,17 +30,21 @@ use Vvveb\System\Images;
 use Vvveb\System\User\Admin;
 
 class Revisions extends Base {
-	protected $type = 'post';
+	protected string $type = 'post';
 
-	protected $object = 'post';
+	protected string $object = 'post';
 
-	//check for other modules permission like revision and editor to enable links like save/delete etc
-	protected $additionalPermissionCheck = ['content/revisions/save'];
+	/**
+	 * @var array<int, string> Additional modules to check permissions for.
+	 */
+	protected ?array $additionalPermissionCheck = ['content/revisions/save'];
 
-	function merge() {
-	}
-
-	function init() {
+	/**
+	 * Initializes the controller with revision and post model instances.
+	 *
+	 * @return string|null
+	 */
+	public function init(): ?string {
 		if (isset($this->request->get['type'])) {
 			$this->type = $this->request->get['type'];
 		}
@@ -63,8 +67,13 @@ class Revisions extends Base {
 		return parent::init();
 	}
 
-	function delete() {
-		$options = $this->options + $this->global;
+	/**
+	 * Deletes a revision by current options.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
+		$options        = $this->options + $this->global;
 		$editCapability = 'edit_other_posts';
 
 		if ($this->object == 'product') {
@@ -73,24 +82,28 @@ class Revisions extends Base {
 
 		if (Admin::hasCapability($editCapability)) {
 			unset($options['admin_id']);
-		} else {
 		}
 
 		$results = $this->revisions->delete($options);
 
 		if ($results) {
-			$message[] = __('Revision deleted!');
+			$this->view->success[] = __('Revision deleted!');
 		}
 
 		$this->response->setType('json');
-		$this->response->output($message);
+		$this->response->output($this->view->success ?? []);
 	}
 
-	function save() {
+	/**
+	 * Restores a revision's content to the current post.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$content = $this->request->post['content'] ?? false;
 
 		if ($content) {
-			$options = $this->options + $this->global;
+			$options        = $this->options + $this->global;
 			$editCapability = 'edit_other_posts';
 
 			if ($this->object == 'product') {
@@ -99,9 +112,7 @@ class Revisions extends Base {
 
 			if (Admin::hasCapability($editCapability)) {
 				unset($options['admin_id']);
-			} else {
 			}
-
 
 			$result = $this->post->editContent(
 				[$this->type . '_content' => ['content' => $content]] +
@@ -111,23 +122,29 @@ class Revisions extends Base {
 			if ($result) {
 				$this->view->success[] = ucfirst($this->type) . ' ' . __('saved') . '!';
 			} else {
-				$view->errors = [$post->error];
+				$this->view->errors[] = $this->post->error ?? __('Error saving!');
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function revision() {
+	/**
+	 * Returns a single revision's content as JSON.
+	 *
+	 * @return void
+	 */
+	public function revision(): void {
 		$editCapability = 'view_other_posts';
 
 		if ($this->object == 'product') {
 			$editCapability = 'view_other_products';
 		}
 
+		$this->options += $this->global;
+
 		if (Admin::hasCapability($editCapability)) {
 			unset($this->options['admin_id']);
-		} else {
 		}
 
 		$view     = $this->view;
@@ -144,11 +161,15 @@ class Revisions extends Base {
 		$this->response->output($revision);
 	}
 
-	function index() {
-		if (! isset($this->options[$this->object . '_id'])) {
+	/**
+	 * Lists all revisions for a post with post content and revision details.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		if (!isset($this->options[$this->object . '_id'])) {
 			$this->notFound();
 		}
-
 
 		$view           = $this->view;
 		$modelName      = $this->object . '_content_revision';
@@ -163,7 +184,6 @@ class Revisions extends Base {
 
 		if (Admin::hasCapability($editCapability)) {
 			unset($this->options['admin_id']);
-		} else {
 		}
 
 		$allOptions     = $this->options;
@@ -171,12 +191,12 @@ class Revisions extends Base {
 
 		$post      = $this->post->get($this->options); // post/product content
 
-		if (! isset($post[$this->object . '_id'])) {
-			return $this->notFound();
+		if (!isset($post[$this->object . '_id'])) {
+			$this->notFound();
 		}
 
 		if (isset($post['image'])) {
-			$post['image'] = $post['image'] = Images::image($post['image'], $this->object, 'thumb');
+			$post['image'] = Images::image($post['image'], $this->object, 'thumb');
 		}
 
 		$revisions = $this->revisions->getAll($allOptions); // all post/product revisions
