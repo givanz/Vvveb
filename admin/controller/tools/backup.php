@@ -32,18 +32,11 @@ use function Vvveb\url;
 
 class Backup extends Base {
 	/**
-	 * Database table names to process.
+	 * Backup folder path
 	 *
-	 * @var array<int|string, string>
+	 * @var string
 	 */
-	private array $tables = [];
-
-	/**
-	 * Current position in the backup/restore process.
-	 *
-	 * @var int
-	 */
-	private int $position = 0;
+	private string $dirBackup = '';
 
 	/**
 	 * Database instance.
@@ -57,8 +50,9 @@ class Backup extends Base {
 	 *
 	 * @return void
 	 */
-	function __construct() {
-		$this->db = Db::getInstance();
+	public function __construct() {
+		$this->db        = Db::getInstance();
+		$this->dirBackup = DIR_BACKUP . DS . 'db' . DS;
 	}
 
 	/**
@@ -66,7 +60,7 @@ class Backup extends Base {
 	 *
 	 * @return list<string>
 	 */
-	public function getTableNames() : array {
+	public function getTableNames(): array {
 		return $this->db->getTableNames();
 	}
 
@@ -77,13 +71,15 @@ class Backup extends Base {
 	 *
 	 * @return string The converted SQL statement.
 	 */
-	public function truncateTableSQL(string $sql) : string {
+	public function truncateTableSQL(string $sql): string {
 		if (DB_ENGINE == 'sqlite') {
 			$tableName = pregMatch('/TRUNCATE TABLE [`"\']?([^`"\';]+)[`"\']?;?/ms', $sql, 1);
 
-			$sql = preg_replace('/TRUNCATE TABLE [`"\']?([^`"\';]+)[`"\']?;?/ms',
+			$sql = preg_replace(
+				'/TRUNCATE TABLE [`"\']?([^`"\';]+)[`"\']?;?/ms',
 				"DELETE FROM '\\1';\nDELETE FROM SQLITE_SEQUENCE WHERE name='\\1';",
-				$sql);
+				$sql
+			);
 
 			if ($tableName == 'post_content') {
 				//$sql .= ';DELETE FROM \'post_content_search\';DELETE FROM SQLITE_SEQUENCE WHERE name=\'post_content_search\';';
@@ -100,9 +96,11 @@ class Backup extends Base {
 			return $sql;
 		} else {
 			if (DB_ENGINE == 'pgsql') {
-				$sql = preg_replace('/TRUNCATE TABLE [`"\']?([^`"\';]+)[`"\']?;?/ms',
+				$sql = preg_replace(
+					'/TRUNCATE TABLE [`"\']?([^`"\';]+)[`"\']?;?/ms',
 					'TRUNCATE TABLE "\1";',
-					$sql);
+					$sql
+				);
 			}
 		}
 
@@ -116,12 +114,13 @@ class Backup extends Base {
 	 *
 	 * @return string The converted SQL statement.
 	 */
-	public function insertSQL(string $sql) : string {
+	public function insertSQL(string $sql): string {
 		if (DB_ENGINE == 'pgsql') {
-			$sql = preg_replace_callback('/INSERT INTO .+?\) VALUES \(/ms',
-				function ($matches) {
-					return str_replace('`','"', $matches[0]);
-				}, $sql);
+			$sql = preg_replace_callback(
+				'/INSERT INTO .+?\) VALUES \(/ms',
+				fn ($matches) => str_replace('`', '"', $matches[0]),
+				$sql
+			);
 		}
 
 		return $sql;
@@ -131,12 +130,12 @@ class Backup extends Base {
 	 * Dump table data as INSERT statements with pagination.
 	 *
 	 * @param string $tableName The database table name to dump.
-	 * @param int $page The page number for pagination.
-	 * @param int $limit The number of rows per page.
+	 * @param int    $page      The page number for pagination.
+	 * @param int    $limit     The number of rows per page.
 	 *
 	 * @return string The SQL dump output.
 	 */
-	function getTableDump(string $tableName, int $page = 1, int $limit = 1000) : string {
+	public function getTableDump(string $tableName, int $page = 1, int $limit = 1000): string {
 		$output = '';
 
 		if ($page == 1) {
@@ -200,16 +199,20 @@ class Backup extends Base {
 	 *
 	 * @return void
 	 */
-	function nextBackup() : void {
-		$page      = $this->request->get['page'] ?? 1;
+	public function nextBackup(): void {
+		$page      = (int)($this->request->get['page'] ?? 1);
 		$table     = $this->request->get['table'] ?? false;
-		$position  = $this->request->get['position'] ?? 1;
-		$file      = $this->request->get['file'] ?? date('Y-m-d H:i:s');
+		$position  = (int)($this->request->get['position'] ?? 1);
+		$file      = sanitizeFileName($this->request->get['file'] ?? date('Y-m-d H:i:s'));
 		$tables    = $this->getTableNames();
-		$filename  =  DIR_BACKUP . $file . '.sql';
+		$filename  =  $this->dirBackup . $file . '.sql';
 
 		$count    = count($tables);
 		$position = (int)array_search($table, $tables);
+
+		if ($table !== false && !in_array($table, $tables, true)) {
+			$this->notFound('Invalid table!', 403);
+		}
 
 		$start     = microtime(true);
 		$elapsed   = 0;
@@ -228,7 +231,7 @@ class Backup extends Base {
 			$end     = microtime(true);
 			$elapsed = $end - $start;
 			//usleep(100000);
-			if (! $output) {
+			if (!$output) {
 				$page = 1;
 				$position++;
 			}
@@ -239,14 +242,14 @@ class Backup extends Base {
 		$tableName = $tables[$position] ?? false;
 
 		if ($tableName) {
-			$url = ['module'=>'tools/backup', 'action' => 'nextBackup', 'file' => $file, 'table' => $tableName, 'page' => $page, 'position' => $position, 'count' => $count];
+			$url = ['module' => 'tools/backup', 'action' => 'nextBackup', 'file' => $file, 'table' => $tableName, 'page' => $page, 'position' => $position, 'count' => $count];
 		} else {
 			$message = __('Backup finished!');
-			$url     = ['module'=>'tools/backup', 'success' => $message];
+			$url     = ['module' => 'tools/backup', 'success' => $message];
 		}
 
 		if ($this->request->isAjax()) {
-			die(json_encode($url + ['url' => url($url), 'page' => $page, 'position' => $position, 'count' => $count]));
+			exit(json_encode($url + ['url' => url($url), 'page' => $page, 'position' => $position, 'count' => $count]));
 		} else {
 			$this->redirect($url);
 
@@ -259,10 +262,10 @@ class Backup extends Base {
 	 *
 	 * @return void
 	 */
-	function nextRestore() : void {
+	public function nextRestore(): void {
 		$position  = $this->request->get['position'] ?? 0;
 		$file      = sanitizeFileName($this->request->get['file'] ?? '');
-		$filename  =  DIR_BACKUP . $file;
+		$filename  =  $this->dirBackup . $file;
 		$size 	    = filesize($filename);
 
 		$time      = microtime(true);
@@ -275,7 +278,7 @@ class Backup extends Base {
 		$isInsert = false;
 		$sql      = '';
 
-		while (! feof($handle) && ($i < 10000 || $start) && ($elapsed < 8 || $start)) {
+		while (!feof($handle) && ($i < 10000 || $start) && ($elapsed < 8 || $start)) {
 			$line = fgets($handle, 1000000);
 
 			if (substr($line, 0, 14) == 'TRUNCATE TABLE') {
@@ -303,8 +306,7 @@ class Backup extends Base {
 				if ($isInsert) {
 					$current = ftell($handle);
 
-					while (($peek = fgets($handle, 8)) && empty(trim($peek))) {
-					}
+					while (($peek = fgets($handle, 8)) && empty(trim($peek)));
 
 					if (feof($handle)) {
 						$isInsert = false;
@@ -319,7 +321,7 @@ class Backup extends Base {
 					}
 				}
 
-				if (! $isInsert) {
+				if (!$isInsert) {
 					$this->db->query($sql);
 					$sql   = '';
 					$start = false;
@@ -333,25 +335,25 @@ class Backup extends Base {
 
 		$position = ftell($handle);
 
-		$inProgress = $position && ! feof($handle);
+		$inProgress = $position && !feof($handle);
 		fclose($handle);
 
 		if ($inProgress) {
-			$url = ['module'=>'tools/backup', 'action' => 'nextRestore', 'file' => $file,  'table' => formatBytes($position) . ' - ' . formatBytes($size), 'position' => $position, 'count' => $size];
+			$url = ['module' => 'tools/backup', 'action' => 'nextRestore', 'file' => $file,  'table' => formatBytes($position) . ' - ' . formatBytes($size), 'position' => $position, 'count' => $size];
 
 			if ($this->request->isAjax()) {
-				die(json_encode($url + ['url' => url($url)]));
+				exit(json_encode($url + ['url' => url($url)]));
 			} else {
 				$this->redirect($url);
 
-				die('Processing');
+				exit('Processing');
 			}
 		} else {
 			$message = __('Restore finished!');
-			$url     = ['module'=>'tools/backup', 'success' => $message, 'table' => $message, 'position' => $position, 'count' => $size];
+			$url     = ['module' => 'tools/backup', 'success' => $message, 'table' => $message, 'position' => $position, 'count' => $size];
 
 			if ($this->request->isAjax()) {
-				die(json_encode($url + ['url' => url($url)]));
+				exit(json_encode($url + ['url' => url($url)]));
 			} else {
 				$this->redirect($url);
 				$this->view->info[] = $message;
@@ -365,11 +367,11 @@ class Backup extends Base {
 	 *
 	 * @return void
 	 */
-	function delete() : void {
+	public function delete(): void {
 		$file = sanitizeFileName($this->request->post['file'] ?? '');
 
 		if ($file) {
-			$file = DIR_BACKUP . $file;
+			$file = $this->dirBackup . $file;
 
 			if (file_exists($file)) {
 				if (unlink($file)) {
@@ -390,14 +392,14 @@ class Backup extends Base {
 	 *
 	 * @return void
 	 */
-	function restore() : void {
+	public function restore(): void {
 		$file = sanitizeFileName($this->request->post['file'] ?? '');
-		$url  = ['module'=>'tools/backup', 'action' => 'nextRestore', 'file' => $file];
+		$url  = ['module' => 'tools/backup', 'action' => 'nextRestore', 'file' => $file];
 
 		if ($file) {
-			if (file_exists(DIR_BACKUP . $file)) {
+			if (file_exists($this->dirBackup . $file)) {
 				if ($this->request->isAjax()) {
-					die(json_encode($url + ['url' => url($url)]));
+					exit(json_encode($url + ['url' => url($url)]));
 				} else {
 					$this->redirect($url);
 
@@ -407,7 +409,7 @@ class Backup extends Base {
 				$error = __('Backup does not exist!');
 
 				if ($this->request->isAjax()) {
-					die(json_encode($url + ['error' => $error]));
+					exit(json_encode($url + ['error' => $error]));
 				} else {
 					$this->view->errors[] = $error;
 
@@ -422,14 +424,14 @@ class Backup extends Base {
 	 *
 	 * @return void
 	 */
-	function download() : void {
+	public function download(): void {
 		$filename = sanitizeFileName($this->request->post['file'] ?? '');
 
 		if ($filename) {
-			$file = DIR_BACKUP . $filename;
+			$file = $this->dirBackup . $filename;
 
 			if (file_exists($file)) {
-				$fp = fopen($file, 'rb');
+				$fp = fopen($file, 'r');
 
 				header('Content-Type: text/plain');
 				header('Content-Length: ' . filesize($file));
@@ -451,11 +453,11 @@ class Backup extends Base {
 	 *
 	 * @return void
 	 */
-	function save() : void {
-		$url = ['module'=>'tools/backup', 'action' => 'nextBackup'];
+	public function save(): void {
+		$url = ['module' => 'tools/backup', 'action' => 'nextBackup'];
 
 		if ($this->request->isAjax()) {
-			die(json_encode($url + ['url' => url($url)]));
+			exit(json_encode($url + ['url' => url($url)]));
 		} else {
 			$this->redirect($url);
 
@@ -468,9 +470,9 @@ class Backup extends Base {
 	 *
 	 * @return void
 	 */
-	function index() : void {
+	public function index(): void {
 		$view        = $this->view;
-		$backupFiles = glob(DIR_BACKUP . '*');
+		$backupFiles = glob($this->dirBackup . '*');
 
 		$tableNames = $this->db->getTableNames();
 
@@ -484,13 +486,13 @@ class Backup extends Base {
 				'size_bytes'   => $size,
 				'size'         => formatBytes($size),
 				'created_at'   => date('Y/m/d H:i:s', filemtime($file)),
-				'restore-url'  => url(['module'=>'tools/backup', 'action' => 'restore']),
-				'download-url' => url(['module'=>'tools/backup', 'action' => 'download']),
-				'delete-url'   => url(['module'=>'tools/backup', 'action' => 'delete']),
+				'restore-url'  => url(['module' => 'tools/backup', 'action' => 'restore']),
+				'download-url' => url(['module' => 'tools/backup', 'action' => 'download']),
+				'delete-url'   => url(['module' => 'tools/backup', 'action' => 'delete']),
 			];
 		}
 
-		$view->backupUrl = url(['module'=>'tools/backup', 'action' => 'save']);
-		$view->backups  = $backups ?? [];
+		$view->backupUrl = url(['module' => 'tools/backup', 'action' => 'save']);
+		$view->backups   = $backups ?? [];
 	}
 }
