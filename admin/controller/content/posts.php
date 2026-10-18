@@ -28,17 +28,24 @@ use function Vvveb\humanReadable;
 use Vvveb\Sql\PostSQL;
 use Vvveb\System\Cache;
 use Vvveb\System\Images;
-use Vvveb\System\locale;
+use Vvveb\System\Locale;
 use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
 class Posts extends Listing {
-	protected $type = 'post';
+	protected string $type = 'post';
 
-	//check for other modules permission like post and editor to enable links like save/delete etc
-	protected $additionalPermissionCheck = ['content/post/save'];
+	/**
+	 * @var array<int, string> Additional modules to check permissions for (e.g. content/post/save).
+	 */
+	protected ?array $additionalPermissionCheck = ['content/post/save'];
 
-	function init() {
+	/**
+	 * Initializes the controller, setting the post type from the request.
+	 *
+	 * @return string|null
+	 */
+	public function init(): ?string {
 		if (isset($this->request->get['type'])) {
 			$this->type = $this->request->get['type'];
 		}
@@ -46,16 +53,37 @@ class Posts extends Listing {
 		return parent::init();
 	}
 
-	function duplicate() {
+	/**
+	 * Duplicates an existing post with all its content, taxonomy items, and sites.
+	 *
+	 * @return void
+	 */
+	public function duplicate(): void {
 		$post_id    = $this->request->post['post_id'] ?? false;
 
 		if ($post_id) {
 			$this->posts  = new PostSQL();
-			$data         = $this->posts->get(['post_id' => $post_id, 'type' => $this->type]);
+			$options      = ['post_id' => $post_id, 'type' => $this->type] + $this->global;
+
+			$editCapability = 'edit_other_posts';
+
+			if (Admin::hasCapability($editCapability)) {
+				unset($options['admin_id']);
+			}
+
+			$data         = $this->posts->get($options);
+
+			if (!$data) {
+				$this->view->errors[] = sprintf(__('%s not found!'), ucfirst($this->type));
+				$this->index();
+
+				return;
+			}
+
 			$old_id       = $data['post_id'];
 
 			unset($data['post_id']);
-			$id = rand(1, 1000);
+			$id = random_int(1, 1000000);
 
 			foreach ($data['post_content'] as &$content) {
 				unset($content['post_id']);
@@ -64,10 +92,14 @@ class Posts extends Listing {
 			}
 
 			if (isset($data['post_to_taxonomy_item'])) {
+				$taxonomy_item_id = [];
+
 				foreach ($data['post_to_taxonomy_item'] as &$item) {
 					$taxonomy_item_id[] = $item['taxonomy_item_id'];
 				}
 			}
+
+			$site_id = [];
 
 			if (isset($data['post_to_site'])) {
 				foreach ($data['post_to_site'] as &$item) {
@@ -93,15 +125,20 @@ class Posts extends Listing {
 					//$this->session->set('success', $success);
 					//$this->redirect(['module' => 'content/posts', 'type' => $this->type], [], false);
 				} else {
-					$this->view->errors[] = sprintf(__('Error duplicating %s!'),  $this->type);
+					$this->view->errors[] = sprintf(__('Error duplicating %s!'), $this->type);
 				}
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function delete() {
+	/**
+	 * Deletes one or more posts by ID.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
 		$post_id    = $this->request->post['post_id'] ?? false;
 
 		if ($post_id) {
@@ -109,7 +146,7 @@ class Posts extends Listing {
 				$post_id = [$post_id];
 			}
 
-			$this->posts   = new postSQL();
+			$this->posts   = new PostSQL();
 			$options       = [
 				'post_id' => $post_id, 'type' => $this->type,
 			] + $this->global;
@@ -118,7 +155,6 @@ class Posts extends Listing {
 
 			if (Admin::hasCapability($editCapability)) {
 				unset($options['admin_id']);
-			} else {
 			}
 
 			$result  = $this->posts->delete($options);
@@ -126,25 +162,32 @@ class Posts extends Listing {
 			if ($result && isset($result['post'])) {
 				$this->view->success[] = ucfirst($this->type) . __(' deleted!');
 			} else {
-				$this->view->errors[] = sprintf(__('Error deleting %s!'),  $this->type);
+				$this->view->errors[] = sprintf(__('Error deleting %s!'), $this->type);
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function archives($options) {
+	/**
+	 * Returns archived posts grouped by year/month.
+	 *
+	 * @param array<string, mixed> $options Query options.
+	 *
+	 * @return array<string, string> Archive entries keyed by year/month.
+	 */
+	public function archives(array $options): array {
 		$options['interval'] = 'month';
 
 		$archives = $this->posts->getArchives($options);
 
 		$return = [];
 
-		$df	= false;
+		$df	 = false;
 
 		if (class_exists('\IntlDateFormatter')) {
 			$dt = new \DateTime();
-			$df = new \IntlDateFormatter(Locale::getLanguage(), \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, NULL, NULL, 'MMMM');
+			$df = new \IntlDateFormatter(Locale::getLanguage(), \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, null, null, 'MMMM');
 		}
 
 		foreach ($archives['archives'] as $index => &$archive) {
@@ -156,10 +199,10 @@ class Posts extends Listing {
 				$archive['month_text'] = $monthNum;
 
 				if ($df) {
-					$archive['month_text'] = ucfirst(datefmt_format($df, $dt));
 					$dt->setDate(0, $archive['month'], 0);
+					$archive['month_text'] = ucfirst(datefmt_format($df, $dt));
 				} else {
-					$archive['month_text'] = date('F',mktime(0,0,0,$monthNum,1,$archive['year']));
+					$archive['month_text'] = date('F', mktime(0, 0, 0, $monthNum, 1, $archive['year']));
 				}
 			}
 
@@ -172,6 +215,7 @@ class Posts extends Listing {
 
 			$return[$archive['year'] . '/' . $archive['month']] = $name;
 		}
+
 		/*
 				$return = [];
 
@@ -200,9 +244,14 @@ class Posts extends Listing {
 		return $return;
 	}
 
-	function index() {
+	/**
+	 * Lists all posts with filtering, archive links, and capability-based access control.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$view        = $this->view;
-		$this->posts = new postSQL();
+		$this->posts = new PostSQL();
 
 		$this->type   = $this->request->get['type'] ?? 'post';
 		$this->filter = array_filter($this->request->get['filter'] ?? []);
@@ -220,8 +269,8 @@ class Posts extends Listing {
 
 		$options += $this->filter;
 
-		//override admin if admin_id filter set
-		if (isset($this->filter['admin_id'])) {
+		//override admin only for users that can view other authors posts
+		if (Admin::hasCapability('view_other_posts') && isset($this->filter['admin_id'])) {
 			$options['admin_id'] = $this->filter['admin_id'];
 		}
 
@@ -249,13 +298,13 @@ class Posts extends Listing {
 					$post['image'] = Images::image($post['image'], 'post');
 				}
 
-				if (! $post['name'] && ($post['language_id'] != $this->global['default_language_id'])) {
+				if (!$post['name'] && ($post['language_id'] != $this->global['default_language_id'])) {
 					$post['name'] = '[' . __('No translation') . ']';
 				}
 
 				$url                   = ['module' => 'content/post', 'post_id' => $post['post_id'], 'type' => $post['type']];
 				$adminPath             = \Vvveb\adminPath();
-				$template              = $post['template'] ? $post['template'] : $defaultTemplate;
+				$template              = $post['template'] ?: $defaultTemplate;
 				$post['url']           = url($url);
 				$post['edit-url']      = $post['url'];
 				$post['admin-url']     = url(['module' => 'content/posts']) . '&type=' . $this->type . '&filter[admin_id_text]=' . $post['username'] . ' &filter[admin_id]=' . $post['admin_id'];
@@ -263,16 +312,20 @@ class Posts extends Listing {
 				$post['duplicate-url'] = url(['module' => 'content/posts', 'action' => 'duplicate'] + $url); // + ['post_id' => $post['post_id']]);
 				$post['view-url']      = url("content/{$this->type}/index", $post + $url + ['host' => $this->global['host'], 'path' => $this->global['path'] ? '/' . $this->global['path'] : null]);
 				$relativeUrl           = url("content/{$this->type}/index", $post + $url);
-				$post['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($post['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template], false);
+				$post['design-url']    = url(['module' => 'editor/page-builder', 'name' => urlencode($post['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template], false);
 			}
 		}
 
 		//archives for filter
 		$cache    = Cache::getInstance();
-		$archives = $cache->cache('posts',"archives.{$this->type}.{$this->global['site_id']}" ,
-			function () use (&$options) {
-				return $this->archives($options) ?? [];
-			}, 259200);
+		$archives = $cache->cache(
+			'posts',
+			"archives.{$this->type}.{$this->global['site_id']}",
+			function() use (&$options) {
+				return $this->archives($options);
+			},
+			259200
+		);
 
 		$view->set($results);
 		$view->status           = ['publish' => __('Publish'), 'pending' => __('Pending'), 'draft' => __('Draft'), 'private' => __('Private'), 'password' => __('Password'), 'scheduled' => __('Scheduled')];

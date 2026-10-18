@@ -25,6 +25,9 @@ namespace Vvveb\Controller\Product;
 use function Vvveb\__;
 use Vvveb\Controller\Listing;
 use function Vvveb\humanReadable;
+use Vvveb\Sql\Product_option_valueSQL;
+use Vvveb\Sql\Product_optionSQL;
+use Vvveb\Sql\Product_variantSQL;
 use Vvveb\Sql\ProductSQL;
 use Vvveb\System\Core\View;
 use Vvveb\System\Images;
@@ -32,12 +35,17 @@ use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
 class Products extends Listing {
-	protected $type = 'product';
+	protected string $type = 'product';
 
-	//check for other modules permission like post and editor to enable links like save/delete etc
-	protected $additionalPermissionCheck = ['product/product/save'];
+	/** @var list<string> Check for other modules permission like post and editor to enable links like save/delete etc */
+	protected ?array $additionalPermissionCheck = ['product/product/save'];
 
-	function init() {
+	/**
+	 * Initialize the controller, setting the type from request if present.
+	 *
+	 * @return string|null
+	 */
+	public function init(): ?string {
 		if (isset($this->request->get['type'])) {
 			$this->type = $this->request->get['type'];
 		}
@@ -45,15 +53,35 @@ class Products extends Listing {
 		return parent::init();
 	}
 
-	function duplicate() {
+	/**
+	 * Duplicate a product by its ID.
+	 *
+	 * @return void
+	 */
+	public function duplicate(): void {
 		$product_id    = $this->request->post['product_id'] ?? false;
 
 		if ($product_id) {
 			$this->products   = new ProductSQL();
-			$data             = $this->products->get(['product_id' => $product_id, 'type' => $this->type]);
+			$options          = ['product_id' => $product_id, 'type' => $this->type] + $this->global;
+
+			$editCapability = 'edit_other_products';
+
+			if (Admin::hasCapability($editCapability)) {
+				unset($options['admin_id']);
+			}
+
+			$data = $this->products->get($options);
+
+			if (!$data) {
+				$this->view->errors[] = sprintf(__('%s not found!'), ucfirst($this->type));
+				$this->index();
+
+				return;
+			}
 
 			unset($data['product_id']);
-			$id = rand(1, 1000);
+			$id = mt_rand(1, 1000);
 
 			foreach ($data['product_content'] as &$content) {
 				unset($content['product_id']);
@@ -61,11 +89,15 @@ class Products extends Listing {
 				$content['slug'] .= '-' . __('duplicate') . "-$id";
 			}
 
+			$taxonomy_item_id = [];
+
 			if (isset($data['product_to_taxonomy_item'])) {
 				foreach ($data['product_to_taxonomy_item'] as &$item) {
 					$taxonomy_item_id[] = $item['taxonomy_item_id'];
 				}
 			}
+
+			$site_id = [];
 
 			if (isset($data['product_to_site'])) {
 				foreach ($data['product_to_site'] as &$item) {
@@ -77,7 +109,7 @@ class Products extends Listing {
 				$result = $this->products->add([
 					'product'          => $data,
 					'product_content'  => $data['product_content'],
-					'taxonomy_item_id' => $taxonomy_item_id ?? [],
+					'taxonomy_item_id' => $taxonomy_item_id,
 					'site_id'          => $site_id,
 				]);
 
@@ -90,7 +122,75 @@ class Products extends Listing {
 						foreach ($data['product_image'] as $image) {
 							$product_image[] = $image['image'];
 						}
-						$images = $this->products->productImage(['product_image' => $product_image, 'product_id' => $product_id]);
+						$this->products->productImage(['product_image' => $product_image, 'product_id' => $product_id]);
+					}
+
+					$optionSQL               = new Product_optionSQL();
+					$productoptionvalueSQL   = new Product_option_valueSQL();
+
+					$product_option_map       = [];
+					$product_option_value_map = [];
+					if (isset($data['product_option'])) {
+						foreach ($data['product_option'] as $i => $opt) {
+							$opt['product_id'] = $product_id;
+							$product_option_id = $opt['product_option_id'];
+							// new option
+							unset($opt['product_option_id']);
+							$result = $optionSQL->add(['product_option' => $opt] + $this->global);
+
+							if ($result && $result['product_option']) {
+								//set new id to use for option values
+								$opt['product_option_id']               = $result['product_option'];
+								$product_option_map[$product_option_id] = $result['product_option'];
+							}
+
+							if (isset($data['product_option_value'])) {
+								foreach ($data['product_option_value'] as $j => $value) {
+									//values only for this option
+									if ($product_option_id != $value['product_option_id']) {
+										continue;
+									}
+									$product_option_value_id = $value['product_option_value_id'];
+									//set parent option id
+									$value['product_option_id'] = $opt['product_option_id'];
+									$value['option_id']         = $opt['option_id'];
+									$value['product_id']        = $product_id;
+
+									unset($value['product_option_value_id']);
+									$result = $productoptionvalueSQL->add(['product_option_value' => $value] + $this->global);
+
+									if ($result && $result['product_option_value']) {
+										$product_option_value_map[$product_option_value_id] = $result['product_option_value'];
+									}
+								}
+							}
+						}
+					}
+
+					$variantSQL = new Product_variantSQL();
+
+					if (isset($data['product_variant'])) {
+						foreach ($data['product_variant'] as $i => $opt) {
+							$opt['product_id'] = $product_id;
+							unset($opt['product_variant_id']);
+
+							$options = explode(',', $opt['options']);
+							foreach ($options as &$el) {
+								$vals    = explode(':', $el);
+								$vals[0] = $product_option_map[$vals[0]];
+								$vals[1] = $product_option_value_map[$vals[1]];
+								$el      = implode(':', $vals);
+							}
+
+							$opt['options'] = implode(',', $options);
+
+							$result = $variantSQL->add(['product_variant' => $opt] + $this->global);
+
+							if ($result && $result['product_variant']) {
+								//set new id to use for variant values
+								$opt['product_variant_id'] = $result['product_variant'];
+							}
+						}
 					}
 
 					$url = url(['module' => 'product/product', 'product_id' => $product_id, 'type' => $this->type]);
@@ -101,16 +201,21 @@ class Products extends Listing {
 					$this->session->set('success', $success);
 					$this->redirect(['module' => 'product/products'], [], false);
 				} else {
-					$this->view->errors[] = sprintf(__('Error duplicating %s!'),  $this->type);
+					$this->view->errors[] = sprintf(__('Error duplicating %s!'), $this->type);
 				}
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function delete() {
-		$product_id    = $this->request->post['product_id'];
+	/**
+	 * Delete one or more products.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
+		$product_id    = $this->request->post['product_id'] ?? [];
 
 		if ($product_id) {
 			if (is_numeric($product_id)) {
@@ -124,7 +229,6 @@ class Products extends Listing {
 
 			if (Admin::hasCapability($editCapability)) {
 				unset($options['admin_id']);
-			} else {
 			}
 
 			$result   = $products->delete($options);
@@ -136,11 +240,16 @@ class Products extends Listing {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
-		$view     = View :: getInstance();
+	/**
+	 * Display the products listing page.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$view     = View::getInstance();
 		$products = new ProductSQL();
 
 		$this->filter = array_filter($this->request->get['filter'] ?? []);
@@ -154,7 +263,7 @@ class Products extends Listing {
 		}
 
 		$options = [
-			'type'        => $this->type,
+			'type' => $this->type,
 		] + $this->global;
 
 		if (Admin::hasCapability('view_other_products')) {
@@ -179,7 +288,7 @@ class Products extends Listing {
 		if ($results && isset($results['product'])) {
 			foreach ($results['product'] as $id => &$product) {
 				if (isset($product['images'])) {
-					$product['images'] = json_decode($product['images'], 1);
+					$product['images'] = json_decode($product['images'], true);
 
 					foreach ($product['images'] as &$image) {
 						$image = Images::image($image, 'product');
@@ -190,11 +299,10 @@ class Products extends Listing {
 					}
 				}
 
-				if (! $product['name'] && ($product['language_id'] != $this->global['default_language_id'])) {
+				if (!$product['name'] && ($product['language_id'] != $this->global['default_language_id'])) {
 					$product['name'] = '[' . __('No translation') . ']';
 				}
 
-				$adminPath                = \Vvveb\adminPath();
 				$url                      = ['module' => 'product/product', 'product_id' => $product['product_id'], 'type' => $product['type']];
 				$template                 = (isset($product['template']) && $product['template']) ? $product['template'] : $defaultTemplate;
 				$product['url']           = url($url);
@@ -203,7 +311,7 @@ class Products extends Listing {
 				$product['duplicate-url'] = url(['module' => 'product/products', 'action' => 'duplicate'] + $url); // + ['product_id' => $product['product_id']]);
 				$product['view-url']      = url('product/product/index', $product + $url + ['host' => $this->global['host'], 'path' => $this->global['path'] ? '/' . $this->global['path'] : null]);
 				$relativeUrl              = url('product/product/index', $product + $url);
-				$product['design-url']    = url(['module' => 'editor/editor', 'name' => urlencode($product['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template], false);
+				$product['design-url']    = url(['module' => 'editor/page-builder', 'name' => urlencode($product['name'] ?? ''), 'url' => $relativeUrl, 'template' => $template], false);
 			}
 		}
 
