@@ -5,12 +5,12 @@
 	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (admin_auth_token_id) for cursor pagination
 		IN admin_id INT,
 		IN updated_at CHAR,
 		
 		-- return array of admin_auth_token 
 		OUT fetch_all,
-		-- return admin_auth_token count for count query
 		OUT fetch_one
 	)
 	BEGIN
@@ -27,12 +27,22 @@
 				AND admin_auth_token.updated_at = :updated_at
         	END @IF	
 
+			-- cursor pagination
+
+			@IF isset(:cursor)
+
+			THEN
+
+			    AND admin_auth_token.admin_auth_token_id > :cursor
+
+			END @IF
+
 			ORDER BY admin_auth_token.admin_id, admin_auth_token.updated_at
 			
 			-- limit
 			@IF isset(:limit)
 			THEN
-				@SQL_LIMIT(:start, :limit)
+				LIMIT :limit OFFSET :start
 			END @IF;		
 
 		-- SELECT FOUND_ROWS() as count;
@@ -101,8 +111,8 @@
 	-- Add new admin_auth_token
 
 	CREATE PROCEDURE add(
-		IN admin_auth_token ARRAY,
-		OUT insert_id
+		IN admin_auth_token ROW,
+		OUT fetch_one
 	)
 	BEGIN
 		
@@ -113,7 +123,8 @@
 			
 			( @KEYS(:admin_auth_token) )
 			
-	  	VALUES ( :admin_auth_token )	 
+	  	VALUES ( :admin_auth_token )
+		RETURNING admin_auth_token_id;
 	END    
     
 
@@ -121,8 +132,8 @@
 	
 	CREATE PROCEDURE edit(
 		IN admin_id INT,
-		IN admin_auth_token ARRAY,
-		OUT fetch_one
+		IN admin_auth_token ROW,
+		OUT affected_rows
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
@@ -138,10 +149,12 @@
 	
 	CREATE PROCEDURE update(
 		IN admin_id INT,
-		IN admin_auth_token ARRAY,
-		OUT fetch_one
+		IN admin_auth_token ROWS,
+		OUT affected_rows
 	)
 	BEGIN
+		-- allow only table fields and set defaults for missing values (array mode: filter each row)
+		:admin_auth_token = @FILTER(:admin_auth_token, admin_auth_token, false, true)
 
 		@EACH(:admin_auth_token) 
 			INSERT INTO admin_auth_token 
@@ -155,11 +168,9 @@
 
 	-- delete admin_auth_token
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN admin_id INT,
 		IN admin_auth_token_id ARRAY,
-		IN updated_at CHAR,
-		IN count INT,
 
 		OUT affected_rows
 	)
