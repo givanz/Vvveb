@@ -31,9 +31,19 @@ use Vvveb\System\User\Admin;
 class Code extends Base {
 	use MediaTrait;
 
-	protected $saveDenyExtensions = ['php', 'tpl', 'svg', 'js', 'exe', 'html', 'phtml', 'htaccess', 'phar'];
+	/**
+	 * @var array<int, string> File extensions denied for saving by non-admin roles.
+	 */
+	protected array $saveDenyExtensions = ['php', 'tpl', 'svg', 'js', 'exe', 'html', 'phtml', 'htaccess', 'phar'];
 
-	function dirForType($type) {
+	/**
+	 * Returns the base directory path for a given type.
+	 *
+	 * @param string $type The type (public, plugins, themes).
+	 *
+	 * @return string|false The directory path or false if invalid.
+	 */
+	public function dirForType(string $type): string|false {
 		switch ($type) {
 			case 'public':
 				$scandir = DIR_MEDIA;
@@ -57,19 +67,29 @@ class Code extends Base {
 		return $scandir;
 	}
 
-	function init() {
+	/**
+	 * Initializes the controller, setting the media directory based on type.
+	 *
+	 * @return string|null
+	 */
+	public function init(): ?string {
 		$type           = $this->request->get['type'] ?? false;
 		$this->dirMedia = $this->dirForType($type);
 
 		return parent::init();
 	}
 
-	function index() {
+	/**
+	 * Main index action - sets up the code editor view with load/save endpoints.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$type           = $this->request->get['type'] ?? false;
 		$admin_path     = \Vvveb\adminPath();
 		$controllerPath = $admin_path . 'index.php?module=editor/code';
 
-		if (! $type) {
+		if (!$type) {
 			return;
 		}
 
@@ -79,14 +99,19 @@ class Code extends Base {
 		$this->view->saveUrl     = "$controllerPath&action=save&type=$type";
 		$this->view->type        = $type;
 
-		if ($type) {
-			$this->view->mediaPath   = str_replace('/media', "/$type", $this->view->mediaPath);
-		}
+		$this->view->mediaPath   = str_replace('/media', "/$type", $this->view->mediaPath);
 	}
 
-	function sanitizeFileName($file, $type) {
-		if (V_SUBDIR_INSTALL && strpos($file, V_SUBDIR_INSTALL) === 0) {
-			//$path  = str_replace(V_SUBDIR_INSTALL, '', $path);
+	/**
+	 * Sanitizes and validates a file path for the given type.
+	 *
+	 * @param string $file The raw file path.
+	 * @param string $type The file type (public, plugins, themes).
+	 *
+	 * @return string|false The sanitized full path or false if invalid.
+	 */
+	public function sanitizeFileName(string $file, string $type): string|false {
+		if (V_SUBDIR_INSTALL && str_starts_with($file, V_SUBDIR_INSTALL)) {
 			$file  = substr_replace($file, '', 0, strlen(V_SUBDIR_INSTALL));
 		}
 
@@ -107,14 +132,20 @@ class Code extends Base {
 		$file = $dir . $file;
 		$file = sanitizeFileName($file);
 
-		if (strncmp(realpath($file), $dir, strlen($dir)) !== 0) {
+		$real = realpath($file);
+		if ($real === false || strncmp($real, $dir, strlen($dir)) !== 0) {
 			return false;
 		}
 
 		return $file;
 	}
 
-	function save() {
+	/**
+	 * Saves a code file with permission and extension checks.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$type     = $this->request->get['type'];
 		$filename = $this->request->get['file'];
 		$content  = $this->request->post['content'];
@@ -126,15 +157,15 @@ class Code extends Base {
 		if ($file) {
 			$extension = strtolower(substr($file, strrpos($file, '.') + 1));
 
-			if (in_array($extension, $this->saveDenyExtensions) && (($admin = Admin::current()) && ! in_array($admin['role'], ['super_admin', 'admin']))) {
+			if (in_array($extension, $this->saveDenyExtensions) && (($admin = Admin::current()) && !in_array($admin['role'], ['super_admin', 'admin']))) {
 				$message = sprintf(__('Saving not allowed for file type %s for this role!'), trim($extension, '.'));
 				$success = false;
 			} else {
-				if ($extension == 'php' || $this->isExecutableFile($file)) {
+				if (str_starts_with($extension, 'php')) {
 					$message .= sprintf(__('File type %s not allowed!'), 'PHP');
 					$success = false;
 				} else {
-					if (! is_writable($file)) {
+					if (!is_writable($file)) {
 						$message = sprintf(__('File not writable: %s Check if file has write permission.'), $filename);
 						$success = false;
 					} else {
@@ -152,32 +183,42 @@ class Code extends Base {
 		$this->response->output($output);
 	}
 
-	function loadFile() {
+	/**
+	 * Loads and outputs a file's content.
+	 *
+	 * @return never
+	 */
+	public function loadFile(): never {
 		$type = $this->request->get['type'];
 		$file = $this->request->get['file'];
 		$file = $this->sanitizeFileName($file, $type);
 
-		if (! is_readable($file)) {
-			die("File not readable: $file");
+		if (!is_readable($file)) {
+			exit("File not readable: $file");
 		}
 
 		if ($content = file_get_contents($file)) {
-			die($content);
+			exit($content);
 		}
 
-		die("Error loading: $file");
+		exit("Error loading: $file");
 	}
 
-	function scan() {
+	/**
+	 * Scans a directory tree recursively and outputs the result as JSON.
+	 *
+	 * @return void
+	 */
+	public function scan(): void {
 		$type          = $this->request->get['type'] ?? 'public';
 		$scandir       = $this->dirForType($type);
 
-		if (! $scandir) {
-			return [];
+		if (!$scandir) {
+			return;
 		}
 
 		// This function scans the files folder recursively, and builds a large array
-		$scan = function ($dir) use ($scandir, &$scan) {
+		$scan = function(string $dir) use ($scandir, &$scan): array {
 			$files = [];
 
 			// Is there actually such a folder/file?
@@ -187,7 +228,7 @@ class Code extends Base {
 
 				if ($listdir) {
 					foreach ($listdir as $f) {
-						if (! $f || $f[0] == '.' || $f == 'node_modules' || $f == 'vendor') {
+						if (!$f || $f[0] == '.' || $f == 'node_modules' || $f == 'vendor') {
 							continue; // Ignore hidden files
 						}
 
