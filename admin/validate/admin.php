@@ -42,7 +42,7 @@ return [
 	'email' => [
 		'email' => '',
 	],
-	/*	
+	/*
 	'captcha' => [
 			['captcha' => ''],
 	],	*/

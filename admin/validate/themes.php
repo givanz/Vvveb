@@ -29,16 +29,16 @@ return [
 			 'message' => __('%s must not be greater than %d')*/,
 	],
 	'taxonomy_item_id' => [
-		'optional'  => '',
+		'optional' => '',
 	],
 	'search' => [
-		'optional'  => '',
+		'optional' => '',
 	],
 	'browse' => [
 		'allowedValues' => ['popular', 'featured', 'updated', 'new'],
 	],
 
-	/*	
+	/*
 	'captcha' => [
 			['captcha' => ''],
 	],	*/

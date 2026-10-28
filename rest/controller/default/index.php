@@ -26,10 +26,14 @@ use Vvveb\Controller\Listing;
 
 #[\AllowDynamicProperties]
 class Index extends Listing {
-	protected $type = '';
-	
-	function __construct() {
-		$urlData     = \Vvveb\System\Routes::getUrlData();		
-		$this->type = $urlData['schema'];
+	/** @var string The resource type/schema name */
+	protected string $type = '';
+
+	/**
+	 * Constructor - resolves the resource type from the URL data.
+	 */
+	public function __construct() {
+		$urlData     = \Vvveb\System\Routes::getUrlData();
+		$this->type  = $urlData['schema'];
 	}
 }

@@ -22,72 +22,107 @@
 
 namespace Vvveb\Controller;
 
-use function \Vvveb\arrayKeysToCamelCase;
-use function \Vvveb\arrayKeysToUnderscore;
-use function \Vvveb\camelToUnderscore;
-use function \Vvveb\controller;
-use function \Vvveb\isController;
-use function \Vvveb\isModel;
-use function \Vvveb\model;
 use GraphQL\Error\DebugFlag;
 use GraphQL\GraphQL;
 use GraphQL\Language\Parser;
-use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Utils\AST;
 use GraphQL\Utils\BuildSchema;
+use function Vvveb\arrayKeysToCamelCase;
+use function Vvveb\arrayKeysToUnderscore;
+use function Vvveb\camelToUnderscore;
+use function Vvveb\controller;
+use function Vvveb\isController;
+use function Vvveb\isModel;
+use function Vvveb\model;
 use Vvveb\System\Event;
 
 class PostConnection {
-	public $nodes;
+	/** @var mixed */
+	public mixed $nodes = null;
 
-	public $PageInfo = [];
+	/** @var array<string, mixed> */
+	public array $PageInfo = [];
 }
 
 #[\AllowDynamicProperties]
 class Index extends Base {
-	protected $stack = [];
+	/** @var array<int, array<int, array<string, mixed>>> */
+	protected array $stack = [];
 
-	protected $queryIndex = -1;
+	/** @var int Current query index in the stack */
+	protected int $queryIndex = -1;
 
-	//protected $currentQuery = -1;
-	protected $stackIndex = 0;
+	/** @var int Current stack index */
+	protected int $stackIndex = 0;
 
-	protected $schema = [];
+	/** @var \GraphQL\Type\Schema|null GraphQL schema instance */
+	protected mixed $schema = null;
 
-	protected $args = [];
+	/** @var array<string, mixed> Current resolved arguments */
+	protected array $args = [];
 
-	protected $returnIsList = false;
+	/** @var bool Whether the current return type is a list */
+	protected bool $returnIsList = false;
 
-	protected $queries = [];
+	/** @var array<string, callable> Custom query resolvers */
+	protected array $queries = [];
 
-	protected $mutations = [];
+	/** @var array<string, callable> Custom mutation resolvers */
+	protected array $mutations = [];
 
-	protected $types = [];
+	/** @var array<string, callable> Custom type resolvers */
+	protected array $types = [];
 
-	protected $transforms = [
+	/** @var array<string, string> Transform class mappings */
+	protected array $transforms = [
 		'post'    => 'Vvveb\Transform\Post',
 		'product' => 'Vvveb\Transform\Product',
 	];
 
-	function queries() {
-		list($this->queries) = Event::trigger(__CLASS__, __FUNCTION__, $this->queries);
+	/**
+	 * Register custom query resolvers via event trigger.
+	 *
+	 * @return void
+	 */
+	public function queries(): void {
+		[$this->queries] = Event::trigger(__CLASS__, __FUNCTION__, $this->queries);
 	}
 
-	function mutations() {
-		list($this->mutations) = Event::trigger(__CLASS__, __FUNCTION__, $this->mutations);
+	/**
+	 * Register custom mutation resolvers via event trigger.
+	 *
+	 * @return void
+	 */
+	public function mutations(): void {
+		[$this->mutations] = Event::trigger(__CLASS__, __FUNCTION__, $this->mutations);
 	}
 
-	function types() {
-		list($this->types) = Event::trigger(__CLASS__, __FUNCTION__, $this->types);
+	/**
+	 * Register custom type resolvers via event trigger.
+	 *
+	 * @return void
+	 */
+	public function types(): void {
+		[$this->types] = Event::trigger(__CLASS__, __FUNCTION__, $this->types);
 	}
 
-	function transforms() {
-		list($this->transforms) = Event::trigger(__CLASS__, __FUNCTION__, $this->transforms);
+	/**
+	 * Register custom transforms via event trigger.
+	 *
+	 * @return void
+	 */
+	public function transforms(): void {
+		[$this->transforms] = Event::trigger(__CLASS__, __FUNCTION__, $this->transforms);
 	}
 
-	function init() {
+	/**
+	 * Initialize the GraphQL controller by registering types, queries, mutations, and transforms.
+	 *
+	 * @return string|null
+	 */
+	public function init(): ?string {
 		$this->types();
 		$this->queries();
 		$this->mutations();
@@ -96,56 +131,65 @@ class Index extends Base {
 		return parent::init();
 	}
 
-	function cascadeOptions() {
-	}
+	/**
+	 * Placeholder for cascading options.
+	 *
+	 * @return void
+	 */
+	public function cascadeOptions(): void {}
 
-	function model($typeName, $isConnection = false) {
-		$page      = 1;
-		$limit     = 10;
+	/**
+	 * Retrieve model data by type name, optionally as a connection (paginated).
+	 *
+	 * @param string $typeName
+	 * @param bool   $isConnection
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function model(string $typeName, bool $isConnection = false): array {
 		$data      = [];
 		$typeName  = camelToUnderscore($typeName, '_');
 		$options   = $this->args + $this->global;
+		$limit     = max(1, (int)($options['limit'] ?? 10));
+		$start     = max(0, (int)($options['start'] ?? 0));
+		$page      = (int)floor($start / $limit) + 1;
 
-		if (! isModel($typeName, 'admin')) {
+		if (!isModel($typeName, 'admin')) {
 			return $data;
 		}
 
 		$type = model($typeName);
 
-		if ($type) {
-			$transform = null;
+		$transform = null;
 
-			if (isset($this->transforms[$typeName])) {
-				$class     = $this->transforms[$typeName];
-				$transform = new $class();
-			}
+		if (isset($this->transforms[$typeName])) {
+			$class     = $this->transforms[$typeName];
+			$transform = new $class();
+		}
 
-			if ($this->returnIsList || $isConnection) {
-				$data = $type->getAll($options);
-				$data = $data[$typeName] ?? [];
+		if ($this->returnIsList || $isConnection) {
+			$allData   = $type->getAll($options);
+			$count     = $allData['count'] ?? 0;
+			$data      = $allData[$typeName] ?? [];
 
-				if ($transform) {
-					error_log(print_r($options, 1));
-					$data = $transform->getAll($data, $options);
-				}
-			} else {
-				$data = $type->get($options);
-
-				if ($transform) {
-					$data = $transform->get($data, $options);
-				}
+			if ($transform) {
+				$data = $transform->getAll($data, $options);
 			}
 		} else {
-			throw new \Exception('Model does not exist!');
+			$data = $type->get($options);
+
+			if ($transform) {
+				$data = $transform->get($data, $options);
+			}
 		}
 
 		if ($isConnection) {
 			$pageInfo = [
-				'count'           => $return['count'] ?? 0,
+				'count'           => $count,
 				'page'            => $page,
 				'limit'           => $limit,
-				'hasNextPage'     => true,
-				'hasPreviousPage' => true,
+				'hasNextPage'     => ($page * $limit) < ($count),
+				'hasPreviousPage' => $page > 1,
 				'startCursor'     => 1,
 			];
 
@@ -155,7 +199,16 @@ class Index extends Base {
 		return $data;
 	}
 
-	function controller($typeName, $args, $rootType = 'mutation') {
+	/**
+	 * Resolve a controller or model method by type name.
+	 *
+	 * @param string               $typeName
+	 * @param array<string, mixed> $args
+	 * @param string               $rootType
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function controller(string $typeName, array $args, string $rootType = 'mutation'): array {
 		//check if has method
 		if (preg_match('/^(\w+)([A-Z]\w+)/', $typeName, $matches)) {
 			$method = $matches[1];
@@ -173,29 +226,23 @@ class Index extends Base {
 		if (isController($classFile)) {
 			$controller = controller($className);
 
-			if ($controller) {
-				if (method_exists($controller, $method)) {
-					$data = $controller->$method($args + $this->global);
-				} else {
-					throw new \Exception('Controller method does not exist!');
-				}
+			if (method_exists($controller, $method)) {
+				$data = $controller->$method($args + $this->global);
 			} else {
-				throw new \Exception('Controller can\'t be loaded!');
+				throw new \Exception('Controller method does not exist!');
 			}
 		} else {
-			$class = strtolower(camelToUnderscore($class,'_'));
+			$class = strtolower(camelToUnderscore($class, '_'));
 
 			if (isModel($class)) {
 				$class = model($class);
 
-				if ($class) {
-					if (method_exists($class, $method)) {
-						$data = $class->$method($args + ['site_id' => 1]);
-					} else {
-						throw new \Exception('Model method does not exist!');
-					}
+				if (method_exists($class, $method)) {
+					$data = $class->$method($args + ['site_id' => $this->global['site_id']]);
 				} else {
-					throw new \Exception('Model can\'t be loaded!');
+					//no matching model method, return empty and let the
+					//caller fall through to type-based model resolution
+					return [];
 				}
 			} else {
 				//throw new \Exception('Model does not exist!');
@@ -205,16 +252,18 @@ class Index extends Base {
 		return $data;
 	}
 
-	function defaultFieldResolver($objectValue, $args, $context, ResolveInfo $info) {
-		$fieldName           = $info->fieldName;
-
-		if (is_null($fieldName)) {
-			throw new \Exception('Could not get $fieldName from ResolveInfo');
-		}
-
-		if (is_null($info->parentType)) {
-			throw new \Exception('Could not get $parentType from ResolveInfo');
-		}
+	/**
+	 * Default field resolver for GraphQL queries and mutations.
+	 *
+	 * @param mixed                $objectValue
+	 * @param array<string, mixed> $args
+	 * @param mixed                $context
+	 * @param ResolveInfo          $info
+	 *
+	 * @return mixed
+	 */
+	public function defaultFieldResolver(mixed $objectValue, array $args, mixed $context, ResolveInfo $info): mixed {
+		$fieldName = $info->fieldName;
 
 		$parentTypeName = $info->parentType->name; //MutationType
 		$typeName       = $info->fieldDefinition->config['type']->name ?? '';
@@ -228,51 +277,42 @@ class Index extends Base {
 			$this->args += $objectValue;
 		}
 
-		if (GRAPHQL_CAMELCASE && is_array($this->args)) {
+		if (GRAPHQL_CAMELCASE) {
 			$this->args = arrayKeysToUnderscore($this->args, '_');
 		}
 
-		if ($info->returnType) {
-			//method_exists($info->returnType, 'getInnermostType')
-			if (is_a($info->returnType, 'GraphQL\Type\Definition\ListOfType')) {
-				$returnType         = $info->returnType->getInnermostType()->name;
-				$this->returnIsList = true;
-			} else {
-				$returnType = $info->returnType->name ?? '';
-			}
+		//method_exists($info->returnType, 'getInnermostType')
+		if (is_a($info->returnType, 'GraphQL\Type\Definition\ListOfType')) {
+			$returnType         = $info->returnType->getInnermostType()->name;
+			$this->returnIsList = true;
+		} else {
+			$returnType = $info->returnType->name ?? '';
 		}
-		/*
-				error_log('$returnType = ' . $returnType);
-				error_log('$objectValue = ' . print_r($objectValue, 1));
-				error_log('$fieldName = ' . $fieldName);
-				error_log('$parentTypeName = ' . $parentTypeName);
-				error_log('$typeName = ' . $typeName);
-				error_log('$args = ' . print_r($this->args, 1));
-		*/
+
 		$method     = '';
 		$type       = '';
 		$permission = $fieldName;
 
 		if (preg_match('/^([a-z]+)([A-Z]\w+)/', $fieldName, $matches)) {
 			$method     = $matches[1];
-			$type       = strtolower(camelToUnderscore($matches[2],'_'));
+			$type       = strtolower(camelToUnderscore($matches[2], '_'));
 			$permission = "$type/$method";
 		}
 
 		$this->permission($permission);
 		$data = [];
 
-		//if previous controller or model call already has the data then don't try to retrive it again
+		//if previous controller or model call already has the data then don't try to retrieve it again
 		if (isset($this->stack[$this->queryIndex][$this->stackIndex - 1]['data'][$fieldName])) {
 			$data =  $this->stack[$this->queryIndex][$this->stackIndex - 1]['data'][$fieldName];
 		}
 
-		//if object already has the data then don't try to retrive it again
+		//if object already has the data then don't try to retrieve it again
 		if (isset($objectValue[$fieldName])) {
 			$data =  $objectValue[$fieldName];
 		}
 
-		if ($parentTypeName == 'RootQueryType') {
+		if ($parentTypeName === 'RootQueryType') {
 			$this->queryIndex++;
 
 			if (isset($this->queries[$type])) {
@@ -282,7 +322,7 @@ class Index extends Base {
 				$data = $this->controller($fieldName, $this->args, 'query');
 			}
 		} else {
-			if ($parentTypeName == 'MutationType') {
+			if ($parentTypeName === 'MutationType') {
 				$data      = [];
 
 				if (isset($this->mutations[$type])) {
@@ -296,11 +336,13 @@ class Index extends Base {
 			}
 		}
 
-		if (! $data) {
+		if (!$data && $parentTypeName !== 'MutationType') {
+			//mutations that return no data must stay empty and never
+			//fall through to an unrelated model read
 			foreach ([$typeName, $returnType] as $type) {
-				if (substr_compare($type, 'Type', -4 ,4) === 0) {
-					//$typeName = strtolower(preg_replace('/Type$/', '', $typeName));
+				if (substr_compare($type, 'Type', -4, 4) === 0) {
 					$type = substr($type, 0, -4);
+					//$typeName = strtolower(preg_replace('/Type$/', '', $typeName));
 
 					if (isset($this->types[$type])) {
 						$fn   = $this->types[$type];
@@ -311,7 +353,7 @@ class Index extends Base {
 
 					break;
 				} else {
-					if (substr_compare($type, 'Connection', -10 ,10) === 0) {
+					if (substr_compare($type, 'Connection', -10, 10) === 0) {
 						//$typeName = strtolower(preg_replace('/Type$/', '', $typeName));
 						$isConnection = true;
 						$type         = substr($type, 0, -10);
@@ -337,21 +379,17 @@ class Index extends Base {
 			'model'  => $typeName,
 			'method' => $method,
 			//'args'   => $this->args,
-			'data'          => $data,
-			'objectValue'   => $objectValue,
+			'data'        => $data,
+			'objectValue' => $objectValue,
 		];
 
 		if ($data) {
-			if ($isConnection) {
-				return $data;
-			} else {
-				return $data;
-			}
+			return $data;
 		}
 
 		$property = null;
 
-		if (is_array($objectValue) || $objectValue instanceof ArrayAccess) {
+		if (is_array($objectValue) || $objectValue instanceof \ArrayAccess) {
 			if (isset($objectValue[$fieldName])) {
 				$property = $objectValue[$fieldName];
 			}
@@ -360,70 +398,65 @@ class Index extends Base {
 				$property = $objectValue->{$fieldName};
 			}
 		}
+
 		//error_log(print_r($property, 1));
-		return $property instanceof Closure
-		? $property($objectValue, $args, $contextValue, $info)
+		return $property instanceof \Closure
+		? $property($objectValue, $args, $context, $info)
 		: $property;
 	}
 
-	function index() {
+	/**
+	 * Main GraphQL index action: parse and execute the GraphQL query.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function index(): array {
 		$rawInput = file_get_contents('php://input');
 
-		$typeConfigDecorator = function (array $typeConfig, $typeDefinitionNode) : array {
-			$name = $typeConfig['name'];
-			//error_log($name . ' $typeConfigDecorator');
-			if ($name == 'ObjectType') {
-				//error_log(print_r($typeDefinitionNode, 1));
-
-/*
-$typeDefinitionNode = new ObjectType([
-	'name' => 'PostConnection',
-	'fields' => [
-		'nodes' => [
-			'type' => Type::listOf('PostType'),
-			'resolve' => fn () => $data['nodes']
-		],
-		'pageInfo' => [
-			'type' => 'PageInfo',
-			'resolve' => fn () => $data['pageInfo']
-		]
-	]
-]);			
- */
-			}
+		$typeConfigDecorator = function(array $typeConfig, mixed $typeDefinitionNode): array {
 			// ... add missing options to $typeConfig based on type $name
 			return $typeConfig;
 		};
 
-		$cacheFilename = DIR_STORAGE . 'model' . DS . 'cached_schema.php';
+		$cacheFilename = DIR_STORAGE . 'model/cached_schema.php';
 
-		if (! file_exists($cacheFilename)) {
+		//regenerate at least weely so schema and model changes are picked up
+		$regenerate = true;
+
+		if (file_exists($cacheFilename)) {
+			$cached     = require $cacheFilename;
+			$regenerate = (($cached['generated'] ?? 0) + 604800) < time();
+
+			if (!$regenerate) {
+				$document = AST::fromArray($cached['schema']); // fromArray() is a lazy operation as well
+			}
+		}
+
+		if ($regenerate) {
 			$schemaController = new Schema();
 			$schema           = $schemaController->schema(); //file_get_contents(DIR_APP . 'schema.gql');
 			$document         = Parser::parse($schema);
-			file_put_contents($cacheFilename, "<?php\nreturn " . var_export(AST::toArray($document), true) . ";\n");
-		} else {
-			$document = AST::fromArray(require $cacheFilename); // fromArray() is a lazy operation as well
+			$exported         = var_export(['generated' => time(), 'schema' => AST::toArray($document)], true);
+			//write to a temp file and rename, so concurrent requests never read a half written schema
+			$tmp = $cacheFilename . '.' . getmypid() . '.tmp';
+			file_put_contents($tmp, "<?php\nreturn " . $exported . ";\n");
+			rename($tmp, $cacheFilename);
 		}
-
-		//$typeConfigDecorator = function () {};
-		//$schema = BuildSchema::build($document);//, $typeConfigDecorator);
-		$this->schema = BuildSchema::build($document, $typeConfigDecorator);
 
 		$input          = json_decode($rawInput, true);
 		$query          = $input['query'] ?? '';
 		$variableValues = $input['variables'] ?? null;
 
 		try {
-			$result    = GraphQL::executeQuery($this->schema, $query, null, null, $variableValues, null, [$this, 'defaultFieldResolver'] /*'Vvveb\Controller\defaultFieldResolver'*/);
+			$this->schema = BuildSchema::build($document, $typeConfigDecorator);
+
+			$result    = GraphQL::executeQuery($this->schema, $query, null, null, $variableValues, null, [$this, 'defaultFieldResolver']);
 			$flags     = 0;
 
 			if (DEBUG) {
 				$flags = DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE;
 			}
 			$output    = $result->toArray($flags);
-
-			//error_log(print_r($this->stack, 1));
 		} catch (\Exception $e) {
 			$message = $e->getMessage();
 

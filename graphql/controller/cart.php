@@ -29,40 +29,61 @@ use Vvveb\System\Payment;
 use Vvveb\System\Shipping;
 
 class Cart extends Base {
-//	use CartTrait;
 	use Cart\CouponTrait;
 
-	private $cart;
+	/** @var ShoppingCart|null */
+	private ?ShoppingCart $cart = null;
 
-	private $payment;
+	/**
+	 * Initialize the shopping cart instance.
+	 *
+	 * @param int|null $cart_id
+	 *
+	 * @return void
+	 */
+	private bool $initialized = false;
 
-	private $shipping;
+	private function cart(?int $cart_id = null): void {
+		//GraphQL resolvers bypass FrontController, so init() runs on first use;
+		//guard it to avoid re-running auth/plugins/site setup for every field
+		if (!$this->initialized) {
+			$this->init();
+			$this->initialized = true;
+		}
 
-	private function cart($cart_id = null) {
-		$this->init();
-
-		$options = array_intersect_key($this->global['site'],
-		array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
+		$options = array_intersect_key(
+			$this->global['site'],
+			array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id'])
+		);
 
 		$options['cart_id'] = $cart_id;
 
 		$this->cart = ShoppingCart::getInstance($this->global + $options);
 	}
 
-	function index($args) {
+	/**
+	 * Retrieve the full cart contents and totals.
+	 *
+	 * @param array<string, mixed> $args
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function index(array $args = []): array {
 		$cart_id = $args['cart_id'] ?? null;
 
-		if (! $this->cart) {
+		if (!$this->cart) {
 			$this->cart($cart_id);
 		}
 
-		$payment    = Payment::getInstance();
-		$shipping   = Shipping::getInstance();
+		$payment      = Payment::getInstance();
+		$shipping     = Shipping::getInstance();
+		$paymentInfo  = [];
+		$shippingInfo = [];
 
-		$this->payment  = $payment->getMethods([]);
-		$this->shipping = $shipping->getMethods([]);
+		$payment->getMethods($paymentInfo);
+		$shipping->getMethods($shippingInfo);
 
-		$cart = [
+		return [
 			'cart_id'           => $this->cart->getId(),
 			'encrypted_cart_id' => $this->cart->getEncryptedId(),
 			'products'          => $this->cart->getAll(),
@@ -78,14 +99,19 @@ class Cart extends Base {
 			'weight_unit'       => $this->global['site']['weight_type'],
 			'length_unit'       => $this->global['site']['length_type'],
 		];
-
-		return $cart;
 	}
 
-	function add($args) {
+	/**
+	 * Add a product to the cart.
+	 *
+	 * @param array<string, mixed> $args
+	 *
+	 * @return array<string, mixed>|null
+	 */
+	public function add(array $args): ?array {
 		$cart_id = $args['cart_id'] ?? null;
 
-		if (! $this->cart) {
+		if (!$this->cart) {
 			$this->cart($cart_id);
 		}
 
@@ -97,7 +123,7 @@ class Cart extends Base {
 
 		if ($productId) {
 			if ($options && is_string($options)) {
-				if ($options[0] != '{') {
+				if ($options[0] !== '{') {
 					$options = '{' . $options . '}';
 				}
 				$options = json_decode($options, true);
@@ -106,23 +132,37 @@ class Cart extends Base {
 
 			return $this->index($args);
 		}
+
+		return null;
 	}
 
-	function create($args) {
-		if (! $this->cart) {
+	/**
+	 * Create a new empty cart.
+	 *
+	 * @param array<string, mixed> $args
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function create(array $args): array {
+		if (!$this->cart) {
 			$this->cart();
 			$args['cart_id'] = $this->cart->create();
 		}
 
-		$cart = $this->index($args);
-
-		return $cart;
+		return $this->index($args);
 	}
 
-	function update($args) {
+	/**
+	 * Update the quantity of a cart item.
+	 *
+	 * @param array<string, mixed> $args
+	 *
+	 * @return array<string, mixed>|null
+	 */
+	public function update(array $args): ?array {
 		$cart_id = $args['cart_id'] ?? null;
 
-		if (! $this->cart) {
+		if (!$this->cart) {
 			$this->cart($cart_id);
 		}
 
@@ -131,12 +171,21 @@ class Cart extends Base {
 
 			return $this->index($args);
 		}
+
+		return null;
 	}
 
-	function remove($args) {
+	/**
+	 * Remove an item from the cart.
+	 *
+	 * @param array<string, mixed> $args
+	 *
+	 * @return array<string, mixed>|null
+	 */
+	public function remove(array $args): ?array {
 		$cart_id = $args['cart_id'] ?? null;
 
-		if (! $this->cart) {
+		if (!$this->cart) {
 			$this->cart($cart_id);
 		}
 
@@ -145,5 +194,7 @@ class Cart extends Base {
 
 			return $this->index($args);
 		}
+
+		return null;
 	}
 }

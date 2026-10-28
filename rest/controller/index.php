@@ -28,6 +28,7 @@ use function Vvveb\reconstructJson;
 use function Vvveb\siteSettings;
 use Vvveb\System\Cache;
 use Vvveb\System\Core\View;
+use Vvveb\System\Db;
 use Vvveb\System\Event;
 use Vvveb\System\Functions\Plural;
 use Vvveb\System\Sites;
@@ -36,20 +37,69 @@ use function Vvveb\url;
 
 #[\AllowDynamicProperties]
 class Index extends Base {
-	function type($type) {
+	/**
+	 * Map a database column type to an OpenAPI schema type.
+	 *
+	 * @param string $type
+	 *
+	 * @return string
+	 */
+	public function type(string $type): string {
+		//strip length and modifiers so raw database types map correctly:
+		//"varchar(191)" -> "varchar", "int unsigned" -> "int"
 		$type = strtolower($type);
+		$type = preg_replace('/[\s(].*$/', '', $type);
 
 		switch ($type) {
 			case 'int':
+			case 'integer':
 			case 'tinyint':
+			case 'smallint':
+			case 'smallinteger':
+			case 'mediumint':
+			case 'bigint':
+			case 'serial':
+			case 'bigserial':
 				$type = 'integer';
+
+				break;
+
+			case 'decimal':
+			case 'float':
+			case 'double':
+			case 'real':
+				$type = 'number';
+
+				break;
+
+			case 'boolean':
+			case 'bool':
+				$type = 'boolean';
+
+				break;
+
+			case 'array':
+				$type = 'array';
 
 				break;
 
 			case 'varchar':
 			case 'char':
-			case 'datetime':
+			case 'text':
+			case 'tinytext':
 			case 'longtext':
+			case 'enum':
+			case 'date':
+			case 'datetime':
+			case 'timestamp':
+			case 'json':
+				$type = 'string';
+
+				break;
+
+			default:
+				//unknown types fall back to string so one exotic column
+				//can never poison the generated specification
 				$type = 'string';
 
 				break;
@@ -58,7 +108,12 @@ class Index extends Base {
 		return $type;
 	}
 
-	function paths() {
+	/**
+	 * Build OpenAPI paths from database tables and route configurations.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function paths(): array {
 		$routes = config('rest-routes');
 		$paths  = [];
 		$sqlp   = new Sqlp();
@@ -75,7 +130,7 @@ class Index extends Base {
 		$routeSchemas = array_values($routeSchemas);
 
 		$this->tables = [];
-		$db           = \Vvveb\System\Db::getInstance();
+		$db           = Db::getInstance();
 		$tables       = $db->getTableNames(DB_NAME);
 		$routesNew    = [];
 
@@ -88,7 +143,7 @@ class Index extends Base {
 			}
 			$this->tables[$table] = $cols;
 
-			if (! in_array($table, $routeSchemas)) {
+			if (!in_array($table, $routeSchemas)) {
 				if (file_exists($dirSQL . $table . '.sql')) {
 					$plural                                              = Plural::tablePlural($table);
 					$routes['/rest/' . $plural]                          = ['module' => 'default', 'methods' => ['get', 'post'], 'schema' => $table];
@@ -96,7 +151,6 @@ class Index extends Base {
 				}
 			}
 		}
-		//echo var_export($routesNew, true);
 
 		foreach ($routes as $route => $options) {
 			$route   = str_replace(['/rest', '/#', '#'], ['', '/{', '}'], $route);
@@ -119,7 +173,6 @@ class Index extends Base {
 					}
 				}
 
-				//$responses
 				$meth              = ['responses' => []];
 				$ok                = [
 					'description' => 'OK',
@@ -142,12 +195,12 @@ class Index extends Base {
 
 					$action = $actions[$method];
 
-					if ($method == 'get' && ! isset($methods['delete'])) {
+					if ($method == 'get' && !isset($methods['delete'])) {
 						$action = 'getAll';
 					}
 
 					if (($tree && isset($tree[$action])) &&
-						($method != 'get' || ($method == 'get' && ! $getParams))) {
+						($method != 'get' || ($method == 'get' && !$getParams))) {
 						foreach ($tree[$action]['params'] as $p) {
 							if ($p['in_out'] == 'OUT') {
 								continue;
@@ -165,13 +218,11 @@ class Index extends Base {
 								$params[$name]['type'] = $this->type($p['type'] ?? 'integer');
 
 								if ($params[$name]['type'] == 'array' && isset($this->tables[$name])) {
-									$encoding[$name]['explode'] = true;
-									$encoding[$name]['style']   = 'deepObject';
-									//$encoding[$name]['contentType']   = 'application/x-www-form-urlencoded';
+									$encoding[$name]['explode']    = true;
+									$encoding[$name]['style']      = 'deepObject';
 									$params[$name]['type']         = 'object';
 									$params[$name]['style']        = 'deepObject';
 									$params[$name]['explode']      = true;
-									//$params[$name]['contentEncoding']      = 'text/plain';
 
 									$properties = [];
 
@@ -186,14 +237,14 @@ class Index extends Base {
 										}
 										$properties[$col['name']] = ['type' => $this->type($col['t'])];
 
-										if ($col['d'] === NULL || $col['d'] == 'NULL') {
+										if ($col['d'] === null || $col['d'] == 'NULL') {
 											$properties[$col['name']]['required'] = true;
 										} else {
 											$properties[$col['name']]['required'] = false;
 										}
 									}
 
-									if (in_array($name,['post_content', 'product_content'])) {
+									if (in_array($name, ['post_content', 'product_content'])) {
 										$params[$name]['type']                = 'array';
 										$params[$name]['items']['type']       = 'object';
 										$params[$name]['items']['explode']    = true;
@@ -201,28 +252,24 @@ class Index extends Base {
 										$params[$name]['items']['properties'] = $properties;
 										$encoding[$name]['items']['explode']  = true;
 										$encoding[$name]['items']['style']    = 'deepObject';
-									//$encoding[$name]['items']['type']   = 'object';
-										//$encoding[$name]['type']   = 'array';
 									} else {
 										$params[$name]['properties'] = $properties;
 									}
 								}
 
-								if ($params[$name]['type'] == 'array' && substr_compare($name, '_id', -3 ,3) === 0) {
-									$params[$name]['items']['type'] = 'integer';
-									//$params[$name]['items']['explode'] = true;
+								if ($params[$name]['type'] == 'array' && substr_compare($name, '_id', -3, 3) === 0) {
+									$params[$name]['items']['type']       = 'integer';
 									$params[$name]['style']               = 'deepObject';
 									$params[$name]['explode']             = true;
 									$encoding[$name]['items']['explode']  = true;
 									$encoding[$name]['items']['style']    = 'deepObject';
 									$encoding[$name]['explode']           = true;
 									$encoding[$name]['style']             = 'deepObject';
-									//$encoding[$name]['items']['style']    = 'deepObject';
 								}
 							} else {
 								$param['name']           = $p['name'];
 								$param['in']             = 'query';
-								$param['required']       = 'false';
+								$param['required']       = false;
 								$param['description']    = $p['comment'] ?? '';
 								$param['schema']['type'] = $this->type($p['type'] ?? 'integer');
 
@@ -237,14 +284,12 @@ class Index extends Base {
 									foreach ($this->tables[$param['name']] as $col) {
 										$properties[$col['name']] = ['type' => $this->type($col['t'])];
 
-										if ($col['d'] === NULL || $col['d'] == 'NULL') {
+										if ($col['d'] === null || $col['d'] == 'NULL') {
 											$properties[$col['name']]['required'] = true;
 										} else {
 											$properties[$col['name']]['required'] = false;
 										}
 									}
-
-									//$param['name'] .= '[]';
 
 									if ($param['name'] == 'post_content') {
 										$param['schema']['type']                = 'array';
@@ -257,7 +302,7 @@ class Index extends Base {
 									}
 								}
 
-								if (! isset($getParams[$param['name']])) {
+								if (!isset($getParams[$param['name']])) {
 									$getParams[$param['name']] = $param;
 								}
 							}
@@ -270,8 +315,8 @@ class Index extends Base {
 								'application/x-www-form-urlencoded' => [
 									'encoding' => $encoding,
 									'schema'   => [
-										'type'        => 'object',
-										'properties'  => $params,
+										'type'       => 'object',
+										'properties' => $params,
 									],
 								],
 							],
@@ -291,14 +336,17 @@ class Index extends Base {
 			$paths[$route] = $data;
 		}
 
-		list($paths) = Event :: trigger(__CLASS__,__FUNCTION__, $paths);
+		[$paths] = Event :: trigger(__CLASS__, __FUNCTION__, $paths);
 
 		return $paths;
-		$this->response->setType('json');
-		$this->response->output($paths);
 	}
 
-	function schemas() {
+	/**
+	 * Build OpenAPI schemas from database table metadata.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function schemas(): array {
 		$db = \Vvveb\System\Db::getInstance();
 
 		$tables  = $db->getTableNames(DB_NAME);
@@ -309,17 +357,20 @@ class Index extends Base {
 			$cols = [];
 
 			foreach ($meta as $column) {
+				$rawType            = strtolower($column['t'] ?? 'integer');
 				$col                = [];
 				$col['name']        = $column['name'] ?? '';
 				$col['description'] = $column['c'] ?? '';
-				$col['type']        = $this->type($column['t'] ?? 'integer');
+				$col['type']        = $this->type($rawType);
 
-				switch ($col['type']) {
-						case 'datetime':
-							$col['format'] = 'date-time';
-					}
+				if ($rawType === 'datetime' || $rawType === 'timestamp' || $rawType === 'date') {
+					$col['format'] = 'date-time';
+				}
 
-				if (isset($column['c']) && $column['c'] == 'YES') {
+				//n holds IS_NULLABLE on mysqli/pgsql ('YES'/'NO') and NOT NULL flag on sqlite (1/0)
+				$nullable = $column['n'] ?? null;
+
+				if ($nullable === 'YES' || $nullable === 0 || $nullable === '0') {
 					$col['type'] = [$col['type'], 'null'];
 				}
 
@@ -336,22 +387,26 @@ class Index extends Base {
 			$schemas[$table] = $data;
 		}
 
-		//var_export($schemas);
-		list($schemas) = Event :: trigger(__CLASS__,__FUNCTION__, $schemas);
+		[$schemas] = Event :: trigger(__CLASS__, __FUNCTION__, $schemas);
 
 		return $schemas;
-		$this->response->setType('json');
-		$this->response->output($schemas);
 	}
 
-	public static function getControllerList($app = APP) {
+	/**
+	 * Get a list of all controller JSON files for the REST app.
+	 *
+	 * @param string $app
+	 *
+	 * @return array<int, string>
+	 */
+	public static function getControllerList(string $app = APP): array {
 		$files = [];
 		$path  = [DIR_ROOT . $app . '/controller/*', DIR_PLUGINS . '*/' . $app . '/controller/*'];
 
 		while (count($path) > 0) {
 			$next = array_shift($path);
-			//echo $next . "\n";
-			foreach (glob("$next/*.json") as $file) {
+
+			foreach (glob("$next/*.json") ?: [] as $file) {
 				if (is_dir($file)) {
 					$path[] = $file;
 				}
@@ -362,32 +417,39 @@ class Index extends Base {
 			}
 		}
 
-		list($files) = Event :: trigger(__CLASS__,__FUNCTION__, $files);
+		[$files] = Event :: trigger(__CLASS__, __FUNCTION__, $files);
 
 		return $files;
 	}
 
-	function renderJson() {
+	/**
+	 * Render the OpenAPI JSON template and return it as an array.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function renderJson(): array {
 		$htmlView  = new View();
-		//$htmlView  = clone $this->view;
 		$htmlView->setTheme();
-		$htmlView->set(['seo' => []]);
 		$htmlView->template('openapi.json');
 		$xml   = $htmlView->render(true, false, true);
 
 		if ($xml) {
 			$sxml  = \simplexml_load_string($xml, null, LIBXML_NOCDATA | LIBXML_DTDATTR);
-			$array = reconstructJson($sxml, true);
 
-			return $array;
-			$json  = json_encode($array, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
-			echo $json;
+			return reconstructJson($sxml, true);
 		}
+
+		return [];
 	}
 
-	function api() {
+	/**
+	 * Generate and output the full OpenAPI specification.
+	 *
+	 * @return void
+	 */
+	public function api(): void {
 		$cache     = Cache::getInstance();
-		$json      = $cache->cache(APP,'openapi',function () {
+		$json      = $cache->cache(APP, 'openapi', function() {
 			$site = siteSettings();
 			$data = Sites :: getSiteData();
 
@@ -395,14 +457,14 @@ class Index extends Base {
 			$json['paths']                 = $this->paths();
 			$json['components']['schemas'] = $this->schemas();
 
-			$site = siteSettings(SITE_ID, $this->global['language_id']);
+			$site       = siteSettings(SITE_ID, $this->global['language_id']);
 			$urlParams  = ['host' => $data['host'], 'scheme' => isSecure() ? 'https' : 'http'];
-			$url = url('/',$urlParams);
+			$url        = url('/', $urlParams);
 
-			$json['info']['title'] = $site['description']['title'];
+			$json['info']['title']            = $site['description']['title'];
 			$json['info']['contact']['email'] = $site['contact-email'];
-			$json['info']['contact']['url'] = $url;
-			$json['servers'][0]['url'] = url('',$urlParams);
+			$json['info']['contact']['url']   = $url;
+			$json['servers'][0]['url']        = url('', $urlParams);
 
 			return $json;
 		}, 259200);
@@ -411,7 +473,12 @@ class Index extends Base {
 		$this->response->output($json);
 	}
 
-	function index() {
-		return $this->api();
+	/**
+	 * Main index action - delegates to api().
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$this->api();
 	}
 }

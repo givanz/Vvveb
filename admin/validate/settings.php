@@ -22,11 +22,11 @@
 
 return [
 	'site-title' => [
-		'notEmpty'   => '',
-		'maxLength'  => 100,
+		'notEmpty'  => '',
+		'maxLength' => 100,
 	],
 	'site-description' => [
-		'notEmpty'   => '',
-		'maxLength'  => 255,
+		'notEmpty'  => '',
+		'maxLength' => 255,
 	],
 ];

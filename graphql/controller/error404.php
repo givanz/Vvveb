@@ -24,7 +24,12 @@ namespace Vvveb\Controller;
 
 #[\AllowDynamicProperties]
 class Error404 extends Base {
-	function index() {
+	/**
+	 * Return a 404 error response for GraphQL.
+	 *
+	 * @return array{errors: array{message: string, code: int}}
+	 */
+	public function index(): array {
 		$this->response->setType('json');
 
 		return ['errors' => ['message' => $this->view->message ?? '', 'code' => $this->view->code ?? 404]];

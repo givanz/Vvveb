@@ -161,9 +161,9 @@ return
 					'type'        => 'String',
 				],
 				'weight_formatted' => [
-					'name'        => 'price_tax',
+					'name'        => 'weight_formatted',
 					'description' => '',
-					'type'        => 'Float',
+					'type'        => 'String',
 				],
 			],
 		],

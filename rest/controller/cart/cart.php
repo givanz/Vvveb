@@ -25,23 +25,3 @@ namespace Vvveb\Controller\Cart;
 include DIR_ROOT . 'app' . DS . 'controller' . DS . 'cart' . DS . 'coupon-trait.php';
 
 include DIR_ROOT . 'app' . DS . 'controller' . DS . 'cart' . DS . 'cart.php';
-
-class CartBase extends Cart {
-	function index() {
-		echo 'asd';
-
-		die('asd');
-	}
-
-	function delete() {
-		return $this->action('remove');
-	}
-
-	function put() {
-		return $this->action('update');
-	}
-
-	function post() {
-		return $this->action('add');
-	}
-}

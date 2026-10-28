@@ -26,10 +26,10 @@ return [
 		'maxLength' => 100,
 	],
 	'search' => [
-		'optional'  => '',
+		'optional' => '',
 	],
 	'taxonomy_item_id' => [
-		'optional'  => '',
+		'optional' => '',
 	],
 	'browse' => [
 		'allowedValues' => ['popular', 'featured', 'updated', 'new'],

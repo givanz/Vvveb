@@ -24,7 +24,12 @@ namespace Vvveb\Controller;
 
 #[\AllowDynamicProperties]
 class Error500 extends Base {
-	function index() {
+	/**
+	 * Return a 500 error response.
+	 *
+	 * @return array{message?: string, file?: string, line_no?: string, line?: string, lines?: string, trace?: string, codeLines?: string, code: int}
+	 */
+	public function index(): array {
 		$this->response->setType('json');
 
 		if (DEBUG) {

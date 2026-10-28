@@ -24,7 +24,12 @@ namespace Vvveb\Controller;
 
 #[\AllowDynamicProperties]
 class Error404 extends Base {
-	function index() {
+	/**
+	 * Return a 404 error response.
+	 *
+	 * @return array{message: string, code: int, file?: string}
+	 */
+	public function index(): array {
 		$this->response->setType('json');
 
 		$return = ['message' => $this->view->message ?? 'Route not found!', 'code' => $this->view->code ?? 404];

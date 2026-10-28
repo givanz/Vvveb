@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
+defined('APP') || define('APP', 'graphql');
 
-define('APP', 'graphql');
-//define('DISABLE_PLUGIN_ON_ERORR', true);
-
-return include __DIR__ . '/../index.php';
+if (!defined('DIR_ROOT')) {
+	return include __DIR__ . '/../index.php';
+}

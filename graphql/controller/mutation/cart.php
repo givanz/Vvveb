@@ -24,5 +24,4 @@ namespace Vvveb\Controller\Mutation;
 
 use Vvveb\Controller\Cart as CartBase;
 
-class Cart extends CartBase {
-}
+class Cart extends CartBase {}

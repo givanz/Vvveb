@@ -22,19 +22,30 @@
 
 namespace Vvveb\Controller;
 
-use function Vvveb\getCurrency;
+use function Vvveb\isModel;
 use function Vvveb\model;
+
 use Vvveb\System\Cart\Currency;
 use Vvveb\System\Cart\Tax;
 use Vvveb\System\Images;
 
 #[\AllowDynamicProperties]
 class Rest extends Base {
-	private $method = 'GET';
+	/**
+	 * @var string HTTP request method
+	 */
+	private string $method = 'GET';
 
-	private function processResource(&$resource) {
+	/**
+	 * Process a single resource: apply image URLs, price formatting, and strip passwords.
+	 *
+	 * @param array<string, mixed> $resource
+	 *
+	 * @return array<string, mixed>
+	 */
+	private function processResource(array &$resource): array {
 		if (isset($resource['images'])) {
-			$resource['images'] = json_decode($resource['images'], 1);
+			$resource['images'] = json_decode($resource['images'], true);
 
 			foreach ($resource['images'] as &$image) {
 				$image = Images::image($image, $this->resource, $this->options['image_size'] ?? 'medium');
@@ -56,7 +67,7 @@ class Rest extends Base {
 		if (isset($resource['price'])) {
 			$tax                            = Tax::getInstance();
 			$currency                       = Currency::getInstance();
-			$currentCurrency                = getCurrency();
+			$currentCurrency                = $this->global['currency'] ?? 'usd';
 
 			$resource['price_tax']           = $tax->addTaxes($resource['price'], $resource['tax_type_id']);
 			$resource['price_tax_formatted'] = $currency->format($resource['price_tax']);
@@ -67,28 +78,53 @@ class Rest extends Base {
 		return $resource;
 	}
 
-	function index() {
-		$this->method = $this->request->method;
+	/**
+	 * Main REST index action: routes GET/POST/PUT/DELETE to the appropriate model operations.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		//honor the _method override the same way init() does, some servers don't support put/delete
+		$this->method = $this->request->get['_method'] ?? $this->request->getMethod();
 
 		$this->resource = $this->request->get['resource'] ?? false;
 		$this->id       = $this->request->get['id'] ?? false;
 		$this->slug     = $this->request->get['slug'] ?? false;
 		$this->options  = $this->request->get ?? [];
 
-		$page                     = $this->request->get['page'] ?? 1;
-		$limit                    = $this->request->get['limit'] ?? 10;
-		$this->global['start']    = ($page - 1) * $limit;
-		$this->global['limit']    = $limit;
+		$page                    = $this->request->get['page'] ?? 1;
+		$limit                   = $this->request->get['limit'] ?? 10;
+		$this->global['start']   = ($page - 1) * $limit;
+		$this->global['limit']   = $limit;
 
 		unset($this->options['resource'], $this->options['id']);
 
-		if ($this->resource) {
-			$this->resource = rtrim($this->resource, 's');
-			$model          = model(rtrim($this->resource, 's')); //singular for model name
+		$model = null;
 
-			if (! $model) {
-				return;
+		if ($this->resource) {
+			//resolve the model name: clients may pass singular or plural, try both;
+			//never use rtrim which eats valid trailing s (ex: address -> addre)
+			$candidates = [];
+
+			if (str_ends_with($this->resource, 's')) {
+				$candidates[] = substr($this->resource, 0, -1);
 			}
+
+			$candidates[] = $this->resource;
+
+			foreach ($candidates as $candidate) {
+				if (isModel($candidate)) {
+					$model          = model($candidate);
+					$this->resource = $candidate;
+					break;
+				}
+			}
+
+			if (!$model) {
+				$this->notFound();
+			}
+		} else {
+			$this->notFound();
 		}
 
 		$output = [];
@@ -97,7 +133,7 @@ class Rest extends Base {
 		switch ($this->method) {
 			case 'GET':
 				if ($this->id || $this->slug) {
-					$options =[];
+					$options = [];
 
 					if ($this->id) {
 						$resource_id           = $this->resource . '_id';
@@ -108,46 +144,52 @@ class Rest extends Base {
 						$options['slug'] = $this->slug;
 					}
 
-					$output      = $model->get($options + $this->options + $this->global);
+					$output = $model->get($options + $this->options + $this->global);
 
-					if ($output ||
-						(isset($output[$this->resource . '_id']) ||
-						(isset($output[$this->resource]) ||
-						$output[$this->resource]))) {
+					if ($output
+						&& (isset($output[$this->resource . '_id']) || isset($output[$this->resource]))) {
 						if (isset($output[$this->resource])) {
 							$output = $output[$this->resource];
 						}
 
 						$output      = $this->processResource($output);
 					} else {
-						return $this->notFound();
+						$this->notFound();
 					}
 				} else {
 					$result = $model->getAll($this->options + $this->global);
 
-					if (isset($result[$this->resource . 's'])) {
-						$collection = $result[$this->resource . 's'];
+					//models return rows under the table key, accept plural as well
+					$collection = null;
 
+					foreach ([$this->resource, $this->resource . 's'] as $collectionKey) {
+						if (isset($result[$collectionKey]) && is_array($result[$collectionKey])) {
+							$collection = $result[$collectionKey];
+							break;
+						}
+					}
+
+					if ($collection !== null) {
 						foreach ($collection as $id => &$resource) {
 							$output[] = $this->processResource($resource);
 						}
 					} else {
-						return $this->notFound();
+						$this->notFound();
 					}
 				}
 
-			break;
+				break;
 
 			case 'POST':
-			break;
+				break;
 
 			case 'PUT':
-			break;
+				break;
 
 			case 'DELETE':
 				$this->action = 'delete';
 
-			break;
+				break;
 		}
 
 		$this->response->output($output);

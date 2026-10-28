@@ -27,26 +27,32 @@ use Vvveb\System\Traits\Crud as CrudTrait;
 use Vvveb\System\Traits\Listing as ListingTrait;
 
 class Listing extends Base {
-	use ListingTrait, CrudTrait {
+	use CrudTrait, ListingTrait {
 		ListingTrait::index as get;
 		CrudTrait::delete insteadof ListingTrait;
 	}
 
-	function __construct() {
+	/**
+	 * Constructor - sets default redirect and fullPost flags.
+	 */
+	public function __construct() {
 		$this->redirect = false;
 		$this->fullPost = true;
 	}
 
-	function post() {
+	/**
+	 * Create a new resource with validation.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function post(): array {
 		$model = model($this->type);
 		$data  = $this->request->post ?? [];
 
-		if ($model) {
-			$errors = $model->validate($data, 'add', $this->type);
+		$errors = $model->validate($data, 'add', $this->type);
 
-			if ($errors) {
-				$this->notFound(['errors' => $errors], 500);
-			}
+		if ($errors) {
+			$this->notFound(['errors' => $errors], 500);
 		}
 
 		$this->redirect = false;
@@ -55,7 +61,12 @@ class Listing extends Base {
 		return $this->save();
 	}
 
-	function index() {
+	/**
+	 * Retrieve a list of resources with pagination headers.
+	 *
+	 * @return array<int, mixed>
+	 */
+	public function index(): array {
 		$results               = $this->get();
 		$this->view->success[] = '%s(s) deleted!';
 

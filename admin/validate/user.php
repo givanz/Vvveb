@@ -47,7 +47,7 @@ return [
 		'email'     => '',
 		'maxLength' => 100,
 	],
-	/*	
+	/*
 	'captcha' => [
 			['captcha' => ''],
 	],	*/

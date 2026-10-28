@@ -31,10 +31,10 @@ return [
 	],
 */
 	'host' => [
-		'notEmpty'  => '',
+		'notEmpty' => '',
 	],
 
 	'theme' => [
-		'notEmpty'  => '',
+		'notEmpty' => '',
 	],
 ];

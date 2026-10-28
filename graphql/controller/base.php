@@ -22,7 +22,6 @@
 
 namespace Vvveb\Controller;
 
-use \Vvveb\System\Core\FrontController;
 use function Vvveb\__;
 use function Vvveb\config;
 use function Vvveb\siteSettings;
@@ -38,19 +37,26 @@ use Vvveb\System\User\Admin;
 class Base {
 	use Permission;
 
-	protected $global = [];
+	/** @var array<string, mixed> */
+	protected array $global = [];
 
-	function auth() {
+	/**
+	 * Authenticate the current admin user via HTTP or token-based auth.
+	 *
+	 * @return void
+	 */
+	public function auth(): void {
 		$admin = Admin::current();
 
-		if (! $admin) {
+		if (!$admin) {
 			$authMode = config(APP . '.auth.mode');
 
-			if ($authMode == 'http') {
+			if ($authMode === 'http') {
 				if (isset($_SERVER['PHP_AUTH_USER'])) {
 					$user      = $_SERVER['PHP_AUTH_USER'];
 					$password  = $_SERVER['PHP_AUTH_PW'] ?? '';
 					$loginData = compact('user', 'password');
+					$feedback  = [];
 
 					if ($userInfo = Admin::login($loginData, [], $feedback)) {
 					} else {
@@ -59,10 +65,9 @@ class Base {
 						$message = __('Auth failed!');
 
 						if (DEBUG) {
-							$message .= ' ' . $feedback['message'] ?? [];
+							$message .= ' ' . ($feedback['message'] ?? '');
 							$message .= " auth.mode = $authMode";
 						}
-						//FrontController::notFound(false, $message, 403);
 						$this->notFound($message, 403);
 					}
 				} else {
@@ -74,31 +79,29 @@ class Base {
 						$message .= __('No credentials!');
 						$message .= " auth.mode = $authMode";
 					}
-					//FrontController::notFound(false, $message, 403);
 					$this->notFound($message, 403);
 				}
 			} else {
-				if ($authMode == 'token') {
+				if ($authMode === 'token') {
 					$headers = getallheaders();
 					$token   = $headers['Bearer'] ?? $_SERVER['HTTP_BEARER'] ?? null;
 
-					if (! $token) {
+					if (!$token) {
 						$token = $headers['Authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? '';
 						$token = trim(substr($token, 6)) ?: $this->request->get['_token'] ?? false;
 					}
 
 					if ($token) {
+						$feedback = [];
 						if ($userInfo = Admin::auth($token, [], $feedback)) {
 						} else {
 							$this->response->addHeader('HTTP/1.0 401 Unauthorized');
 							$message = __('Auth failed!');
 
 							if (DEBUG) {
-								$message .= ' ' . $feedback['message'] ?? [];
+								$message .= ' ' . ($feedback['message'] ?? '');
 								$message .= " auth.mode = $authMode";
-								$message .= " token = $token";
 							}
-							//FrontController::notFound(false, $message, 403);
 							$this->notFound($message, 403);
 						}
 					} else {
@@ -108,9 +111,7 @@ class Base {
 						if (DEBUG) {
 							$message .= __('No credentials!');
 							$message .= " auth.mode = $authMode";
-							$message .= " token = $token";
 						}
-						//FrontController::notFound(false, $message, 403);
 						$this->notFound($message, 403);
 					}
 				}
@@ -118,19 +119,32 @@ class Base {
 		}
 	}
 
-	protected function initEcommerce($countryId, $regionId) {
+	/**
+	 * Initialize ecommerce tax rules for the given region.
+	 *
+	 * @param int $countryId
+	 * @param int $regionId
+	 *
+	 * @return void
+	 */
+	protected function initEcommerce(int $countryId, int $regionId): void {
 		$tax = \Vvveb\System\Cart\Tax::getInstance();
 		$tax->setRegionRules($countryId, $regionId, 'store');
 	}
 
-	function init() {
+	/**
+	 * Initialize the GraphQL controller: set up request/response/session, authenticate, and load global settings.
+	 *
+	 * @return string|null
+	 */
+	public function init(): ?string {
 		$this->response = Response::getInstance();
 		$this->request  = Request::getInstance();
 		$this->session  = Session::getInstance();
 
 		$this->response->setType('json');
 
-		if (! GRAPHQL) {
+		if (!GRAPHQL) {
 			$this->notFound(__('GRAPHQL is disabled!'), 404);
 		}
 
@@ -138,20 +152,29 @@ class Base {
 
 		$method     = $this->request->getMethod();
 
-		Plugins :: loadPlugins();
+		Plugins::loadPlugins();
 		$site = siteSettings();
 
-		list($site) = Event::trigger(__CLASS__, __FUNCTION__, $site);
+		[$site] = Event::trigger(__CLASS__, __FUNCTION__, $site);
 
-		$this->global['site_id']             = SITE_ID ?? 1;
+		$this->global['site_id']             = SITE_ID;
+		$this->global['languages']           = $site['languages'] ?? [];
+		$this->global['language']            = ($site['language'] ?? '') ?: 'en';
 		$this->global['language_id']         = $this->session->get('language_id') ?? $site['language_id'] ?? 1;
+		$this->global['default_language']    = $site['language'] ?? 'en';
 		$this->global['default_language_id'] = $this->session->get('default_language_id') ?? $site['language_id'] ?? 1;
+		$this->global['default_lang_slug']   = $site['default_lang_slug'] ?? false;
+		$this->global['currency_id']         = (int)($this->session->get('currency_id') ?? $site['currency_id'] ?? 1);
+		$this->global['currency']            = $this->session->get('currency') ?? $site['currency'] ?? 'usd';
+		$this->global['currencies']          = $site['currencies'] ?? [];
 		$this->global['limit']               = 10;
 		$this->global['start']               = 0;
+
+		$user                                = Admin::current() ?: [];
 		$this->global['user_id']             = $user['user_id'] ?? false;
 		$this->global['user_group_id']       = $user['user_group_id'] ?? 1;
 		$this->global['site']                = &$site;
-		$this->global['user']                = $user ?? [];
+		$this->global['user']                = $user;
 
 		$language_id = $this->global['language_id'];
 
@@ -165,24 +188,27 @@ class Base {
 
 		$this->global['site'] = &$site;
 
-		list($this->global) = Event::trigger(__CLASS__, __FUNCTION__ . ':after', $this->global);
+		[$this->global] = Event::trigger(__CLASS__, __FUNCTION__ . ':after', $this->global);
+
+		return null;
 	}
 
 	/**
-	 * Call this function if the requeste information was not found, for example if the specifed news, image, profile etc is not found then call this function.
-	 * It shows a "Not found" page and it also send 404 http status code, this is usefull for search engines etc.
+	 * Call this function if the requested information was not found.
+	 * It outputs an error response and terminates.
 	 *
-	 * @param unknown_type $code
-	 * @param mixed $service
-	 * @param mixed $statusCode
-	 * @param null|mixed $message
+	 * @param array<string, mixed>|string|null $message
+	 * @param int                              $statusCode
+	 * @param bool                             $service
+	 *
+	 * @return never
 	 */
-	protected function notFound($message = null, $statusCode = 404, $service = false) {
+	protected function notFound(array|string|null $message = null, int $statusCode = 404, bool $service = false): never {
 		$response = Response::getInstance();
 		http_response_code($statusCode);
 
 		$response->output(['errors' => is_array($message) ? $message : ['message' => $message]]);
 
-		die();
+		exit();
 	}
 }

@@ -38,7 +38,7 @@ return [
 		'session' => 'csrf',
 	],
 */
-	/*	
+	/*
 	'captcha' => [
 			['captcha' => ''],
 	],	*/

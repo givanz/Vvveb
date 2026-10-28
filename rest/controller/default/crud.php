@@ -26,14 +26,17 @@ use Vvveb\Controller\Crud as CrudBase;
 
 #[\AllowDynamicProperties]
 class Crud extends CrudBase {
-	protected $type = '';
+	/** @var string The resource type/schema name */
+	protected string $type = '';
 
-	function __construct() {
-		$urlData     = \Vvveb\System\Routes::getUrlData();		
-		$this->type = $urlData['schema'];
+	/**
+	 * Constructor - resolves the resource type from the URL data.
+	 */
+	public function __construct() {
+		$urlData     = \Vvveb\System\Routes::getUrlData();
+		$this->type  = $urlData['schema'];
 		if ($this->type) {
 			$this->module = $this->type;
 		}
 	}
-
 }

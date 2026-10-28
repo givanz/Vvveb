@@ -27,7 +27,6 @@ use Vvveb\System\Traits\Product as ProductTrait;
 
 #[\AllowDynamicProperties]
 class Product extends Base {
-	//use ProductTrait;
 	use ProductTrait {
 		product as get;
 		products as getAll;

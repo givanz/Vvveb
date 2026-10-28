@@ -32,39 +32,54 @@ class Crud extends Base {
 		CrudTrait::index as get;
 	}
 
-	protected $fullPost = true;
+	//protected bool $fullPost = true;
 
-	function validate($method, $ignoreMissing = false) {
+	public function __construct() {
+		$this->fullPost = true;
+	}
+
+	/**
+	 * Validate the incoming request data against the model.
+	 *
+	 * @param string $method
+	 * @param bool   $ignoreMissing
+	 *
+	 * @return array<int, string>|true Array of error messages or true on success
+	 */
+	public function validate(string $method, bool $ignoreMissing = false): array|true {
 		$model = model($this->type);
 		$data  = $this->request->post ?? [];
 
-		if ($model) {
-			$errors = $model->validate($data, $method, $this->type, $ignoreMissing);
+		$errors = $model->validate($data, $method, $this->type, $ignoreMissing);
 
-			if ($errors) {
-				return $errors;
-			} else {
-				return true;
-			}
+		if ($errors) {
+			return $errors;
+		} else {
+			return true;
 		}
-
-		$this->redirect = false;
-
-		return [sprintf(__('%s not found!'), ucfirst($this->type))];
 	}
 
-	function index() {
+	/**
+	 * Retrieve a single resource by ID.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function index(): array {
 		$data = $this->get();
 
-		if (! $data || (! isset($data[$this->type . '_id']))) {
+		if (!$data || (!isset($data[$this->type . '_id']))) {
 			return $this->notFound(sprintf(__('%s not found!'), ucfirst($this->type)));
 		}
 
 		return $data;
 	}
 
-	//create
-	function post() {
+	/**
+	 * Create a new resource.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function post(): array {
 		if (($errors = $this->validate('add')) === true) {
 			$this->redirect = false;
 
@@ -74,8 +89,12 @@ class Crud extends Base {
 		}
 	}
 
-	//edit
-	function patch() {
+	/**
+	 * Update an existing resource via PATCH.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function patch(): array {
 		if (($errors = $this->validate('edit')) === true) {
 			$this->redirect = false;
 
@@ -85,8 +104,12 @@ class Crud extends Base {
 		}
 	}
 
-	//upsert
-	function put() {
+	/**
+	 * Upsert a resource (create or update).
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function put(): array {
 		//if id update else create
 		if (($errors = $this->validate('edit', true)) === true) {
 			return $this->save();
@@ -95,10 +118,14 @@ class Crud extends Base {
 		}
 	}
 
-	//delete
-	function delete() {
+	/**
+	 * Delete a resource by ID.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function delete(): array {
 		$type    = $this->type;
-		$type_id = $this->type_id ?? "{$type}_id";
+		$type_id = $this->type_id ?: "{$type}_id";
 
 		$data_id    = $this->request->post[$type_id] ?? $this->request->get[$type_id] ?? false;
 		$response   = ['deleted' => false];
@@ -108,9 +135,7 @@ class Crud extends Base {
 				$data_id = [$data_id];
 			}
 
-			if (! isset($this->modelName)) {
-				$modelName = $type;
-			}
+			$modelName = $this->modelName ?: $type;
 
 			$model               = model($modelName);
 			$options             = [$type_id => $data_id] + $this->global;
@@ -126,7 +151,7 @@ class Crud extends Base {
 					return $this->notFound($response, 410);
 				}
 			} else {
-				$response['message'] = 'Error deleting %s!';
+				$response['message'] = sprintf('Error deleting %s!', $name);
 
 				return $this->notFound($response, 500);
 			}

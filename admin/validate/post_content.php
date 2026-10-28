@@ -27,10 +27,10 @@ return [
 	],
 
 	'content' => [
-		'notEmpty'  => '',
+		'notEmpty' => '',
 	],
 	'slug' => [
-		'notEmpty'  => '',
+		'notEmpty' => '',
 	],
 
 	/*
