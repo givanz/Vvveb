@@ -29,13 +29,13 @@ if (APP == 'admin') {
 	$admin_path = \Vvveb\adminPath();
 }
 
-$admin_path .= strpos($admin_path, 'index.php') === false ? 'index.php' : '';
+$admin_path .= !str_contains($admin_path, 'index.php') ? 'index.php' : '';
 
 return
 [
 	'name'            => __('Products'),
 	'url'             => $admin_path . '?module=product/products',
-	'icon'		          => 'icon-cube-outline',
+	'icon'            => 'box',
 	'show_on_modules' => ['Product/products', 'Product/product', 'Product/categories'],
 	'class'           => 'align-middle columns-2',
 
@@ -46,7 +46,7 @@ return
 			'module' => 'product/products',
 			'action' => 'index',
 
-			'icon' => 'la la-box',
+			'icon' => 'box',
 		],
 
 		'addpage' => [
@@ -54,7 +54,7 @@ return
 			'url'    => $admin_path . '?module=product/product',
 			'module' => 'product/product',
 			'action' => 'save',
-			'icon'   => 'la la-plus-circle',
+			'icon'   => 'circle-plus',
 		],
 
 		'taxonomy-heading' => [
@@ -67,7 +67,7 @@ return
 			'url'    => $admin_path . '?module=product/categories',
 			'module' => 'product/categories',
 			'action' => 'index',
-			'icon'   => 'la la-boxes',
+			'icon'   => 'package',
 		],
 */
 		'relations-heading' => [
@@ -80,7 +80,7 @@ return
 			'url'    => $admin_path . '?module=product/manufacturers',
 			'module' => 'product/manufacturers',
 			'action' => 'index',
-			'icon'   => 'la la-industry',
+			'icon'   => 'building-factory',
 		],
 
 		'vendors' => [
@@ -88,7 +88,7 @@ return
 			'url'    => $admin_path . '?module=product/vendors',
 			'module' => 'product/vendors',
 			'action' => 'index',
-			'icon'   => 'la la-store',
+			'icon'   => 'building-store',
 		],
 		/*
 		'configuration-heading' => [
@@ -101,7 +101,7 @@ return
 			'url'    => $admin_path . '?module=product/fields',
 			'module' => 'product/fields',
 			'action' => 'index',
-			'icon'   => 'la la-stream',
+			'icon'   => 'activity',
 		],
 
 		'options' => [
@@ -109,7 +109,7 @@ return
 			'url'    => $admin_path . '?module=product/options',
 			'module' => 'product/options',
 			'action' => 'index',
-			'icon'   => 'la la-filter',
+			'icon'   => 'filter',
 		],
 
 		'digital' => [
@@ -117,7 +117,7 @@ return
 			'url'    => $admin_path . '?module=product/options',
 			'module' => 'product/options',
 			'action' => 'index',
-			'icon'   => 'la la-cloud-download-alt',
+			'icon'   => 'cloud-download',
 		],
 */
 		'content-heading' => [
@@ -130,7 +130,7 @@ return
 			'url'    => $admin_path . '?module=product/digital-assets',
 			'module' => 'product/digital-assets',
 			'action' => 'index',
-			'icon'   => 'la la-cloud-download-alt',
+			'icon'   => 'cloud-download',
 		],
 
 		'options' => [
@@ -138,7 +138,7 @@ return
 			'url'    => $admin_path . '?module=product/options',
 			'module' => 'product/options',
 			'action' => 'index',
-			'icon'   => 'la la-stream',
+			'icon'   => 'activity',
 			//'badge' => '5',
 			//'badge-class' => 'badge bg-warning float-end',
 		],
@@ -148,7 +148,7 @@ return
 			'url'    => $admin_path . '?module=product/attribute-groups',
 			'module' => 'product/attributes-groups',
 			'action' => 'index',
-			'icon'   => 'la la-list',
+			'icon'   => 'list',
 		],
 
 		'feedback-heading' => [
@@ -161,7 +161,7 @@ return
 			'url'    => $admin_path . '?module=product/product-reviews&status=0',
 			'module' => 'product/product-reviews',
 			'action' => 'index',
-			'icon'   => 'la la-comment',
+			'icon'   => 'message',
 			//'badge' => '5',
 			//'badge-class' => 'badge bg-warning float-end',
 		],
@@ -171,12 +171,12 @@ return
 			'url'    => $admin_path . '?module=product/product-questions&status=0',
 			'module' => 'product/product-questions',
 			'action' => 'index',
-			'icon'   => 'la la-question-circle',
+			'icon'   => 'help-circle',
 			//'badge' => '7',
 			//'badge-class' => 'badge bg-danger float-end',
 		],
 
-		/*					
+		/*
 		'filters' => [
 			'name' => __('Filters'),
 			'url' => $admin_path . '?module=categories',

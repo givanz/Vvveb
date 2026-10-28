@@ -21,6 +21,7 @@
  */
 
 use function Vvveb\__;
+
 //use current path
 if (APP == 'admin') {
 	$admin_path = Vvveb\Url([]);
@@ -28,7 +29,7 @@ if (APP == 'admin') {
 	$admin_path = \Vvveb\adminPath();
 }
 
-$admin_path .= strpos($admin_path, 'index.php') === false ? 'index.php' : '';
+$admin_path .= !str_contains($admin_path, 'index.php') ? 'index.php' : '';
 
 return
  [
@@ -37,23 +38,23 @@ return
  		'url'    => $admin_path,
  		'module' => 'index',
  		'action' => 'index',
- 		'icon'   => 'icon-pie-chart-outline',
+ 		'icon'   => 'chart-pie',
  	],
  	'edit' => [
- 		'name'   => __('Edit website'),
- 		'url'    => $admin_path . '?module=editor/editor',
- 		'module' => 'editor/editor',
+ 		'name'   => __('Page builder'),
+ 		'url'    => $admin_path . '?module=editor/page-builder',
+ 		'module' => 'editor/page-builder',
  		'action' => 'index',
- 		'icon'   => 'icon-color-wand-outline',
+ 		'icon'   => 'wand',
  	],
  	/*
-	'posts' => 
+	'posts' =>
 	[
 		'name' => __('Posts'),
 		'url' => $admin_path . '?module=content/posts',
 'module' => 'content/posts',
  'action' => 'index',
-		'icon' => 'ion-ios-photos-outline',
+		'icon' => 'photo',
 		'show_on_modules' => ['posts', 'post', 'pages', 'categories'],
 		'items' => [
 			'posts' => [
@@ -61,69 +62,69 @@ return
 				'url' => $admin_path . '?module=content/posts',
 'module' => 'content/posts',
  'action' => 'index',
-				'icon' => 'la la-file-alt',
+				'icon' => 'file-text',
 			],
 			'addpost' => [
 				'name' => __('Add new post'),
 				'url' => $admin_path . '?module=content/post',
 'module' => 'content/post',
  'action' => 'index',
-				'icon' => 'la la-plus-circle',
+				'icon' => 'circle-plus',
 			],
-			
-			'taxonomy-heading' => 
+
+			'taxonomy-heading' =>
 			[
 				'name' => __('Taxonomy'),
 				'heading' => true
 			],
-			
-			'categories' => 
+
+			'categories' =>
 			[
 				'name' => __('Categories'),
 				'url' => $admin_path . '?module=content/categories',
 'module' => 'content/categories',
  'action' => 'index',
-				'icon' => 'la la-boxes',
+				'icon' => 'package',
 			],
-			
+
 			'tags' => [
 				'name' => __('Tags'),
 				'url' => $admin_path . '?module=content/categories',
 'module' => 'content/categories',
  'action' => 'index',
-				'icon' => 'la la-tags',
+				'icon' => 'tags',
 			],
-			
-			'categories-heading' => 
+
+			'categories-heading' =>
 			[
 				'name' => __('General'),
 				'heading' => true
 			],
-			
+
 			'comments' => [
 				'name' => __('Comments'),
 				'url' => $admin_path . '?module=content/comments',
 'module' => 'content/comments',
  'action' => 'index',
-				'icon' => 'la la-comments',
+				'icon' => 'messages',
 			],
-			
+
 			'custom-fields' => [
 				'name' => __('Custom fields'),
 				'url' => $admin_path . '?module=content/fields',
 'module' => 'content/fields',
  'action' => 'index',
-				'icon' => 'la la-stream',
-			],		
-		
+				'icon' => 'activity',
+			],
+
 			'taxonomies' => [
 				'name' => __('Taxonomies'),
 				'url' => $admin_path . '?module=content/categories',
 'module' => 'content/categories',
  'action' => 'index',
-				'icon' => 'la la-boxes',
+				'icon' => 'package',
 				'class' => 'align-top',
-				
+
 				'items' => [
 					'categories' => [
 						'name' => __('Categories'),
@@ -131,29 +132,29 @@ return
 						'url' => $admin_path . '?module=content/categories',
 'module' => 'content/categories',
  'action' => 'index',
-						'icon' => 'la la-boxes',
+						'icon' => 'package',
 					],
-					
+
 					'tags' => [
 						'name' => __('Tags'),
 						'subtitle' => __('(Flat)'),
 						'url' => $admin_path . '?module=content/categories',
 'module' => 'content/categories',
  'action' => 'index',
-						'icon' => 'la la-tags',
+						'icon' => 'tags',
 					],
 				],
-			],		
-			
+			],
+
 		]
-	], 
+	],
 	*/
  	'pages' => [
- 		'name'     => __('Pages'),
- 		'url'      => $admin_path . '?module=content/posts&type=page',
- 		'module'   => 'content/posts',
- 		'action'   => 'index',
- 		'icon' 		  => 'icon-document-outline',
+ 		'name'   => __('Pages'),
+ 		'url'    => $admin_path . '?module=content/posts&type=page',
+ 		'module' => 'content/posts',
+ 		'action' => 'index',
+ 		'icon'   => 'file',
  		//'icon-img' => $admin_path . 'themes/default/img/svg/ionicons/ios-document-outline.svg',
  		//'icon-img' => $admin_path . 'themes/default/img/svg/ionicons/ios-photos-outline.svg',
  		'show_on_modules' => ['posts', 'post', 'pages', 'categories'],
@@ -163,14 +164,14 @@ return
  				'url'    => $admin_path . '?module=content/posts&type=page',
  				'module' => 'content/posts',
  				'action' => 'index',
- 				'icon'   => 'la la-file-invoice',
+ 				'icon'   => 'receipt',
  			],
  			'addpage' => [
  				'name'   => __('Add new page'),
  				'url'    => $admin_path . '?module=content/post&type=page',
  				'module' => 'content/post',
  				'action' => 'save',
- 				'icon'   => 'la la-plus-circle',
+ 				'icon'   => 'circle-plus',
  			],
  			'taxonomy-heading' => [
  				'name'    => __('Taxonomy'),
@@ -181,63 +182,63 @@ return
  				'url'    => $admin_path . '?module=content/menus&type=page',
  				'module' => 'content/menus',
  				'action' => 'index',
- 				'icon'   => 'la la-boxes',
+ 				'icon'   => 'package',
  			],
  			'categories' => [
- 				'name' => __('Categories'),
- 				'url' => $admin_path . '?module=content/categories&taxonomy_id=6',
+ 				'name'   => __('Categories'),
+ 				'url'    => $admin_path . '?module=content/categories&taxonomy_id=6',
  				'module' => 'content/categories',
  				'action' => 'index',
- 				'icon' => 'la la-boxes',
+ 				'icon'   => 'package',
  			],
 
  			'tags' => [
- 				'name' => __('Tags'),
- 				'url' => $admin_path . '?module=content/categories&taxonomy_id=7',
+ 				'name'   => __('Tags'),
+ 				'url'    => $admin_path . '?module=content/categories&taxonomy_id=7',
  				'module' => 'content/categories',
  				'action' => 'index',
- 				'icon' => 'la la-tags',
+ 				'icon'   => 'tags',
  			],
  			/*
-			'categories' => 
+			'categories' =>
 			[
 				'name' => __('Categories'),
 				'url' => $admin_path . '?module=content/categories',
 'module' => 'content/categories',
  'action' => 'index',
-				'icon' => 'la la-boxes',
+				'icon' => 'package',
 			],
-			
+
 			'tags' => [
 				'name' => __('Tags'),
 				'url' => $admin_path . '?module=content/categories',
 'module' => 'content/categories',
  'action' => 'index',
-				'icon' => 'la la-tags',
+				'icon' => 'tags',
 			],
-			
-			'categories-heading' => 
+
+			'categories-heading' =>
 			[
 				'name' => __('General'),
 				'heading' => true
 			],
-			
+
 			'custom-fields' => [
 				'name' => __('Custom fields'),
 				'url' => $admin_path . '?module=content/fields',
 'module' => 'content/fields',
  'action' => 'index',
-				'icon' => 'la la-stream',
-			],		
-			
+				'icon' => 'activity',
+			],
+
 			'taxonomies' => [
 				'name' => __('Taxonomies'),
 				'url' => $admin_path . '?module=content/categories',
 'module' => 'content/categories',
  'action' => 'index',
-				'icon' => 'la la-boxes',
+				'icon' => 'package',
 				'class' => 'align-top',
-				
+
 				'items' => [
 					'categories' => [
 						'name' => __('Categories'),
@@ -245,19 +246,19 @@ return
 						'url' => $admin_path . '?module=content/categories',
 'module' => 'content/categories',
  'action' => 'index',
-						'icon' => 'la la-boxes',
+						'icon' => 'package',
 					],
-					
+
 					'tags' => [
 						'name' => __('Tags'),
 						'subtitle' => __('(Flat)'),
 						'url' => $admin_path . '?module=content/categories',
 'module' => 'content/categories',
  'action' => 'index',
-						'icon' => 'la la-tags',
+						'icon' => 'tags',
 					],
 				],
-			],		
+			],
 			*/
  		],
  	],
@@ -266,28 +267,28 @@ return
  		'url'    => $admin_path . '?module=media/media',
  		'module' => 'media/media',
  		'action' => 'index',
- 		'icon'   => 'icon-image-outline',
+ 		'icon'   => 'photo',
  	],
  	'users' => [
  		'name'   => __('Users'),
  		'url'    => $admin_path . '?module=user/users',
  		'module' => 'user/users',
  		'action' => 'index',
- 		'icon'   => 'icon-people-outline',
+ 		'icon'   => 'users',
  		'items'  => [
  			'users' => [
  				'name'   => __('Users'),
  				'url'    => $admin_path . '?module=user/users',
  				'module' => 'user/users',
  				'action' => 'index',
- 				'icon'   => 'la la-user',
+ 				'icon'   => 'user',
  			],
  			'add-user' => [
  				'name'   => __('Add new user'),
  				'url'    => $admin_path . '?module=user/user',
  				'module' => 'user/user',
  				'action' => 'save',
- 				'icon'   => 'la la-plus-circle',
+ 				'icon'   => 'circle-plus',
  			],
  			'groups' => [
  				'name'    => __('Groups'),
@@ -298,14 +299,14 @@ return
  				'url'    => $admin_path . '?module=user/user-groups',
  				'module' => 'user/user-groups',
  				'action' => 'index',
- 				'icon'   => 'la la-user-friends',
+ 				'icon'   => 'users',
  			],
  			'add-group' => [
  				'name'   => __('Add new group'),
  				'url'    => $admin_path . '?module=user/user-group',
  				'module' => 'user/user-group',
  				'action' => 'save',
- 				'icon'   => 'la la-plus-circle',
+ 				'icon'   => 'circle-plus',
  			],
  		],
  	],
@@ -320,7 +321,7 @@ return
  		'url'    => $admin_path . '?module=order/orders',
  		'module' => 'order/orders',
  		'action' => 'index',
- 		'icon'   => 'icon-bag-handle-outline',
+ 		'icon'   => 'shopping-bag',
  		//'badge' => '10',
  		//'badge-class' => 'badge bg-success float-end',
  		'items' => [
@@ -329,7 +330,7 @@ return
  				'url'    => $admin_path . '?module=order/orders',
  				'module' => 'order/orders',
  				'action' => 'index',
- 				'icon'   => 'la la-file-invoice-dollar',
+ 				'icon'   => 'receipt-dollar',
  				//'badge' => '7',
  				//'badge-class' => 'badge bg-secondary float-end',
  			],
@@ -338,16 +339,23 @@ return
  				'url'    => $admin_path . '?module=order/subscriptions',
  				'module' => 'order/subscriptions',
  				'action' => 'index',
- 				'icon'   => 'la la-retweet',
+ 				'icon'   => 'repeat',
  			],
  			'returns' => [
  				'name'   => __('Returns'),
  				'url'    => $admin_path . '?module=order/returns',
  				'module' => 'order/returns',
  				'action' => 'index',
- 				'icon'   => 'la la-undo',
+ 				'icon'   => 'arrow-back-up',
  				//'badge' => '3',
  				//'badge-class' => 'badge bg-danger float-end',
+ 			],
+ 			'warehouses' => [
+ 				'name'   => __('Warehouses'),
+ 				'url'    => $admin_path . '?module=order/warehouses',
+ 				'module' => 'order/warehouses',
+ 				'action' => 'index',
+ 				'icon'   => 'building-warehouse',
  			],
  			'marketing-heading' => [
  				'name'    => __('Marketing'),
@@ -355,14 +363,14 @@ return
  			],
  			'coupons' => [
  				'name'   => __('Discount coupons'),
- 				'icon'   => 'la la-percentage',
+ 				'icon'   => 'discount',
  				'url'    => $admin_path . '?module=order/coupons',
  				'module' => 'order/coupons',
  				'action' => 'index',
  			],
  			'vouchers' => [
  				'name'   => __('Gift vouchers'),
- 				'icon'   => 'la la-gift',
+ 				'icon'   => 'gift',
  				'url'    => $admin_path . '?module=order/vouchers',
  				'module' => 'order/vouchers',
  				'action' => 'index',
@@ -375,7 +383,7 @@ return
 		'url' => $admin_path . '?module=product/products',
 'module' => 'product/products',
  'action' => 'index',
-		 'icon'   		  => 'icon-cube-outline',
+		 'icon'   		  => 'box',
 		'show_on_modules' => ['Product/products', 'Product/product', 'Product/categories'],
 		'items' => [
 			'pages' => [
@@ -383,14 +391,14 @@ return
 				'url' => $admin_path . '?module=product/products',
 'module' => 'product/products',
  'action' => 'index',
-				'icon' => 'la la-box',
+				'icon' => 'box',
 			],
 			'addpage' => [
 				'name' => __('Add new product'),
 				'url' => $admin_path . '?module=product/product',
 'module' => 'product/product',
  'action' => 'index',
-				'icon' => 'la la-plus-circle',
+				'icon' => 'circle-plus',
 			],
 			'categories-heading' => [
 				'name'    => __('Taxonomy'),
@@ -401,21 +409,21 @@ return
 				'url' => $admin_path . '?module=product/categories',
 'module' => 'product/categories',
  'action' => 'index',
-				'icon' => 'la la-boxes',
+				'icon' => 'package',
 			],
 			'manufacturers' => [
 				'name' => __('Manufacturers'),
 				'url' => $admin_path . '?module=product/manufacturers',
 'module' => 'product/manufacturers',
  'action' => 'index',
-				'icon' => 'la la-industry',
+				'icon' => 'building-factory',
 			],
 			'vendors' => [
 				'name' => __('Vendors'),
 				'url' => $admin_path . '?module=product/vendors',
 'module' => 'product/vendors',
  'action' => 'index',
-				'icon' => 'la la-store',
+				'icon' => 'building-store',
 			],
 			'configuration-heading' => [
 				'name'    => __('Configuration'),
@@ -426,21 +434,21 @@ return
 				'url' => $admin_path . '?module=product/fields',
 'module' => 'product/fields',
  'action' => 'index',
-				'icon' => 'la la-stream',
+				'icon' => 'activity',
 			],
 			'options' => [
 				'name' => __('Options'),
 				'url' => $admin_path . '?module=product/options',
 'module' => 'product/options',
  'action' => 'index',
-				'icon' => 'la la-filter',
+				'icon' => 'filter',
 			],
 			'digital' => [
 				'name' => __('Digital content'),
 				'url' => $admin_path . '?module=product/options',
 'module' => 'product/options',
  'action' => 'index',
-				'icon' => 'la la-cloud-download-alt',
+				'icon' => 'cloud-download',
 			],
 			'configuration-heading' => [
 				'name'    => __('Configuration'),
@@ -451,7 +459,7 @@ return
 				'url' => $admin_path . '?module=product/reviews',
 'module' => 'product/reviews',
  'action' => 'index',
-				'icon' => 'la la-comment',
+				'icon' => 'message',
 				//'badge' => '5',
 				//'badge-class' => 'badge bg-warning float-end',
 			],
@@ -460,7 +468,7 @@ return
 				'url' => $admin_path . '?module=product/questions',
 'module' => 'product/questions',
  'action' => 'index',
-				'icon' => 'la la-question-circle',
+				'icon' => 'help-circle',
 				//'badge' => '7',
 				//'badge-class' => 'badge bg-danger float-end',
 			],
@@ -483,7 +491,7 @@ return
  		'url'    => $admin_path . '?module=plugin/plugins',
  		'module' => 'plugin/plugins',
  		'action' => 'index',
- 		'icon'   => 'icon-extension-puzzle-outline',
+ 		'icon'   => 'puzzle',
  		'class'  => 'align-top',
  		'items'  => [
  			'installed' => [
@@ -491,21 +499,21 @@ return
  				'url'    => $admin_path . '?module=plugin/plugins',
  				'module' => 'plugin/plugins',
  				'action' => 'index',
- 				'icon'   => 'la la-plug',
+ 				'icon'   => 'plug',
  			],
  			'marketplace' => [
  				'name'   => __('Add new plugin'),
  				'url'    => $admin_path . '?module=plugin/market',
  				'module' => 'plugin/market',
  				'action' => 'index',
- 				'icon'   => 'la la-plus-circle',
+ 				'icon'   => 'circle-plus',
  			],
  			'editor' => [
  				'name'   => __('Code editor'),
  				'url'    => $admin_path . '?module=editor/code&type=plugins',
  				'module' => 'editor/code',
  				'action' => 'index',
- 				'icon'   => 'la la-code',
+ 				'icon'   => 'code',
  			],
  			'plugins-heading' => [
  				'name'    => __('Plugins'),
@@ -518,21 +526,21 @@ return
  		'url'    => $admin_path . '?module=theme/themes',
  		'module' => 'theme/themes',
  		'action' => 'index',
- 		'icon'   => 'icon-copy-outline',
+ 		'icon'   => 'copy',
  		'items'  => [
  			'installed' => [
  				'name'   => __('Installed Themes'),
  				'url'    => $admin_path . '?module=theme/themes',
  				'module' => 'theme/themes',
  				'action' => 'index',
- 				'icon'   => 'la la-brush',
+ 				'icon'   => 'brush',
  			],
  			'marketplace' => [
  				'name'   => __('Add new'),
  				'url'    => $admin_path . '?module=theme/market',
  				'module' => 'theme/market',
  				'action' => 'index',
- 				'icon'   => 'la la-plus-circle',
+ 				'icon'   => 'circle-plus',
  			],
  			'fonts-heading' => [
  				'name'    => __('Customize'),
@@ -546,14 +554,14 @@ return
  				'url'    => $admin_path . '?module=theme/fonts',
  				'module' => 'theme/themes',
  				'action' => 'fonts',
- 				'icon'   => 'la la-font',
+ 				'icon'   => 'text-size',
  			],
  			'editor' => [
  				'name'   => __('Code editor'),
  				'url'    => $admin_path . '?module=editor/code&type=themes',
  				'module' => 'editor/code',
  				'action' => 'index',
- 				'icon'   => 'la la-code',
+ 				'icon'   => 'code',
  			],
  		],
  	],
@@ -562,21 +570,21 @@ return
  		'url'    => $admin_path . '?module=field/field-groups',
  		'module' => 'field/fields',
  		'action' => 'index',
- 		'icon'   => 'icon-reader-outline',
+ 		'icon'   => 'notebook',
  		'items'  => [
  			'groups' => [
  				'name'   => __('Field groups'),
  				'url'    => $admin_path . '?module=field/field-groups',
  				'module' => 'field/field-groups',
  				'action' => 'index',
- 				'icon'   => 'la la-stream',
+ 				'icon'   => 'activity',
  			],
  			'new' => [
  				'name'   => __('Add new'),
  				'url'    => $admin_path . '?module=field/field-group',
  				'module' => 'field/field-group',
  				'action' => 'index',
- 				'icon'   => 'la la-plus-circle',
+ 				'icon'   => 'circle-plus',
  			],
  		],
  	],
@@ -585,7 +593,7 @@ return
  		'url'    => $admin_path . '?module=settings/sites',
  		'module' => 'settings/sites',
  		'action' => 'index',
- 		'icon'   => 'icon-settings-outline',
+ 		'icon'   => 'settings',
  		'class'  => 'align-top mega-menu',
  		'items'  => [
  			/*
@@ -594,7 +602,7 @@ return
 				'url'    => $admin_path . '?module=settings/settings',
 				'module' => 'settings/settings',
 				'action' => 'index',
-				'icon'   => 'la la-cog',
+				'icon'   => 'settings',
 			],
 			*/
  			'sites' => [
@@ -602,21 +610,21 @@ return
  				'url'    => $admin_path . '?module=settings/sites',
  				'module' => 'settings/sites',
  				'action' => 'index',
- 				'icon'   => 'la la-stop la-90',
+ 				'icon'   => 'square',
  				'items'  => [
  					'sites' => [
  						'name'   => __('Sites'),
  						'url'    => $admin_path . '?module=settings/sites',
  						'module' => 'settings/sites',
  						'action' => 'index',
- 						'icon'   => 'la la-stop',
+ 						'icon'   => 'square',
  					],
  					'add-site' => [
  						'name'   => __('Add new'),
  						'url'    => $admin_path . '?module=settings/site',
  						'module' => 'settings/site',
  						'action' => 'add',
- 						'icon'   => 'la la-plus-circle',
+ 						'icon'   => 'circle-plus',
  					],
  				],
  			],
@@ -625,21 +633,21 @@ return
  				'url'    => $admin_path . '?module=admin/users',
  				'module' => 'admin/users',
  				'action' => 'index',
- 				'icon'   => 'la la-user',
+ 				'icon'   => 'user',
  				'items'  => [
  					'users' => [
  						'name'   => __('Users'),
  						'url'    => $admin_path . '?module=admin/users',
  						'module' => 'admin/users',
  						'action' => 'index',
- 						'icon'   => 'la la-user',
+ 						'icon'   => 'user',
  					],
  					'add' => [
  						'name'   => __('Add new user'),
  						'url'    => $admin_path . '?module=admin/user',
  						'module' => 'admin/user',
  						'action' => 'index',
- 						'icon'   => 'la la-user-plus',
+ 						'icon'   => 'user-plus',
  					],
  					'roles-heading' => [
  						'name'    => __('Roles'),
@@ -650,23 +658,23 @@ return
  						'url'    => $admin_path . '?module=admin/roles',
  						'module' => 'admin/roles',
  						'action' => 'index',
- 						'icon'   => 'la la-user-cog',
+ 						'icon'   => 'user-cog',
  					],
  					'add-role' => [
  						'name'   => __('Add Role'),
  						'url'    => $admin_path . '?module=admin/role',
  						'module' => 'admin/role',
  						'action' => 'index',
- 						'icon'   => 'la la-user-tag',
+ 						'icon'   => 'id',
  					],
  				],
  			],
  			'content' => [
  				'name'   => __('Content'),
  				'url'    => $admin_path . '?module=content/menus',
- 				'module' => 'settings/taxonomies',
+ 				'module' => 'content/menus',
  				'action' => 'index',
- 				'icon'   => 'la la-file-alt',
+ 				'icon'   => 'file-text',
  				'items'  => [
  					/*
 					'menus' => [
@@ -674,29 +682,29 @@ return
 						'url'    => $admin_path . '?module=content/menus',
 						'module' => 'content/menus',
 						'action' => 'index',
-						'icon'   => 'la la-bars',
+						'icon'   => 'menu-2',
 					],
 					*/
  					'taxonomies' => [
  						'name'   => __('Taxonomies'),
  						'url'    => $admin_path . '?module=settings/taxonomies',
- 						'module' => 'content/taxonomies',
+ 						'module' => 'settings/taxonomies',
  						'action' => 'index',
- 						'icon'   => 'la la-boxes',
+ 						'icon'   => 'package',
  					],
  					'custom-posts' => [
  						'name'   => __('Post types'),
  						'url'    => $admin_path . '?module=settings/post-types',
  						'module' => 'settings/post-types',
  						'action' => 'index',
- 						'icon'   => 'la la-file-alt',
+ 						'icon'   => 'file-text',
  					],
  					'custom-products' => [
  						'name'   => __('Product types'),
  						'url'    => $admin_path . '?module=settings/product-types',
  						'module' => 'settings/product-types',
  						'action' => 'index',
- 						'icon'   => 'la la-box',
+ 						'icon'   => 'box',
  					],
  				],
  			],
@@ -705,27 +713,27 @@ return
  				'url'    => $admin_path . '?module=user/users',
  				'module' => 'user/users',
  				'action' => 'index',
- 				'icon'   => 'la la-shopping-cart',
+ 				'icon'   => 'shopping-cart',
  				'class'  => 'align-top',
  				'items'  => [
  					/*
 					'checkout' => [
 						'name'   => __('Checkout & payments'),
-						'icon'   => 'la la-credit-card',
+						'icon'   => 'credit-card',
 						'url'    => $admin_path . '?module=settings/checkout',
 						'module' => 'settings/checkout',
 						'action' => 'index',
 					],
 					'email' => [
-						'name'   => __('Email notifications'),
-						'icon'   => 'la la-envelope',
+						'name'   => __('Notifications'),
+						'icon'   => 'mail',
 						'url'    => $admin_path . '?module=settings/notifications',
 						'module' => 'settings/notifications',
 						'action' => 'index',
 					],*/
  					'subscriptions' => [
  						'name'   => __('Subscriptions plans'),
- 						'icon'   => 'la la-receipt',
+ 						'icon'   => 'receipt',
  						'url'    => $admin_path . '?module=settings/subscription-plans',
  						'module' => 'settings/subscriptions-plans',
  						'action' => 'index',
@@ -734,7 +742,7 @@ return
  					/*
 					'shipping' => [
 						'name'  => __('Shipping'),
-						'icon'  => 'la la-shipping-fast',
+						'icon'  => 'truck-delivery',
 						'url' => $admin_path . '?module=settings/shipping',
 'module' => 'settings/shipping',
  'action' => 'index',
@@ -744,34 +752,34 @@ return
 								'url' => $admin_path . '?module=admin/users',
 'module' => 'admin/users',
  'action' => 'index',
-								'icon' => 'la la-user',
+								'icon' => 'user',
 							],
 							'tax-rates' => [
 								'name' => __('Tax rates'),
 								'url' => $admin_path . '?module=admin/user',
 'module' => 'admin/user',
  'action' => 'index',
-								'icon' => 'la la-user-plus',
+								'icon' => 'user-plus',
 							],
 							'role' => [
 								'name' => __('Manage Roles'),
 								'url' => $admin_path . '?module=admin/roles',
 'module' => 'admin/roles',
  'action' => 'index',
-								'icon' => 'la la-user-cog',
+								'icon' => 'user-cog',
 							],
 							'add-role' => [
 								'name' => __('Add Roles'),
 								'url' => $admin_path . '?module=admin/roles',
 'module' => 'admin/roles',
  'action' => 'index',
-								'icon' => 'la la-users-cog',
+								'icon' => 'users',
 							],
 						],
 					],*/
  					'taxes' => [
  						'name'   => __('Taxes'),
- 						'icon'   => 'la la-file-invoice-dollar',
+ 						'icon'   => 'receipt-dollar',
  						'url'    => $admin_path . '?module=settings/tax-types',
  						'module' => 'settings/tax-types',
  						'action' => 'index',
@@ -781,20 +789,20 @@ return
  								'url'    => $admin_path . '?module=settings/tax-types',
  								'module' => 'settings/tax-types',
  								'action' => 'index',
- 								'icon'   => 'la la-file-invoice',
+ 								'icon'   => 'receipt',
  							],
  							'tax-rates' => [
  								'name'   => __('Tax rates'),
  								'url'    => $admin_path . '?module=settings/tax-rates',
  								'module' => 'settings/tax-rates',
  								'action' => 'index',
- 								'icon'   => 'la la-file-invoice-dollar',
+ 								'icon'   => 'receipt-dollar',
  							],
  						],
  					],
  					'statuses' => [
  						'name'   => __('Statuses'),
- 						'icon'   => 'la la-tags',
+ 						'icon'   => 'tags',
  						'url'    => $admin_path . '?module=settings/order-statuses',
  						'module' => 'settings/order-statuses',
  						'action' => 'index',
@@ -804,14 +812,14 @@ return
  								'url'    => $admin_path . '?module=settings/stock-statuses',
  								'module' => 'settings/stock-statuses',
  								'action' => 'index',
- 								'icon'   => 'la la-box',
+ 								'icon'   => 'box',
  							],
  							'subscription-status' => [
  								'name'   => __('Subscription'),
  								'url'    => $admin_path . '?module=settings/subscription-statuses',
  								'module' => 'settings/subscription-statuses',
  								'action' => 'index',
- 								'icon'   => 'la la-retweet',
+ 								'icon'   => 'repeat',
  							],
  							'order-heading' => [
  								'name'    => __('Order'),
@@ -822,21 +830,21 @@ return
  								'url'    => $admin_path . '?module=settings/order-statuses',
  								'module' => 'settings/order-statuses',
  								'action' => 'index',
- 								'icon'   => 'la la-file-invoice',
+ 								'icon'   => 'receipt',
  							],
  							'payment-status' => [
  								'name'   => __('Payment'),
  								'url'    => $admin_path . '?module=settings/payment-statuses',
  								'module' => 'settings/payment-statuses',
  								'action' => 'index',
- 								'icon'   => 'la la-coins',
+ 								'icon'   => 'coin',
  							],
  							'shipping-status' => [
  								'name'   => __('Shipping'),
  								'url'    => $admin_path . '?module=settings/shipping-statuses',
  								'module' => 'settings/shipping-statuses',
  								'action' => 'index',
- 								'icon'   => 'la la-shipping-fast',
+ 								'icon'   => 'truck-delivery',
  							],
  							'status-heading' => [
  								'name'    => __('Returns'),
@@ -847,27 +855,27 @@ return
  								'url'    => $admin_path . '?module=settings/return-statuses',
  								'module' => 'settings/return-statuses',
  								'action' => 'index',
- 								'icon'   => 'la la-undo',
+ 								'icon'   => 'arrow-back-up',
  							],
  							'return-resolutions' => [
  								'name'   => __('Return resolutions'),
  								'url'    => $admin_path . '?module=settings/return-resolutions',
  								'module' => 'settings/return-resolutions',
  								'action' => 'index',
- 								'icon'   => 'la la-exchange-alt',
+ 								'icon'   => 'arrows-exchange',
  							],
  							'return-reasons' => [
  								'name'   => __('Return reasons'),
  								'url'    => $admin_path . '?module=settings/return-reasons',
  								'module' => 'settings/return-reasons',
  								'action' => 'index',
- 								'icon'   => 'la la-undo-alt',
+ 								'icon'   => 'arrow-back-up',
  							],
  						],
  					],
  					'classes' => [
  						'name'   => __('Measurements'),
- 						'icon'   => 'la la-ruler',
+ 						'icon'   => 'ruler',
  						'url'    => $admin_path . '?module=settings/weight-types',
  						'module' => 'settings/weight-types',
  						'action' => 'index',
@@ -877,14 +885,14 @@ return
  								'url'    => $admin_path . '?module=settings/length-types',
  								'module' => 'settings/length-types',
  								'action' => 'index',
- 								'icon'   => 'la la-ruler-horizontal',
+ 								'icon'   => 'ruler',
  							],
  							'stock-weight' => [
  								'name'   => __('Weight'),
  								'url'    => $admin_path . '?module=settings/weight-types',
  								'module' => 'settings/weight-types',
  								'action' => 'index',
- 								'icon'   => 'la la-box',
+ 								'icon'   => 'box',
  							],
  						],
  					],
@@ -895,25 +903,25 @@ return
  				'url'    => $admin_path . '?module=localization/languages',
  				'module' => 'localization/languages',
  				'action' => 'index',
- 				'icon'   => 'la la-flag',
+ 				'icon'   => 'flag',
  				'items'  => [
  					'languages' => [
  						'name'   => __('Languages'),
- 						'icon'   => 'la la-language',
+ 						'icon'   => 'language',
  						'url'    => $admin_path . '?module=localization/languages',
  						'module' => 'localization/languages',
  						'action' => 'index',
  					],
  					'currencies' => [
  						'name'   => __('Currencies'),
- 						'icon'   => 'la la-coins',
+ 						'icon'   => 'coin',
  						'url'    => $admin_path . '?module=localization/currencies',
  						'module' => 'localization/currencies',
  						'action' => 'index',
  					],
  					'geo-location' => [
  						'name'   => __('Geo location'),
- 						'icon'   => 'la la-globe',
+ 						'icon'   => 'globe',
  						'url'    => $admin_path . '?module=localization/region-groups',
  						'module' => 'localization/region-groups',
  						'action' => 'index',
@@ -921,21 +929,21 @@ return
  						'items'  => [
  							'countries' => [
  								'name'   => __('Countries'),
- 								'icon'   => 'la la-flag',
+ 								'icon'   => 'flag',
  								'url'    => $admin_path . '?module=localization/countries',
  								'module' => 'localization/countries',
  								'action' => 'index',
  							],
  							'regions' => [
  								'name'   => __('Regions'),
- 								'icon'   => 'la la-city',
+ 								'icon'   => 'building',
  								'url'    => $admin_path . '?module=localization/regions',
  								'module' => 'localization/regions',
  								'action' => 'index',
  							],
  							'geoRegions' => [
  								'name'   => __('Region Groups'),
- 								'icon'   => 'la la-atlas',
+ 								'icon'   => 'map',
  								'url'    => $admin_path . '?module=localization/region-groups',
  								'module' => 'localization/region-groups',
  								'action' => 'index',
@@ -949,11 +957,18 @@ return
  				'url'    => $admin_path . '?module=settings/email',
  				'module' => 'settings/email',
  				'action' => 'index',
- 				'icon'   => 'la la-tools',
+ 				'icon'   => 'tools',
  				'items'  => [
+ 					'notifications' => [
+ 						'name'   => __('Notifications'),
+ 						'icon'   => 'bell',
+ 						'url'    => $admin_path . '?module=settings/notifications',
+ 						'module' => 'settings/notifications',
+ 						'action' => 'index',
+ 					],
  					'email' => [
  						'name'   => __('Email settings'),
- 						'icon'   => 'la la-envelope',
+ 						'icon'   => 'mail',
  						'url'    => $admin_path . '?module=settings/email',
  						'module' => 'settings/email',
  						'action' => 'index',
@@ -967,7 +982,7 @@ return
  		'url'    => $admin_path . '?module=tools/cache',
  		'module' => 'tools/cache',
  		'action' => 'index',
- 		'icon'   => 'icon-build-outline',
+ 		'icon'   => 'hammer',
  		'class'  => 'align-top',
  		'items'  => [
  			'cache' => [
@@ -975,28 +990,65 @@ return
  				'url'    => $admin_path . '?module=tools/cache',
  				'module' => 'tools/cache',
  				'action' => 'index',
- 				'icon'   => 'la la-circle-notch',
+ 				'icon'   => 'loader-2',
  			],
  			'backup' => [
  				'name'   => __('Backup'),
  				'url'    => $admin_path . '?module=tools/backup',
  				'module' => 'tools/backup',
  				'action' => 'index',
- 				'icon'   => 'la la-server',
+ 				'icon'   => 'server',
+ 				'items'  => [
+ 					'backup' => [
+ 						'name'   => __('Database Backup'),
+ 						'url'    => $admin_path . '?module=tools/backup',
+ 						'module' => 'tools/backup',
+ 						'action' => 'index',
+ 						'icon'   => 'server',
+ 					],
+ 					'media-backup' => [
+ 						'name'   => __('Media Backup'),
+ 						'url'    => $admin_path . '?module=tools/media-backup',
+ 						'module' => 'tools/media-backup',
+ 						'action' => 'index',
+ 						'icon'   => 'photo',
+ 					],
+ 					'plugins-backup' => [
+ 						'name'   => __('Plugins Backup'),
+ 						'url'    => $admin_path . '?module=tools/plugins-backup',
+ 						'module' => 'tools/plugins-backup',
+ 						'action' => 'index',
+ 						'icon'   => 'plug',
+ 					],
+ 					'themes-backup' => [
+ 						'name'   => __('Themes Backup'),
+ 						'url'    => $admin_path . '?module=tools/themes-backup',
+ 						'module' => 'tools/themes-backup',
+ 						'action' => 'index',
+ 						'icon'   => 'brush',
+ 					]
+ 				]
  			],
  			'cron' => [
  				'name'   => __('Cron job'),
  				'url'    => $admin_path . '?module=tools/cron',
  				'module' => 'tools/cron',
  				'action' => 'index',
- 				'icon'   => 'la la-history la-90',
+ 				'icon'   => 'history',
+ 			],
+ 			'queue' => [
+ 				'name'   => __('Queue'),
+ 				'url'    => $admin_path . '?module=tools/queue',
+ 				'module' => 'tools/queue',
+ 				'action' => 'index',
+ 				'icon'   => 'checklist',
  			],
  			'import-export' => [
  				'name'   => __('Import/Export'),
  				'url'    => $admin_path . '?module=tools/import',
  				'module' => 'tools/import',
  				'action' => 'index',
- 				'icon'   => 'la la-upload',
+ 				'icon'   => 'upload',
  				'items'  => [
  					'content-heading' => [
  						'name'    => __('Content'),
@@ -1004,14 +1056,14 @@ return
  					],
  					'import' => [
  						'name'   => __('Import content'),
- 						'icon'   => 'la la-file-import',
+ 						'icon'   => 'file-import',
  						'url'    => $admin_path . '?module=tools/import',
  						'module' => 'tools/import',
  						'action' => 'index',
  					],
  					'export' => [
  						'name'   => __('Export content'),
- 						'icon'   => 'la la-file-export',
+ 						'icon'   => 'file-export',
  						'url'    => $admin_path . '?module=tools/export',
  						'module' => 'tools/export',
  						'action' => 'index',
@@ -1023,14 +1075,14 @@ return
 					],
 					'import-media' => [
 						'name'   => __('Import media'),
-						'icon'   => 'la la-caret-square-left',
+						'icon'   => 'square-chevron-left',
 						'url'    => $admin_path . '?module=tools/import',
 						'module' => 'tools/import',
 						'action' => 'index',
 					],
 					'export-media' => [
 						'name'   => __('Export media'),
-						'icon'   => 'la la-caret-square-right',
+						'icon'   => 'square-chevron-right',
 						'url'    => $admin_path . '?module=tools/export',
 						'module' => 'tools/export',
 						'action' => 'index',
@@ -1044,7 +1096,7 @@ return
 				'url'    => $admin_path . '?module=tools/security',
 				'module' => 'tools/security',
 				'action' => 'index',
-				'icon'   => 'la la-shield-alt',
+				'icon'   => 'shield',
 			],
 			*/
  			'system' => [
@@ -1052,11 +1104,11 @@ return
  				'url'    => $admin_path . '?module=tools/systeminfo',
  				'module' => 'tools/systeminfo',
  				'action' => 'index',
- 				'icon'   => 'la la-info-circle',
+ 				'icon'   => 'info-circle',
  				'items'  => [
  					'info' => [
  						'name'   => __('System Info'),
- 						'icon'   => 'la la-info',
+ 						'icon'   => 'info-circle',
  						'url'    => $admin_path . '?module=tools/systeminfo',
  						'module' => 'tools/systeminfo',
  						'action' => 'index',
@@ -1066,7 +1118,7 @@ return
  						'url'    => $admin_path . '?module=tools/errorlog',
  						'module' => 'tools/errorlog',
  						'action' => 'index',
- 						'icon'   => 'la la-bug',
+ 						'icon'   => 'bug',
  					],
  				],
  			],
@@ -1075,8 +1127,8 @@ return
  				'url'    => $admin_path . '?module=tools/update',
  				'module' => 'tools/update',
  				'action' => 'index',
- 				'icon'   => 'la la-sync',
+ 				'icon'   => 'refresh',
  			],
  		],
- 	],
+ 	]
  ];

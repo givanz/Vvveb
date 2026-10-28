@@ -19,22 +19,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-if (! defined('V_VERSION')) {
-	die('Invalid request!');
+if (!defined('V_VERSION')) {
+	exit('Invalid request!');
 }
 //if (function_exists('printAdminBarMenu')) return;
 
 use function Vvveb\__;
 
 $menu       = \Vvveb\config('admin-menu', []);
-list($menu) = Vvveb\System\Event::trigger('Vvveb\Controller\Base','init-menu', $menu);
-list($menu) = Vvveb\System\Event::trigger('admin-bar', 'menu', $menu);
-list($top)  = Vvveb\System\Event::trigger('admin-bar', 'top', []);
+[$menu]     = Vvveb\System\Event::trigger('Vvveb\Controller\Base', 'init-menu', $menu);
+[$menu]     = Vvveb\System\Event::trigger('admin-bar', 'menu', $menu);
+[$top]      = Vvveb\System\Event::trigger('admin-bar', 'top', []);
 
 $template    = Vvveb\getCurrentTemplate();
 $url         = Vvveb\getCurrentUrl();
 $admin_path  = Vvveb\adminPath() . 'index.php';
-$params      = ['module' => 'editor/editor', 'template' => $template, 'url' => $url];
+$params      = ['module' => 'editor/page-builder', 'template' => $template, 'url' => $url];
 $request     = Vvveb\System\Core\Request::getInstance();
 $name        = $request->get['name'] ?? $request->get['slug'] ?? '';
 $urlData     = Vvveb\System\Routes::getUrlData($url);
@@ -64,8 +64,35 @@ $design_url  = $admin_path . Vvveb\url($params, false, false);
 $admin       = \Vvveb\System\User\Admin :: current();
 $profile_url = $admin_path . Vvveb\url(['module' => 'admin/user', 'admin_id' => $admin['admin_id']], false, false);
 
-if (! function_exists('printAdminBarMenu')) {
-	function printAdminBarMenu($menu) {
+if (!function_exists('printAdminBarIcon')) {
+	// Inline Tabler icon from the admin sprite (no font dependency, works on
+	// any frontend theme). Unknown ids fall back to the legacy <i> tag.
+	function printAdminBarIcon(mixed $id): void {
+		static $symbols = null;
+
+		if (!is_string($id) || !preg_match('/^[a-z0-9-]+$/', $id)) {
+			return;
+		}
+
+		if ($symbols === null) {
+			$sprite  = defined('DIR_PUBLIC') ? DIR_PUBLIC . 'admin/default/img/icons.svg' : null;
+			$symbols = ($sprite && is_file($sprite)) ? file_get_contents($sprite) : '';
+		}
+
+		if ($symbols && preg_match('/<symbol id="' . $id . '"[^>]*>(.*?)<\/symbol>/s', $symbols, $m)) {
+			echo '<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $m[1] . '</svg>';
+		} else {
+			echo '<i class="' . $id . '"></i>';
+		}
+	}
+}
+
+if (!function_exists('printAdminBarMenu')) {
+	/**
+	 * @param array<array-key, mixed> $menu
+	 */
+	function printAdminBarMenu(array $menu): void {
+		/** @var array<int, array<string, mixed>> $menu */
 		foreach ($menu as $menuEntry) {
 			echo '<li>';
 
@@ -73,7 +100,7 @@ if (! function_exists('printAdminBarMenu')) {
 				echo '<a href="' . $menuEntry['url'] . '" ' . (isset($menuEntry['items']) ? 'class="has-submenu"' : '') . '>';
 
 				if (isset($menuEntry['icon']) && $menuEntry['icon']) {
-					echo '<i class="' . $menuEntry['icon'] . '"></i>';
+					printAdminBarIcon($menuEntry['icon']);
 				} elseif (isset($menuEntry['icon-img']) && $menuEntry['icon-img']) {
 					echo '<img src="' . $menuEntry['icon-img'] . '">';
 				} else {
@@ -98,72 +125,72 @@ if (! function_exists('printAdminBarMenu')) {
 ?>
 
 <div id="vvveb-admin">
-	
+
 	<ul>
 		<li class="v-logo"><a href="https://www.vvveb.com" target="_blank"><div class="vvveb-logo"></div></a>
 			<ul>
 				<li><a href="https://www.vvveb.com" target="_blank">
-						<i class="la la-home"></i><?php echo __('Vvveb Homepage'); ?>
+						<?php printAdminBarIcon('home'); ?><?php echo __('Vvveb Homepage'); ?>
 					</a>
 				</li>
 				<li>
 					<a href="https://docs.vvveb.com" target="_blank">
-						<i class="la la-file-alt"></i><?php echo __('Documentation'); ?>
+						<?php printAdminBarIcon('file-text'); ?><?php echo __('Documentation'); ?>
 					</a>
 				</li>
 				<li>
 					<a href="https://github.com/givanz/Vvveb/discussions" target="_blank">
-						<i class="la la-sms"></i><?php echo __('Forums'); ?>
+						<?php printAdminBarIcon('message'); ?><?php echo __('Forums'); ?>
 					</a>
 				</li>
 			</ul>
 		</li>
-		<li><a href="<?php echo $admin_path; ?>"><i class="icon-settings-outline"></i><?php echo __('Admin'); ?></a>
+		<li><a href="<?php echo $admin_path; ?>"><?php printAdminBarIcon('settings'); ?><?php echo __('Admin'); ?></a>
 			<ul>
 				<?php printAdminBarMenu($menu); ?>
 			</ul>
 		</li>
 		<li>
-			<a href="<?php echo $design_url; ?>"> <i class="la la-paint-brush"></i><?php echo __('Design page'); ?></a>
+			<a href="<?php echo $design_url; ?>"> <?php printAdminBarIcon('brush'); ?><?php echo __('Design page'); ?></a>
 		</li>
-		<?php if ($edit_url) { ?>	
+		<?php if ($edit_url) { ?>
 		<li>
-			<a href="<?php echo $edit_url; ?>"> <i class="la la-pencil-alt"></i><?php echo __('Edit page'); ?></a>
+			<a href="<?php echo $edit_url; ?>"> <?php printAdminBarIcon('pencil'); ?><?php echo __('Edit page'); ?></a>
 		</li>
 		<?php } ?>
 		<li>
 			<a href="<?php echo $admin_path . '?module=content/comments&status=0&type=post'; ?>">
-			<i class="la la-comments"></i><?php echo __('Comments'); ?></a>
+			<?php printAdminBarIcon('messages'); ?><?php echo __('Comments'); ?></a>
 		</li>
 		<li>
 			<a href="<?php echo $admin_path; ?>?module=tools/cache&action=delete">
-				<i class="icon-reload-circle-outline"></i>
+				<?php printAdminBarIcon('rotate-clockwise'); ?>
 				<?php echo __('Clear cache'); ?></a>
 			<ul>
 				<li>
 					<a href="<?php echo $admin_path; ?>?module=tools/cache&action=asset" target="_blank">
-						<i class="la la-circle-notch"></i>
+						<?php printAdminBarIcon('file-text'); ?>
 						<?php echo __('Frontend assets cache'); ?>
 					</a>
 				</li>
 				<li>
 					<a href="<?php echo $admin_path; ?>?module=tools/cache&action=template" target="_blank">
-						<i class="la la-circle-notch"></i><?php echo __('Compiled templates'); ?>
+						<?php printAdminBarIcon('code-off'); ?><?php echo __('Compiled templates'); ?>
 					</a>
 				</li>
 				<li><a href="<?php echo $admin_path; ?>?module=tools/cache&action=database" target="_blank">
-					<i class="la la-circle-notch"></i>
+					<?php printAdminBarIcon('server'); ?>
 					<?php echo __('Database'); ?></a>
 				</li>
 				<li>
 					<a href="<?php echo $admin_path; ?>?module=tools/cache&action=image" target="_blank">
-						<i class="la la-circle-notch"></i>
+						<?php printAdminBarIcon('photo'); ?>
 						<?php echo __('Image resize cache'); ?>
 					</a>
 				</li>
 				<li>
 					<a href="<?php echo $admin_path; ?>?module=tools/cache&action=page" target="_blank">
-						<i class="la la-circle-notch"></i>
+						<?php printAdminBarIcon('file'); ?>
 						<?php echo __('Full page cache'); ?>
 					</a>
 				</li>
@@ -172,12 +199,12 @@ if (! function_exists('printAdminBarMenu')) {
 				</li>
 				<li>
 					<a href="<?php echo $admin_path; ?>?module=tools/cache&action=delete" target="_blank">
-						<i class="la la-circle-notch"></i>
+						<?php printAdminBarIcon('refresh'); ?>
 						<?php echo __('All cache'); ?>
 					</a>
 				</li>
 			</ul>
-		
+
 			<?php if ($top) { ?>
 				<li><div class="vr align-middle mx-1">&nbsp;</div></li>
 			<?php
@@ -185,19 +212,19 @@ if (! function_exists('printAdminBarMenu')) {
 			} ?>
 		</li>
 	</ul>
-	
-	
+
+
 	<ul class="float-end">
 		<li>
-			<a href="<?php echo $admin_path; ?>"><i class="la la-user"></i><?php echo $admin['display_name'] ?? ''; ?></a>
+			<a href="<?php echo $admin_path; ?>"><?php printAdminBarIcon('user'); ?><?php echo $admin['display_name'] ?? ''; ?></a>
 			<ul style="right:0;">
-				 <li><a href="<?php echo $profile_url; ?>"><i class="la la-edit"></i><?php echo __('Edit profile'); ?></a></li>
+				 <li><a href="<?php echo $profile_url; ?>"><?php printAdminBarIcon('edit'); ?><?php echo __('Edit profile'); ?></a></li>
 				<li>
-				<form action="<?php echo $admin_path; ?>?module=user/login" 
+				<form action="<?php echo $admin_path; ?>?module=user/login"
 					method="post" enctype="multipart/form-data" target="_blank">
 					<input type="hidden" name="csrf" data-v-csrf>
 					<input type="hidden" name="logout">
-				
+
 					<button type="submit" value="logout" class="btn btn-light text-dark w-100">
 
 						<span class="loading d-none">
@@ -207,7 +234,7 @@ if (! function_exists('printAdminBarMenu')) {
 						</span>
 
 						<span class="button-text text-dark">
-						  <i class="la la-sign-out-alt"></i><?php echo __('Log out'); ?>
+						  <?php printAdminBarIcon('logout'); ?><?php echo __('Log out'); ?>
 						</span>
 
 					  </button>
@@ -216,7 +243,7 @@ if (! function_exists('printAdminBarMenu')) {
 			</ul>
 		</li>
 	</ul>
-	
+
 <link href="<?php echo Vvveb\publicUrlPath(); ?>admin/default/css/admin-bar.css" rel="stylesheet">
 <script>
 window.addEventListener("load", (event) => {
@@ -224,5 +251,5 @@ window.addEventListener("load", (event) => {
 		VvvebTheme.ajax.siteContainer.push("#vvveb-admin");
 	}
 });
-</script>	
+</script>
 </div>

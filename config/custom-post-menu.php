@@ -29,13 +29,13 @@ if (APP == 'admin') {
 	$admin_path = \Vvveb\adminPath();
 }
 
-$admin_path .= strpos($admin_path, 'index.php') === false ? 'index.php' : '';
+$admin_path .= !str_contains($admin_path, 'index.php') ? 'index.php' : '';
 
 return
  [
  	'name'            => __('Posts'),
  	'url'             => $admin_path . '?module=content/posts',
- 	'icon'            => 'icon-document-text-outline',
+ 	'icon'            => 'file-text',
  	'show_on_modules' => ['posts', 'post', 'pages', 'categories'],
 
  	'items' => [
@@ -44,7 +44,7 @@ return
  			'url'    => $admin_path . '?module=content/posts',
  			'module' => 'content/menus',
  			'action' => 'index',
- 			'icon'   => 'la la-file-alt',
+ 			'icon'   => 'file-text',
  		],
 
  		'addpost' => [
@@ -52,7 +52,7 @@ return
  			'url'    => $admin_path . '?module=content/post',
  			'module' => 'content/menus',
  			'action' => 'save',
- 			'icon'   => 'la la-plus-circle',
+ 			'icon'   => 'circle-plus',
  		],
 
  		'taxonomy-heading' => [
@@ -65,8 +65,8 @@ return
 			//'subtitle' => __('(Hierarchical)'),
 			'url'    => $admin_path . '?module=content/categories',
 			'module' => 'content/menus',
-			'action' => 'index', 			
-			'icon' => 'la la-boxes',
+			'action' => 'index',
+			'icon' => 'package',
 		],
 
 		'tags' => [
@@ -75,7 +75,7 @@ return
 			'url'    => $admin_path . '?module=content/tags',
 			'module' => 'content/menus',
 			'action' => 'index',
-			'icon'   => 'la la-tags',
+			'icon'   => 'tags',
 		],
 		 */
 
@@ -88,37 +88,37 @@ return
  			'name'   => __('Comments'),
  			'url'    => $admin_path . '?module=content/comments&status=0',
  			'module' => 'content/menus',
- 			'action' => 'index', 			'icon' => 'la la-comments',
+ 			'action' => 'index', 'icon' => 'messages',
  		],
- 		/*		
+ 		/*
 		'custom-fields' => [
 			'name' => __('Custom fields'),
 			'url' => $admin_path . '?module=content/fields',
-			'icon' => 'la la-stream',
-		],		
-	
+			'icon' => 'activity',
+		],
+
 		'taxonomies' => [
 			'name' => __('Taxonomies'),
 			'url' => $admin_path . '?module=content/categories',
-			'icon' => 'la la-boxes',
+			'icon' => 'package',
 			'class' => 'align-top',
-			
+
 			'items' => [
 				'categories' => [
 					'name' => __('Categories'),
 					'subtitle' => __('(Hierarchical)'),
 					'url' => $admin_path . '?module=content/categories',
-					'icon' => 'la la-boxes',
+					'icon' => 'package',
 				],
-				
+
 				'tags' => [
 					'name' => __('Tags'),
 					'subtitle' => __('(Flat)'),
 					'url' => $admin_path . '?module=content/categories',
-					'icon' => 'la la-tags',
+					'icon' => 'tags',
 				],
 			],
-		],	
+		],
 */
  	],
  ];
