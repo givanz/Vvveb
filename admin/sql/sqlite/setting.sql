@@ -7,7 +7,7 @@
 		IN namespace CHAR,
 		IN key CHAR,
 		
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 

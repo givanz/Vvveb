@@ -2,12 +2,12 @@
 
 	-- get all tax types
 
-	PROCEDURE getAll(
-		IN language_id INT,
+	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (tax_type_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- tax_type
@@ -15,7 +15,22 @@
 			FROM tax_type WHERE 1 = 1
 			
 		
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+			
+		
+		@IF isset(:cursor)
+			
+		
+		THEN
+			
+		
+			AND tax_type.tax_type_id > :cursor
+			
+		
+		END @IF
+			
+		
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -27,9 +42,9 @@
 	
 	-- get tax type
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN tax_type_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- tax_type
@@ -39,11 +54,12 @@
 	
 	-- get tax class and tax rules for region
 
-	PROCEDURE getRegionRules(
+	CREATE PROCEDURE getRegionRules(
 		IN country_id INT,
 		IN region_id INT,
 		IN based CHAR,
-		OUT fetch_all, 
+		IN user_group_id INT,
+		OUT fetch_all 
 	)
 	BEGIN
 	
@@ -52,17 +68,22 @@
 				LEFT JOIN tax_rate ON (tax_rule.tax_rate_id = tax_rate.tax_rate_id) 
 				LEFT JOIN region_to_region_group ON (tax_rate.region_group_id = region_to_region_group.region_group_id) 
 				LEFT JOIN region_group ON (tax_rate.region_group_id = region_group.region_group_id) 
+				LEFT JOIN tax_rate_to_user_group AS rate_group ON (tax_rate.tax_rate_id = rate_group.tax_rate_id)
 		WHERE tax_rule.based = :based  AND region_to_region_group.country_id = :country_id AND (region_to_region_group.region_id = '0' OR region_to_region_group.region_id = :region_id) 
+		@IF isset(:user_group_id)
+		THEN
+			AND (rate_group.tax_rate_id IS NULL OR rate_group.user_group_id = :user_group_id)
+		END @IF
 			ORDER BY tax_rule.priority ASC
 	
 	END	
 	
 	-- delete tax type
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN tax_type_id ARRAY,
 		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- tax_rules
@@ -74,8 +95,8 @@
 	
 	-- add tax_type
 
-	PROCEDURE add(
-		IN tax_type ARRAY,
+	CREATE PROCEDURE add(
+		IN tax_type ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -94,7 +115,7 @@
 	
 	-- edit tax_type
 	CREATE PROCEDURE edit(
-		IN tax_type ARRAY,
+		IN tax_type ROW,
 		IN tax_type_id INT,
 		OUT affected_rows
 	)

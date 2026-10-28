@@ -2,11 +2,11 @@
 
 	-- get all currencies
 
-	PROCEDURE getAll(
-		IN currency_id INT,
+	CREATE PROCEDURE getAll(
 		IN status INT,
+		IN cursor INT, -- current cursor (currency_id) for cursor pagination
 		OUT fetch_row, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- currency
@@ -16,6 +16,11 @@
 		@IF isset(:status) AND :status != "" 
 		THEN			
 			AND status = :status
+		END @IF
+		-- cursor pagination
+		@IF isset(:cursor)
+		THEN
+			AND currency.currency_id > :cursor
 		END @IF
 		;
 		
@@ -29,9 +34,9 @@
 	
 	-- get currency
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN currency_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- currency
@@ -41,8 +46,8 @@
 	
 	-- add currency
 
-	PROCEDURE add(
-		IN currency ARRAY,
+	CREATE PROCEDURE add(
+		IN currency ROW,
 		OUT fetch_one
 	)
 	BEGIN
@@ -61,7 +66,7 @@
 	
 	-- edit currency
 	CREATE PROCEDURE edit(
-		IN currency ARRAY,
+		IN currency ROW,
 		IN currency_id INT,
 		OUT affected_rows
 	)
@@ -81,9 +86,9 @@
 	
 	-- delete currency
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN currency_id ARRAY,
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- currency

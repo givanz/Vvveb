@@ -2,12 +2,13 @@
 
 	-- get all shipping statuses
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (shipping_status_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		SELECT *
@@ -18,7 +19,17 @@
 			AND language_id = :language_id
 		END @IF
 		
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND shipping_status.shipping_status_id > :cursor
+		
+		END @IF
+		
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -30,9 +41,9 @@
 	
 	-- get shipping_status
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN shipping_status_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- shipping_status
@@ -42,8 +53,8 @@
 	
 	-- add shipping_status
 
-	PROCEDURE add(
-		IN shipping_status ARRAY,
+	CREATE PROCEDURE add(
+		IN shipping_status ROW,
 		IN language_id INT,
 		OUT fetch_one
 	)
@@ -63,7 +74,7 @@
 	
 	-- edit shipping_status
 	CREATE PROCEDURE edit(
-		IN shipping_status ARRAY,
+		IN shipping_status ROW,
 		IN shipping_status_id INT,
 		OUT affected_rows
 	)
@@ -83,9 +94,9 @@
 	
 	-- delete shipping_status
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN shipping_status_id ARRAY,
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- shipping_status

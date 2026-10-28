@@ -7,7 +7,7 @@
 		IN namespace CHAR,
 		IN key CHAR,
 		
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -30,6 +30,7 @@
     
 	CREATE PROCEDURE set(
 		IN post_id INT,
+		IN language_id INT,
 		IN namespace CHAR,
 		IN key CHAR,
 		IN value CHAR,
@@ -39,9 +40,9 @@
 	BEGIN
 
         INSERT INTO post_content_meta
-            (post_id, namespace, `key`, value )
+            (post_id, language_id, namespace, `key`, value )
         
-        VALUES (:post_id, :namespace, :key, :value )
+        VALUES (:post_id, :language_id, :namespace, :key, :value )
         
         ON DUPLICATE KEY 
             UPDATE value = values(value);
@@ -73,7 +74,7 @@
 		
 		@IF !empty(:key) 
 		THEN 
-			AND _.`key`IN (:key)
+			AND _.`key` IN (:key)
 		END @IF	
 ;
 		
@@ -82,25 +83,30 @@
     
 	CREATE PROCEDURE setMulti(
 		IN post_id INT,
+		IN language_id INT,
 		IN namespace CHAR,
-		IN meta ARRAY
+		IN meta ROWS,
+		OUT insert_id
 	)
 	BEGIN
+		:meta = @FILTER(:meta, post_content_meta, false, true)
 
-        INSERT INTO post_content_meta
-            (post_id, namespace, `key`, value)
+		@EACH(:meta)
+			INSERT INTO post_content_meta
 
-            VALUES (:post_id, :namespace, :each)
+				( post_id, language_id, namespace, @KEYS(:each) )
 
-        ON DUPLICATE KEY 
-            UPDATE value = VALUES(value);
-		
+			VALUES ( :post_id, :language_id, :namespace, :each )
+
+			ON DUPLICATE KEY
+			UPDATE value = VALUES(value);
 	END
     
 	CREATE PROCEDURE delete(
 		IN post_id INT,
 		IN namespace CHAR,
 		IN key ARRAY
+		OUT affected_rows
 	)
 	BEGIN
 

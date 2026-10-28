@@ -2,19 +2,20 @@
 
 	-- get all taxonomy items
 	
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN site_id INT,
 		IN parent_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (taxonomy_item_id) for cursor pagination
 
 		-- filter
 		IN post_type CHAR,
 		IN type CHAR,
 
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- taxonomy_item
@@ -34,7 +35,22 @@
 		END @IF		
 		
 		
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+		
+		
+		@IF isset(:cursor)
+		
+		
+		THEN
+		
+		
+			AND taxonomy_item.taxonomy_item_id > :cursor
+		
+		
+		END @IF
+		
+		
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -46,11 +62,11 @@
 	
 	-- get taxonomy_item
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN taxonomy_item_id INT,
 		IN language_id INT,
 		IN slug CHAR,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- taxonomy_item
@@ -78,8 +94,8 @@
 	
 	-- add taxonomy_item
 
-	PROCEDURE add(
-		IN taxonomy_item ARRAY,
+	CREATE PROCEDURE add(
+		IN taxonomy_item ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -98,7 +114,7 @@
 	
 	-- edit taxonomy_item
 	CREATE PROCEDURE edit(
-		IN taxonomy_item ARRAY,
+		IN taxonomy_item ROW,
 		IN taxonomy_item_id INT,
 		OUT affected_rows
 	)

@@ -2,13 +2,14 @@
 
 	-- get all attribute_groups
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN product_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (attribute_group_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- attribute_group
@@ -24,7 +25,8 @@
 				
 			@IF isset(:product_id)
 			THEN		
-				LEFT JOIN product_attribute_group pa ON attribute_group.attribute_group_id = pa.attribute_group_id
+				LEFT JOIN attribute a ON a.attribute_group_id = attribute_group.attribute_group_id
+				LEFT JOIN product_attribute pa ON pa.attribute_id = a.attribute_id
 			END @IF
 		
 		WHERE 1 = 1
@@ -34,10 +36,22 @@
 			AND pa.product_id = :product_id
 		END @IF
 
+		-- cursor pagination
+		@IF isset(:cursor)
+		THEN
+		    AND attribute_group.attribute_group_id > :cursor
+		END @IF
+
 		-- limit
 		@IF isset(:limit)
-		THEN		
-			@SQL_LIMIT(:start, :limit)
+		THEN
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
+			
 		END @IF;
 		
 		SELECT count(*) FROM (
@@ -50,10 +64,10 @@
 	
 	-- get attribute_group
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN attribute_group_id INT,
 		IN language_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- attribute_group
@@ -67,8 +81,10 @@
 	
 	-- add attribute_group
 
-	PROCEDURE add(
-		IN attribute_group ARRAY,
+	CREATE PROCEDURE add(
+		IN attribute_group ROW,
+		IN language_id INT,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
@@ -79,9 +95,19 @@
 		
 		INSERT INTO attribute_group 
 			
+		@IF !empty(:attribute_group_data)
+		THEN
+			
 			( @KEYS(:attribute_group_data) )
 			
-	  	VALUES ( :attribute_group_data );		
+		  	VALUES ( :attribute_group_data )
+			
+		@ELSE
+			
+			() VALUES ()
+			
+		END @IF;
+		
 		
 		
 		:attribute_group_content  = @FILTER(:attribute_group, attribute_group_content)
@@ -97,7 +123,7 @@
 	
 	-- edit attribute_group
 	CREATE PROCEDURE edit(
-		IN attribute_group ARRAY,
+		IN attribute_group ROW,
 		IN attribute_group_id INT,
 		OUT affected_rows,
 		OUT affected_rows
@@ -107,30 +133,36 @@
 		-- allow only table fields and set defaults for missing values
 		:attribute_group_data = @FILTER(:attribute_group, attribute_group)
 
+		@IF !empty(:attribute_group_data)
+		THEN
 		UPDATE attribute_group
 			
 			SET @LIST(:attribute_group_data) 
 			
-		WHERE attribute_group_id = :attribute_group_id;
+		WHERE attribute_group_id = :attribute_group_id
+		END @IF;
 		
 		-- allow only table fields and set defaults for missing values
 		:attribute_group_content = @FILTER(:attribute_group, attribute_group_content)
 
+		@IF !empty(:attribute_group_content)
+		THEN
 		UPDATE attribute_group_content
 			
 			SET @LIST(:attribute_group_content) 
 			
-		WHERE attribute_group_id = :attribute_group_id;
+		WHERE attribute_group_id = :attribute_group_id
+		END @IF;
 
 	END
 	
 	
 	-- delete attribute_group
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN attribute_group_id ARRAY,
 		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- attribute_group

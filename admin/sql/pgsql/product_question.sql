@@ -2,8 +2,6 @@
 	
 	CREATE PROCEDURE getAll(
 		-- variables
-		IN language_id INT,
-		IN site_id INT,
 		IN product_id INT,
 		IN slug CHAR,
 		IN user_id INT,
@@ -13,6 +11,7 @@
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (product_question_id) for cursor pagination
 
 		-- return
 		OUT fetch_all, -- orders
@@ -59,7 +58,17 @@
 				AND product_question.status  = :status
             END @IF	            
 
-            @SQL_LIMIT(:start, :limit);
+            -- cursor pagination
+
+            @IF isset(:cursor)
+
+            THEN
+
+                AND product_question.product_question_id > :cursor
+
+            END @IF
+
+            LIMIT :limit OFFSET :start;
 		
             SELECT count(*) FROM (
 			
@@ -74,7 +83,7 @@
 	
 	CREATE PROCEDURE get(
 		IN product_question_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- question
@@ -88,8 +97,7 @@
 	-- Add new product question
 
 	CREATE PROCEDURE add(
-		IN product_question ARRAY,
-		IN admin_id INT,
+		IN product_question ROW,
 		OUT fetch_one
 	)
 	BEGIN
@@ -108,8 +116,9 @@
 	-- Edit product question
 
 	CREATE PROCEDURE edit(
-		IN product_question ARRAY,
-		IN  id_product_question INT,
+		IN product_question ROW,
+		IN  product_question_id INT,
+		IN admin_id INT,
 		OUT affected_rows
 	)
 	BEGIN
@@ -124,7 +133,7 @@
 
 		@IF isset(:admin_id)
 		THEN
-			AND product_review.product_id IN (SELECT product_id FROM product WHERE product.admin_id = :admin_id)
+			AND product_question.product_id IN (SELECT product_id FROM product WHERE product.admin_id = :admin_id)
 		END @IF;	 
 	END
 	
@@ -141,7 +150,7 @@
 
 		@IF isset(:admin_id)
 		THEN
-			INNER JOIN product ON (product.product_id = product_question_id.product_id AND product.admin_id = :admin_id)
+			INNER JOIN product ON (product.product_id = product_question.product_id AND product.admin_id = :admin_id)
 		END @IF
 
 		WHERE product_question_id IN (:product_question_id)	 

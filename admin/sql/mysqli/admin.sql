@@ -5,6 +5,7 @@
 	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (admin_id) for cursor pagination
 		IN status INT,
 		IN search CHAR,
 		IN email CHAR,
@@ -13,7 +14,6 @@
 		
 		-- return array of admin 
 		OUT fetch_all,
-		-- return admin count for count query
 		OUT fetch_one
 	)
 	BEGIN
@@ -47,18 +47,34 @@
 				AND admin.username LIKE CONCAT('%',:search,'%') || admin.first_name LIKE CONCAT('%',:search,'%') || admin.last_name LIKE CONCAT('%',:search,'%')
         	END @IF	       
             
-			ORDER BY admin.status DESC, admin.admin_id
+		-- cursor pagination
+    
+		@IF isset(:cursor)
+    
+		THEN
+    
+		    AND admin.admin_id > :cursor
+    
+		END @IF
+    
+		ORDER BY admin.status DESC, admin.admin_id
+		
+		-- limit
+		@IF isset(:limit)
+		THEN
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
 			
-			-- limit
-			@IF isset(:limit)
-			THEN
-				@SQL_LIMIT(:start, :limit)
-			END @IF;		
+		END @IF;	
 
 		-- SELECT FOUND_ROWS() as count;
 		SELECT count(*) FROM (
 			
-			@SQL_COUNT(admin.user_id, user) -- this takes previous query removes limit and replaces select columns with parameter user_id
+			@SQL_COUNT(admin.admin_id, admin) -- this takes previous query removes limit and replaces select columns with parameter admin_id
 			
 		) as count;				
         
@@ -137,7 +153,7 @@
 	-- Add new admin
 
 	CREATE PROCEDURE add(
-		IN admin ARRAY,
+		IN admin ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -156,11 +172,10 @@
 	-- Update admin 
 	
 	CREATE PROCEDURE edit(
-		IN user CHAR,
+		IN username CHAR,
 		IN email CHAR,
        	IN admin_id INT,
-		IN admin ARRAY,
-		IN role_id INT,
+		IN admin ROW,
 		OUT affected_rows
 	)
 	BEGIN
@@ -171,27 +186,27 @@
 			
 			SET @LIST(:admin) 
 			
-		WHERE 
+		WHERE 1 = 1
 
 		@IF isset(:email)
 		THEN 
-			email = :email 
+			AND email = :email 
 		END @IF			
 
 		@IF isset(:admin_id)
 		THEN 
-			admin_id = :admin_id 
+			AND admin_id = :admin_id 
 		END @IF					
 
 		@IF isset(:username)
 		THEN 
-			username = :username 
+			AND username = :username 
 	       	END @IF
 	END
 
 	-- delete admin
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN admin_id ARRAY,
 		OUT affected_rows
 	)
@@ -206,8 +221,8 @@
 	CREATE PROCEDURE setRole(
         IN admin_id INT,
         IN role CHAR,
-        IN role_id INT
-        OUT insert_id
+		IN role_id INT,
+		OUT insert_id
 	)
 	BEGIN
 		
@@ -216,15 +231,15 @@
 			
 			SET  
             
-            @IF isset(:role_id)
+        	@IF isset(:role_id)
 			THEN 
 				role_id = :role_id 
         	END @IF		
 
 
-            @IF isset(:role)
-			THEN 
-				role_id = (SELECT role_id FROM roles WHERE name = :role)
+        	@IF isset(:role)
+        	THEN 
+				role_id = (SELECT role_id FROM role WHERE name = :role)
         	END @IF		
 
 			

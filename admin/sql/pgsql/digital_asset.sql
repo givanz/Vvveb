@@ -2,16 +2,18 @@
 
 	-- get all digital_assets
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN user_id INT,
 		IN admin_id INT,
 		IN product_id INT,
+		IN file ARRAY, -- filter by file names
 		IN order_status_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (digital_asset_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- digital_asset
@@ -37,7 +39,15 @@
 			-- product_id 
 			@IF isset(:product_id)
 			THEN	
-				INNER JOIN product_to_digital_asset ptda ON ptda.digital_asset_id = digital_asset.digital_asset_id AND ptda.product_id = :product_id
+				INNER JOIN product_to_digital_asset ptdap ON ptdap.digital_asset_id = digital_asset.digital_asset_id AND ptdap.product_id = :product_id
+			END @IF
+
+			-- file
+			@IF isset(:file) && count(:file) > 0
+			THEN 
+	
+				AND digital_asset.file IN (:file)
+				
 			END @IF
 
 		WHERE 1 = 1
@@ -48,10 +58,20 @@
 			AND digital_asset.admin_id = :admin_id
 		END @IF
 
+		-- cursor pagination
+
+		@IF isset(:cursor)
+
+		THEN
+
+		    AND digital_asset.digital_asset_id > :cursor
+
+		END @IF
+
 		-- limit
 		@IF isset(:limit)
 		THEN		
-			@SQL_LIMIT(:start, :limit) 
+			LIMIT :limit OFFSET :start 
 		END @IF;
 		
 		SELECT count(*) FROM (
@@ -64,12 +84,12 @@
 	
 	-- get digital_asset
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN digital_asset_id INT,
 		IN user_id INT,
 		IN admin_id INT,
 		IN language_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- digital_asset
@@ -83,7 +103,7 @@
 		THEN	
 			INNER JOIN product_to_digital_asset ptda ON ptda.digital_asset_id = _.digital_asset_id
 			INNER JOIN order_product op ON op.product_id = ptda.product_id
-			INNER JOIN `order` o ON o.order_id = op.order_id AND o.user_id = :user_id AND o.order_status_id = :order_status_id
+			INNER JOIN "order" o ON o.order_id = op.order_id AND o.user_id = :user_id AND o.order_status_id = :order_status_id
 		END @IF
 
 		WHERE _.digital_asset_id = :digital_asset_id
@@ -98,8 +118,9 @@
 	
 	-- add digital_asset
 
-	PROCEDURE add(
-		IN digital_asset ARRAY,
+	CREATE PROCEDURE add(
+		IN digital_asset ROW,
+		IN language_id INT,
 		OUT fetch_one,
 		OUT insert_id
 	)
@@ -129,10 +150,10 @@
 	
 	-- edit digital_asset
 	CREATE PROCEDURE edit(
-		IN digital_asset ARRAY,
+		IN digital_asset ROW,
 		IN digital_asset_id INT,
 		IN admin_id INT,
-		OUT affected_rows
+		OUT affected_rows,
 		OUT affected_rows
 	)
 	BEGIN
@@ -171,11 +192,11 @@
 	
 	-- delete digital_asset
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN digital_asset_id ARRAY,
 		IN admin_id INT,
 		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- digital_asset

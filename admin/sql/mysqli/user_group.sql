@@ -2,13 +2,14 @@
 
 	-- get all user groups
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (user_group_id) for cursor pagination
 		IN status INT,
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- user_group
@@ -30,7 +31,12 @@
 				
 		@IF !empty(:limit) 
 		THEN			
-			@SQL_LIMIT(:start, :limit)
+			-- cursor pagination
+			@IF isset(:cursor)
+			THEN
+				AND user_group.user_group_id > :cursor
+			END @IF
+			LIMIT :limit OFFSET :start
 		END @IF
 		
 		;
@@ -46,9 +52,9 @@
 
 	-- get user group
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN user_group_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- user_group
@@ -60,10 +66,10 @@
 	
 	-- add user group
 
-	PROCEDURE add(
-		IN user_group ARRAY,
+	CREATE PROCEDURE add(
+		IN user_group ROW,
 		IN language_id INT,
-		OUT insert_id
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
@@ -90,8 +96,9 @@
 	-- edit user group
 	
 	CREATE PROCEDURE edit(
-		IN user_group ARRAY,
+		IN user_group ROW,
 		IN user_group_id INT,
+		OUT affected_rows,
 		OUT affected_rows
 	)
 	BEGIN
@@ -119,10 +126,10 @@
 	
 	-- delete user_group
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN user_group_id ARRAY,
 		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- user_group

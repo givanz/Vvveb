@@ -2,12 +2,13 @@
 
 	-- get all tax rules
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN tax_type_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (tax_rule_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- tax_rule
@@ -20,12 +21,22 @@
 			AND tax_type_id = :tax_type_id
 		END @IF		
 		
-		@IF !empty(:limit) 
-		THEN			
-			@SQL_LIMIT(:start, :limit)
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND tax_rule.tax_rule_id > :cursor
+		
 		END @IF
 		
-		ORDER BY priority;
+		ORDER BY priority
+		
+		@IF !empty(:limit) 
+		THEN			
+			LIMIT :limit OFFSET :start
+		END @IF;
 		
 		SELECT count(*) FROM (
 			
@@ -37,9 +48,9 @@
 	
 	-- get tax rule
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN tax_rule_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- tax_rule
@@ -49,9 +60,10 @@
 	
 	-- add tax rule
 
-	PROCEDURE add(
-		IN tax_rule ARRAY,
+	CREATE PROCEDURE add(
+		IN tax_rule ROWS,
 		IN tax_type_id INT,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
@@ -77,7 +89,7 @@
 	-- edit tax rule
 	
 	CREATE PROCEDURE edit(
-		IN tax_rule ARRAY,
+		IN tax_rule ROW,
 		IN tax_rule_id INT,
 		OUT affected_rows
 	)

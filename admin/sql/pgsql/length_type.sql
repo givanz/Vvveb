@@ -2,12 +2,13 @@
 
 	-- get all length types
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (length_type_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- length_type
@@ -21,7 +22,17 @@
 			AND length_type_content.language_id = :language_id
 		END @IF
 		
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND length_type.length_type_id > :cursor
+		
+		END @IF
+		
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -33,10 +44,10 @@
 	
 	-- get length type
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN length_type_id INT,
 		IN language_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- length_type
@@ -55,11 +66,11 @@
 	
 	-- add length type
 
-	PROCEDURE add(
-		IN length_type ARRAY,
+	CREATE PROCEDURE add(
+		IN length_type ROW,
 		IN language_id INT,
 		OUT fetch_one,
-		OUT insert_id
+		OUT affected_rows
 	)
 	BEGIN
 		
@@ -85,7 +96,7 @@
 	
 	-- edit length type
 	CREATE PROCEDURE edit(
-		IN length_type ARRAY,
+		IN length_type ROW,
 		IN length_type_id INT,
 		OUT affected_rows,
 		OUT affected_rows
@@ -115,10 +126,10 @@
 
 	-- delete length type
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN length_type_id ARRAY,
 		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- length_type

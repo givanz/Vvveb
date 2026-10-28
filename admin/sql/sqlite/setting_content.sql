@@ -46,18 +46,18 @@
 		IN key CHAR,
 		IN value CHAR,
 		IN language_id INT,
-		
+
 		OUT insert_id
 	)
 	BEGIN
 
         INSERT INTO setting_content
             (`namespace`,`key`, value, site_id, language_id)
-        
-        VALUES ( :key, :value, :site_id , :language_id )
-        
+
+        VALUES ( :namespace, :key, :value, :site_id , :language_id )
+
         ON CONFLICT(`site_id`, `language_id`, `namespace`,`key`) DO UPDATE SET `value` = :value;
-		
+
 	END
 
    CREATE PROCEDURE getMulti(
@@ -100,7 +100,7 @@
     
 	CREATE PROCEDURE setMulti(
 		IN site_id INT,
-		IN meta ARRAY,
+		IN meta ROWS,
 		
 		OUT insert_id
 	)

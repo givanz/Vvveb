@@ -5,6 +5,7 @@
 	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (post_id) for cursor pagination
 		IN search CHAR,
 		IN like CHAR,
 		IN username CHAR,
@@ -24,17 +25,13 @@
 		IN year INT,
 		IN month INT,
 		-- taxonomy
-		IN categories INT,
-		IN tags INT,
-		IN taxonomy CHAR,
 		
 		IN order_by CHAR,
 		IN direction CHAR,
 
 		-- return array of posts for posts query
 		OUT fetch_all,
-		-- return posts count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -151,14 +148,24 @@
 			-- month
 			@IF isset(:month) && !empty(:month)
 			THEN
-				AND strftime('%M', post.created_at) = :month
+				AND CAST(strftime('%m', post.created_at) AS INTEGER) = :month
 			END @IF					
 
 			-- year
 			@IF isset(:year) && !empty(:year)
 			THEN
-				AND strftime('%Y', post.created_at) = :year
+				AND CAST(strftime('%Y', post.created_at) AS INTEGER) = :year
 			END @IF					
+
+			-- cursor pagination
+
+			@IF isset(:cursor)
+
+			THEN
+
+			    AND post.post_id > :cursor
+
+			END @IF
 
 			-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
 			@IF isset(:search)
@@ -177,7 +184,7 @@
 			-- limit
 			@IF isset(:limit)
 			THEN
-				@SQL_LIMIT(:start, :limit)
+				LIMIT :limit OFFSET :start
 			END @IF;
 
 
@@ -207,7 +214,7 @@
 		OUT fetch_all, -- content
 		OUT fetch_all, -- meta
 		OUT fetch_all, -- post_to_site
-		OUT fetch_all, -- post_to_taxonomy_item
+		OUT fetch_all -- post_to_taxonomy_item
 	)
 	BEGIN
 
@@ -294,15 +301,16 @@
 	-- Add new post
 
 	CREATE PROCEDURE add(
-		IN post ARRAY,
-		IN post_content ARRAY,
+		IN post ROW,
+		IN post_content ROWS,
 		IN taxonomy_item_id ARRAY,
-		IN post_field_value ARRAY,
+		IN post_field_value ROWS,
 		IN site_id ARRAY,
 		OUT insert_id,
-		OUT insert_id,
-		OUT insert_id,
-		OUT insert_id
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows
 	)
 	BEGIN
 		
@@ -354,10 +362,10 @@
 	-- Edit post
 
 	CREATE PROCEDURE edit(
-		IN post ARRAY,
-		IN post_content ARRAY,
+		IN post ROW,
+		IN post_content ROWS,
 		IN taxonomy_item_id ARRAY,
-		IN post_field_value ARRAY,
+		IN post_field_value ROWS,
 		IN post_id INT,
 		IN site_id ARRAY,
 		IN admin_id INT,
@@ -366,7 +374,8 @@
 		OUT insert_id,
 		OUT affected_rows,
 		OUT insert_id,
-		OUT affected_rows
+		OUT affected_rows,
+		OUT insert_id
 	)
 	BEGIN
 	
@@ -440,7 +449,7 @@
 	-- Edit post content
 
 	CREATE PROCEDURE editContent(
-		IN post_content ARRAY,
+		IN post_content ROW,
 		IN post_id INT,
 		IN language_id INT,
 		OUT affected_rows
@@ -469,28 +478,28 @@
 	)
 	BEGIN
 		
-		DELETE post_to_taxonomy_item FROM post_to_taxonomy_item 
-			@IF isset(:admin_id)
-			THEN
-				INNER JOIN post ON (post.post_id = post_to_taxonomy_item.post_id AND post.admin_id = :admin_id)
-			END @IF
-		WHERE post_to_taxonomy_item.post_id IN (:post_id);
+		DELETE FROM post_to_taxonomy_item 
+		WHERE post_to_taxonomy_item.post_id IN (:post_id)
+		@IF isset(:admin_id)
+		THEN
+			AND post_to_taxonomy_item.post_id IN (SELECT post_id FROM post WHERE post.admin_id = :admin_id)
+		END @IF;
 		
-		DELETE post_to_site FROM post_to_site 
-			@IF isset(:admin_id)
-			THEN
-				INNER JOIN post ON (post.post_id = post_to_site.post_id AND post.admin_id = :admin_id)
-			END @IF
-		WHERE post_to_site.post_id IN (:post_id);
+		DELETE FROM post_to_site 
+		WHERE post_to_site.post_id IN (:post_id)
+		@IF isset(:admin_id)
+		THEN
+			AND post_to_site.post_id IN (SELECT post_id FROM post WHERE post.admin_id = :admin_id)
+		END @IF;
 		
-		DELETE post_content FROM post_content 
-			@IF isset(:admin_id)
-			THEN
-				INNER JOIN post ON (post.post_id = post_content.post_id AND post.admin_id = :admin_id)
-			END @IF
-		WHERE post_content.post_id IN (:post_id);
+		DELETE FROM post_content 
+		WHERE post_content.post_id IN (:post_id)
+		@IF isset(:admin_id)
+		THEN
+			AND post_content.post_id IN (SELECT post_id FROM post WHERE post.admin_id = :admin_id)
+		END @IF;
 		
-		DELETE post FROM post WHERE post_id IN (:post_id)
+		DELETE FROM post WHERE post_id IN (:post_id)
 			@IF isset(:admin_id)
 			THEN
 				AND admin_id = :admin_id
@@ -499,11 +508,9 @@
 	END
 	
 	
-	
 	-- Get tags
 
 	CREATE PROCEDURE postTags(
-		IN  post_id INT,
 		OUT affected_rows
 	)
 	BEGIN
@@ -513,7 +520,6 @@
 	-- Get categories
 
 	CREATE PROCEDURE postCategories(
-		IN  post_id INT,
 		OUT affected_rows
 	)
 	BEGIN
@@ -523,6 +529,7 @@
 	CREATE PROCEDURE setPostTaxonomy(
 		IN  post_id INT,
 		IN  taxonomy_item ARRAY,
+		OUT affected_rows,
 		OUT affected_rows
 	)
 	BEGIN
@@ -544,7 +551,8 @@
 		IN start INT,
 		IN limit INT,
 		IN interval CHAR,
-		IN type CHAR,
+		IN type CHAR
+		OUT fetch_all
 	)
 	BEGIN
 	
@@ -553,12 +561,12 @@
 			
 			@IF isset(:interval) AND (:interval == "month" || :interval == "day")
 			THEN
-				,strftime('%M',archives.created_at) AS `month` 
+				,strftime('%m',archives.created_at) AS `month` 
 			END @IF
 
 			@IF isset(:interval) AND :interval == "day"
 			THEN
-				,strftime('%D',archives.created_at) AS `day` 
+				,strftime('%d',archives.created_at) AS `day` 
 			END @IF
 			
 			,count(archives.post_id) as count 
@@ -584,12 +592,12 @@
 			
 			@IF isset(:interval) AND (:interval == "month" || :interval == "day")
 			THEN
-				,strftime('%M',archives.created_at)
+				,strftime('%m',archives.created_at)
 			END @IF
 
 			@IF isset(:interval) AND :interval == "day"
 			THEN
-				,strftime('%D',archives.created_at)
+				,strftime('%d',archives.created_at)
 			END @IF
 			
 		ORDER BY 			
@@ -597,19 +605,19 @@
 			
 			@IF isset(:interval) AND (:interval == "month" || :interval == "day")
 			THEN
-				,strftime('%M',archives.created_at)
+				,strftime('%m',archives.created_at)
 			END @IF
 
 			@IF isset(:interval) AND :interval == "day"
 			THEN
-				,strftime('%D',archives.created_at)
+				,strftime('%d',archives.created_at)
 			END @IF
 
 
 		-- limit
 		@IF isset(:limit) AND :limit > 0
 		THEN
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF;		
 	
 	END

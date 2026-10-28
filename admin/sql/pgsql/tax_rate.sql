@@ -2,12 +2,12 @@
 
 	-- get all tax rates
 
-	PROCEDURE getAll(
-		IN language_id INT,
+	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (tax_rate_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- tax_rate
@@ -17,7 +17,12 @@
 		
 		@IF !empty(:limit) 
 		THEN			
-			@SQL_LIMIT(:start, :limit)
+			-- cursor pagination
+			@IF isset(:cursor)
+			THEN
+				AND tax_rate.tax_rate_id > :cursor
+			END @IF
+			LIMIT :limit OFFSET :start
 		END @IF
 		
 		;
@@ -32,9 +37,9 @@
 	
 	-- get tax_rate
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN tax_rate_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- tax_rate
@@ -44,8 +49,8 @@
 	
 	-- add tax_rate
 
-	PROCEDURE add(
-		IN tax_rate ARRAY,
+	CREATE PROCEDURE add(
+		IN tax_rate ROW,
 		OUT fetch_one
 	)
 	BEGIN
@@ -64,7 +69,7 @@
 	
 	-- edit tax_rate
 	CREATE PROCEDURE edit(
-		IN tax_rate ARRAY,
+		IN tax_rate ROW,
 		IN tax_rate_id INT,
 		OUT affected_rows
 	)
@@ -84,11 +89,15 @@
 	
 	-- delete tax_rate
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN tax_rate_id ARRAY,
-		OUT affected_rows, 
+		OUT affected_rows,
+		OUT affected_rows 
 	)
 	BEGIN
+		-- tax_rate_to_user_group
+		DELETE FROM tax_rate_to_user_group WHERE tax_rate_id IN (:tax_rate_id);
+
 		-- tax_rate
 		DELETE FROM tax_rate WHERE tax_rate_id IN (:tax_rate_id);
 	END

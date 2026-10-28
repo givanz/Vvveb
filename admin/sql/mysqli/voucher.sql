@@ -2,12 +2,12 @@
 
 	-- get all vouchers
 
-	PROCEDURE getAll(
-		IN language_id INT,
+	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (voucher_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- voucher
@@ -15,7 +15,22 @@
 			FROM voucher WHERE 1 = 1
 			
 		
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+			
+		
+		@IF isset(:cursor)
+			
+		
+		THEN
+			
+		
+			AND voucher.voucher_id > :cursor
+			
+		
+		END @IF
+			
+		
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -27,9 +42,9 @@
 	
 	-- get voucher
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN voucher_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- voucher
@@ -39,8 +54,8 @@
 	
 	-- add voucher
 
-	PROCEDURE add(
-		IN voucher ARRAY,
+	CREATE PROCEDURE add(
+		IN voucher ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -59,7 +74,7 @@
 	
 	-- edit voucher
 	CREATE PROCEDURE edit(
-		IN voucher ARRAY,
+		IN voucher ROW,
 		IN voucher_id INT,
 		OUT affected_rows
 	)
@@ -79,9 +94,9 @@
 
 	-- delete voucher
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN voucher_id ARRAY,
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- voucher

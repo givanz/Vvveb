@@ -2,13 +2,13 @@
 
 	-- get all languages
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN status INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (language_id) for cursor pagination
 		OUT fetch_all, 
-		-- count
-		OUT fetch_one, 
+		OUT fetch_one 
 	)
 	BEGIN
 		-- language
@@ -20,12 +20,22 @@
 				AND status = :status
 			END @IF
 			
+			-- cursor pagination
+			
+			@IF isset(:cursor)
+			
+			THEN
+			
+				AND language.language_id > :cursor
+			
+			END @IF
+			
 			ORDER BY `default` DESC, status DESC, sort_order
 			
 			-- limit
 			@IF isset(:limit)
 			THEN
-				@SQL_LIMIT(:start, :limit)
+				LIMIT :limit OFFSET :start
 			END @IF;
 			
 			SELECT count(*) FROM (
@@ -37,12 +47,12 @@
 	
 	-- get language
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN language_id INT,
 		IN code CHAR,
 		IN default INT,
 		IN status INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- language
@@ -75,8 +85,8 @@
 	
 	-- add language
 
-	PROCEDURE add(
-		IN language ARRAY,
+	CREATE PROCEDURE add(
+		IN language ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -108,7 +118,7 @@
 	-- edit language
 	
 	CREATE PROCEDURE edit(
-		IN language ARRAY,
+		IN language ROW,
 		IN language_id INT,
 		IN code CHAR,
 		IN default INT,

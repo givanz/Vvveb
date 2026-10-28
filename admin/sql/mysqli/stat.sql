@@ -6,7 +6,6 @@
 		-- variables
 		IN  language_id INT,
 		IN  site_id INT,
-		IN  user_id INT,
 		
 		-- interval
 		IN  start_date DATE,
@@ -82,14 +81,13 @@
 		-- variables
 		IN  language_id INT,
 		IN  site_id INT,
-		IN  user_id INT,
 		
 		-- interval
 		IN  start_date DATE,
 		IN  end_date DATE,
 
 		-- return
-		OUT fetch_all, -- orders
+		OUT fetch_all -- orders
 	)
 	BEGIN
 	
@@ -126,8 +124,6 @@
 	
 	CREATE PROCEDURE getUsersCount(
 		-- variables
-		IN  site_id INT,
-		IN  user_id INT,
 		
 		-- interval
 		IN  start_date DATE,
@@ -162,9 +158,6 @@
 
 	CREATE PROCEDURE getCommentsCount(
 		-- variables
-		IN  language_id INT,
-		IN  site_id INT,
-		IN  user_id INT,
 		
 		-- interval
 		IN  start_date DATE,
@@ -209,9 +202,6 @@
 	
 	CREATE PROCEDURE getReviewsCount(
 		-- variables
-		IN  language_id INT,
-		IN  site_id INT,
-		IN  user_id INT,
 		
 		-- interval
 		IN  start_date DATE,
@@ -255,9 +245,6 @@
 	
 	CREATE PROCEDURE getQuestionsCount(
 		-- variables
-		IN  language_id INT,
-		IN  site_id INT,
-		IN  user_id INT,
 		
 		-- interval
 		IN  start_date DATE,

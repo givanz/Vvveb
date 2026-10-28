@@ -2,22 +2,19 @@
 
 	-- get all media
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN media_id INT,
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (media_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- media_content
-		SELECT media.*,media_content.*
+		SELECT media.*
 
-			@IF !empty(:content) 
-			THEN			
-				,content
-			END @IF
 		
 			FROM media_content AS media
 		WHERE 1 = 1
@@ -34,7 +31,12 @@
 		
 		@IF !empty(:limit) 
 		THEN			
-			@SQL_LIMIT(:start, :limit)
+			-- cursor pagination
+			@IF isset(:cursor)
+			THEN
+				AND media.media_id > :cursor
+			END @IF
+			LIMIT :limit OFFSET :start
 		END @IF
 		;
 		
@@ -48,11 +50,11 @@
 	
 	-- get media
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN media_id INT,
 		IN language_id INT,
 		IN file CHAR,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- media_content
@@ -82,10 +84,10 @@
 	
 	-- get media_content
 
-	PROCEDURE getContent(
+	CREATE PROCEDURE getContent(
 		IN media_id INT,
 		IN file CHAR,
-		OUT fetch_all, 
+		OUT fetch_all 
 	)
 	BEGIN
 		-- media_content
@@ -108,10 +110,11 @@
 	
 	-- add media_content
 
-	PROCEDURE add(
-		IN media ARRAY,
-		IN media_content ARRAY,
-		OUT insert_id
+	CREATE PROCEDURE add(
+		IN media ROW,
+		IN media_content ROWS,
+		OUT fetch_one,
+		OUT affected_rows
 	)
 	BEGIN
 		
@@ -122,7 +125,8 @@
 			
 			( @KEYS(:media) )
 			
-	  	VALUES ( :media );
+	  	VALUES ( :media )
+		RETURNING media_id;
 
 		:media_content  = @FILTER(:media_content, media_content, false, true)
 
@@ -136,10 +140,9 @@
 	
 	-- edit media_content
 	CREATE PROCEDURE edit(
-		IN media ARRAY,
-		IN media_content ARRAY,
+		IN media ROW,
+		IN media_content ROWS,
 		IN media_id INT,
-		IN file CHAR,
 		OUT affected_rows,
 		OUT affected_rows
 	)
@@ -171,9 +174,10 @@
 	
 	-- delete media_content
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN media_id ARRAY,
 		IN file ARRAY,
+		OUT affected_rows,
 		OUT affected_rows
 	)
 	BEGIN

@@ -2,12 +2,13 @@
 
 	-- get all digital_assets_log
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN user_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (digital_asset_log_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -20,13 +21,25 @@
 		-- user_id 
 		@IF isset(:user_id)
 		THEN	
-			user_id = :user_id
+			AND user_id = :user_id
+		END @IF
+
+		-- cursor pagination
+		@IF isset(:cursor)
+		THEN
+		    AND digital_asset_log.digital_asset_log_id > :cursor
 		END @IF
 
 		-- limit
 		@IF isset(:limit)
-		THEN		
-			@SQL_LIMIT(:start, :limit)
+		THEN
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
+			
 		END @IF;
 		
 		SELECT count(*) FROM (
@@ -39,11 +52,9 @@
 	
 	-- get digital_asset
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN digital_asset_log_id INT,
-		IN user_id INT,
-		IN site_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- digital_asset
@@ -56,9 +67,9 @@
 	
 	-- add digital_asset_log
 
-	PROCEDURE add(
-		IN digital_asset_log ARRAY,
-		OUT insert_id,
+	CREATE PROCEDURE add(
+		IN digital_asset_log ROW,
+		OUT insert_id
 	)
 	BEGIN
 		
@@ -76,7 +87,7 @@
 	-- edit digital_asset_log
 	
 	CREATE PROCEDURE edit(
-		IN digital_asset_log ARRAY,
+		IN digital_asset_log ROW,
 		IN digital_asset_log_id INT,
 		OUT affected_rows
 	)
@@ -96,10 +107,9 @@
 	
 	-- delete digital_asset_log
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN digital_asset_log_id ARRAY,
-		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- digital_asset_log

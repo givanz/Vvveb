@@ -2,12 +2,13 @@
 
 	-- get all options
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (option_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- option
@@ -18,12 +19,28 @@
 		
 		WHERE 1 = 1
 	
+		-- cursor pagination
+	
+		@IF isset(:cursor)
+	
+		THEN
+	
+			AND `option`.option_id > :cursor
+	
+		END @IF
+	
 		ORDER BY option.option_id DESC
 		
 		-- limit
 		@IF isset(:limit)
-		THEN		
-			@SQL_LIMIT(:start, :limit)
+		THEN
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
+			
 		END @IF;
 		
 		SELECT count(*) FROM (
@@ -36,10 +53,10 @@
 	
 	-- get option
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN option_id INT,
 		IN language_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- option
@@ -53,9 +70,10 @@
 	
 	-- add option
 
-	PROCEDURE add(
-		IN option ARRAY,
+	CREATE PROCEDURE add(
+		IN option ROW,
 		IN language_id INT,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
@@ -84,9 +102,9 @@
 	
 	-- edit option
 	CREATE PROCEDURE edit(
-		IN option ARRAY,
+		IN option ROW,
 		IN option_id INT,
-		OUT affected_rows
+		OUT affected_rows,
 		OUT affected_rows
 	)
 	BEGIN
@@ -94,11 +112,14 @@
 		-- allow only table fields and set defaults for missing values
 		:option_data = @FILTER(:option, option)
 
-		UPDATE `option`
-			
-			SET @LIST(:option_data) 
-			
-		WHERE option_id = :option_id;
+		@IF !empty(:option_data)
+		THEN
+			UPDATE `option`
+				
+				SET @LIST(:option_data) 
+				
+			WHERE option_id = :option_id
+		END @IF;
 		
 		-- allow only table fields and set defaults for missing values
 		:option_content = @FILTER(:option, option_content)
@@ -114,15 +135,17 @@
 	
 	-- delete option
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN option_id ARRAY,
 		OUT affected_rows, 
 		OUT affected_rows, 
+		OUT affected_rows,
+		OUT affected_rows
 	)
 	BEGIN
 		-- option value
-		DELETE FROM option_value_content WHERE option_value_id IN (:option_value_id);
-		DELETE FROM option_value WHERE option_value_id IN (:option_id);
+		DELETE FROM option_value_content WHERE option_id IN (:option_id);
+		DELETE FROM option_value WHERE option_id IN (:option_id);
 
 		-- option	
 		DELETE FROM option_content WHERE option_id IN (:option_id);

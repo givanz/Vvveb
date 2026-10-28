@@ -100,7 +100,7 @@
     
 	CREATE PROCEDURE setMulti(
 		IN post_id INT,
-		IN meta ARRAY,
+		IN meta ROWS,
 		
 		OUT insert_id
 	)
@@ -124,6 +124,7 @@
 		IN namespace CHAR,
 		IN key ARRAY,
 		IN language_id INT
+		OUT affected_rows
 	)
 	BEGIN
 

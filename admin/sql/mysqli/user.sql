@@ -11,12 +11,12 @@
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (user_id) for cursor pagination
 		IN order_by CHAR,
 		IN direction CHAR,
 
 		-- return array of user
 		OUT fetch_all,
-		-- return user count for count query
 		OUT fetch_one
 	)
 	BEGIN
@@ -42,11 +42,21 @@
         	-- search
         	@IF isset(:search) AND !empty(:search)
         	THEN 
-			AND user.username LIKE CONCAT('%',:search,'%') OR
+			AND (user.username LIKE CONCAT('%',:search,'%') OR
 			user.first_name LIKE CONCAT('%',:search,'%') OR
 			user.last_name LIKE CONCAT('%',:search,'%') OR
-			user.email LIKE CONCAT('%',:search,'%')
+			user.email LIKE CONCAT('%',:search,'%'))
         	END @IF	        
+
+		-- cursor pagination
+
+		@IF isset(:cursor)
+
+		THEN
+
+		    AND user.user_id > :cursor
+
+		END @IF
 
 		-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
 		@IF isset(:order_by)
@@ -60,8 +70,14 @@
 		-- limit
 		@IF isset(:limit)
 		THEN
-			@SQL_LIMIT(:start, :limit)
-		END @IF;		
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
+			
+		END @IF;	
 
 		-- SELECT FOUND_ROWS() as count;
 		SELECT count(*) FROM (
@@ -77,12 +93,13 @@
 	CREATE PROCEDURE get(
 		IN username CHAR,
 		IN email CHAR,
-        IN user_id INT,
-        IN status INT,
-		OUT fetch_row,
+		IN user_id INT,
+		IN status INT,
+		IN token CHAR,
+		OUT fetch_row
 	)
 	BEGIN
-        
+
         SELECT * FROM user AS _ WHERE 1 = 1 
 
         	@IF isset(:username) && !isset(:email)
@@ -109,21 +126,21 @@
 		THEN 
 			AND _.status = :status 
         	END @IF	
-			
+
 		@IF isset(:token)
 		THEN 
 			AND _.token = :token 
         	END @IF				
-			
+
 		LIMIT 1;
-        
+
     END
     
 
 	-- Add new user
 
 	CREATE PROCEDURE add(
-		IN user ARRAY,
+		IN user ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -145,7 +162,7 @@
 		IN username CHAR,
 		IN email CHAR,
         IN user_id INT,
-		IN user ARRAY,
+		IN user ROW,
 		OUT affected_rows
 	)
 	BEGIN
@@ -176,7 +193,7 @@
 
 	-- delete user
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN  user_id ARRAY,
 		OUT affected_rows
 	)
@@ -191,7 +208,7 @@
 	CREATE PROCEDURE setRole(
         IN user_id INT,
         IN role CHAR,
-        IN role_id INT
+        IN role_id INT,
         OUT insert_id
 	)
 	BEGIN
@@ -209,7 +226,7 @@
 
         	@IF isset(:role)
 			THEN 
-				role_id = (SELECT role_id FROM roles WHERE name = :role)
+				role_id = (SELECT role_id FROM role WHERE name = :role)
         	END @IF		
 
 			

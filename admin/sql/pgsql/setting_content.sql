@@ -13,7 +13,7 @@
 	)
 	BEGIN
 
-		SELECT `key`, value
+		SELECT "key", value
 			FROM setting_content AS _
 		WHERE 1 = 1
 		
@@ -29,7 +29,7 @@
 		
 		@IF !empty(:key) 
 		THEN 
-			AND _.`key` = :key
+			AND _."key" = :key
 		END @IF	
 
 		@IF !empty(:language_id) 
@@ -47,16 +47,17 @@
 		IN value CHAR,
 		IN language_id INT,
 		
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 
         INSERT INTO setting_content
-            (`namespace`,`key`, value, site_id, language_id)
+            (namespace, "key", value, site_id, language_id)
         
-        VALUES ( :key, :value, :site_id , :language_id )
+        VALUES ( :namespace, :key, :value, :site_id , :language_id )
         
-        ON CONFLICT("site_id", "language_id", "namespace", "key") DO UPDATE SET "value" = :value;
+        ON CONFLICT("site_id", "language_id", "namespace", "key") DO UPDATE SET "value" = :value
+		RETURNING setting_content_id;
 		
 	END
     
@@ -100,7 +101,7 @@
     
 	CREATE PROCEDURE setMulti(
 		IN site_id INT,
-		IN meta ARRAY,
+		IN meta ROWS,
 		
 		OUT insert_id
 	)

@@ -2,14 +2,15 @@
 
 	-- get all fields
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN field_group_id ARRAY,
 		IN post_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (field_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- field
@@ -28,9 +29,19 @@
 			AND field.field_group_id IN (:field_group_id)
 		END @IF
 		
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND field.field_id > :cursor
+		
+		END @IF
+		
 		ORDER BY field.row, field.sort_order
 		
-		@SQL_LIMIT(:start, :limit);
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -42,10 +53,10 @@
 	
 	-- get field
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN field_id INT,
 		IN language_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- field
@@ -64,8 +75,8 @@
 	
 	-- add field
 
-	PROCEDURE add(
-		IN field ARRAY,
+	CREATE PROCEDURE add(
+		IN field ROW,
 		IN language_id INT,
 		OUT insert_id,
 		OUT insert_id
@@ -94,7 +105,7 @@
 	
 	-- edit field
 	CREATE PROCEDURE edit(
-		IN field ARRAY,
+		IN field ROW,
 		IN field_id INT,
 		OUT affected_rows,
 		OUT affected_rows
@@ -124,10 +135,10 @@
 	
 	-- delete field
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN field_id ARRAY,
 		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- field

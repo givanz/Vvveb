@@ -2,14 +2,15 @@
 
 	-- get all fields
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN post_id INT,
 		IN subtype CHAR,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (field_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- field
@@ -40,9 +41,24 @@
 		END @IF		
 		
 		
+		-- cursor pagination
+		
+		
+		@IF isset(:cursor)
+		
+		
+		THEN
+		
+		
+			AND field.field_id > :cursor
+		
+		
+		END @IF
+		
+		
 		ORDER BY field.sort_order
 		
-		@SQL_LIMIT(:start, :limit);
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -54,32 +70,32 @@
 	
 	-- get field
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN field_id INT,
 		IN post_id INT,
 		IN language_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- field
 		SELECT *
 			FROM post_field_value as _ 
-			INNER JOIN field ON field_content.field_id = _.field_id
+			INNER JOIN field ON field.field_id = _.field_id
 		WHERE _.field_id = :field_id
 
 		@IF !empty(:language_id) 
 		THEN			
-			AND post_field_value.language_id = :language_id
+			AND _.language_id = :language_id
 		END @IF
 		
 		@IF !empty(:field_id) 
 		THEN			
-			AND post_field_value.field_id = :field_id
+			AND _.field_id = :field_id
 		END @IF
 		
 		@IF !empty(:post_id) 
 		THEN			
-			AND post_field_value.post_id = :post_id
+			AND _.post_id = :post_id
 		END @IF
 		
 		;
@@ -87,10 +103,8 @@
 	
 	-- add field
 
-	PROCEDURE add(
-		IN post_field_value ARRAY,
-		IN language_id INT,
-		OUT insert_id,
+	CREATE PROCEDURE add(
+		IN post_field_value ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -100,20 +114,18 @@
 		
 		INSERT INTO post_field_value 
 			
-			( @KEYS(:field_data) )
+			( @KEYS(:post_field_value) )
 			
-	  	VALUES ( :field_data);
+	  	VALUES ( :post_field_value);
 
 	END
 	
 	-- edit field
 	CREATE PROCEDURE edit(
-		IN post_field_value ARRAY,
-		IN post_field_value_id INT,
+		IN post_field_value ROW,
 		IN post_id INT,
 		IN field_id INT,
 		IN language_id INT,
-		OUT affected_rows,
 		OUT affected_rows
 	)
 	BEGIN
@@ -132,15 +144,15 @@
 	
 	-- delete field
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN post_id INT,
 		IN field_id INT,
 		IN language_id INT,
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- post_field_value_id
-		DELETE FROM post_field_value WHERE 
+		DELETE FROM post_field_value WHERE 1 = 1 
 		
 		@IF !empty(:language_id) 
 		THEN			
@@ -154,6 +166,6 @@
 		
 		@IF !empty(:post_id) 
 		THEN			
-			AND post_field_value.post_id IN (:post_id)
+			AND post_field_value.post_id = :post_id
 		END @IF
 	END

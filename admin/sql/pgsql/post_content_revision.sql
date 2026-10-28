@@ -2,16 +2,16 @@
 
 	-- get all post_content_revisions
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN post_id INT,
 		IN language_id INT,
 		IN created_at INT,
 		IN content INT,
-		IN admin INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (post_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- post_content_revision
@@ -47,11 +47,26 @@
 		END @IF				
 		
 		
+		-- cursor pagination
+		
+		
+		@IF isset(:cursor)
+		
+		
+		THEN
+		
+		
+			AND post_content_revision.post_id > :cursor
+		
+		
+		END @IF
+		
+		
 		ORDER BY post_content_revision.created_at DESC
 		
 		@IF !empty(:limit) 
 		THEN			
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF
 		;
 		
@@ -65,12 +80,12 @@
 	
 	-- get post content revision
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN post_id INT,
 		IN language_id INT,
 		IN admin_id INT,
 		IN created_at CHAR,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- post_content_revision
@@ -105,9 +120,9 @@
 	
 	-- add post_content_revision
 
-	PROCEDURE add(
-		IN revision ARRAY,
-		OUT insert_id
+	CREATE PROCEDURE add(
+		IN revision ROW,
+		OUT fetch_one
 	)
 	BEGIN
 		
@@ -119,14 +134,15 @@
 			
 			( @KEYS(:post_content_revision_data) )
 			
-	  	VALUES ( :post_content_revision_data );
+	  	VALUES ( :post_content_revision_data )
+		RETURNING post_content_revision_id;
 
 	END
 	
 	-- edit post content revision
 
 	CREATE PROCEDURE edit(
-		IN revision ARRAY,
+		IN revision ROW,
 		IN post_id INT,
 		IN language_id INT,
 		IN admin_id INT,
@@ -138,6 +154,8 @@
 		-- allow only table fields and set defaults for missing values
 		@FILTER(:revision, post_content_revision)
 
+		@IF !empty(:revision)
+		THEN
 		UPDATE post_content_revision 
 			
 			SET @LIST(:revision) 
@@ -150,13 +168,14 @@
 			@IF !empty(:admin_id) 
 			THEN			
 				AND admin_id = :admin_id
-			END @IF;	
+			END @IF
+		END @IF;	
 
 	END
 	
 	-- delete post content revision
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN post_id INT,
 		IN language_id INT,
 		IN admin_id INT,

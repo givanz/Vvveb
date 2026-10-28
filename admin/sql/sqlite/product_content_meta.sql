@@ -8,7 +8,7 @@
 		IN key CHAR,
 		IN language_id INT,
 		
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -99,7 +99,7 @@
     
 	CREATE PROCEDURE setMulti(
 		IN product_id INT,
-		IN meta ARRAY,
+		IN meta ROWS,
 		
 		OUT insert_id
 	)
@@ -123,6 +123,7 @@
 		IN namespace CHAR,
 		IN key ARRAY,
 		IN language_id INT
+		OUT affected_rows
 	)
 	BEGIN
 

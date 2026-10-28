@@ -2,12 +2,13 @@
 
 	-- get all return reason
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (return_reason_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- return_reason
@@ -19,7 +20,17 @@
 			AND language_id = :language_id
 		END @IF
 		
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND return_reason.return_reason_id > :cursor
+		
+		END @IF
+		
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -31,9 +42,9 @@
 	
 	-- get return reason
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN return_reason_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- return_reason
@@ -43,8 +54,8 @@
 	
 	-- add return_reason
 
-	PROCEDURE add(
-		IN return_reason ARRAY,
+	CREATE PROCEDURE add(
+		IN return_reason ROW,
 		IN language_id INT,
 		OUT fetch_one
 	)
@@ -64,7 +75,7 @@
 	
 	-- edit return_reason
 	CREATE PROCEDURE edit(
-		IN return_reason ARRAY,
+		IN return_reason ROW,
 		IN return_reason_id INT,
 		OUT affected_rows
 	)
@@ -84,9 +95,9 @@
 	
 	-- delete return_reason
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN return_reason_id ARRAY,
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- return_reason

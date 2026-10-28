@@ -2,14 +2,15 @@
 
 	-- get all regions
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN country_id INT,
 		IN status INT,
 		IN search CHAR,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (region_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- region
@@ -36,11 +37,26 @@
 		END @IF	        
 		
 		
+		-- cursor pagination
+		
+		
+		@IF isset(:cursor)
+		
+		
+		THEN
+		
+		
+			AND region.region_id > :cursor
+		
+		
+		END @IF
+		
+		
 		ORDER BY region.status DESC, country.status DESC, region.region_id
 		
 		@IF !empty(:limit) 
 		THEN			
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF
 		;
 		
@@ -54,9 +70,9 @@
 	
 	-- get region
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN region_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- region
@@ -66,9 +82,8 @@
 	
 	-- add region
 
-	PROCEDURE add(
-		IN region ARRAY,
-		IN language_id INT,
+	CREATE PROCEDURE add(
+		IN region ROW,
 		OUT fetch_one
 	)
 	BEGIN
@@ -88,7 +103,7 @@
 	-- edit region
 
 	CREATE PROCEDURE edit(
-		IN region ARRAY,
+		IN region ROW,
 		IN region_id INT,
 		OUT affected_rows
 	)
@@ -109,7 +124,7 @@
 	-- multiple edit region
 
 	CREATE PROCEDURE multiEdit(
-		IN region ARRAY,
+		IN region ROW,
 		IN region_id ARRAY,
 		OUT affected_rows
 	)
@@ -129,9 +144,9 @@
 	
 	-- delete region
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN region_id ARRAY,
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- region

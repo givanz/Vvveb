@@ -2,12 +2,13 @@
 
 	-- get all order log
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN order_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (order_log_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- order_log
@@ -19,7 +20,17 @@
 			AND order_id = :order_id
 		END @IF
 		
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND order_log.order_log_id > :cursor
+		
+		END @IF
+		
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -31,9 +42,9 @@
 	
 	-- get order log
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN order_log_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- order_log
@@ -43,8 +54,8 @@
 	
 	-- add order_log
 
-	PROCEDURE add(
-		IN order_log ARRAY,
+	CREATE PROCEDURE add(
+		IN order_log ROW,
 		IN order_id INT,
 		OUT fetch_one
 	)
@@ -64,7 +75,7 @@
 	
 	-- edit order_log
 	CREATE PROCEDURE edit(
-		IN order_log ARRAY,
+		IN order_log ROW,
 		IN order_log_id INT,
 		OUT affected_rows
 	)
@@ -84,9 +95,9 @@
 	
 	-- delete order_log
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN order_log_id ARRAY,
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- order_log

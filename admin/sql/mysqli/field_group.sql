@@ -2,14 +2,15 @@
 
 	-- get all classes
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (field_group_id) for cursor pagination
 		IN type CHAR,
 		IN subtype CHAR,
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- field_group
@@ -33,7 +34,13 @@
 			AND field_group.subtype = :subtype OR field_group.subtype = ''
 		END @IF
 		
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+		@IF isset(:cursor)
+		THEN
+			AND field_group.field_group_id > :cursor
+		END @IF
+		
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -45,10 +52,10 @@
 	
 	-- get length class
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN field_group_id INT,
 		IN language_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- field_group
@@ -67,12 +74,11 @@
 	
 	-- add length class
 
-	PROCEDURE add(
-		IN field_group ARRAY,
+	CREATE PROCEDURE add(
+		IN field_group ROW,
 		IN language_id INT,
 		OUT insert_id,
-		OUT affected_rows,
-		OUT insert_id
+		OUT affected_rows
 	)
 	BEGIN
 		
@@ -98,8 +104,9 @@
 	
 	-- edit length class
 	CREATE PROCEDURE edit(
-		IN field_group ARRAY,
+		IN field_group ROW,
 		IN field_group_id INT,
+		IN language_id INT,
 		OUT affected_rows,
 		OUT affected_rows
 	)
@@ -128,10 +135,10 @@
 
 	-- delete length class
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN field_group_id ARRAY,
 		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- field_group

@@ -5,6 +5,7 @@
 	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (post_id) for cursor pagination
 		IN search CHAR,
 		IN like CHAR,
 		IN username CHAR,
@@ -24,17 +25,13 @@
 		IN year INT,
 		IN month INT,
 		-- taxonomy
-		IN categories INT,
-		IN tags INT,
-		IN taxonomy CHAR,
 		
 		IN order_by CHAR,
 		IN direction CHAR,
 
 		-- return array of posts for posts query
 		OUT fetch_all,
-		-- return posts count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -165,6 +162,16 @@
 				AND date_part('year',post.created_at) = :year
 			END @IF					
 
+			-- cursor pagination
+
+			@IF isset(:cursor)
+
+			THEN
+
+			    AND post.post_id > :cursor
+
+			END @IF
+
 			-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
 			@IF isset(:search)
 			THEN
@@ -182,7 +189,7 @@
 			-- limit
 			@IF isset(:limit)
 			THEN
-				@SQL_LIMIT(:start, :limit) 
+				LIMIT :limit OFFSET :start 
 			END @IF;
 
 
@@ -212,7 +219,7 @@
 		OUT fetch_all, -- content
 		OUT fetch_all, -- meta
 		OUT fetch_all, -- post_to_site
-		OUT fetch_all, -- post_to_taxonomy_item
+		OUT fetch_all -- post_to_taxonomy_item
 	)
 	BEGIN
 
@@ -299,15 +306,16 @@
 	-- Add new post
 
 	CREATE PROCEDURE add(
-		IN post ARRAY,
-		IN post_content ARRAY,
+		IN post ROW,
+		IN post_content ROWS,
 		IN taxonomy_item_id ARRAY,
-		IN post_field_value ARRAY,
+		IN post_field_value ROWS,
 		IN site_id ARRAY,
 		OUT fetch_one,
-		OUT fetch_one,
-		OUT fetch_one,
-		OUT fetch_one
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows
 	)
 	BEGIN
 		
@@ -359,10 +367,10 @@
 	-- Edit post
 
 	CREATE PROCEDURE edit(
-		IN post ARRAY,
-		IN post_content ARRAY,
+		IN post ROW,
+		IN post_content ROWS,
 		IN taxonomy_item_id ARRAY,
-		IN post_field_value ARRAY,
+		IN post_field_value ROWS,
 		IN post_id INT,
 		IN site_id ARRAY,
 		IN admin_id INT,
@@ -371,7 +379,8 @@
 		OUT fetch_one,
 		OUT affected_rows,
 		OUT fetch_one,
-		OUT affected_rows
+		OUT affected_rows,
+		OUT fetch_one
 	)
 	BEGIN
 	
@@ -445,7 +454,7 @@
 	-- Edit post content
 
 	CREATE PROCEDURE editContent(
-		IN post_content ARRAY,
+		IN post_content ROW,
 		IN post_id INT,
 		IN language_id INT,
 		OUT affected_rows
@@ -508,7 +517,6 @@
 	-- Get tags
 
 	CREATE PROCEDURE postTags(
-		IN  post_id INT,
 		OUT affected_rows
 	)
 	BEGIN
@@ -518,7 +526,6 @@
 	-- Get categories
 
 	CREATE PROCEDURE postCategories(
-		IN  post_id INT,
 		OUT affected_rows
 	)
 	BEGIN
@@ -528,6 +535,7 @@
 	CREATE PROCEDURE setPostTaxonomy(
 		IN  post_id INT,
 		IN  taxonomy_item ARRAY,
+		OUT affected_rows,
 		OUT affected_rows
 	)
 	BEGIN
@@ -535,11 +543,12 @@
 		DELETE FROM post_to_taxonomy_item WHERE post_id = :post_id;
 	
 		@EACH(:taxonomy_item) 
-			INSERT IGNORE INTO post_to_taxonomy_item 
+			INSERT INTO post_to_taxonomy_item 
 		
 				( "post_id", "taxonomy_item_id")
 			
-			VALUES ( :post_id, :each);
+			VALUES ( :post_id, :each)
+			ON CONFLICT ("post_id", "taxonomy_item_id") DO NOTHING;
 	END
 
 
@@ -549,7 +558,8 @@
 		IN start INT,
 		IN limit INT,
 		IN interval CHAR,
-		IN type CHAR,
+		IN type CHAR
+		OUT fetch_all
 	)
 	BEGIN
 	
@@ -614,7 +624,7 @@
 		-- limit
 		@IF isset(:limit) AND :limit > 0
 		THEN
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF;		
 	
 	END

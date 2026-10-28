@@ -2,12 +2,13 @@
 
 	-- get all weight types
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (weight_type_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- weight_type
@@ -21,7 +22,17 @@
 			AND weight_type_content.language_id = :language_id
 		END @IF
 		
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND weight_type.weight_type_id > :cursor
+		
+		END @IF
+		
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -33,10 +44,10 @@
 	
 	-- get weight type
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN weight_type_id INT,
 		IN language_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- weight_type
@@ -55,8 +66,8 @@
 	
 	-- add weight_type
 
-	PROCEDURE add(
-		IN weight_type ARRAY,
+	CREATE PROCEDURE add(
+		IN weight_type ROW,
 		IN language_id INT,
 		OUT insert_id,
 		OUT insert_id
@@ -68,9 +79,19 @@
 		
 		INSERT INTO weight_type 
 			
+@IF !empty(:weight_type_data)
+		THEN
+			
 			( @KEYS(:weight_type_data) )
 			
-	  	VALUES ( :weight_type_data);
+		  	VALUES ( :weight_type_data )
+			
+		@ELSE
+			
+			DEFAULT VALUES
+			
+		END @IF;
+
 
 		-- allow only table fields and set defaults for missing values
 		:weight_type_content_data  = @FILTER(:weight_type, weight_type_content)
@@ -85,7 +106,7 @@
 	
 	-- edit weight_type
 	CREATE PROCEDURE edit(
-		IN weight_type ARRAY,
+		IN weight_type ROW,
 		IN weight_type_id INT,
 		OUT affected_rows,
 		OUT affected_rows
@@ -95,11 +116,14 @@
 		-- allow only table fields and set defaults for missing values
 		:weight_type_data  = @FILTER(:weight_type, weight_type)
 
-		UPDATE weight_type 
-			
-			SET @LIST(:weight_type_data) 
-			
-		WHERE weight_type_id = :weight_type_id;
+		@IF !empty(:weight_type_data)
+		THEN
+			UPDATE weight_type 
+				
+				SET @LIST(:weight_type_data) 
+				
+			WHERE weight_type_id = :weight_type_id
+		END @IF;
 		
 		-- allow only table fields and set defaults for missing values
 		:weight_type_content_data  = @FILTER(:weight_type, weight_type_content)
@@ -115,10 +139,10 @@
 	
 	-- delete weight_type
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN weight_type_id ARRAY,
 		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- weight_type

@@ -2,15 +2,16 @@
 
 	-- get all product_option_values
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN option_id INT,
 		IN product_id INT,
 		IN product_option_value_id ARRAY,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (product_option_value_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- product_option_value
@@ -42,10 +43,26 @@
 			AND product_option_value.product_id = :product_id
 		END @IF		
 		
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND product_option_value.product_option_value_id > :cursor
+		
+		END @IF
+		
 		-- limit
 		@IF isset(:limit)
-		THEN		
-			@SQL_LIMIT(:start, :limit)
+		THEN
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
+			
 		END @IF;
 		
 		SELECT count(*) FROM (
@@ -58,10 +75,10 @@
 	
 	-- get product_option_value
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN product_option_value_id INT,
 		IN language_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- product_option_value
@@ -75,8 +92,8 @@
 	
 	-- add product_option_value
 
-	PROCEDURE add(
-		IN product_option_value ARRAY,
+	CREATE PROCEDURE add(
+		IN product_option_value ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -97,9 +114,8 @@
 	-- edit product_option_value
 	
 	CREATE PROCEDURE edit(
-		IN product_option_value ARRAY,
+		IN product_option_value ROW,
 		IN product_option_value_id INT,
-		OUT affected_rows
 		OUT affected_rows
 	)
 	BEGIN
@@ -118,10 +134,9 @@
 	
 	-- delete product_option_value
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN product_option_value_id ARRAY,
-		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- product_option_value

@@ -2,14 +2,15 @@
 
 	-- get all product_subscription
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN product_id INT,
 		IN subscription_plan_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (subscription_plan_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- product_subscription
@@ -48,10 +49,26 @@
 			AND product_subscription.subscription_plan_id = :subscription_plan_id
 		END @IF	
 		
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND product_subscription.subscription_plan_id > :cursor
+		
+		END @IF
+		
 		-- limit
 		@IF isset(:limit)
-		THEN		
-			@SQL_LIMIT(:start, :limit)
+		THEN
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
+			
 		END @IF;
 		
 		SELECT count(*) FROM (
@@ -64,20 +81,40 @@
 	
 	-- get product_subscription
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN product_subscription_id INT,
-		OUT fetch_row, 
+		IN product_id INT,
+		IN subscription_plan_id INT,
+		OUT fetch_row
 	)
 	BEGIN
 		-- product_subscription
 		SELECT *
-			FROM product_subscription as _ WHERE product_subscription_id = :product_subscription_id;
+			FROM product_subscription as _
+		WHERE 1 = 1
+
+		@IF isset(:product_id)
+		THEN
+			AND _.product_id = :product_id
+		END @IF
+
+		@IF isset(:subscription_plan_id)
+		THEN
+			AND _.subscription_plan_id = :subscription_plan_id
+		END @IF
+
+		@IF isset(:product_subscription_id)
+		THEN
+			AND _.product_subscription_id = :product_subscription_id
+		END @IF
+
+		LIMIT 1;
 	END
 	
 	-- add product_subscription
 
-	PROCEDURE add(
-		IN product_subscription ARRAY,
+	CREATE PROCEDURE add(
+		IN product_subscription ROW,
 		OUT fetch_one
 	)
 	BEGIN
@@ -97,8 +134,10 @@
 	-- edit product_subscription
 	
 	CREATE PROCEDURE edit(
-		IN product_subscription ARRAY,
 		IN product_subscription_id INT,
+		IN product_subscription ROW,
+		IN product_id INT,
+		IN subscription_plan_id INT,
 		OUT affected_rows
 	)
 	BEGIN
@@ -107,23 +146,48 @@
 		@FILTER(:product_subscription, product_subscription)
 
 		UPDATE product_subscription
-			
-			SET @LIST(:product_subscription) 
-			
-		WHERE product_subscription_id = :product_subscription_id
 
+			SET @LIST(:product_subscription)
 
+		WHERE 1 = 1
+
+		@IF isset(:product_id)
+		THEN
+			AND product_id = :product_id
+		END @IF
+
+		@IF isset(:subscription_plan_id)
+		THEN
+			AND subscription_plan_id = :subscription_plan_id
+		END @IF
+
+		@IF isset(:product_subscription_id)
+		THEN
+			AND product_subscription_id = :product_subscription_id
+		END @IF;
 	END
-	
-	
+
+
 	-- delete product_subscription
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN product_subscription_id ARRAY,
-		OUT affected_rows, 
-		OUT affected_rows, 
+		IN product_id ARRAY,
+		IN subscription_plan_id ARRAY,
+		OUT affected_rows
 	)
 	BEGIN
 		-- user_group
-		DELETE FROM product_subscription WHERE product_subscription_id IN (:product_subscription_id);
+		DELETE FROM product_subscription WHERE 1 = 1
+
+		@IF isset(:product_id)
+		THEN
+			AND product_id IN (:product_id) AND subscription_plan_id IN (:subscription_plan_id)
+		END @IF
+
+		@IF isset(:product_subscription_id)
+		THEN
+			AND product_subscription_id IN (:product_subscription_id)
+		END @IF;
+
 	END

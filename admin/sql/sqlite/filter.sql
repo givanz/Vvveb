@@ -2,14 +2,15 @@
 
 	-- get all attributes
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN product_id ARRAY,
 		IN attribute_group_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (attribute_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- attribute
@@ -49,10 +50,26 @@
 			AND attribute_content.name LIKE '%' || :search || '%'
 		END @IF	  
 		
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND attribute.attribute_id > :cursor
+		
+		END @IF
+		
 		-- limit
 		@IF isset(:limit)
-		THEN		
-			@SQL_LIMIT(:start, :limit)
+		THEN
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
+			
 		END @IF;
 		
 		SELECT count(*) FROM (
@@ -65,10 +82,10 @@
 	
 	-- get attribute
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN attribute_id INT,
 		IN language_id INT,
-		OUT fetch_row, 
+		OUT fetch_row
 	)
 	BEGIN
 		-- attribute
@@ -82,8 +99,9 @@
 	
 	-- add attribute
 
-	PROCEDURE add(
-		IN attribute ARRAY,
+	CREATE PROCEDURE add(
+		IN attribute ROW,
+		IN language_id INT,
 		OUT insert_id,
 		OUT insert_id
 	)
@@ -113,7 +131,7 @@
 	
 	-- edit attribute
 	CREATE PROCEDURE edit(
-		IN attribute ARRAY,
+		IN attribute ROW,
 		IN attribute_id INT,
 		OUT affected_rows,
 		OUT affected_rows
@@ -142,10 +160,10 @@
 	
 	-- delete attribute
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN attribute_id ARRAY,
 		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows
 	)
 	BEGIN
 		-- attribute
@@ -155,13 +173,15 @@
 
 
 
-	PROCEDURE price(
+	-- price
+	CREATE PROCEDURE price(
 		IN site_id INT,
-		IN category_id ARRAY,
 		IN taxonomy_item_id ARRAY,
 		IN option_value_id ARRAY,
-		OUT affected_rows, 
-		OUT affected_rows, 
+		IN product_attribute ARRAY,
+		IN start INT,
+		IN limit INT,
+		OUT fetch_all
 	)
 	BEGIN
 
@@ -186,26 +206,31 @@
 
 		-- limit
 		@IF isset(:limit)
-		THEN		
-			@SQL_LIMIT(:start, :limit)
+		THEN
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
+			
 		END @IF;
 
 	END
 	
 
 
-	PROCEDURE manufacturers(
-		IN attribute_id ARRAY,
-		OUT affected_rows, 
-		OUT affected_rows, 
+	CREATE PROCEDURE manufacturers(
+		IN site_id INT,
+		IN start INT,
+		IN limit INT,
+		OUT fetch_all
 	)
 	BEGIN
 
-		SELECT *,m.image as image FROM manufacturer m 
+		SELECT m.*,m.image as image FROM manufacturer m 
 				LEFT JOIN manufacturer_to_site m2s ON (m.manufacturer_id = m2s.manufacturer_id) 
 				INNER JOIN  product p  ON (m.manufacturer_id = p.manufacturer_id)
-				LEFT JOIN product_special ps ON (p.product_id = ps.product_id)  
-				LEFT JOIN product_to_category p2c ON (p.product_id = p2c.product_id)
 				LEFT JOIN product_option_value pov  ON (p.product_id = pov.product_id)
 				LEFT JOIN product_attribute pa  ON (p.product_id = pa.product_id)
 		WHERE 
@@ -215,115 +240,115 @@
 		
 		-- limit
 		@IF isset(:limit)
-		THEN		
-			@SQL_LIMIT(:start, :limit)
+		THEN
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
+			
 		END @IF;
 		
 	END
 	
 
 
-	PROCEDURE categories(
-		IN attribute_id ARRAY,
-		OUT affected_rows, 
-		OUT affected_rows, 
+	CREATE PROCEDURE categories(
+		IN site_id INT,
+		IN language_id INT,
+		IN parent_id INT,
+		IN start INT,
+		IN limit INT,
+		OUT fetch_all
 	)
 	BEGIN
 
-		SELECT *,c.category_id as category_id,count(p2c.product_id) as prod_count FROM category c 
-			LEFT JOIN category_to_site c2s ON (c.category_id = c2s.category_id) 
-			LEFT JOIN category_description cd ON (c.category_id = cd.category_id) 
-			LEFT JOIN product_to_category p2c ON (c.category_id = p2c.category_id) 
+		SELECT ti.*,ti.taxonomy_item_id as taxonomy_item_id,count(p2t.product_id) as prod_count FROM taxonomy_item ti 
+			LEFT JOIN taxonomy_to_site t2s ON (ti.taxonomy_item_id = t2s.taxonomy_item_id) 
+			LEFT JOIN taxonomy_item_content tic ON (ti.taxonomy_item_id = tic.taxonomy_item_id) 
+			LEFT JOIN product_to_taxonomy_item p2t ON (ti.taxonomy_item_id = p2t.taxonomy_item_id) 
 		WHERE 
-			c.parent_id = '" . (int)$parent_id . "' 
-			AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' 
-			AND c2s.site_id = '" . (int)$this->config->get('config_site_id') . ' ' .  "'  
-			AND c.status = '1' 
+			ti.parent_id = :parent_id 
+			AND tic.language_id = :language_id 
+			AND t2s.site_id = :site_id 
+			AND ti.status = 1 
 		
-		GROUP BY c.category_id ORDER BY c.sort_order, LCASE(cd.name)
+		GROUP BY ti.taxonomy_item_id, tic.name ORDER BY ti.sort_order, tic.name
 			
-		-- limit
 		@IF isset(:limit)
 		THEN		
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF;
 	END
 	
 	
 
 
-	PROCEDURE filters(
-		IN attribute_id ARRAY,
-		OUT affected_rows, 
-		OUT affected_rows, 
+	CREATE PROCEDURE filters(
+		IN filter_id ARRAY,
+		OUT fetch_all
 	)
 	BEGIN
-		-- attribute
-		DELETE FROM attribute_content WHERE attribute_id IN (:attribute_id);
-		DELETE FROM attribute WHERE attribute_id IN (:attribute_id);
+		SELECT * FROM filter WHERE filter_id IN (:filter_id);
+	END
+
+	CREATE PROCEDURE availability(
+		IN attribute_id ARRAY,
+		OUT fetch_all
+	)
+	BEGIN
+		SELECT * FROM option WHERE option_id IN (:attribute_id);
 	END
 	
 	
-
-
-	PROCEDURE availability(
-		IN attribute_id ARRAY,
-		OUT affected_rows, 
-		OUT affected_rows, 
-	)
-	BEGIN
-		-- attribute
-		DELETE FROM attribute_content WHERE attribute_id IN (:attribute_id);
-		DELETE FROM attribute WHERE attribute_id IN (:attribute_id);
-	END
 	
-	
-
-
-	PROCEDURE options(
-		IN attribute_id ARRAY,
-		OUT affected_rows, 
-		OUT affected_rows, 
+	-- options
+	CREATE PROCEDURE options(
+		IN language_id INT,
+		IN start INT,
+		IN limit INT,
+		OUT fetch_all
 	)
 	BEGIN
 
-		SELECT *,od.name as option_name, ovd.name as value_name, ov.image as value_image, count(p.product_id) as prod_count 
+		SELECT ov.*,oc.name as option_name, ovc.name as value_name, ov.image as value_image, count(p.product_id) as prod_count 
 				FROM product_option_value pov 
 			LEFT JOIN option_value ov ON (pov.option_value_id = ov.option_value_id) 
-			LEFT JOIN option_value_description ovd ON (ov.option_value_id = ovd.option_value_id) 
+			LEFT JOIN option_value_content ovc ON (ov.option_value_id = ovc.option_value_id) 
 			LEFT JOIN `option` po  ON (pov.option_id = po.option_id) 
-			LEFT JOIN option_description od ON (po.option_id = od.option_id) 
-			INNER JOIN product_to_category p2c ON (pov.product_id = p2c.product_id $category_join)
+			LEFT JOIN option_content oc ON (po.option_id = oc.option_id) 
+			INNER JOIN product_to_taxonomy_item p2t ON (pov.product_id = p2t.product_id)
 			LEFT JOIN product_attribute pa  ON (pov.product_id = pa.product_id)
-			INNER JOIN  product p  ON (p.product_id = p2c.product_id) 
-			LEFT JOIN product_special ps ON (p.product_id = ps.product_id) 
-		WHERE ovd.language_id = :language_id
-		 --. $filter_sql . " 
+			INNER JOIN  product p  ON (p.product_id = p2t.product_id) 
+		WHERE ovc.language_id = :language_id
+		AND oc.language_id = :language_id
 		 
-		 GROUP BY ov.option_value_id
+		 GROUP BY ov.option_value_id, oc.name, ovc.name, ov.image
+
+		@IF isset(:limit)
+		THEN		
+			LIMIT :limit OFFSET :start
+		END @IF;
 			
 	END
 	
 
-	PROCEDURE attributes(
-		IN attribute_id ARRAY,
-		OUT affected_rows, 
-		OUT affected_rows, 
+	CREATE PROCEDURE attributes(
+		IN language_id INT,
+		OUT fetch_all
 	)
 	BEGIN
 
-		SELECT pa1.attribute_id, ad.name, pa1.text,count(pa1.product_id) as prod_count FROM product_attribute pa1 
+		SELECT pa.attribute_id, ac.name, pa.value,count(pa.product_id) as prod_count FROM product_attribute pa 
 			 
-			 LEFT JOIN attribute_description ad ON (pa1.attribute_id = ad.attribute_id)
-			 WHERE ad.language_id = '" . (int)$this->config->get('config_language_id') . "' AND pa1.language_id = '" . (int)$this->config->get('config_language_id') . "' 
+			 LEFT JOIN attribute_content ac ON (pa.attribute_id = ac.attribute_id)
+			 WHERE ac.language_id = :language_id AND pa.language_id = :language_id 
 			 AND product_id IN (
 			 SELECT p.product_id FROM 
 			 product p
-			 INNER JOIN product_to_category p2c ON (p.product_id = p2c.product_id) 
-			 
-			 " . $sql_joins . "
-			 -- ". $filter_sql .
+			 INNER JOIN product_to_taxonomy_item p2t ON (p.product_id = p2t.product_id) 
 			 ) 
-		GROUP BY pa1.attribute_id,text ORDER BY ad.name
+		GROUP BY pa.attribute_id, ac.name, pa.value ORDER BY ac.name
 
 	END

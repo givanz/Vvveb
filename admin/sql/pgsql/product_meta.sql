@@ -7,7 +7,7 @@
 		IN namespace CHAR,
 		IN key CHAR,
 		
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -30,33 +30,36 @@
     
 	CREATE PROCEDURE set(
 		IN product_id INT,
+		IN language_id INT,
 		IN namespace CHAR,
 		IN key CHAR,
 		IN value CHAR,
 		
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 
         INSERT INTO product_content_meta
-            (product_id, namespace, "key", value )
+            (product_id, namespace, language_id, "key", value )
         
-        VALUES (:product_id, :namespace, :key, :value )
+        VALUES (:product_id, :namespace, :language_id, :key, :value )
         
-		ON CONFLICT ("product_id", "language_id", "namespace", "key") DO UPDATE SET "value" = :value;
+		ON CONFLICT ("product_id", "language_id", "namespace", "key") DO UPDATE SET "value" = :value
+		RETURNING product_content_meta_id;
 		
 	END
 
 
     CREATE PROCEDURE getMulti(
 		IN product_id INT,
+		IN language_id INT,
 		IN namespace CHAR,
 		IN key ARRAY,
 		OUT fetch_all
 	)
 	BEGIN
 
-		SELECT product_id, namespace, "key", value
+            SELECT product_id, namespace, "key", value
             FROM product_content_meta AS _
 		WHERE 1 = 1
 		
@@ -70,6 +73,11 @@
 			AND _.namespace = :namespace
 		END @IF	
 		
+		@IF !empty(:language_id) 
+		THEN 
+			AND _.language_id = :language_id
+		END @IF	
+		
 		@IF !empty(:key) 
 		THEN 
 			AND _."key" IN (:key)
@@ -81,24 +89,29 @@
     
 	CREATE PROCEDURE setMulti(
 		IN product_id INT,
+		IN language_id INT,
 		IN namespace CHAR,
-		IN meta ARRAY
+		IN meta ROWS,
+		OUT insert_id
 	)
 	BEGIN
+		:meta = @FILTER(:meta, product_content_meta, false, true)
 
-        INSERT INTO product_content_meta
-            (product_id, namespace, "key", value)
+		@EACH(:meta)
+			INSERT INTO product_content_meta
 
-			VALUES (:product_id, :namespace, :meta)
+				( product_id, language_id, namespace, @KEYS(:each) )
 
-		ON CONFLICT("product_id","namespace", "key") DO UPDATE SET "value" = :product_content_metas.value;
-		
+			VALUES ( :product_id, :language_id, :namespace, :each )
+
+			ON CONFLICT("product_id", "language_id", "namespace", "key") DO UPDATE SET "value" = :each.value;
 	END
     
 	CREATE PROCEDURE delete(
 		IN product_id INT,
 		IN namespace CHAR,
 		IN key ARRAY
+		OUT affected_rows
 	)
 	BEGIN
 

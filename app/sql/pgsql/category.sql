@@ -10,7 +10,6 @@
 
 		-- variables
 		IN  language_id INT,
-		IN  taxonomy_id INT,
 		IN  site_id INT,
 		IN  post_id INT,
 		IN  search CHAR,
@@ -22,11 +21,11 @@
 		-- return array of categories for categories query
 		OUT fetch_all,
 		-- return categories count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
-		SELECT  SQL_CALC_FOUND_ROWS *, post.post_id as array_key
+		SELECT  *, post.post_id as array_key
 
 		FROM post
 		
@@ -36,7 +35,7 @@
 
 			LEFT JOIN taxonomy_item categories ON (categories.taxonomy_item_id = pt.taxonomy_item_id) 
 			LEFT JOIN taxonomy_to_site c2s ON (categories.taxonomy_item_id = c2s.taxonomy_item_id) 
-			LEFT JOIN taxonomy_item_content td ON (categories.taxonomy_item_id = td.taxonomy_item_id)  
+			LEFT JOIN taxonomy_item_content tic ON (categories.taxonomy_item_id = tic.taxonomy_item_id)  
 
 			WHERE 
 			
@@ -45,13 +44,32 @@
 			@IF isset(:search)
 			THEN 
 			
-				AND tc.name LIKE CONCAT('%',:search,'%')
+				AND tc.name LIKE '%' || :search || '%'
 				
 			END @IF				
 			
-		LIMIT :start, :count;
+		LIMIT :count OFFSET :start;
 		
-		SELECT FOUND_ROWS() as count;
+		SELECT COUNT(*) as count FROM post
+		
+			LEFT JOIN post_content tc ON (post.post_id = tc.post_id AND tc.language_id = :language_id)  
+			LEFT JOIN post_to_site ps ON (post.post_id = ps.post_id)  
+			LEFT JOIN post_to_taxonomy_item pt ON (post.post_id = pt.post_id)   
+
+			LEFT JOIN taxonomy_item categories ON (categories.taxonomy_item_id = pt.taxonomy_item_id) 
+			LEFT JOIN taxonomy_to_site c2s ON (categories.taxonomy_item_id = c2s.taxonomy_item_id) 
+			LEFT JOIN taxonomy_item_content tic ON (categories.taxonomy_item_id = tic.taxonomy_item_id)  
+
+			WHERE 
+			
+			tc.language_id = :language_id AND c2s.site_id = :site_id
+
+			@IF isset(:search)
+			THEN 
+			
+				AND tc.name LIKE '%' || :search || '%'
+				
+			END @IF;
 
 	END
 
@@ -100,10 +118,10 @@
 					@IF :type == "tags"
 					THEN 
 					
-						INNER JOIN product_to_taxonomy_item pt ON (_.taxonomy_item_id = pt.taxonomy_item_id AND pt.product_id = :product_id)  
+						INNER JOIN product_to_taxonomy_item ptp ON (_.taxonomy_item_id = ptp.taxonomy_item_id AND ptp.product_id = :product_id)  
 					@ELSE		
 					
-						LEFT JOIN product_to_taxonomy_item pt ON (_.taxonomy_item_id = pt.taxonomy_item_id AND pt.product_id = :product_id)  
+						LEFT JOIN product_to_taxonomy_item ptp ON (_.taxonomy_item_id = ptp.taxonomy_item_id AND ptp.product_id = :product_id)  
 						
 					END @IF	
 					
@@ -111,7 +129,14 @@
 				
 				@IF isset(:type)
 				THEN 
-					INNER JOIN taxonomy t ON (_.taxonomy_id = t.taxonomy_id AND t.type = :type)   
+					INNER JOIN taxonomy t ON (_.taxonomy_id = t.taxonomy_id AND t.type = :type)
+
+					@IF isset(:post_type)
+					THEN 
+					
+						AND t.post_type = :post_type 
+						
+					END @IF   
 				END @IF	
 				
 			WHERE 
@@ -136,7 +161,7 @@
 			
 			@IF isset(:product_id)
 			THEN 
-				AND pt.product_id = :product_id 
+				AND ptp.product_id = :product_id 
         	END @IF		
         
 		LIMIT 1

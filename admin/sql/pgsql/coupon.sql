@@ -2,12 +2,12 @@
 
 	-- get all coupons
 
-	PROCEDURE getAll(
-		IN language_id INT,
+	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (coupon_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- coupon
@@ -15,7 +15,22 @@
 			FROM coupon WHERE 1 = 1
 			
 		
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+			
+		
+		@IF isset(:cursor)
+			
+		
+		THEN
+			
+		
+			AND coupon.coupon_id > :cursor
+			
+		
+		END @IF
+			
+		
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -27,12 +42,12 @@
 	
 	-- get coupon
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN coupon_id INT,
 		IN code CHAR,
 		IN free_shipping INT,
 		IN status INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- coupon
@@ -65,8 +80,8 @@
 	
 	-- add coupon
 
-	PROCEDURE add(
-		IN coupon ARRAY,
+	CREATE PROCEDURE add(
+		IN coupon ROW,
 		OUT fetch_one
 	)
 	BEGIN
@@ -86,7 +101,7 @@
 	-- edit coupon
 	
 	CREATE PROCEDURE edit(
-		IN coupon ARRAY,
+		IN coupon ROW,
 		IN coupon_id INT,
 		OUT affected_rows
 	)
@@ -106,9 +121,9 @@
 
 	-- delete coupon
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN coupon_id ARRAY,
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- coupon
@@ -118,7 +133,7 @@
 
 	-- get coupon categories
 
-	PROCEDURE getTaxonomies(
+	CREATE PROCEDURE getTaxonomies(
 		IN coupon_id INT,
 		IN language_id INT,
 		OUT fetch_all
@@ -133,9 +148,8 @@
 	
 	-- get coupon products
 
-	PROCEDURE getProducts(
+	CREATE PROCEDURE getProducts(
 		IN coupon_id INT,
-		IN language_id INT,
 		OUT fetch_all
 	)
 	BEGIN
@@ -149,7 +163,7 @@
 
 	-- set coupon taxonomies
 
-	PROCEDURE setTaxonomies(
+	CREATE PROCEDURE setTaxonomies(
 		IN coupon_taxonomy ARRAY,
 		IN coupon_id INT,
 		OUT affected_rows,
@@ -170,7 +184,7 @@
 	
 	-- set coupon products
 
-	PROCEDURE setProducts(
+	CREATE PROCEDURE setProducts(
 		IN coupon_product ARRAY,
 		IN coupon_id INT,
 		OUT affected_rows,

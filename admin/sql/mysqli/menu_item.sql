@@ -7,16 +7,15 @@
 		-- variables
 		IN  language_id INT,
 		IN  menu_id INT,
-		IN  site_id INT,
-		IN  post_id INT,
 		IN  slug CHAR,
 		
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (menu_item_id) for cursor pagination
 			
 		-- return array of menus for menus query
-		OUT fetch_all,
+		OUT fetch_all
 		-- return menus count for count query
 		-- OUT fetch_one
 	)
@@ -49,11 +48,21 @@
 				
 			END @IF			
 
+		-- cursor pagination
+
+		@IF isset(:cursor)
+
+		THEN
+
+		    AND menu_item.menu_item_id > :cursor
+
+		END @IF
+
 		ORDER BY menu_item.parent_id, menu_item.sort_order, menu_item.menu_id
 
 		@IF isset(:limit)
 		THEN 
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF		
 		;
 
@@ -62,8 +71,6 @@
 	CREATE PROCEDURE getMenuAllLanguages(
 
 		-- variables
-		IN  user_group_id INT,
-		IN  site_id INT,
 		IN  menu_id INT,
 		IN  search CHAR,
 		
@@ -73,8 +80,7 @@
 			
 		-- return array of categories for categories query
 		OUT fetch_all,
-		-- return categories count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -104,9 +110,9 @@
 					
 	
 			@IF isset(:search)
-			THEN 
+			THEN
 			
-				AND td.name LIKE CONCAT('%',:search,'%')
+				AND categories.menu_item_id IN (SELECT menu_item_id FROM menu_item_content WHERE name LIKE CONCAT('%',:search,'%'))
 				
 			END @IF						
 			
@@ -121,7 +127,7 @@
 		
 		@IF isset(:limit)
 		THEN 		
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF
 		
 		;
@@ -142,6 +148,7 @@
 	CREATE PROCEDURE editMenuItem(
 		IN menu_item ARRAY,
 		IN menu_item_id INT,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
@@ -201,7 +208,7 @@
 	-- Reorder menu items
 
 	CREATE PROCEDURE updateMenuItems(
-		IN menu_items ARRAY,
+		IN menu_items ROWS,
 		OUT insert_id
 	)
 	BEGIN
@@ -222,7 +229,7 @@
 	CREATE PROCEDURE deleteMenuItemRecursive(
 		IN menu_item_id INT,
 		OUT affected_rows,
-		OUT affected_rows,
+		OUT affected_rows
 	)
 	BEGIN
 	
@@ -266,6 +273,8 @@
 
 	CREATE PROCEDURE deleteMenuItem(
 		IN menu_item_id INT,
+		OUT affected_rows,
+		OUT affected_rows,
 		OUT affected_rows,
 		OUT affected_rows
 	)

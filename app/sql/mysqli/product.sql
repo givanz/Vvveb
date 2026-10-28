@@ -11,7 +11,7 @@
 		IN site_id INT,		
 		IN slug CHAR,
 		IN type CHAR,
-		OUT fetch_all,
+		OUT fetch_all
 	)
 	BEGIN
 

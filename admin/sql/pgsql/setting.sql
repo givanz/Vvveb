@@ -7,7 +7,7 @@
 		IN namespace CHAR,
 		IN key CHAR,
 		
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -34,7 +34,7 @@
 		IN key CHAR,
 		IN value CHAR,
 		
-		OUT insert_id
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -43,7 +43,8 @@
         
             VALUES ( :site_id, :namespace, :key, :value )
         
-		ON CONFLICT("site_id", "namespace", "key") DO UPDATE SET "value" = :value;
+		ON CONFLICT("site_id", "namespace", "key") DO UPDATE SET "value" = :value
+		RETURNING setting_id;
 		
 	END
     

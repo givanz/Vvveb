@@ -2,13 +2,14 @@
 
 	-- get all carts
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN cart_id ARRAY,
 		IN user_id CHAR,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (cart_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- cart
@@ -26,11 +27,26 @@
 		END @IF
 			
 
+		-- cursor pagination
+			
+
+		@IF isset(:cursor)
+			
+
+		THEN
+			
+
+			AND cart.cart_id > :cursor
+			
+
+		END @IF
+			
+
 		ORDER BY status DESC, cart_id
 
 		@IF !empty(:limit) 
 		THEN			
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF
 		;
 		
@@ -44,10 +60,10 @@
 	
 	-- get cart
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN cart_id INT,
 		IN user_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- cart
@@ -69,9 +85,9 @@
 	
 	-- add cart
 
-	PROCEDURE add(
-		IN cart ARRAY,
-		OUT insert_id
+	CREATE PROCEDURE add(
+		IN cart ROW,
+		OUT fetch_one
 	)
 	BEGIN
 		
@@ -83,14 +99,15 @@
 			
 			( @KEYS(:cart_data) )
 			
-	  	VALUES ( :cart_data );
+	  	VALUES ( :cart_data )
+		RETURNING cart_id;
 
 	END
 	
 	-- edit cart
 	
 	CREATE PROCEDURE edit(
-		IN cart ARRAY,
+		IN cart ROW,
 		IN cart_id INT,
 		OUT affected_rows
 	)
@@ -111,7 +128,7 @@
 	-- edit cart
 	
 	CREATE PROCEDURE update(
-		IN cart ARRAY,
+		IN cart ROW,
 		OUT affected_rows
 	)
 	BEGIN
@@ -131,10 +148,10 @@
 	
 	-- delete cart
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN cart_id ARRAY,
 		IN user_id ARRAY,
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- cart

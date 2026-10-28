@@ -16,6 +16,7 @@
 		IN comment_status INT,
 		IN type CHAR,
 		OUT fetch_row,
+		OUT fetch_all
 	)
 	BEGIN
 
@@ -47,6 +48,17 @@
 			END @IF		
 		WHERE 1 = 1
 
+        	@IF isset(:site_id)
+        	THEN
+			AND ps.site_id = :site_id
+        	END @IF
+
+        	@IF isset(:status) && !empty(:status)
+        	THEN
+			AND _.status = :status
+        	END @IF
+
+
         	@IF isset(:slug) && !(isset(:post_id) && :post_id) 
         	THEN 
 			AND pd.slug = :slug 
@@ -62,7 +74,7 @@
 			AND _.type = :type
         	END @IF			
 
-        LIMIT 1; 
+		LIMIT 1; 
 		
 		
 		SELECT `key` as array_key,value as array_value FROM post_meta as _
@@ -76,10 +88,10 @@
 	CREATE PROCEDURE getContent(
 		IN post_id INT,
 		IN site_id INT,
-		IN status INT,
+		IN status CHAR,
 		IN slug CHAR,
 		IN type CHAR,
-		OUT fetch_all,
+		OUT fetch_all
 	)
 	BEGIN
 
@@ -110,16 +122,14 @@
 			AND post.type = :type
 		END @IF
 		
+		@IF isset(:status) && :status
+		THEN 
+			AND post.status = :status
+		END @IF
+		
 		@IF isset(:site_id)
 		THEN
 			AND ps.site_id = :site_id
 		END @IF			
 	END
 
-	-- Get categories
-
-	CREATE PROCEDURE postCategories(
-		IN  post_id INT,
-	)
-	BEGIN
-	END

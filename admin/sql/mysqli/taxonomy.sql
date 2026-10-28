@@ -3,11 +3,11 @@
 	-- get all taxonomies
 
 	CREATE PROCEDURE getAll(
-		IN taxonomy_item_id INT,
 		
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (taxonomy_id) for cursor pagination
 		
 		-- filter
 		IN post_type CHAR,
@@ -39,7 +39,12 @@
 		
 			@IF isset(:limit)
 			THEN
-				@SQL_LIMIT(:start, :limit)
+				-- cursor pagination
+				@IF isset(:cursor)
+				THEN
+					AND taxonomy.taxonomy_id > :cursor
+				END @IF
+				LIMIT :limit OFFSET :start
 			END @IF;
 		
 		
@@ -54,10 +59,11 @@
 
 	-- get taxonomy
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN taxonomy_id INT,
 		IN slug CHAR,
-		OUT fetch_row, 
+		IN language_id INT,
+		OUT fetch_row
 	)
 	BEGIN
 		-- taxonomy
@@ -67,7 +73,7 @@
 			LEFT JOIN taxonomy_content t2c ON (_.taxonomy_id = t2c.taxonomy_id AND t2c.language_id = :language_id ) 
 		WHERE  1 = 1
 
-		@IF isset(:taxonomy_item_id)
+		@IF isset(:taxonomy_id)
 		THEN 
 		
 			AND _.taxonomy_id = :taxonomy_id
@@ -87,8 +93,8 @@
 	
 	-- add taxonomy
 
-	PROCEDURE add(
-		IN taxonomy ARRAY,
+	CREATE PROCEDURE add(
+		IN taxonomy ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -107,7 +113,7 @@
 	
 	-- edit taxonomy
 	CREATE PROCEDURE edit(
-		IN taxonomy ARRAY,
+		IN taxonomy ROW,
 		IN taxonomy_id INT,
 		OUT affected_rows
 	)
@@ -116,20 +122,23 @@
 		-- allow only table fields and set defaults for missing values
 		@FILTER(:taxonomy, taxonomy)
 
+		@IF !empty(:taxonomy)
+		THEN
 		UPDATE taxonomy
 			
 			SET @LIST(:taxonomy) 
 			
 		WHERE taxonomy_id = :taxonomy_id
+		END @IF
 
 
 	END
 	
 	-- delete taxonomy
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN taxonomy_id ARRAY,
-		OUT affected_rows, 
+		OUT affected_rows
 	)
 	BEGIN
 		-- taxonomy

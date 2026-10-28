@@ -2,12 +2,12 @@
 
 	-- get all return region groups
 
-	PROCEDURE getAll(
-		IN language_id INT,
+	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (region_group_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- region_group
@@ -16,7 +16,12 @@
 		
 		@IF !empty(:limit) 
 		THEN			
-			@SQL_LIMIT(:start, :limit)
+			-- cursor pagination
+			@IF isset(:cursor)
+			THEN
+				AND region_group.region_group_id > :cursor
+			END @IF
+			LIMIT :limit OFFSET :start
 		END @IF
 		
 		;
@@ -32,13 +37,13 @@
 	
 	-- get regions for region group 
 
-	PROCEDURE getRegions(
+	CREATE PROCEDURE getRegions(
 		IN region_group_id INT,
 		IN country_id INT,
 		IN start INT,
 		IN limit INT,
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- region
@@ -57,7 +62,7 @@
 		
 		@IF !empty(:limit) 
 		THEN			
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF
 		;
 		
@@ -70,14 +75,14 @@
 	
 	-- check region for region group 
 
-	PROCEDURE isRegion(
+	CREATE PROCEDURE isRegion(
 		IN region_group_id INT,
 		IN country_id INT,
 		IN region_id INT,
 		IN start INT,
 		IN limit INT,
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- region
@@ -104,7 +109,7 @@
 		
 		@IF !empty(:limit) 
 		THEN			
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF
 		;
 		
@@ -117,9 +122,10 @@
 
 	-- add region_group
 
-	PROCEDURE addRegions(
-		IN region_to_region_group ARRAY,
+	CREATE PROCEDURE addRegions(
+		IN region_to_region_group ROWS,
 		IN region_group_id INT,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
@@ -144,9 +150,9 @@
 
 	-- get region_group
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN region_group_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- region_group
@@ -156,8 +162,8 @@
 	
 	-- add region group
 
-	PROCEDURE add(
-		IN region_group ARRAY,
+	CREATE PROCEDURE add(
+		IN region_group ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -177,7 +183,7 @@
 	-- edit region group
 
 	CREATE PROCEDURE edit(
-		IN region_group ARRAY,
+		IN region_group ROW,
 		IN region_group_id INT,
 		OUT affected_rows
 	)
@@ -197,10 +203,10 @@
 	
 	-- delete region_group
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN region_group_id ARRAY,
 		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- region

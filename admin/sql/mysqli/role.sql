@@ -3,20 +3,30 @@
 	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (role_id) for cursor pagination
 		
 		-- return array of roles for roles query
 		OUT fetch_all,
-		-- return roles count for count query
 		OUT fetch_one
 	)
 	BEGIN
         
         SELECT * FROM role WHERE 1 = 1 
 
+			-- cursor pagination
+
+			@IF isset(:cursor)
+
+			THEN
+
+			    AND role.role_id > :cursor
+
+			END @IF
+
 			-- limit
 			@IF isset(:limit)
 			THEN
-				@SQL_LIMIT(:start, :limit)
+				LIMIT :limit OFFSET :start
 			END @IF;		
 
 		-- SELECT FOUND_ROWS() as count;
@@ -32,7 +42,7 @@
 
 	CREATE PROCEDURE get(
 		IN role_id INT,
-		OUT fetch_row,
+		OUT fetch_row
 	)
 	BEGIN
         
@@ -45,7 +55,7 @@
 	-- Add new role
 
 	CREATE PROCEDURE add(
-		IN role ARRAY,
+		IN role ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -65,7 +75,7 @@
 	
 	CREATE PROCEDURE edit(
         IN role_id INT,
-		IN role ARRAY,
+		IN role ROW,
 		OUT affected_rows
 	)
 	BEGIN
@@ -81,7 +91,7 @@
 
 	-- delete role
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN role_id ARRAY,
 		OUT affected_rows
 	)

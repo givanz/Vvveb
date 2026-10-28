@@ -3,8 +3,6 @@
 	
 	CREATE PROCEDURE getAll(
 		-- variables
-		IN  language_id INT,
-		IN  site_id INT,
 		IN 	product_id INT,
         IN 	product_review_id INT,
         IN 	status INT,
@@ -12,6 +10,7 @@
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (product_review_media_id) for cursor pagination
 
 		-- return
 		OUT fetch_all, -- orders
@@ -45,7 +44,22 @@
         	END @IF	              
             
 
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+            
+
+		@IF isset(:cursor)
+            
+
+		THEN
+            
+
+		    AND product_review_media.product_review_media_id > :cursor
+            
+
+		END @IF
+            
+
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -60,21 +74,21 @@
 	
 	CREATE PROCEDURE get(
 		IN product_review_media_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- review
 		SELECT *
 			FROM product_review_media as _ -- (underscore) _ means that data will be kept in main array
-		INNER JOIN product_review on product_review.product_review_id = product_review_media.product_review_id
-		WHERE product_review_media_id = :product_review_media_id LIMIT 1;
+		INNER JOIN product_review on product_review.product_review_id = _.product_review_id
+		WHERE _.product_review_media_id = :product_review_media_id LIMIT 1;
 
 	END
 	
 	-- Add new product review
 
 	CREATE PROCEDURE add(
-		IN product_review_media ARRAY,
+		IN product_review_media ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -93,8 +107,8 @@
 	-- Edit product review
 
 	CREATE PROCEDURE edit(
-		IN product_review_media ARRAY,
-		IN  id_product_review_media INT,
+		IN product_review_media ROW,
+		IN product_review_media_id INT,
 		OUT affected_rows
 	)
 	BEGIN

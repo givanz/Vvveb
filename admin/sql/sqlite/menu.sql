@@ -5,7 +5,6 @@
 	CREATE PROCEDURE get(
 
 		-- variables
-		IN  language_id INT,
 		IN  menu_id INT,
 		IN  site_id INT,
 		IN  slug CHAR,
@@ -61,13 +60,14 @@
 	CREATE PROCEDURE editMenu(
 
 		-- variables
-		IN  language_id INT,
 		IN  menu_id INT,
 		IN  site_id ARRAY,
 		IN  slug CHAR,
 		IN  name CHAR,
 			
 		-- return menus count for count query
+		OUT affected_rows,
+		OUT affected_rows,
 		OUT affected_rows
 	)
 	BEGIN
@@ -93,12 +93,11 @@
 	CREATE PROCEDURE addMenu(
 
 		-- variables
-		IN  language_id INT,
-		IN  menu_id INT,
 		IN  site_id ARRAY,
-		IN  menu ARRAY,
+		IN  menu ROW,
 			
 		-- return menus count for count query
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
@@ -106,9 +105,18 @@
 
 		INSERT INTO menu 
 			
-			( @KEYS(:menu) )
+			@IF !empty(:menu)
+			THEN
 			
-	  	VALUES ( :menu );
+				( @KEYS(:menu) )
+			
+	  			VALUES ( :menu )
+			
+			@ELSE
+			
+				DEFAULT VALUES
+			
+			END @IF;
 
 		@EACH(:site_id) 
 			INSERT INTO menu_to_site 
@@ -146,19 +154,17 @@
 	CREATE PROCEDURE getAll(
 
 		-- variables
-		IN  language_id INT,
 		IN  menu_id INT,
 		IN  site_id INT,
-		IN  type CHAR,
 		
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (menu_id) for cursor pagination
 			
 		-- return array of menu for menus query
 		OUT fetch_all,
-		-- return menus count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -185,10 +191,20 @@
 				
 			END @IF			
 		
+			-- cursor pagination
+		
+			@IF isset(:cursor)
+		
+			THEN
+		
+				AND menu.menu_id > :cursor
+		
+			END @IF
+		
 			-- limit
 			@IF isset(:limit)
 			THEN
-				@SQL_LIMIT(:start, :limit)
+				LIMIT :limit OFFSET :start
 			END @IF;
 			
 		
@@ -210,7 +226,6 @@
 		IN  language_id INT,
 		IN  menu_id INT,
 		IN  site_id INT,
-		IN  post_id INT,
 		IN  slug CHAR,
 		
 		-- pagination
@@ -218,7 +233,7 @@
 		IN limit INT,
 			
 		-- return array of menus for menus query
-		OUT fetch_all,
+		OUT fetch_all
 		-- return menus count for count query
 		-- OUT fetch_one
 	)
@@ -262,7 +277,7 @@
 
 		@IF isset(:limit)
 		THEN 
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF		
 		;
 
@@ -271,8 +286,6 @@
 	CREATE PROCEDURE getMenuAllLanguages(
 
 		-- variables
-		IN  user_group_id INT,
-		IN  site_id INT,
 		IN  menu_id INT,
 		IN  search CHAR,
 		
@@ -282,8 +295,7 @@
 			
 		-- return array of categories for categories query
 		OUT fetch_all,
-		-- return categories count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -310,7 +322,7 @@
 			@IF isset(:search)
 			THEN 
 			
-				AND td.name LIKE '%' || :search || '%'
+				AND EXISTS (SELECT 1 FROM menu_item_content td WHERE td.menu_item_id = categories.menu_item_id AND td.name LIKE '%' || :search || '%')
 				
 			END @IF						
 			
@@ -325,7 +337,7 @@
 		
 		@IF isset(:limit)
 		THEN 		
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF
 		
 		;
@@ -346,6 +358,7 @@
 	CREATE PROCEDURE editMenuItem(
 		IN menu_item ARRAY,
 		IN menu_item_id INT,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
@@ -389,10 +402,20 @@
 		:menu_item_data  = @FILTER(:menu_item, menu_item)
 
 		INSERT INTO menu_item 
-		
+			
+@IF !empty(:menu_item_data)
+		THEN
+			
 			( @KEYS(:menu_item_data) )
 			
-		VALUES ( :menu_item_data );
+		  	VALUES ( :menu_item_data )
+			
+		@ELSE
+			
+			DEFAULT VALUES
+			
+		END @IF;
+
 			
 		
 		@EACH(:menu_item_content_data) 
@@ -407,7 +430,7 @@
 	-- Reorder menu items
 
 	CREATE PROCEDURE updateMenuItems(
-		IN menu_items ARRAY,
+		IN menu_items ROWS,
 		OUT insert_id
 	)
 	BEGIN
@@ -428,7 +451,7 @@
 	CREATE PROCEDURE deleteMenuItemRecursive(
 		IN menu_item_id ARRAY,
 		OUT affected_rows,
-		OUT affected_rows,
+		OUT affected_rows
 	)
 	BEGIN
 	
@@ -472,6 +495,8 @@
 
 	CREATE PROCEDURE deleteMenuItem(
 		IN menu_item_id ARRAY,
+		OUT affected_rows,
+		OUT affected_rows,
 		OUT affected_rows,
 		OUT affected_rows
 	)

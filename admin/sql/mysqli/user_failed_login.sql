@@ -5,13 +5,13 @@
 	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (user_id) for cursor pagination
 		IN user_id INT,
 		IN count INT,
 		IN updated_at CHAR,
 		
 		-- return array of user_failed_login 
 		OUT fetch_all,
-		-- return user_failed_login count for count query
 		OUT fetch_one
 	)
 	BEGIN
@@ -33,12 +33,22 @@
 				AND user_failed_login.updated_at = :updated_at
         	END @IF	
 
+			-- cursor pagination
+
+			@IF isset(:cursor)
+
+			THEN
+
+			    AND user_failed_login.user_id > :cursor
+
+			END @IF
+
 			ORDER BY user_failed_login.user_id, user_failed_login.updated_at
 			
 			-- limit
 			@IF isset(:limit)
 			THEN
-				@SQL_LIMIT(:start, :limit)
+				LIMIT :limit OFFSET :start
 			END @IF;		
 
 		-- SELECT FOUND_ROWS() as count;
@@ -103,7 +113,7 @@
 			
 		@IF isset(:role_id)
 		THEN 
-			AND user.role_id = :role_id 
+			AND user.user_group_id = :role_id 
 		END @IF		
 		
 		LIMIT 1;
@@ -119,6 +129,7 @@
 		IN username CHAR,
 		IN updated_at CHAR,
 		IN last_ip INT,
+		IN email CHAR,
 		OUT fetch_one,
 		OUT insert_id
 	)
@@ -166,7 +177,7 @@
 	-- Add new user_failed_login
 
 	CREATE PROCEDURE add(
-		IN user_failed_login ARRAY,
+		IN user_failed_login ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -186,54 +197,39 @@
 	
 	CREATE PROCEDURE edit(
 		IN user_id INT,
-		IN user_failed_login ARRAY,
+		IN user_failed_login ROW,
 		OUT affected_rows
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
 		@FILTER(:user_failed_login, user_failed_login)
 
+		@IF !empty(:user_failed_login)
+		THEN
 		UPDATE user_failed_login 
 			
 			SET @LIST(:user_failed_login) 
 			
-		WHERE user_id = :user_id;
+		WHERE user_id = :user_id
+		END @IF;
 
 	END
 
 	-- delete user_failed_login
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN user_id ARRAY,
-		IN updated_at CHAR,
-		IN count INT,
 
 		OUT affected_rows
 	)
 	BEGIN
 
-		DELETE user_failed_login FROM user_failed_login 
-			INNER JOIN user.user_id	ON user = user_failed_login.user_id
-		WHERE 
+		DELETE FROM user_failed_login
+		WHERE 1 = 1
 
 		@IF isset(:user_id) AND !empty(:user_id)
-		THEN 
-			AND user_failed_login.user_id = :user_id 
-		END @IF	
+		THEN
+			AND user_failed_login.user_id IN (:user_id)
+		END @IF
 
-		@IF isset(:username)
-		THEN 
-			AND user.username = :username 
-		END @IF	
-
-		@IF isset(:email)
-		THEN 
-			AND user.email = :email 
-		END @IF			
-
-		@IF isset(:user_id)
-		THEN 
-			AND user.user_id IN (:user_id) 
-		END @IF	
-		
-	END	
+	END

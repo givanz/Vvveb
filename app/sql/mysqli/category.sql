@@ -22,7 +22,7 @@
 		-- return array of categories for categories query
 		OUT fetch_all,
 		-- return categories count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -36,7 +36,7 @@
 
 			LEFT JOIN taxonomy_item categories ON (categories.taxonomy_item_id = pt.taxonomy_item_id) 
 			LEFT JOIN taxonomy_to_site c2s ON (categories.taxonomy_item_id = c2s.taxonomy_item_id) 
-			LEFT JOIN taxonomy_item_content td ON (categories.taxonomy_item_id = td.taxonomy_item_id)  
+			LEFT JOIN taxonomy_item_content tic ON (categories.taxonomy_item_id = tic.taxonomy_item_id)  
 
 			WHERE 
 			
@@ -100,10 +100,10 @@
 					@IF :type == "tags"
 					THEN 
 					
-						INNER JOIN product_to_taxonomy_item pt ON (_.taxonomy_item_id = pt.taxonomy_item_id AND pt.product_id = :product_id)  
+						INNER JOIN product_to_taxonomy_item ptp ON (_.taxonomy_item_id = ptp.taxonomy_item_id AND ptp.product_id = :product_id)  
 					@ELSE		
 					
-						LEFT JOIN product_to_taxonomy_item pt ON (_.taxonomy_item_id = pt.taxonomy_item_id AND pt.product_id = :product_id)  
+						LEFT JOIN product_to_taxonomy_item ptp ON (_.taxonomy_item_id = ptp.taxonomy_item_id AND ptp.product_id = :product_id)  
 						
 					END @IF	
 					
@@ -145,7 +145,7 @@
 			
 			@IF isset(:product_id)
 			THEN 
-				AND pt.product_id = :product_id 
+				AND ptp.product_id = :product_id 
         	END @IF		
         
 		LIMIT 1

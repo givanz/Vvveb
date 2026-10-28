@@ -5,6 +5,7 @@
 	CREATE PROCEDURE getAll(
 		IN start INT,               -- start offset
 		IN limit INT,               -- number of posts
+		IN cursor INT,               -- current cursor (post_id) for cursor pagination
 		IN search CHAR,             -- filter posts by search string
 		IN search_boolean INT,      -- use boolean search
 		IN like CHAR,               -- filter posts by search string using LIKE for partial search, slower
@@ -34,8 +35,7 @@
 
 		-- return array of posts for posts query
 		OUT fetch_all,
-		-- return posts count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -75,7 +75,7 @@
 				,(SELECT JSON_ARRAYAGG( JSON_OBJECT('taxonomy_item_id', taxonomies.taxonomy_item_id, 'name' , td.name, 'slug' , td.slug) )
 					FROM taxonomy_item AS taxonomies
 				
-					INNER JOIN taxonomy_to_site t2s ON (taxonomies.taxonomy_item_id = t2s.taxonomy_item_id AND t2s.site_id = site_id) 
+					INNER JOIN taxonomy_to_site t2s ON (taxonomies.taxonomy_item_id = t2s.taxonomy_item_id AND t2s.site_id = :site_id) 
 					INNER JOIN taxonomy_item_content td ON (taxonomies.taxonomy_item_id = td.taxonomy_item_id AND td.language_id = :language_id)  
 					INNER JOIN taxonomy t ON (taxonomies.taxonomy_id = t.taxonomy_id)  
 					
@@ -98,7 +98,7 @@
 				,(SELECT JSON_ARRAYAGG( JSON_OBJECT('taxonomy_item_id', taxonomies.taxonomy_item_id, 'name' , td.name, 'slug' , td.slug) )
 					FROM taxonomy_item AS taxonomies
 				
-					INNER JOIN taxonomy_to_site t2s ON (taxonomies.taxonomy_item_id = t2s.taxonomy_item_id AND t2s.site_id = site_id) 
+					INNER JOIN taxonomy_to_site t2s ON (taxonomies.taxonomy_item_id = t2s.taxonomy_item_id AND t2s.site_id = :site_id) 
 					INNER JOIN taxonomy_item_content td ON (taxonomies.taxonomy_item_id = td.taxonomy_item_id AND td.language_id = :language_id)  
 					INNER JOIN taxonomy t ON (taxonomies.taxonomy_id = t.taxonomy_id)  
 					
@@ -121,7 +121,7 @@
 				,(SELECT JSON_ARRAYAGG( JSON_OBJECT('taxonomy_item_id', taxonomies.taxonomy_item_id, 'name' , td.name, 'slug' , td.slug) )
 					FROM taxonomy_item AS taxonomies
 				
-					INNER JOIN taxonomy_to_site t2s ON (taxonomies.taxonomy_item_id = t2s.taxonomy_item_id AND t2s.site_id = site_id) 
+					INNER JOIN taxonomy_to_site t2s ON (taxonomies.taxonomy_item_id = t2s.taxonomy_item_id AND t2s.site_id = :site_id) 
 					INNER JOIN taxonomy_item_content td ON (taxonomies.taxonomy_item_id = td.taxonomy_item_id AND td.language_id = :language_id)  
 					INNER JOIN taxonomy t ON (taxonomies.taxonomy_id = t.taxonomy_id)  
 					
@@ -239,7 +239,13 @@
 			THEN
 				AND YEAR(post.created_at) = :year
 			END @IF					
-
+			
+			-- cursor pagination
+			@IF isset(:cursor)
+			THEN
+				AND post.post_id > :cursor
+			END @IF
+		
 			-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
 			@IF isset(:search)
 			THEN
@@ -253,11 +259,17 @@
 					ORDER BY post.post_id DESC
 				END @IF	
 			END @IF
-			
+
 			-- limit
 			@IF isset(:limit)
 			THEN
-				@SQL_LIMIT(:start, :limit)
+				LIMIT :limit
+
+				@IF isset(:start)
+				THEN
+					OFFSET :start
+				END @IF				
+				
 			END @IF;
 
 
@@ -287,7 +299,7 @@
 		OUT fetch_all, -- content
 		OUT fetch_all, -- meta
 		OUT fetch_all, -- post_to_site
-		OUT fetch_all, -- post_to_taxonomy_item
+		OUT fetch_all -- post_to_taxonomy_item
 	)
 	BEGIN
 
@@ -354,8 +366,7 @@
 		-- content
 		SELECT *, language_id as array_key -- (underscore) _ column means that this column (language_id) value will be used as array key when adding row to result array
 			FROM post_content 
-		WHERE post_id = @result.post_id;
-		
+		WHERE post_id = @result.post_id;		
 	 
 		-- meta
 		SELECT `key` as array_key,value as array_value FROM post_meta
@@ -374,15 +385,16 @@
 	-- Add new post
 
 	CREATE PROCEDURE add(
-		IN post ARRAY,
-		IN post_content ARRAY,
+		IN post ROW,
+		IN post_content ROWS,
 		IN taxonomy_item_id ARRAY,
-		IN post_field_value ARRAY,
+		IN post_field_value ROWS,
 		IN site_id ARRAY,
-		OUT insert_id,
-		OUT insert_id,
-		OUT insert_id,
-		OUT insert_id
+		OUT insert_id,     -- post
+		OUT affected_rows, -- post_content
+		OUT affected_rows, -- taxonomy_item_id
+		OUT affected_rows, -- post_field_value
+		OUT affected_rows  -- site_id
 	)
 	BEGIN
 		
@@ -427,17 +439,18 @@
 			
 				( post_id, site_id )
 				
-			VALUES ( @result.post, :each );		
+			VALUES ( @result.post, :each )
+			ON DUPLICATE KEY UPDATE site_id = :each;
 
 	END
 
 	-- Edit post
 
 	CREATE PROCEDURE edit(
-		IN post ARRAY,
-		IN post_content ARRAY,
+		IN post ROW,
+		IN post_content ROWS,
 		IN taxonomy_item_id ARRAY,
-		IN post_field_value ARRAY,
+		IN post_field_value ROWS,
 		IN post_id INT,
 		IN site_id ARRAY,
 		IN admin_id INT,
@@ -446,7 +459,8 @@
 		OUT insert_id,
 		OUT affected_rows,
 		OUT insert_id,
-		OUT affected_rows
+		OUT affected_rows,
+		OUT insert_id
 	)
 	BEGIN
 	
@@ -519,7 +533,7 @@
 	-- Edit post content
 
 	CREATE PROCEDURE editContent(
-		IN post_content ARRAY,
+		IN post_content ROW,
 		IN post_id INT,
 		IN language_id INT,
 		OUT affected_rows
@@ -582,7 +596,6 @@
 	-- Get tags
 
 	CREATE PROCEDURE postTags(
-		IN  post_id INT,
 		OUT affected_rows
 	)
 	BEGIN
@@ -592,7 +605,6 @@
 	-- Get categories
 
 	CREATE PROCEDURE postCategories(
-		IN  post_id INT,
 		OUT affected_rows
 	)
 	BEGIN
@@ -602,6 +614,7 @@
 	CREATE PROCEDURE setPostTaxonomy(
 		IN  post_id INT,
 		IN  taxonomy_item ARRAY,
+		OUT affected_rows,
 		OUT affected_rows
 	)
 	BEGIN
@@ -623,7 +636,8 @@
 		IN start INT,
 		IN limit INT,
 		IN interval CHAR,
-		IN type CHAR,
+		IN type CHAR
+		OUT fetch_all
 	)
 	BEGIN
 	
@@ -688,7 +702,7 @@
 		-- limit
 		@IF isset(:limit) AND :limit > 0
 		THEN
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF;		
 	
 	END

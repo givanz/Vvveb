@@ -5,7 +5,7 @@
 	CREATE PROCEDURE get(
 		IN vendor_id INT,
 		IN slug CHAR,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- vendor
@@ -38,7 +38,7 @@
 	-- Edit vendor
 
 	CREATE PROCEDURE edit(
-		IN vendor ARRAY,
+		IN vendor ROW,
 		IN vendor_id INT,
 		OUT affected_rows
 	)
@@ -49,11 +49,14 @@
 		-- allow only table fields and set defaults for missing values
 		@FILTER(:vendor, vendor)
 		
-		UPDATE vendor 
-			
-			SET @LIST(:vendor) 
-			
-		WHERE vendor_id = :vendor_id
+		@IF !empty(:vendor)
+		THEN
+			UPDATE vendor 
+				
+				SET @LIST(:vendor) 
+				
+			WHERE vendor_id = :vendor_id
+		END @IF
 	END	
 
 
@@ -61,7 +64,9 @@
 	-- Add new vendor
 
 	CREATE PROCEDURE add(
-		IN vendor ARRAY,
+		IN vendor ROW,
+		IN site_id INT,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
@@ -70,10 +75,11 @@
 		:vendor  = @FILTER(:vendor, vendor)
 
 		INSERT INTO vendor 
-		
+			
 			( @KEYS(:vendor) )
 			
 		VALUES ( :vendor );
+		
 		
 		INSERT INTO vendor_to_site 
 		
@@ -90,19 +96,17 @@
 	CREATE PROCEDURE getAll(
 
 		-- variables
-		IN  language_id INT,
-		IN  user_group_id INT,
 		IN  site_id INT,
 		IN  search CHAR,
 		
 		-- pagination
 		IN  start INT,
 		IN  limit INT,
+		IN cursor INT, -- current cursor (vendor_id) for cursor pagination
 			
 		-- return array of vendors for vendors query
 		OUT fetch_all,
-		-- return vendors count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -119,7 +123,22 @@
 			END @IF			
 
 			
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+
+			
+		@IF isset(:cursor)
+
+			
+		THEN
+
+			
+		    AND vendor.vendor_id > :cursor
+
+			
+		END @IF
+
+			
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			

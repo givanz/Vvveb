@@ -2,48 +2,85 @@
 
 	-- get all subscription
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (subscription_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- subscription
-		SELECT *
-			FROM subscription WHERE 1 = 1
+		SELECT subscription.*, subscription_status.name AS status_name,
+		       subscription_plan_content.name AS plan_name,
+		       product_content.name AS product_name
+			FROM subscription
+			LEFT JOIN subscription_status ON subscription_status.subscription_status_id = subscription.subscription_status_id
+				AND subscription_status.language_id = :language_id
+			LEFT JOIN subscription_plan_content ON subscription_plan_content.subscription_plan_id = subscription.subscription_plan_id
+				AND subscription_plan_content.language_id = :language_id
+			LEFT JOIN product_content ON product_content.product_id = subscription.product_id
+				AND product_content.language_id = :language_id
+			WHERE 1 = 1
+
+			@IF isset(:user_id)
+			THEN
+				AND subscription.user_id = :user_id
+			END @IF
+
+			-- cursor pagination
+
+			@IF isset(:cursor)
+
+			THEN
+
+				AND subscription.subscription_id > :cursor
+
+			END @IF
+
+			-- limit
+
+			@IF isset(:limit)
+			THEN		
+				LIMIT :limit OFFSET :start
+			END @IF;
 			
-		-- limit
-		@IF isset(:limit)
-		THEN		
-			@SQL_LIMIT(:start, :limit)
-		END @IF;
-		
-		SELECT count(*) FROM (
-			
-			@SQL_COUNT(subscription.subscription_id, subscription) -- this takes previous query removes limit and replaces select columns with parameter product_id
-			
-		) as count;		
-			
+			SELECT count(*) FROM (
+				
+				@SQL_COUNT(subscription.subscription_id, subscription) -- this takes previous query removes limit and replaces select columns with parameter product_id
+				
+			) as count;		
+				
 	END	
 	
 	-- get subscription
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN subscription_id INT,
-		OUT fetch_row, 
+		IN language_id INT,
+		OUT fetch_row
 	)
 	BEGIN
 		-- subscription
-		SELECT *
-			FROM subscription as _ WHERE subscription_id = :subscription_id;
+		SELECT _.*, subscription_status.name AS status_name,
+		       subscription_plan_content.name AS plan_name,
+		       product_content.name AS product_name,
+		       product_content.slug AS product_slug
+			FROM subscription as _
+			LEFT JOIN subscription_status ON subscription_status.subscription_status_id = _.subscription_status_id
+				AND subscription_status.language_id = :language_id
+			LEFT JOIN subscription_plan_content ON subscription_plan_content.subscription_plan_id = _.subscription_plan_id
+				AND subscription_plan_content.language_id = :language_id
+			LEFT JOIN product_content ON product_content.product_id = _.product_id
+				AND product_content.language_id = :language_id
+			WHERE _.subscription_id = :subscription_id;
 	END
 	
 	-- add subscription
 
-	PROCEDURE add(
-		IN subscription ARRAY,
+	CREATE PROCEDURE add(
+		IN subscription ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -63,7 +100,7 @@
 	-- edit subscription
 	
 	CREATE PROCEDURE edit(
-		IN subscription ARRAY,
+		IN subscription ROW,
 		IN subscription_id INT,
 		OUT affected_rows
 	)
@@ -84,10 +121,9 @@
 	
 	-- delete subscription
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN subscription_id ARRAY,
-		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- user_group

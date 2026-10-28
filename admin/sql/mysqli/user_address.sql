@@ -9,6 +9,7 @@
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (user_address_id) for cursor pagination
 
 		-- return
 		OUT fetch_all, -- orders
@@ -28,7 +29,22 @@
 		END @IF	              
             
 
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+            
+
+		@IF isset(:cursor)
+            
+
+		THEN
+            
+
+		    AND user_address.user_address_id > :cursor
+            
+
+		END @IF
+            
+
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -43,7 +59,7 @@
 	CREATE PROCEDURE get(
 		IN user_address_id INT,
 		IN user_id INT,
-		OUT fetch_row,
+		OUT fetch_row
 	)
 	BEGIN
 
@@ -63,18 +79,13 @@
 		END @IF	   
 			
         LIMIT 1; 
-		
-		
-		-- SELECT `key` as array_key,value as array_value FROM user_address_meta as _
-			-- WHERE _.user_address_id = @result.user_address_id
-		
-          
+
 	END
 
 	-- Add new user address
 
 	CREATE PROCEDURE add(
-		IN user_address ARRAY,
+		IN user_address ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -93,8 +104,8 @@
 	-- Edit user address
 
 	CREATE PROCEDURE edit(
-		IN user_address ARRAY,
-		IN id_user_address INT,
+		IN user_address ROW,
+		IN user_address_id INT,
         IN user_id INT,
 		OUT affected_rows
 	)

@@ -7,7 +7,7 @@
 		IN namespace CHAR,
 		IN key CHAR,
 		
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -30,6 +30,7 @@
     
 	CREATE PROCEDURE set(
 		IN post_id INT,
+		IN language_id INT,
 		IN namespace CHAR,
 		IN key CHAR,
 		IN value CHAR,
@@ -39,11 +40,11 @@
 	BEGIN
 
         INSERT INTO post_content_meta
-            (post_id, namespace, `key`, value )
+            (post_id, language_id, namespace, `key`, value )
         
-        VALUES (:post_id, :namespace, :key, :value )
+        VALUES (:post_id, :language_id, :namespace, :key, :value )
         
-		ON CONFLICT(`post_id`, `namespace`, `key`) DO UPDATE SET `value` = :each.value;
+		ON CONFLICT(`post_id`, `language_id`, `namespace`, `key`) DO UPDATE SET `value` = :value;
 		
 	END
 
@@ -81,24 +82,29 @@
     
 	CREATE PROCEDURE setMulti(
 		IN post_id INT,
+		IN language_id INT,
 		IN namespace CHAR,
-		IN meta ARRAY
+		IN meta ROWS,
+		OUT insert_id
 	)
 	BEGIN
+		:meta = @FILTER(:meta, post_content_meta, false, true)
 
-        INSERT INTO post_content_meta
-            (post_id, namespace, `key`, value)
+		@EACH(:meta)
+			INSERT INTO post_content_meta
 
-			VALUES (:post_id, :namespace, :each)
+				( post_id, language_id, namespace, @KEYS(:each) )
 
-        ON CONFLICT(`post_id`, `namespace`, `key`) DO UPDATE SET `value` = :each.value;
-		
+			VALUES ( :post_id, :language_id, :namespace, :each )
+
+			ON CONFLICT(`post_id`, `language_id`, `namespace`, `key`) DO UPDATE SET `value` = :each.value;
 	END
     
 	CREATE PROCEDURE delete(
 		IN post_id INT,
 		IN namespace CHAR,
 		IN key ARRAY
+		OUT affected_rows
 	)
 	BEGIN
 

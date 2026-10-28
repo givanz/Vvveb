@@ -7,7 +7,7 @@
 	CREATE PROCEDURE get(
 		IN manufacturer_id INT,
 		IN slug CHAR,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- manufacturer
@@ -41,7 +41,7 @@
 	-- Edit manufacturer
 
 	CREATE PROCEDURE edit(
-		IN manufacturer ARRAY,
+		IN manufacturer ROW,
 		IN manufacturer_id INT,
 		OUT affected_rows
 	)
@@ -52,11 +52,14 @@
 		-- allow only table fields and set defaults for missing values
 		@FILTER(:manufacturer, manufacturer)
 		
-		UPDATE manufacturer 
-			
-			SET @LIST(:manufacturer) 
-			
-		WHERE manufacturer_id = :manufacturer_id
+		@IF !empty(:manufacturer)
+		THEN
+			UPDATE manufacturer 
+				
+				SET @LIST(:manufacturer) 
+				
+			WHERE manufacturer_id = :manufacturer_id
+		END @IF
 	END	
 
 
@@ -64,7 +67,9 @@
 -- Add new manufacturer
 
 	CREATE PROCEDURE add(
-		IN manufacturer ARRAY,
+		IN manufacturer ROW,
+		IN site_id INT,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
@@ -73,10 +78,20 @@
 		:manufacturer  = @FILTER(:manufacturer, manufacturer)
 
 		INSERT INTO manufacturer 
-		
+			
+		@IF !empty(:manufacturer)
+		THEN
+			
 			( @KEYS(:manufacturer) )
 			
-		VALUES ( :manufacturer );
+		  	VALUES ( :manufacturer )
+			
+		@ELSE
+			
+			() VALUES ()
+			
+		END @IF;
+
 		
 		INSERT INTO manufacturer_to_site 
 		
@@ -93,19 +108,17 @@
 	CREATE PROCEDURE getAll(
 
 		-- variables
-		IN  language_id INT,
-		IN  user_group_id INT,
 		IN  site_id INT,
 		IN  search CHAR,
 		
 		-- pagination
 		IN  start INT,
 		IN  limit INT,
+		IN cursor INT, -- current cursor (manufacturer_id) for cursor pagination
 			
 		-- return array of manufacturers for manufacturers query
 		OUT fetch_all,
-		-- return manufacturers count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -122,7 +135,22 @@
 			END @IF			
 
 			
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+
+			
+		@IF isset(:cursor)
+
+			
+		THEN
+
+			
+		    AND manufacturer.manufacturer_id > :cursor
+
+			
+		END @IF
+
+			
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			

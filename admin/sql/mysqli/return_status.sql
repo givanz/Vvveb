@@ -2,12 +2,13 @@
 
 	-- get all return status
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (return_status_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- return_status
@@ -19,7 +20,17 @@
 			AND language_id = :language_id
 		END @IF
 		
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND return_status.return_status_id > :cursor
+		
+		END @IF
+		
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -31,9 +42,9 @@
 	
 	-- get return_status
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN return_status_id INT,
-		OUT fetch_row, 
+		OUT fetch_row
 	)
 	BEGIN
 		-- return_status
@@ -43,8 +54,8 @@
 	
 	-- add return_status
 
-	PROCEDURE add(
-		IN return_status ARRAY,
+	CREATE PROCEDURE add(
+		IN return_status ROW,
 		IN language_id INT,
 		OUT insert_id
 	)
@@ -65,7 +76,7 @@
 	-- edit return status
 
 	CREATE PROCEDURE edit(
-		IN return_status ARRAY,
+		IN return_status ROW,
 		IN return_status_id INT,
 		OUT affected_rows
 	)
@@ -85,9 +96,9 @@
 	
 	-- delete return_status
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN return_status_id ARRAY,
-		OUT affected_rows, 
+		OUT affected_rows
 	)
 	BEGIN
 		-- return_status

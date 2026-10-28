@@ -2,13 +2,14 @@
 
 	-- get all subscription plan
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN subscription_plan_id ARRAY,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (subscription_plan_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- subscription_plan
@@ -23,10 +24,26 @@
 			AND subscription_plan.subscription_plan_id IN (:subscription_plan_id)
 		END @IF
 
+		-- cursor pagination
+
+		@IF isset(:cursor)
+
+		THEN
+
+		    AND subscription_plan.subscription_plan_id > :cursor
+
+		END @IF
+
 		-- limit
 		@IF isset(:limit)
-		THEN		
-			@SQL_LIMIT(:start, :limit)
+		THEN
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
+			
 		END @IF;
 		
 		SELECT count(*) FROM (
@@ -39,9 +56,10 @@
 	
 	-- get subscription plan
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN subscription_plan_id INT,
-		OUT fetch_row, 
+		IN language_id INT,
+		OUT fetch_row 
 	)
 	BEGIN
 		-- subscription plan
@@ -55,8 +73,10 @@
 	
 	-- add subscription plan
 
-	PROCEDURE add(
-		IN subscription_plan ARRAY,
+	CREATE PROCEDURE add(
+		IN subscription_plan ROW,
+		IN language_id INT,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
@@ -84,9 +104,10 @@
 	-- edit subscription plan
 	
 	CREATE PROCEDURE edit(
-		IN subscription_plan ARRAY,
+		IN subscription_plan ROW,
 		IN subscription_plan_id INT,
 		IN language_id INT,
+		OUT affected_rows,
 		OUT affected_rows
 	)
 	BEGIN
@@ -114,10 +135,9 @@
 	
 	-- delete subscriptionplan
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN subscription_plan_id ARRAY,
-		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- user_group

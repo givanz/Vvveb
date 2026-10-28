@@ -54,7 +54,7 @@
         INSERT INTO setting_content
             (`namespace`,`key`, value, site_id, language_id)
         
-        VALUES ( :key, :value, :site_id , :language_id )
+        VALUES ( :namespace, :key, :value, :site_id , :language_id )
         
         ON DUPLICATE KEY 
             UPDATE  value = VALUES(value);
@@ -101,7 +101,7 @@
     
 	CREATE PROCEDURE setMulti(
 		IN site_id INT,
-		IN meta ARRAY,
+		IN meta ROWS,
 		
 		OUT insert_id
 	)

@@ -14,6 +14,7 @@
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (comment_id) for cursor pagination
 		IN order CHAR,
 
 		-- return
@@ -78,6 +79,16 @@
             	AND comment.status  = :status
             END @IF	            
 
+		-- cursor pagination
+
+		@IF isset(:cursor)
+
+		THEN
+
+		    AND comment.comment_id > :cursor
+
+		END @IF
+
 		ORDER BY parent_id, comment_id 
 		
 		@IF isset(:order) AND :order == "desc"
@@ -85,7 +96,7 @@
 			DESC
 		END @IF	 
 		
-		@SQL_LIMIT(:start, :limit);
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -100,7 +111,7 @@
 	CREATE PROCEDURE get(
 		IN comment_id INT,
 		IN admin_id INT,
-		OUT fetch_row,
+		OUT fetch_row
 	)
 	BEGIN
 
@@ -132,7 +143,7 @@
 	-- Add new comment
 
 	CREATE PROCEDURE add(
-		IN comment ARRAY,
+		IN comment ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -151,7 +162,7 @@
 	-- Edit comment
 
 	CREATE PROCEDURE edit(
-		IN comment ARRAY,
+		IN comment ROW,
 		IN comment_id INT,
 		IN admin_id INT,
 		OUT affected_rows

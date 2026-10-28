@@ -2,12 +2,13 @@
 
 	-- get all stock status
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (stock_status_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- stock_status
@@ -19,7 +20,17 @@
 			AND language_id = :language_id
 		END @IF
 		
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND stock_status.stock_status_id > :cursor
+		
+		END @IF
+		
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -31,9 +42,9 @@
 	
 	-- get stock_status
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN stock_status_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- stock_status
@@ -43,8 +54,8 @@
 	
 	-- add stock_status
 
-	PROCEDURE add(
-		IN stock_status ARRAY,
+	CREATE PROCEDURE add(
+		IN stock_status ROW,
 		IN language_id INT,
 		OUT fetch_one
 	)
@@ -64,7 +75,7 @@
 	
 	-- edit stock_status
 	CREATE PROCEDURE edit(
-		IN stock_status ARRAY,
+		IN stock_status ROW,
 		IN stock_status_id INT,
 		OUT affected_rows
 	)
@@ -84,10 +95,9 @@
 	
 	-- delete stock_status
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN stock_status_id ARRAY,
-		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- user_group

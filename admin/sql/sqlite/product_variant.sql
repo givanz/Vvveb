@@ -10,10 +10,11 @@
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (product_variant_id) for cursor pagination
 		IN order_by CHAR,
 		IN direction CHAR,
 
-		OUT fetch_all,
+		OUT fetch_all
 	)
 	BEGIN
 
@@ -37,6 +38,21 @@
 		END @IF	
 
 
+		-- cursor pagination
+
+
+		@IF isset(:cursor)
+
+
+		THEN
+
+
+		    AND product_variant.product_variant_id > :cursor
+
+
+		END @IF
+
+
 		-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
 		@IF isset(:order_by)
 		THEN
@@ -47,32 +63,37 @@
 		END @IF
 		
 
-		@IF isset(:limit)
-		THEN
-			@SQL_LIMIT(:start, :limit)
-		END @IF;		
+			-- limit
+			@IF isset(:limit)
+			THEN
+				LIMIT :limit
+
+				@IF isset(:start)
+				THEN
+					OFFSET :start
+				END @IF				
+				
+			END @IF;	
 		
 	END
 
 	-- get one product_variant
 
 	CREATE PROCEDURE get(
-		IN product_id INT,
 		IN product_variant_id INT,
 		
-		OUT fetch_row,
+		OUT fetch_row
 	)
 	BEGIN
 
 		SELECT *
-			FROM product_varian
+			FROM product_variant
 		WHERE product_variant_id = :product_variant_id  LIMIT 1;
 		
 	END
     
 	CREATE PROCEDURE add(
-		IN product_id INT,
-		IN product_variant ARRAY,
+		IN product_variant ROW,
 		
 		OUT insert_id
 	)
@@ -88,7 +109,7 @@
 	END
 
 	CREATE PROCEDURE edit(
-		IN product_variant ARRAY,
+		IN product_variant ROW,
 		IN product_variant_id INT,
 		OUT affected_rows
 	)

@@ -2,15 +2,15 @@
 
 	-- get all sites
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (site_id) for cursor pagination
 		IN site_id ARRAY,
 		
 		-- return array of sites for sites query
 		OUT fetch_all,
-		-- return sites count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- site
@@ -25,11 +25,27 @@
 			AND site.site_id IN (:site_id)
 		END @IF
 
+		-- cursor pagination
+
+		@IF isset(:cursor)
+
+		THEN
+
+		    AND site.site_id > :cursor
+
+		END @IF
+
 		-- limit
 		@IF isset(:limit)
 		THEN
-			@SQL_LIMIT(:start, :limit)
-		END @IF;	
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
+			
+		END @IF;
 		
 		-- SELECT FOUND_ROWS() as count;
 		SELECT count(*) FROM (
@@ -41,8 +57,7 @@
 	
 	-- get data
 
-	PROCEDURE getData(
-		IN site_id INT,
+	CREATE PROCEDURE getData(
 		IN country_id INT,
 		IN language_id INT,
 		OUT fetch_all, 		
@@ -112,7 +127,7 @@
 	
 	-- site data
 
-	PROCEDURE getSiteData(
+	CREATE PROCEDURE getSiteData(
 		IN site ARRAY,
 		OUT fetch_one, 		
 		OUT fetch_one, 		
@@ -156,9 +171,9 @@
 
 	-- get site
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN site_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- site
@@ -168,8 +183,8 @@
 	
 	-- add site
 
-	PROCEDURE add(
-		IN site ARRAY,
+	CREATE PROCEDURE add(
+		IN site ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -187,8 +202,8 @@
 	END
 	
 	-- edit site
-	PROCEDURE edit(
-		IN site ARRAY,
+	CREATE PROCEDURE edit(
+		IN site ROW,
 		IN site_id INT,
 		OUT insert_id
 	)
@@ -210,12 +225,12 @@
 
 	CREATE PROCEDURE delete(
 		IN  site_id ARRAY,
-		OUT affected_rows
-		OUT affected_rows
-		OUT affected_rows
-		OUT affected_rows
-		OUT affected_rows
-		OUT affected_rows
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows,
 		OUT affected_rows
 	)
 	BEGIN

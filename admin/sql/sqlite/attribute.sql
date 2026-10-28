@@ -2,14 +2,15 @@
 
 	-- get all attributes
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN product_id ARRAY,
 		IN attribute_group_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (attribute_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- attribute
@@ -49,10 +50,26 @@
 			AND attribute_content.name LIKE '%' || :search || '%' 
 		END @IF	  
 		
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND attribute.attribute_id > :cursor
+		
+		END @IF
+		
 		-- limit
 		@IF isset(:limit)
-		THEN		
-			@SQL_LIMIT(:start, :limit)
+		THEN
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
+			
 		END @IF;
 		
 		SELECT count(*) FROM (
@@ -65,10 +82,10 @@
 	
 	-- get attribute
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN attribute_id INT,
 		IN language_id INT,
-		OUT fetch_row, 
+		OUT fetch_row
 	)
 	BEGIN
 		-- attribute
@@ -82,8 +99,9 @@
 	
 	-- add attribute
 
-	PROCEDURE add(
-		IN attribute ARRAY,
+	CREATE PROCEDURE add(
+		IN attribute ROW,
+		IN language_id INT,
 		OUT insert_id,
 		OUT insert_id
 	)
@@ -113,7 +131,7 @@
 	
 	-- edit attribute
 	CREATE PROCEDURE edit(
-		IN attribute ARRAY,
+		IN attribute ROW,
 		IN attribute_id INT,
 		OUT affected_rows,
 		OUT affected_rows
@@ -143,10 +161,10 @@
 	
 	-- delete attribute
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN attribute_id ARRAY,
 		OUT affected_rows, 
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- attribute

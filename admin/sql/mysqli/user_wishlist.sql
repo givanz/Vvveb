@@ -10,6 +10,7 @@
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (user_id) for cursor pagination
 
 		-- return
 		OUT fetch_all, -- orders
@@ -26,7 +27,22 @@
 		WHERE user_wishlist.user_id = :user_id
             
 
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+            
+
+		@IF isset(:cursor)
+            
+
+		THEN
+            
+
+		    AND user_wishlist.user_id > :cursor
+            
+
+		END @IF
+            
+
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -42,13 +58,14 @@
 		IN user_id INT,
 		IN product_id INT,
 		OUT fetch_row,
+		OUT fetch_row
 	)
 	BEGIN
 
 		SELECT * 
 			FROM user_wishlist AS _
-			INNER JOIN product_content pc ON pc.product_id = _.product_id AND _.language_id = :language_id
-		WHERE _.user_id = :user_id AND _.product_id = :product_id;
+			INNER JOIN product_content pc ON pc.product_id = _.product_id AND pc.language_id = :language_id
+		WHERE _.user_id = :user_id AND _.product_id = :product_id
 
         LIMIT 1; 		
           
@@ -60,7 +77,7 @@
 		-- IN user_wishlist ARRAY,
 		IN product_id INT,
 		IN user_id INT,
-		OUT insert_id
+		OUT affected_rows
 	)
 	BEGIN
 		

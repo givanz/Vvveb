@@ -20,7 +20,6 @@
 			
 		-- return array of categories for categories query
 		OUT fetch_all,
-		-- return categories count for count query
 		OUT fetch_one
 	)
 	BEGIN
@@ -28,7 +27,7 @@
 		SELECT DISTINCT categories.taxonomy_item_id, categories.*, tc.language_id, tc.name, tc.content, tc.slug, tc.content, categories.taxonomy_item_id as array_key
 				@IF isset(:count) AND :count
 				THEN 
-					,count(post_id) as count 
+					,count(ptc.post_id) as count 
 				END @IF	
 			
 				@IF isset(:post_id)
@@ -38,7 +37,7 @@
 				
 				@IF isset(:product_id)
 				THEN 
-					,pt.product_id as checked  
+					,ptp.product_id as checked  
 				END @IF	
 		
 			FROM taxonomy_item AS categories
@@ -50,7 +49,7 @@
 			@IF isset(:count) AND :count
 			THEN 
 			
-				LEFT JOIN post_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id)  
+				LEFT JOIN post_to_taxonomy_item ptc ON (categories.taxonomy_item_id = ptc.taxonomy_item_id)  
 				
 			END @IF				
 			
@@ -81,10 +80,10 @@
 				@IF :type == "tags" || isset(:post_categories)
 				THEN 
 				
-					INNER JOIN product_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.product_id = :product_id)  
+					INNER JOIN product_to_taxonomy_item ptp ON (categories.taxonomy_item_id = ptp.taxonomy_item_id AND ptp.product_id = :product_id)  
 				@ELSE		
 				
-					LEFT JOIN product_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.product_id = :product_id)  
+					LEFT JOIN product_to_taxonomy_item ptp ON (categories.taxonomy_item_id = ptp.taxonomy_item_id AND ptp.product_id = :product_id)  
 					
 				END @IF	
 				
@@ -97,7 +96,7 @@
 			@IF isset(:search) && :search
 			THEN 
 			
-				AND tc.name LIKE '%' || :search || '%'
+				AND EXISTS (SELECT 1 FROM taxonomy_item_content tc WHERE tc.taxonomy_item_id = categories.taxonomy_item_id AND EXISTS (SELECT 1 FROM taxonomy_item_content tc WHERE tc.taxonomy_item_id = categories.taxonomy_item_id AND tc.name LIKE '%' || :search || '%'))
 				
 			END @IF	
 			
@@ -144,7 +143,7 @@
 			
 		@IF isset(:limit) && !empty(:limit)
 		THEN 
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF					
 		;
 		
@@ -177,10 +176,7 @@
 			
 		-- return array of categories for categories query
 		OUT affected_rows,
-		-- return array of categories for categories query
-		OUT fetch_all,
-		-- return categories count for count query
-		OUT fetch_one
+		OUT fetch_all
 	)
 	BEGIN
 	
@@ -209,9 +205,10 @@
 				
 				ORDER by p.sort_order
 				
+				-- limit
 				@IF isset(:posts_limit) && !empty(:posts_limit)
-				THEN 
-					@SQL_LIMIT(:posts_start, :posts_limit)
+				THEN
+					LIMIT :posts_limit OFFSET :posts_start 
 				END @IF
 				
 			) AS post
@@ -246,7 +243,7 @@
 			@IF isset(:search)
 			THEN 
 			
-				AND tc.name LIKE '%' || :search || '%'
+				AND EXISTS (SELECT 1 FROM taxonomy_item_content tc WHERE tc.taxonomy_item_id = categories.taxonomy_item_id AND tc.name LIKE '%' || :search || '%')
 				
 			END @IF	
 			
@@ -276,7 +273,7 @@
 
 		@IF isset(:limit) && !empty(:limit)
 		THEN 
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF							
 		;
 		
@@ -297,7 +294,7 @@
 		IN product_id INT,
 		IN post_type CHAR,
 		IN type CHAR,
-		IN slug CHAR,
+		OUT fetch_row,
 		OUT fetch_row
 	)
 	BEGIN
@@ -324,10 +321,10 @@
 					@IF :type == "tags"
 					THEN 
 					
-						INNER JOIN product_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.product_id = :product_id)  
+						INNER JOIN product_to_taxonomy_item ptp ON (categories.taxonomy_item_id = ptp.taxonomy_item_id AND ptp.product_id = :product_id)  
 					@ELSE		
 					
-						LEFT JOIN product_to_taxonomy_item pt ON (categories.taxonomy_item_id = pt.taxonomy_item_id AND pt.product_id = :product_id)  
+						LEFT JOIN product_to_taxonomy_item ptp ON (categories.taxonomy_item_id = ptp.taxonomy_item_id AND ptp.product_id = :product_id)  
 						
 					END @IF	
 					
@@ -471,11 +468,12 @@
 	-- Edit taxonomy_item
 
 	CREATE PROCEDURE editCategory(
-		IN taxonomy_item ARRAY,
-		IN taxonomy_item_content ARRAY,
+		IN taxonomy_item ROW,
+		IN taxonomy_item_content ROWS,
 		IN taxonomy_item_id INT,
 		OUT insert_id,
-		OUT affected_rows
+		OUT affected_rows,
+		OUT insert_id
 	)
 	BEGIN
 
@@ -508,8 +506,8 @@
 -- Add new taxonomy_item
 
 	CREATE PROCEDURE addCategory(
-		IN taxonomy_item ARRAY,
-		IN taxonomy_item_content ARRAY,
+		IN taxonomy_item ROW,
+		IN taxonomy_item_content ROW,
 		IN site_id INT,
 		OUT insert_id,
 		OUT insert_id,
@@ -548,8 +546,6 @@
 	CREATE PROCEDURE getCategoriesAllLanguages(
 
 		-- variables
-		IN language_id INT,
-		IN user_group_id INT,
 		IN site_id INT,
 		IN taxonomy_id INT,
 		IN search CHAR,
@@ -562,7 +558,6 @@
 			
 		-- return array of categories for categories query
 		OUT fetch_all,
-		-- return categories count for count query
 		OUT fetch_one
 	)
 	BEGIN
@@ -605,7 +600,7 @@
 			@IF isset(:search) && :search
 			THEN 
 			
-				AND tc.name LIKE '%' || :search || '%'
+				AND EXISTS (SELECT 1 FROM taxonomy_item_content tc WHERE tc.taxonomy_item_id = categories.taxonomy_item_id AND tc.name LIKE '%' || :search || '%')
 				
 			END @IF						
 			
@@ -634,7 +629,7 @@
 		
 		@IF isset(:limit) && !empty(:limit)
 		THEN 
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF					
 		;
 		
@@ -649,9 +644,10 @@
 	-- Edit menu
 
 	CREATE PROCEDURE editTaxonomyItem(
-		IN taxonomy_item ARRAY,
-		IN taxonomy_item_content ARRAY,
+		IN taxonomy_item ROW,
+		IN taxonomy_item_content ROWS,
 		IN taxonomy_item_id INT,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN
@@ -683,9 +679,10 @@
 	-- Add new menu
 
 	CREATE PROCEDURE addTaxonomyItem(
-		IN taxonomy_item ARRAY,
-		IN taxonomy_item_content ARRAY,
+		IN taxonomy_item ROW,
+		IN taxonomy_item_content ROWS,
 		IN site_id INT,
+		OUT insert_id,
 		OUT insert_id,
 		OUT insert_id
 	)
@@ -721,7 +718,7 @@
 	-- Reorder menu items
 
 	CREATE PROCEDURE updateTaxonomyItems(
-		IN taxonomy_items ARRAY,
+		IN taxonomy_items ROWS,
 		OUT insert_id
 	)
 	BEGIN
@@ -741,6 +738,7 @@
 
 	CREATE PROCEDURE deleteTaxonomyItem(
 		IN taxonomy_item_id ARRAY,
+		OUT insert_id,
 		OUT insert_id
 	)
 	BEGIN

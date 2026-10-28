@@ -2,12 +2,13 @@
 
 	-- get all returns
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (return_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- return
@@ -19,10 +20,26 @@
 		
 		WHERE 1 = 1
 			
+		-- cursor pagination
+			
+		@IF isset(:cursor)
+			
+		THEN
+			
+			AND `return`.return_id > :cursor
+			
+		END @IF
+			
 		-- limit
 		@IF isset(:limit)
-		THEN		
-			@SQL_LIMIT(:start, :limit)
+		THEN
+		    LIMIT :limit
+
+		    @IF isset(:start)
+		    THEN
+			OFFSET :start
+		    END @IF
+			
 		END @IF;
 
 		SELECT count(*) FROM (
@@ -35,9 +52,9 @@
 	
 	-- get return
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN return_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- return
@@ -47,8 +64,8 @@
 	
 	-- add return
 
-	PROCEDURE add(
-		IN return ARRAY,
+	CREATE PROCEDURE add(
+		IN return ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -67,7 +84,7 @@
 	
 	-- edit return
 	CREATE PROCEDURE edit(
-		IN return ARRAY,
+		IN return ROW,
 		IN return_id INT,
 		OUT affected_rows
 	)

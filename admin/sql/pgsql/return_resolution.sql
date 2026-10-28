@@ -2,12 +2,13 @@
 
 	-- get all return resolution
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN language_id INT,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (return_resolution_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- return resolution
@@ -19,7 +20,17 @@
 			AND language_id = :language_id
 		END @IF
 		
-		@SQL_LIMIT(:start, :limit);
+		-- cursor pagination
+		
+		@IF isset(:cursor)
+		
+		THEN
+		
+			AND return_resolution.return_resolution_id > :cursor
+		
+		END @IF
+		
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -31,9 +42,9 @@
 	
 	-- get return resolution
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN return_resolution_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- return resolution
@@ -43,8 +54,8 @@
 	
 	-- add return_resolution
 
-	PROCEDURE add(
-		IN return_resolution ARRAY,
+	CREATE PROCEDURE add(
+		IN return_resolution ROW,
 		IN language_id INT,
 		OUT fetch_one
 	)
@@ -64,7 +75,7 @@
 	
 	-- edit return_resolution
 	CREATE PROCEDURE edit(
-		IN return_resolution ARRAY,
+		IN return_resolution ROW,
 		IN return_resolution_id INT,
 		OUT affected_rows
 	)
@@ -84,9 +95,9 @@
 	
 	-- delete return_resolution
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN return_resolution_id ARRAY,
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- return_resolution

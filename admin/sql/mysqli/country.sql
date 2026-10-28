@@ -2,13 +2,14 @@
 
 	-- get all countries
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 		IN status INT,
 		IN search CHAR,
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (country_id) for cursor pagination
 		OUT fetch_all, 
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 		-- country
@@ -26,11 +27,18 @@
 			AND country.name LIKE CONCAT('%',:search,'%')
 		END @IF	  
 
+		-- cursor pagination
+
+		@IF isset(:cursor)
+		THEN
+		    AND country.country_id > :cursor
+		END @IF
+
 		ORDER BY status DESC, country_id
 
 		@IF !empty(:limit) 
 		THEN			
-			@SQL_LIMIT(:start, :limit)
+			LIMIT :limit OFFSET :start
 		END @IF
 		;
 		
@@ -44,9 +52,9 @@
 	
 	-- get country
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN country_id INT,
-		OUT fetch_row, 
+		OUT fetch_row 
 	)
 	BEGIN
 		-- country
@@ -56,8 +64,8 @@
 	
 	-- add country
 
-	PROCEDURE add(
-		IN country ARRAY,
+	CREATE PROCEDURE add(
+		IN country ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -77,7 +85,7 @@
 	-- edit country
 	
 	CREATE PROCEDURE edit(
-		IN country ARRAY,
+		IN country ROW,
 		IN country_id INT,
 		OUT affected_rows
 	)
@@ -97,9 +105,9 @@
 	
 	-- delete country
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN country_id ARRAY,
-		OUT affected_rows, 
+		OUT affected_rows 
 	)
 	BEGIN
 		-- country
