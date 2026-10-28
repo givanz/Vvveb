@@ -23,25 +23,48 @@
 namespace Vvveb\System\Functions;
 
 class Str {
-	public static function sanitizeFilename($filename) {
+	/**
+	 * @param string $filename
+	 *
+	 * @return string
+	 */
+	public static function sanitizeFilename(string $filename): string {
 		return preg_replace('([^\w\s\d\.\-_~,;:\[\]\(\)]|[\.]{2,})', '', $filename);
 	}
 
-	public static function sanitizePath($filename) {
+	/**
+	 * @param string $filename
+	 *
+	 * @return string
+	 */
+	public static function sanitizePath(string $filename): string {
 		return preg_replace('([^\/\w\s\d\.\-_~,;:\[\]\(\)\\]|[\.]{2,})', '', $filename);
 	}
 
-	public static function match($pattern, $subject) {
+	/**
+	 * @param string $pattern
+	 * @param string $subject
+	 *
+	 * @return string|array<array-key, mixed>|null
+	 */
+	public static function match(string $pattern, string $subject): string|array|null {
 		if (preg_match($pattern, $subject, $matches)) {
 			if (count($matches) > 2) {
 				return array_slice($matches, 1);
-			} else {
-				return $matches[1];
 			}
+
+			return $matches[1] ?? $matches[0];
 		}
+
+		return null;
 	}
 
-	public static function random($length = 16) {
+	/**
+	 * @param int $length
+	 *
+	 * @return string
+	 */
+	public static function random(int $length = 16): string {
 		$string = '';
 
 		while (($len = strlen($string)) < $length) {

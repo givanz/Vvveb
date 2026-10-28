@@ -1,34 +1,37 @@
 <?php
 
 /**
- * php.mo 0.1 by Joss Crowcroft (http://www.josscrowcroft.com).
- * 
- * Converts gettext translation '.po' files to binary '.mo' files in PHP.
- * 
- * Usage: 
- * <?php require('php-mo.php'); phpmo_convert( 'input.po', [ 'output.mo' ] ); ?>
- * 
- * NB:
- * - If no $output_file specified, output filename is same as $input_file (but .mo)
- * - Returns true/false for success/failure
- * - No warranty, but if it breaks, please let me know
- * 
- * More info:
- * https://github.com/josscrowcroft/php.mo
- * 
- * Based on php-msgfmt by Matthias Bauer (Copyright © 2007), a command-line PHP tool
- * for converting .po files to .mo.
- * (http://wordpress-soc-2007.googlecode.com/svn/trunk/moeffju/php-msgfmt/msgfmt.php)
- * 
- * License: GPL v3 http://www.opensource.org/licenses/gpl-3.0.html
+ * Vvveb
+ *
+ * Copyright (C) 2022  Ziadin Givan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * @param string       $input
+ * @param string|false $output
  */
 
 /**
  * The main .po to .mo function.
+ *
+ * @param string       $input  The input .po file path.
+ * @param string|false $output The output .mo file path, or false to derive from input.
+ *
+ * @return bool
  */
-
-function phpmo_convert($input, $output = false) {
-	if (! $output) {
+function phpmo_convert(string $input, string|false $output = false): bool {
+	if (!$output) {
 		$output = str_replace('.po', '.mo', $input);
 	}
 
@@ -43,7 +46,12 @@ function phpmo_convert($input, $output = false) {
 	}
 }
 
-function phpmo_clean_helper($x) {
+/**
+ * @param mixed $x
+ *
+ * @return mixed
+ */
+function phpmo_clean_helper(mixed $x): mixed {
 	if (is_array($x)) {
 		foreach ($x as $k => $v) {
 			$x[$k] = phpmo_clean_helper($v);
@@ -61,9 +69,14 @@ function phpmo_clean_helper($x) {
 	return $x;
 }
 
-/* Parse gettext .po files. */
-/* @link http://www.gnu.org/software/gettext/manual/gettext.html#PO-Files */
-function phpmo_parse_po_file($in) {
+// Parse gettext .po files.
+/** @see http://www.gnu.org/software/gettext/manual/gettext.html#PO-Files */
+/**
+ * @param string $in
+ *
+ * @return array<array-key, mixed>|false
+ */
+function phpmo_parse_po_file(string $in): array|false {
 	// read .po file
 	$fh = fopen($in, 'r');
 
@@ -100,13 +113,14 @@ function phpmo_parse_po_file($in) {
 			case '#,': // flag...
 				$fuzzy = in_array('fuzzy', preg_split('/,\s*/', $data));
 
+				// no break
 			case '#': // translator-comments
 			case '#.': // extracted-comments
 			case '#:': // reference...
 			case '#|': // msgid previous-untranslated-string
 				// start a new entry
-				if (sizeof($temp) && array_key_exists('msgid', $temp) && array_key_exists('msgstr', $temp)) {
-					if (! $fuzzy) {
+				if (count($temp) && array_key_exists('msgid', $temp) && array_key_exists('msgstr', $temp)) {
+					if (!$fuzzy) {
 						$hash[] = $temp;
 					}
 					$temp  = [];
@@ -120,11 +134,12 @@ function phpmo_parse_po_file($in) {
 				// context
 			case 'msgid':
 				// untranslated-string
-				if (sizeof($temp)) {
+				if (count($temp)) {
 					$hash[] = $temp;
 					$temp   = [];
 				}
 
+				// no break
 			case 'msgid_plural':
 				// untranslated-string-plural
 				$state        = $key;
@@ -140,7 +155,7 @@ function phpmo_parse_po_file($in) {
 				break;
 
 			default:
-				if (strpos($key, 'msgstr[') !== FALSE) {
+				if (str_contains($key, 'msgstr[')) {
 					// translated-string-case-n
 					$state          = 'msgstr';
 					$temp[$state][] = $data;
@@ -155,7 +170,7 @@ function phpmo_parse_po_file($in) {
 							break;
 
 						case 'msgstr':
-							$temp[$state][sizeof($temp[$state]) - 1] .= "\n" . $line;
+							$temp[$state][count($temp[$state]) - 1] .= "\n" . $line;
 
 							break;
 
@@ -163,7 +178,7 @@ function phpmo_parse_po_file($in) {
 							// parse error
 							fclose($fh);
 
-							return FALSE;
+							return false;
 					}
 				}
 
@@ -185,9 +200,9 @@ function phpmo_parse_po_file($in) {
 		foreach ($entry as &$v) {
 			$v = phpmo_clean_helper($v);
 
-			if ($v === FALSE) {
+			if ($v === false) {
 				// parse error
-				return FALSE;
+				return false;
 			}
 		}
 		$hash[$entry['msgid']] = $entry;
@@ -196,7 +211,12 @@ function phpmo_parse_po_file($in) {
 	return $hash;
 }
 
-function phpmo_po_text($hash) {
+/**
+ * @param array<array-key, mixed> $hash
+ *
+ * @return string
+ */
+function phpmo_po_text(array $hash): string {
 	$text = '';
 
 	foreach ($hash as $id => $value) {
@@ -208,17 +228,29 @@ function phpmo_po_text($hash) {
 	return $text;
 }
 
-/* Write a gettext .po file. */
-/* @link http://www.gnu.org/software/gettext/manual/gettext.html#MO-Files */
-function phpmo_write_po_file($hash, $out) {
+// Write a gettext .po file.
+/** @see http://www.gnu.org/software/gettext/manual/gettext.html#MO-Files */
+/**
+ * @param array<array-key, mixed> $hash
+ * @param string                  $out
+ *
+ * @return int|false
+ */
+function phpmo_write_po_file(array $hash, string $out): int|false {
 	$text = phpmo_po_text($hash);
 
 	return file_put_contents($out, $text);
 }
 
-/* Write a GNU gettext style machine object. */
-/* @link http://www.gnu.org/software/gettext/manual/gettext.html#MO-Files */
-function phpmo_write_mo_file($hash, $out) {
+// Write a GNU gettext style machine object.
+/** @see http://www.gnu.org/software/gettext/manual/gettext.html#MO-Files */
+/**
+ * @param array<array-key, mixed> $hash
+ * @param string                  $out
+ *
+ * @return int|false
+ */
+function phpmo_write_mo_file(array $hash, string $out): int|false {
 	// sort by msgid
 	ksort($hash, SORT_STRING);
 	// our mo file data
@@ -230,7 +262,7 @@ function phpmo_write_mo_file($hash, $out) {
 
 	foreach ($hash as $index => &$entry) {
 		//don't add empty translations
-		if (! $entry['msgstr'] || ! $entry['msgstr'][0]) {
+		if (!$entry['msgstr'] || !$entry['msgstr'][0]) {
 			unset($hash[$index]);
 
 			continue;
@@ -248,19 +280,20 @@ function phpmo_write_mo_file($hash, $out) {
 
 		// plural msgstrs are NUL-separated
 		$str = implode("\x00", $entry['msgstr']);
-		$str = str_replace('\n',"\n", $str); //restore newlines
+		$str = str_replace('\n', "\n", $str); //restore newlines
 
 		// keep track of offsets
 		$offsets[] = [
-			strlen($ids
-		), strlen($id), strlen($strings), strlen($str), ];
+			strlen(
+				$ids
+			), strlen($id), strlen($strings), strlen($str), ];
 		// plural msgids are not stored (?)
 		$ids .= $id . "\x00";
 		$strings .= $str . "\x00";
 	}
 
 	// keys start after the header (7 words) + index tables ($#hash * 4 words)
-	$key_start = 7 * 4 + sizeof($hash) * 4 * 4;
+	$key_start = 7 * 4 + count($hash) * 4 * 4;
 	// values start right after the keys
 	$value_start = $key_start + strlen($ids);
 	// first all key offsets, then all value offsets
@@ -268,7 +301,7 @@ function phpmo_write_mo_file($hash, $out) {
 	$value_offsets = [];
 	// calculate
 	foreach ($offsets as $v) {
-		list($o1, $l1, $o2, $l2) = $v;
+		[$o1, $l1, $o2, $l2]     = $v;
 		$key_offsets[]           = $l1;
 		$key_offsets[]           = $o1 + $key_start;
 		$value_offsets[]         = $l2;
@@ -277,13 +310,15 @@ function phpmo_write_mo_file($hash, $out) {
 	$offsets = array_merge($key_offsets, $value_offsets);
 
 	// write header
-	$mo .= pack('Iiiiiii', 0x950412de, // magic number
-	0, // version
-	sizeof($hash), // number of entries in the catalog
-	7 * 4, // key index offset
-	7 * 4 + sizeof($hash) * 8, // value index offset,
-	0, // hashtable size (unused, thus 0)
-	$key_start // hashtable offset
+	$mo .= pack(
+		'Iiiiiii',
+		0x950412DE, // magic number
+		0, // version
+		count($hash), // number of entries in the catalog
+		7 * 4, // key index offset
+		7 * 4 + count($hash) * 8, // value index offset,
+		0, // hashtable size (unused, thus 0)
+		$key_start // hashtable offset
 	);
 	// offsets
 	foreach ($offsets as $offset) {

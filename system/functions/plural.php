@@ -23,7 +23,8 @@
 namespace Vvveb\System\Functions;
 
 class Plural {
-	public static $plural = [
+	/** @var array<string, string> */
+	public static array $plural = [
 		'taxonomy'    => 'taxonomies',
 		'points'      => 'points',
 		'currency'    => 'currencies',
@@ -34,9 +35,15 @@ class Plural {
 		'media'       => 'media',
 	];
 
-	public static $singular = [];
+	/** @var array<string, string> */
+	public static array $singular = [];
 
-	public static function tablePlural($tableName) {
+	/**
+	 * @param string $tableName
+	 *
+	 * @return string
+	 */
+	public static function tablePlural(string $tableName): string {
 		if (isset(self :: $plural[$tableName])) {
 			return self :: $plural[$tableName];
 		}
@@ -44,7 +51,12 @@ class Plural {
 		return $tableName . 's';
 	}
 
-	public static function tableSingular($tableName) {
+	/**
+	 * @param string $tableName
+	 *
+	 * @return string
+	 */
+	public static function tableSingular(string $tableName): string {
 		if (isset(self :: $singular[$tableName])) {
 			return self :: $singular[$tableName];
 		}
