@@ -29,12 +29,26 @@ use Vvveb\System\Extensions\Themes;
 use Vvveb\System\Import\Xml;
 
 class Export extends Base {
-	function __construct() {
+	/**
+	 * Initialize the XML exporter.
+	 *
+	 * @return void
+	 */
+	public function __construct() {
 		$this->xml = new Xml();
 	}
 
-	function export() {
-		$tables = $this->request->post['table'];
+	/**
+	 * Export selected database tables as XML and download the file.
+	 *
+	 * @return void
+	 */
+	public function export(): void {
+		$tables = (array)($this->request->post['table'] ?? []);
+
+		//only allow real table names, they are interpolated into the dump queries
+		$known  = $this->xml->getTableNames();
+		$tables = array_values(array_intersect($tables, $known));
 
 		$xml     = new Xml();
 		$xmlData = $xml->export($tables);
@@ -44,14 +58,20 @@ class Export extends Base {
 
 		echo $xmlData;
 
-		die();
+		exit();
 	}
 
-	private function namespaceTree() {
+	/**
+	 * Build a namespaced tree structure of database tables.
+	 *
+	 * @return array<string, array<string, string>> Namespaced table tree.
+	 */
+	private function namespaceTree(): array {
 		$tableNames = $this->xml->getTableNames();
+		$namespaces = [];
 
 		foreach ($tableNames as $tableName) {
-			$pos       = strpos($tableName,'_');
+			$pos       = strpos($tableName, '_');
 			$namespace = substr($tableName, 0, $pos);
 
 			if ($namespace) {
@@ -76,9 +96,14 @@ class Export extends Base {
 		return $namespaces;
 	}
 
-	function index() {
+	/**
+	 * Display the export page with available namespaces, plugins, and themes.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$this->view->namespaces = $this->namespaceTree();
-		$this->view->plugins    = Plugins::getList(null);
-		$this->view->themes     = Themes::getList(null);
+		$this->view->plugins    = Plugins::getList();
+		$this->view->themes     = Themes::getList();
 	}
 }

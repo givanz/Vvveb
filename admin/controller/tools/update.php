@@ -31,13 +31,31 @@ use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
 class Update extends Base {
-	private $steps = ['checkPermissions', 'download', 'unzip', 'copyInstall', /*'backup',*/ 'copySystem', /* 'copyAdmin',*/  'copyApp', 'copyCore', 'copyConfig', 'addNewColumns', 'createNewTables', 'copyPublic', 'copyPublicAdmin', 'copyPublicMedia', 'setFilePermissions', 'cleanUp', 'clearCache', 'complete'];
+	/**
+	 * Ordered list of update step method names.
+	 *
+	 * @var list<string>
+	 */
+	private array $steps = ['checkPermissions', 'download', 'unzip', 'copyInstall', 'addNewColumns', 'createNewTables', /*'backup', 'copySystem', 'copyAdmin', 'copyApp', 'copyCore', */ 'copyConfig', 'copyPublic', 'copyPublicAdmin', 'copyPublicMedia', 'moveFolders', 'setFilePermissions', 'cleanUp', 'clearCache', 'complete'];
 
-	function __construct() {
+	/**
+	 * Initialize the update system instance.
+	 *
+	 * @return void
+	 */
+	public function __construct() {
 		$this->update = new UpdateSys();
 	}
 
-	private function checkUpdates($type = 'core', $force = false) {
+	/**
+	 * Check for available updates of the specified type.
+	 *
+	 * @param string $type  The update type to check (e.g. 'core').
+	 * @param bool   $force Force check ignoring cache.
+	 *
+	 * @return array<string, mixed> Update information array.
+	 */
+	private function checkUpdates(string $type = 'core', bool $force = false): array {
 		$updateInfo = [];
 		$errorMsg   = __('Error checking updates!');
 
@@ -47,30 +65,40 @@ class Update extends Base {
 			$this->view->errors[] = $e->getMessage();
 		}
 
-		if (! $updateInfo) {
+		if (!$updateInfo) {
 			$this->view->errors[] = $errorMsg;
 		}
 
 		return $updateInfo;
 	}
 
-	function check() {
+	/**
+	 * Check for updates and display the update page.
+	 *
+	 * @return void
+	 */
+	public function check(): void {
 		$type             = $this->request->get['type'] ?? 'core';
 		$updateInfo       = $this->update->checkUpdates($type, true);
 
 		if ($updateInfo) {
 			//$this->view->success[] = __('Check succesful!');
 			if ($updateInfo['hasUpdate']) {
-				$this->view->info[] = __('Updates available!') . '&ensp;<span class="badge bg-success">' . $updateInfo['version'] . '</span>';
+				$this->view->info[] = __('Updates available!') . '&ensp;<span class="badge bg-success">' . htmlspecialchars((string)$updateInfo['version'], ENT_QUOTES, 'UTF-8') . '</span>';
 			} else {
 				$this->view->info[] = __('No updates available!');
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function updateNext() {
+	/**
+	 * Execute the next update step in the update sequence.
+	 *
+	 * @return void
+	 */
+	public function updateNext(): void {
 		ignore_user_abort(true);
 		$step = $this->request->get['step'] ?? false;
 		$next = false;
@@ -104,10 +132,10 @@ class Update extends Base {
 			$count              = count($this->steps);
 			$url['info']        = sprintf(__('Step (%d/%d) %s ...'), $position, $count, humanReadable(camelToUnderscore($next)));
 			$this->view->info[] = $url['info'];
-			$url += ['module'=>'tools/update', 'action' => 'updateNext', 'step' => $next, 'position' => $position, 'count' => $count];
+			$url += ['module' => 'tools/update', 'action' => 'updateNext', 'step' => $next, 'position' => $position, 'count' => $count];
 
 			if ($this->request->isAjax()) {
-				die(json_encode($url + ['url' => url($url)]));
+				exit(json_encode($url + ['url' => url($url)]));
 			} else {
 				$this->redirect($url);
 			}
@@ -116,22 +144,33 @@ class Update extends Base {
 				$message = __('Update finished');
 
 				if ($this->request->isAjax()) {
-					die(json_encode($url + ['url' => url($url), 'success' => $message]));
+					exit(json_encode($url + ['url' => url($url), 'success' => $message]));
 				} else {
 					$this->view->success[] = $message;
 
-					return $this->index();
+					$this->index();
 				}
 			}
 		}
 	}
 
-	private function download() {
+	/**
+	 * Download the update package.
+	 *
+	 * @return bool True if download succeeded, false otherwise.
+	 */
+	private function download(): bool {
 		$updateFile       = false;
 		$errorDownloadMsg = __('Error downloading update!');
 		$updateInfo       = $this->update->checkUpdates();
 		//don't load plugins during update to avoid possible conflicts
 		Admin::session(['safemode' => true]);
+
+		if (!$updateInfo || !isset($updateInfo['download'])) {
+			$this->view->errors[] = $errorDownloadMsg . ' ' . $updateInfo['error'];
+
+			return false;
+		}
 
 		try {
 			$updateFile = $this->update->download($updateInfo['download']);
@@ -140,7 +179,7 @@ class Update extends Base {
 			$this->view->errors[] = $e->getMessage();
 		}
 
-		if (! $updateInfo || ! $updateFile) {
+		if (!$updateFile) {
 			$this->view->errors[] = $errorDownloadMsg;
 
 			return false;
@@ -151,7 +190,12 @@ class Update extends Base {
 		return true;
 	}
 
-	function checkPermissions() {
+	/**
+	 * Check file and directory permissions for the update.
+	 *
+	 * @return bool True if permissions are OK, false otherwise.
+	 */
+	public function checkPermissions(): bool {
 		$result = false;
 
 		try {
@@ -171,7 +215,12 @@ class Update extends Base {
 		return $result;
 	}
 
-	function backup() {
+	/**
+	 * Create a backup before applying the update.
+	 *
+	 * @return bool True if backup succeeded, false otherwise.
+	 */
+	public function backup(): bool {
 		$result = false;
 
 		try {
@@ -187,7 +236,12 @@ class Update extends Base {
 		return $result;
 	}
 
-	function addNewColumns() {
+	/**
+	 * Add new database columns introduced by the update.
+	 *
+	 * @return bool True if columns were added successfully, false otherwise.
+	 */
+	public function addNewColumns(): bool {
 		$result = false;
 
 		try {
@@ -203,7 +257,12 @@ class Update extends Base {
 		return $result;
 	}
 
-	function createNewTables() {
+	/**
+	 * Create new database tables introduced by the update.
+	 *
+	 * @return bool True if tables were created successfully, false otherwise.
+	 */
+	public function createNewTables(): bool {
 		$result = false;
 
 		try {
@@ -219,7 +278,12 @@ class Update extends Base {
 		return $result;
 	}
 
-	function unzip() {
+	/**
+	 * Unzip the downloaded update package.
+	 *
+	 * @return bool True if unzip succeeded, false otherwise.
+	 */
+	public function unzip(): bool {
 		$errorInstallMsg  = __('Error unzipping update!');
 		$result           = true;
 
@@ -230,7 +294,7 @@ class Update extends Base {
 			$this->view->errors[] = $e->getMessage();
 		}
 
-		if (! $result) {
+		if (!$result) {
 			$this->view->errors[] = $errorInstallMsg;
 		} else {
 			$this->view->success[] = __('Unzip successful!');
@@ -239,7 +303,14 @@ class Update extends Base {
 		return $result;
 	}
 
-	private function copy($method) {
+	/**
+	 * Copy files for the specified update section.
+	 *
+	 * @param string $method The copy method name (e.g. 'Core', 'Config').
+	 *
+	 * @return bool True if copy succeeded, false otherwise.
+	 */
+	private function copy(string $method): bool {
 		$name            = humanReadable(camelToUnderscore($method));
 		$errorInstallMsg = sprintf(__('Error updating %s'), $name);
 		$result          = false;
@@ -252,7 +323,7 @@ class Update extends Base {
 			$this->view->errors[] = $e->getMessage();
 		}
 
-		if (! $result) {
+		if (!$result) {
 			$this->view->errors[] = $errorInstallMsg;
 		} else {
 			$this->view->success[] = sprintf(__('Update %s successful!'), $name);
@@ -261,15 +332,30 @@ class Update extends Base {
 		return $result;
 	}
 
-	function copyCore() {
+	/**
+	 * Copy core framework files.
+	 *
+	 * @return bool
+	 */
+	public function copyCore(): bool {
 		return $this->copy('Core');
 	}
 
-	function copyConfig() {
+	/**
+	 * Copy configuration files.
+	 *
+	 * @return bool
+	 */
+	public function copyConfig(): bool {
 		return $this->copy('Config');
 	}
 
-	function copySystem() {
+	/**
+	 * Copy system and admin files in one step.
+	 *
+	 * @return bool
+	 */
+	public function copySystem(): bool {
 		//merge system and admin in one step so that the updater does not break if depends on older system code.
 		$return = $this->copy('System');
 
@@ -285,27 +371,66 @@ class Update extends Base {
 		return $this->copy('Admin');
 	}
 	*/
-	function copyApp() {
+	/**
+	 * Copy application files.
+	 *
+	 * @return bool
+	 */
+	public function copyApp(): bool {
 		return $this->copy('App');
 	}
 
-	function copyInstall() {
+	/**
+	 * Copy installation files.
+	 *
+	 * @return bool
+	 */
+	public function copyInstall(): bool {
 		return $this->copy('Install');
 	}
 
-	function copyPublic() {
+	/**
+	 * Copy public-facing files.
+	 *
+	 * @return bool
+	 */
+	public function copyPublic(): bool {
 		return $this->copy('Public');
 	}
 
-	function copyPublicAdmin() {
+	/**
+	 * Copy public admin assets.
+	 *
+	 * @return bool
+	 */
+	public function copyPublicAdmin(): bool {
 		return $this->copy('PublicAdmin');
 	}
 
-	function copyPublicMedia() {
+	/**
+	 * Copy public media files.
+	 *
+	 * @return bool
+	 */
+	public function copyPublicMedia(): bool {
 		return $this->copy('PublicMedia');
 	}
 
-	function setFilePermissions() {
+	/**
+	 * Move new folders and backup existing ones.
+	 *
+	 * @return bool
+	 */
+	public function moveFolders(): bool {
+		return $this->update->moveFolders();
+	}
+
+	/**
+	 * Set file permissions after the update.
+	 *
+	 * @return bool True if permissions were set successfully, false otherwise.
+	 */
+	public function setFilePermissions(): bool {
 		$errorInstallMsg = __('Error setting permissions');
 		$result          = false;
 
@@ -315,7 +440,7 @@ class Update extends Base {
 			$this->view->errors[] = $e->getMessage();
 		}
 
-		if (! $result) {
+		if (!$result) {
 			$this->view->errors[] = $errorInstallMsg;
 		} else {
 			$this->view->success[] = __('Set permissions successful!');
@@ -324,7 +449,12 @@ class Update extends Base {
 		return $result;
 	}
 
-	function cleanUp() {
+	/**
+	 * Clean up temporary update files.
+	 *
+	 * @return bool True if cleanup succeeded, false otherwise.
+	 */
+	public function cleanUp(): bool {
 		$errorInstallMsg = __('Error cleaning up');
 		$result          = false;
 
@@ -334,7 +464,7 @@ class Update extends Base {
 			$this->view->errors[] = $e->getMessage();
 		}
 
-		if (! $result) {
+		if (!$result) {
 			$this->view->errors[] = $errorInstallMsg;
 		} else {
 			$this->view->success[] = __('Cleanup successful!');
@@ -343,7 +473,12 @@ class Update extends Base {
 		return $result;
 	}
 
-	function clearCache() {
+	/**
+	 * Clear all caches after the update.
+	 *
+	 * @return bool True if cache was cleared successfully, false otherwise.
+	 */
+	public function clearCache(): bool {
 		$errorInstallMsg = __('Error clearing cache');
 		$result          = false;
 
@@ -353,7 +488,7 @@ class Update extends Base {
 			$this->view->errors[] = $e->getMessage();
 		}
 
-		if (! $result) {
+		if (!$result) {
 			$this->view->errors[] = $errorInstallMsg;
 		} else {
 			$this->view->success[] = __('Clear cache successful!');
@@ -362,30 +497,45 @@ class Update extends Base {
 		return $result;
 	}
 
-	function complete() {
+	/**
+	 * Mark the update as complete and disable safe mode.
+	 *
+	 * @return bool Always returns true.
+	 */
+	public function complete(): bool {
 		$this->view->success[] = __('Update complete!');
 		Admin::session(['safemode' => false]);
 
 		return true;
 	}
 
-	function update() {
+	/**
+	 * Start the update process from the first step.
+	 *
+	 * @return void
+	 */
+	public function update(): void {
 		$this->request->get['step'] = $this->steps[0];
 		$info                       = __('Update in progress, do not close this page ...');
 		$this->view->info[]         = $info;
 
 		if ($this->request->isAjax()) {
-			$url = ['module'=>'tools/update', 'action' => 'updateNext', 'step' => $this->steps[0], 'position' => 0, 'count' => count($this->steps), 'info' => $info];
+			$url = ['module' => 'tools/update', 'action' => 'updateNext', 'step' => $this->steps[0], 'position' => 0, 'count' => count($this->steps), 'info' => $info];
 
-			die(json_encode($url + ['url' => url($url)]));
+			exit(json_encode($url + ['url' => url($url)]));
 		} else {
 			$this->updateNext();
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display the update status page with current version information.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$updateInfo = $this->checkUpdates();
 
 		if (isset($updateInfo['error']) && $updateInfo['error']) {

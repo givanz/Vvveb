@@ -28,7 +28,12 @@ use Vvveb\System\Cron as CronList;
 use Vvveb\System\Sites;
 
 class Cron extends Base {
-	function index() {
+	/**
+	 * Display the cron job management page with cron URL and CLI command.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$view           = View :: getInstance();
 		$site           = Sites::getSiteById($this->global['site_id']);
 

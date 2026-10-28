@@ -25,15 +25,10 @@ namespace Vvveb\Controller\Tools;
 use Vvveb\Controller\Base;
 
 class Security extends Base {
-	function index() {
-		$info = [
-			'general' => [
-				'PHP version'               => phpversion(),
-				'OS version'                => php_uname(),
-				'Database driver & version' => DB_ENGINE,
-			],
-		];
-
-		$this->view->info = $info;
-	}
+	/**
+	 * Display the security settings page.
+	 *
+	 * @return void
+	 */
+	public function index(): void {}
 }

@@ -2,11 +2,10 @@ class TableController {
 
 	selectRow(e) {
 		let selectedCount = document.querySelectorAll(".checkbox input[type='checkbox']:checked");
+		let bulkActions = document.querySelector('.bulk-actions');
 
-		if (selectedCount.length > 0) {
-			document.querySelector('.bulk-actions').style.display = "block";
-		} else {
-			document.querySelector('.bulk-actions').style.display = "none";
+		if (bulkActions) {
+			bulkActions.style.display = selectedCount.length > 0 ? "block" : "none";
 		}
 	}
 	
@@ -14,10 +13,9 @@ class TableController {
 		let bulkCheckbox = this;
 		document.querySelectorAll(".checkbox input[type='checkbox']").forEach(e => e.checked = bulkCheckbox.checked);
 
-		if (bulkCheckbox.checked) {
-			document.querySelector('.bulk-actions').style.display = "block";
-		} else {
-			document.querySelector('.bulk-actions').style.display = "none";
+		let bulkActions = document.querySelector('.bulk-actions');
+		if (bulkActions) {
+			bulkActions.style.display = bulkCheckbox.checked ? "block" : "none";
 		}
 	}
 }

@@ -2,16 +2,23 @@ class BackupController {
 
 	action(url, params, btn) {
 		let next = url;
-		document.getElementById("progress").classList.remove("d-none");
+		let progress = document.getElementById("progress");
+		if (progress) progress.classList.remove("d-none");
 		
 		function disableBtn() {
-			btn.querySelector('.loading').classList.remove('d-none');
-			btn.querySelector('.button-text').classList.add('d-none');
+			if (!btn) return;
+			let loading = btn.querySelector('.loading');
+			let text = btn.querySelector('.button-text');
+			if (loading) loading.classList.remove('d-none');
+			if (text) text.classList.add('d-none');
 		}
 		
 		function enableBtn() {
-			btn.querySelector('.loading').classList.add('d-none');
-			btn.querySelector('.button-text').classList.remove('d-none');
+			if (!btn) return;
+			let loading = btn.querySelector('.loading');
+			let text = btn.querySelector('.button-text');
+			if (loading) loading.classList.add('d-none');
+			if (text) text.classList.remove('d-none');
 		}
 
 		disableBtn();				
@@ -20,7 +27,7 @@ class BackupController {
 			return fetch(next, {method: "POST",   headers: {
 				"X-Requested-With": "XMLHttpRequest",
 				"Content-Type": "application/x-www-form-urlencoded",
-			  }, body: new URLSearchParams({...params, csrf: document.querySelector('[name=csrf]')?.value})})
+			  }, body: new URLSearchParams({...params, csrf: document.querySelector('[name=csrf]')?.value ?? ""})})
 			.then((response) => {
 				next = false;
 				if (!response.ok) {
@@ -28,51 +35,57 @@ class BackupController {
 						return Promise.reject([response, responseInText]);
 					});
 				}										
-				if (!response.ok) { 
-					let message = response.statusText + " " + response.body();
-					throw new Error(message); 
-				}
 				return response.json()
 			})
 			
 			.then((json) => {
-					document.getElementById('progress-status').innerHTML = '';
+					const status = document.getElementById('progress-status');
+					const progressBar = document.getElementById('progress-bar');
+					const setText = (id, value) => {
+						const el = document.getElementById(id);
+						if (el && value !== undefined && value !== null) {
+							el.textContent = value;
+						}
+					};
+
+					if (status) status.textContent = '';
 					
 					if (json['error']) {
-						document.getElementById('progress-bar').classList.add('bg-danger');
-						document.getElementById('progress-status').innerHTML = '<div class="text-danger">' + json['error'] + '</div>';
+						if (progressBar) progressBar.classList.add('bg-danger');
+						if (status) {
+							status.classList.add('text-danger');
+							status.textContent = json['error'];
+						}
 
 						enableBtn();
+						//stop on fatal errors instead of continuing to the next step
+						return;
 					}
 
-					let percent = (json['position']) * 100 / json['count'];				
+					let percent = (json['position'] || 0) * 100 / (json['count'] || 1);
 					
 					if (json['success']) {
-						document.getElementById('progress-bar').style.width = "100%";//.classList.add('bg-success');
-						document.getElementById('progress-status').innerHTML = '<div class="text-success">' + json['success'] + '</div>';
+						if (progressBar) progressBar.style.width = "100%";//.classList.add('bg-success');
+						if (status) {
+							status.classList.remove('text-danger');
+							status.classList.add('text-success');
+							status.textContent = json['success'];
+						}
 
 						enableBtn();
 					}
 
 					if (json['table']) {
-						document.getElementById('progress-status').innerHTML = json['table'];
-					}					
-					
-					if (json['file']) {
-						document.getElementById('progress-file').innerHTML = json['file'];
-					}					
-					
-					if (json['position']) {
-						document.getElementById('progress-position').innerHTML = json['position'];
-					}			
-					
-					if (json['count']) {
-						document.getElementById('progress-count').innerHTML = json['count'];
-					}			
-					
-					if (json['page']) {
-						document.getElementById('progress-page').innerHTML = json['page'];
+						if (status) {
+							status.classList.remove('text-danger', 'text-success');
+							status.textContent = json['table'];
+						}
 					}
+
+					if (json['file']) setText('progress-file', json['file']);
+					if (json['position'] !== undefined) setText('progress-position', json['position']);
+					if (json['count'] !== undefined) setText('progress-count', json['count']);
+					if (json['page']) setText('progress-page', json['page']);
 
 					
 					if (json['url'] && (!json['count'] || (json['position'] < json['count']))) {
@@ -81,42 +94,59 @@ class BackupController {
 						ajaxStack.add(request);
 					} else {
 						percent = 100;
-						document.getElementById('progress-bar').classList.add('bg-success');
+						if (progressBar) {
+							progressBar.classList.add('bg-success');
+							progressBar.style.width = '100%';
+						}
 						enableBtn();
-						document.getElementById('progress-bar').style.width = '100%';
 
 						if (json['success']) {
-							window.location.href += '&success=' + json['success'];  
-						} else {
+							let url = window.location.href;
+							if (url.indexOf('success=') === -1) {
+								url += (url.indexOf('?') > -1 ? '&' : '?') + 'success=' + encodeURIComponent(json['success']);
+								window.location.href = url;
+							} else {
+								window.location.reload();
+							}
+						} else if (window.navigation?.reload) {
 							window.navigation.reload();
+						} else {
+							window.location.reload();
 						}
 					}
 
-					document.getElementById('progress-bar').style.width = percent + '%';					
+					if (progressBar) progressBar.style.width = percent + '%';
 				})/*.then((json) => {
 					if (next) {
 						ajaxStack.add(request);
 					}
 				})*/
 				.catch(error => {
-						let [response, responseInText] = error;
-						let message = response.statusText ?? "Error!";
-						let progessSuccess, progressStatus;
+						let response, responseInText;
 
-						if (typeof error.json === "function") {
-							error.json().then(jsonError => {
-								message = jsonError;
-							}).catch(genericError => {
-								message = error.statusText + " " + message;
-							});
-						}				
-					
+						if (Array.isArray(error)) {
+							[response, responseInText] = error;
+						}
+
+						let message = responseInText || response?.statusText || error?.message || "Error!";
+						message = String(message);
+
 						displayToast("danger", "Error", message);
-						if (progessSuccess = document.getElementById('progress-success')) progessSuccess.innerHTML = '';
-						if (progressStatus = document.getElementById('progress-status')) progressStatus.innerHTML = '<div class="text-danger">' + message + '</div>';
-						//console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-						document.getElementById('progress-bar').classList.add('bg-danger');
+
+						const progressSuccess = document.getElementById('progress-success');
+						if (progressSuccess) progressSuccess.textContent = '';
+
+						const progressStatus = document.getElementById('progress-status');
+						if (progressStatus) {
+							progressStatus.classList.add('text-danger');
+							progressStatus.textContent = message;
+						}
+
+						const progressBar = document.getElementById('progress-bar');
+						if (progressBar) progressBar.classList.add('bg-danger');
+
 						enableBtn();
+						console.error(error);
 				});
 		};
 

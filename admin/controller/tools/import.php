@@ -24,15 +24,31 @@ namespace Vvveb\Controller\Tools;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\System\Core\FrontController;
+use Vvveb\System\Import\Sql;
 use Vvveb\System\Import\Xml;
 
 #[\AllowDynamicProperties]
 class Import extends Base {
-	function __construct() {
+	/**
+	 * Initialize the XML and SQL importers.
+	 *
+	 * @return void
+	 */
+	public function __construct() {
 		$this->xml = new Xml();
+		$this->sql = new Sql();
 	}
 
-	function importFile($file, $name = '') {
+	/**
+	 * Import a single file and display success or error messages.
+	 *
+	 * @param string $file The temporary file path to import.
+	 * @param string $name The original file name.
+	 *
+	 * @return void
+	 */
+	public function importFile(string $file, string $name = ''): void {
 		$result = false;
 
 		if ($file) {
@@ -54,7 +70,12 @@ class Import extends Base {
 		}
 	}
 
-	function upload() {
+	/**
+	 * Handle file uploads and process each uploaded or specified file.
+	 *
+	 * @return void
+	 */
+	public function upload(): void {
 		$files = $this->request->files;
 
 		//check for uploaded files
@@ -77,10 +98,18 @@ class Import extends Base {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	private function import($file, $name = '') {
+	/**
+	 * Import a file based on its extension (xml or sql).
+	 *
+	 * @param string $file The file path to import.
+	 * @param string $name The file name used to determine the import type.
+	 *
+	 * @return bool True if import succeeded, false otherwise.
+	 */
+	private function import(string $file, string $name = ''): bool {
 		$extension = substr($name, -3, 3);
 
 		$result = false;
@@ -90,10 +119,24 @@ class Import extends Base {
 			$result  = $this->xml->import($content);
 		}
 
+		if ($extension == 'sql') {
+			/*
+			$content = file_get_contents($file);
+			$result  = $this->sql->multiQuery($content, $file);
+			 */
+			//use database backup restore
+			FrontController::redirect('tools/backup', 'restore');
+		}
+
 		return $result;
 	}
 
-	function index() {
+	/**
+	 * Display the import page.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		//$this->import();
 	}
 }

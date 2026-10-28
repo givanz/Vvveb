@@ -27,49 +27,92 @@ use Vvveb\Controller\Base;
 use Vvveb\System\CacheManager;
 
 class Cache extends Base {
-	private function clear($fn) {
+	/**
+	 * Execute a cache clearing operation and display the result.
+	 *
+	 * @param callable(): bool $fn The cache clearing function to execute.
+	 *
+	 * @return void
+	 */
+	private function clear(callable $fn): void {
 		if ($fn()) {
 			$this->view->success[] = __('Cache deleted!');
 		} else {
 			$this->view->errors[] = __('Error purging cache!');
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function delete() {
-		return $this->clear(fn () => CacheManager :: delete());
+	/**
+	 * Delete all cache types.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
+		$this->clear(fn () => CacheManager :: delete());
 	}
 
-	function template() {
-		return $this->clear(fn () => CacheManager :: clearCompiledFiles());
+	/**
+	 * Clear compiled template cache.
+	 *
+	 * @return void
+	 */
+	public function template(): void {
+		$this->clear(fn () => CacheManager :: clearCompiledFiles());
 	}
 
-	function page() {
-		return $this->clear(fn () => CacheManager :: clearPageCache($this->global['site_url']));
+	/**
+	 * Clear page cache.
+	 *
+	 * @return void
+	 */
+	public function page(): void {
+		$this->clear(fn () => CacheManager :: clearPageCache($this->global['site_url']));
 	}
 
-	function database() {
-		return $this->clear(fn () => CacheManager :: clearObjectCache());
+	/**
+	 * Clear database object cache.
+	 *
+	 * @return void
+	 */
+	public function database(): void {
+		$this->clear(fn () => CacheManager :: clearObjectCache());
 	}
 
-	function asset() {
-		return $this->clear(fn () => CacheManager :: clearFrontend());
+	/**
+	 * Clear frontend asset cache.
+	 *
+	 * @return void
+	 */
+	public function asset(): void {
+		$this->clear(fn () => CacheManager :: clearFrontend());
 	}
 
-	function model() {
-		return $this->clear(fn () => CacheManager :: clearModelCache());
+	/**
+	 * Clear model cache.
+	 *
+	 * @return void
+	 */
+	public function model(): void {
+		$this->clear(fn () => CacheManager :: clearModelCache());
 	}
 
-	function image() {
-		return $this->clear(fn () => CacheManager :: clearImageCache());
+	/**
+	 * Clear image cache.
+	 *
+	 * @return void
+	 */
+	public function image(): void {
+		$this->clear(fn () => CacheManager :: clearImageCache());
 	}
 
-	function stale() {
-		return $this->index();
-	}
-
-	function index() {
+	/**
+	 * Display the cache management page with folder writability checks.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$folders = [
 			'/public/page-cache'          => DIR_PUBLIC . PAGE_CACHE_DIR,
 			'/public/image-cache'         => DIR_PUBLIC . DS . 'image-cache',
@@ -81,7 +124,7 @@ class Cache extends Base {
 		$unwritable = [];
 
 		foreach ($folders as $folder => $path) {
-			if (! is_writable($path)) {
+			if (!is_writable($path)) {
 				$unwritable[] = $folder;
 			}
 		}

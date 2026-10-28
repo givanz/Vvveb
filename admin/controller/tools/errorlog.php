@@ -26,11 +26,26 @@ use function Vvveb\__;
 use Vvveb\Controller\Base;
 
 class ErrorLog extends Base {
-	function download() {
-		$filename = ini_get('error_log');
+	/**
+	 * Download the PHP error log file as a plain text attachment.
+	 *
+	 * @return void
+	 */
+	public function download(): void {
+		$log         = $this->request->get['log'] ?? 'error_log';
+		$filename    = '';
+
+		switch ($log) {
+			case 'error_log':
+				$filename = ini_get('error_log');
+				break;
+			case 'mail_log':
+				$filename = DIR_STORAGE . 'logs/mail_log';
+				break;
+		}
 
 		if (is_file($filename)) {
-			$fp = fopen($filename, 'rb');
+			$fp = fopen($filename, 'r');
 
 			header('Content-Description: File Transfer');
 			//header('Content-Type: application/octet-stream');
@@ -47,12 +62,27 @@ class ErrorLog extends Base {
 		} else {
 			$this->view->errors[] = __('Error downloading log!');
 
-			return $this->index();
+			$this->index();
 		}
 	}
 
-	function clear() {
-		$filename = ini_get('error_log');
+	/**
+	 * Clear the PHP error log file contents.
+	 *
+	 * @return void
+	 */
+	public function clear(): void {
+		$log         = $this->request->get['log'] ?? 'error_log';
+		$filename    = '';
+
+		switch ($log) {
+			case 'error_log':
+				$filename = ini_get('error_log');
+				break;
+			case 'mail_log':
+				$filename = DIR_STORAGE . 'logs/mail_log';
+				break;
+		}
 
 		if (is_file($filename)) {
 			@$handle = fopen($filename, 'r+');
@@ -71,16 +101,31 @@ class ErrorLog extends Base {
 			$this->view->errors[] = __('Log not a valid file!');
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display the last lines of the PHP error log.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$name        = $this->request->get['log'] ?? 'error_log';
 		$count       = 100;
-		$error_log   = ini_get('error_log');
 		$is_readable = null;
 		$text        = null;
+		$error_log   = '';
 
-		if (! empty($error_log)) {
+		switch ($name) {
+			case 'error_log':
+				$error_log = ini_get('error_log');
+				break;
+			case 'mail_log':
+				$error_log = DIR_STORAGE . 'logs/mail_log';
+				break;
+		}
+
+		if (!empty($error_log)) {
 			$is_readable = is_readable($error_log);
 
 			if ($is_readable) {

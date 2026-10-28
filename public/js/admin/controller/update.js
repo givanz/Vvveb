@@ -2,16 +2,23 @@ class UpdateController {
 
 	action(url, btn) {
 		let next = url;
-		document.getElementById("progress").classList.remove("d-none");
+		let progress = document.getElementById("progress");
+		if (progress) progress.classList.remove("d-none");
 		
 		function disableBtn() {
-			btn.querySelector('.loading').classList.remove('d-none');
-			btn.querySelector('.button-text').classList.add('d-none');
+			if (!btn) return;
+			let loading = btn.querySelector('.loading');
+			let text = btn.querySelector('.button-text');
+			if (loading) loading.classList.remove('d-none');
+			if (text) text.classList.add('d-none');
 		}
 		
 		function enableBtn() {
-			btn.querySelector('.loading').classList.add('d-none');
-			btn.querySelector('.button-text').classList.remove('d-none');
+			if (!btn) return;
+			let loading = btn.querySelector('.loading');
+			let text = btn.querySelector('.button-text');
+			if (loading) loading.classList.add('d-none');
+			if (text) text.classList.remove('d-none');
 		}
 
 		disableBtn();				
@@ -20,46 +27,56 @@ class UpdateController {
 			return fetch(next, {method: "POST",   headers: {
 				"X-Requested-With": "XMLHttpRequest",
 				"Content-Type": "application/x-www-form-urlencoded",
-			  }, body: new URLSearchParams({csrf: document.querySelector('[name=csrf]')?.value})})
+			  }, body: new URLSearchParams({csrf: document.querySelector('[name=csrf]')?.value ?? ""})})
 			.then((response) => {
 				next = false;
 				if (!response.ok) {
 					return Promise.resolve(response.text()).then((responseInText) => {
 						return Promise.reject([response, responseInText]);
 					});
-				}										
-				if (!response.ok) { 
-					let message = response.statusText + " " + response.body();
-					throw new Error(message); 
 				}
 				return response.json()
 			})
 			.then((json) => {
-					document.getElementById('progress-message').innerHTML = '';
+					let progressMessage = document.getElementById('progress-message');
+					let progressError = document.getElementById('progress-error');
+					let progressSuccess = document.getElementById('progress-success');
+					const progressBar = document.getElementById('progress-bar');
+
+					if (progressMessage) progressMessage.textContent = '';
 					
 					if (json['error']) {
-						document.getElementById('progress-bar').classList.add('bg-danger');
-						document.getElementById('progress-error').innerHTML = '<div class="text-danger">' + json['error'] + '</div>';
+						if (progressBar) progressBar.classList.add('bg-danger');
+						if (progressError) {
+							progressError.textContent = json['error'];
+						}
 
 						enableBtn();
+						//stop on fatal errors instead of marking the update as successful
+						return;
 					}
 
-					let percent = (json['position']) * 100 / json['count'];				
+					let percent = (json['position'] || 0) * 100 / (json['count'] || 1);
 					
 					if (json['success']) {
 						//document.getElementById('progress-bar').style.width = '100%';.classList.add('bg-success');
-						document.getElementById('progress-success').innerHTML = '<div class="text-success">' + json['success'] + '</div>';
+						if (progressSuccess) {
+							progressSuccess.classList.add('text-success');
+							progressSuccess.textContent = json['success'];
+						}
 
 						enableBtn();
 					}
 
-					if (json['info']) {
-						document.getElementById('progress-message').innerHTML = json['info'];
+					if (json['info'] && progressMessage) {
+						//server generated status with an optional badge
+						progressMessage.innerHTML = json['info'];
 					}
 
 					
 					if (json['step']) {
-						document.getElementById('progress-status').innerHTML = json['step'];
+						const progressStatus = document.getElementById('progress-status');
+						if (progressStatus) progressStatus.textContent = json['step'];
 					}	
 					
 					if (json['url'] && json['step'] && !json['error']) {
@@ -69,9 +86,9 @@ class UpdateController {
 
 					} else {
 						percent = 100;
-						document.getElementById('progress-bar').classList.add('bg-success');
+						if (progressBar) progressBar.classList.add('bg-success');
 						enableBtn();
-						document.getElementById('progress-bar').style.width = '100%';
+						if (progressBar) progressBar.style.width = '100%';
 						
 						return;
 						if (json['success']) {
@@ -83,36 +100,40 @@ class UpdateController {
 						}
 					}
 
-					document.getElementById('progress-bar').style.width = percent + '%';					
+					if (progressBar) progressBar.style.width = percent + '%';					
 			})/*.then((json) => {
 				if (next) {
 					ajaxStack.add(request);
 				}
 			})*/
 			.catch(error => {
-					let [response, responseInText] = error;
-					let message = response.statusText ?? "Error!";
-					displayToast("danger", "Error", message);
+					let response, responseInText;
 
-					if (error.hasOwnProperty('text')) error.text().then( errorMessage => {
-						let message = errorMessage.substr(0, 200);
+					if (Array.isArray(error)) {
+						[response, responseInText] = error;
+					}
+
+					let message = responseInText || response?.statusText || error?.message || "Error!";
+					message = String(message);
+
+					if (typeof displayToast === "function") {
 						displayToast("danger", "Error", message);
-					});
+					}
 
-					if (typeof error.json === "function") {
-						error.json().then(jsonError => {
-							message = jsonError;
-						}).catch(genericError => {
-							message = error?.statusText + " " + message;
-						});
-					}				
-				
-					console.log(error);
-					document.getElementById('progress-success').innerHTML = '';
-					document.getElementById('progress-message').innerHTML = '<div class="text-danger">' + message + '</div>';
-					//console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-					document.getElementById('progress-bar').classList.add('bg-danger');
+					const success = document.getElementById('progress-success');
+					if (success) success.textContent = '';
+
+					const progressMessage = document.getElementById('progress-message');
+					if (progressMessage) {
+						progressMessage.classList.add('text-danger');
+						progressMessage.textContent = message;
+					}
+
+					const progressBar = document.getElementById('progress-bar');
+					if (progressBar) progressBar.classList.add('bg-danger');
+
 					enableBtn();
+					console.error(error);
 			});
 		};
 

@@ -1,21 +1,47 @@
 class CacheController {
 
 	clear(e, element) {
-		let url = element.href;
+		element = element ?? e.currentTarget;
+		let url = element?.getAttribute('href');
 
-		fetch(url)
+		//fallback for pages where the href was not generated from data-v-url-params
+		if ((!url || url === '#') && element?.dataset.vUrlParams) {
+			try {
+				url = window.location.pathname + '?' + new URLSearchParams(JSON.parse(element.dataset.vUrlParams)).toString();
+			} catch (error) {
+				console.error("Invalid cache action url", error);
+			}
+		}
+
+		if (!url || url === '#') {
+			displayToast("danger", "Cache", "Invalid cache action!", "top");
+			e.preventDefault();
+			return false;
+		}
+
+		fetch(url, {
+			method: "POST",
+			headers: {
+				"X-Requested-With": "XMLHttpRequest",
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
+			body: new URLSearchParams({csrf: document.querySelector('[name=csrf]')?.value ?? ""})
+		})
 		.then((response) => {
 			if (!response.ok) { throw new Error(response) }
 			return response.text()
 		})
 		.then((data) => {
 			let response = new DOMParser().parseFromString(data, "text/html");
-			let message = response.querySelector(".notifications .alert [data-v-notification-text]")?.innerHTML;
-			displayToast("success", "Cache", message, "top");
+			let notification = response.querySelector(".notifications .alert");
+			let message = notification?.querySelector("[data-v-notification-text]")?.textContent?.trim();
+			let success = !notification || notification.classList.contains("alert-success");
+
+			displayToast(success ? "success" : "danger", "Cache", message || (success ? "Cache cleared" : "Error clearing cache"), "top");
 		})
 		.catch(error => {
-			displayToast("danger", "Cache", "Error", "top");
-			//displayToast("danger", "Error", "Error saving!");
+			displayToast("danger", "Cache", "Error clearing cache", "top");
+			console.error(error);
 		});			
 
 		e.preventDefault();

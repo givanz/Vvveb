@@ -3,10 +3,8 @@ var prevSearchValue;
 class SearchController {
 
 	autocomplete(e, element) {
-		let url = element.href;
-
 		if (element.value) {
-			let loading = this.form.querySelector(".loading");
+			let loading = (this.form ?? this.closest("form"))?.querySelector(".loading");
 			if (loading && prevSearchValue != element.value) {
 				loading.classList.remove('d-none');
 				document.querySelector(".search-results")?.replaceChildren();

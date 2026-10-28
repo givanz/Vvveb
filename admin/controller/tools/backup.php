@@ -163,7 +163,7 @@ class Backup extends Base {
 			$i 	 = 0;
 
 			foreach ($rows as $row) {
-				array_walk($row, function (&$v) {
+				array_walk($row, function(&$v): void {
 					if (is_null($v)) {
 						$v = 'null';
 					} else {
@@ -263,6 +263,10 @@ class Backup extends Base {
 	 * @return void
 	 */
 	public function nextRestore(): void {
+		if ($this->request->getMethod() !== 'post') {
+			$this->notFound(__('Invalid request method!'), 405);
+		}
+
 		$position  = $this->request->get['position'] ?? 0;
 		$file      = sanitizeFileName($this->request->get['file'] ?? '');
 		$filename  =  $this->dirBackup . $file;

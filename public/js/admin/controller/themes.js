@@ -1,60 +1,94 @@
 import {Themes as ThemesModel} from '../model/themes.js';
 
+function showImportModal() {
+	let modal = document.getElementById("importModal");
+
+	if (modal && window.bootstrap?.Modal) {
+		bootstrap.Modal.getOrCreateInstance(modal).show();
+	}
+}
+
 class ThemesController {
 
-	install(e) {
-		let element = e.currentTarget;
+	install(e, element) {
+		element = element ?? e.currentTarget;
+		if (!element || !element.dataset) {
+			return;
+		}
+
 		let slug = element.dataset.slug;
 		let market = element.dataset.market;
-		
+		let loading = element.querySelector('.loading');
+		let text = element.querySelector('.button-text');
+
 		element.classList.add("loading");
-		
-		element.querySelector('.loading').toggleClass("d-none");
-		element.querySelector('.button-text').toggleClass("d-none");
-		
+
+		if (loading) loading.classList.remove("d-none");
+		if (text) text.classList.add("d-none");
+
 		ThemesModel.install(market, slug, function () {
 			setTimeout(function () {
 				element.classList.remove("loading");
-				element.querySelector('.loading').toggleClass("d-none");
-				element.querySelector('.button-text').toggleClass("d-none");
-				
+				if (loading) loading.classList.add("d-none");
+				if (text) text.classList.remove("d-none");
 			}, 5000);
 		});
-		
+
+		showImportModal();
 		e.preventDefault();
-	}
-	
-	importModal(e) {
-		document.getElementById("importModal").modal('show');
-		e.preventDefault();
-	}
-	
-	importTheme(e) {
-		document.getElementById("import-iframe").style.display = "";
-		document.getElementById("import-form").submit();
-		document.getElementById("import-options").style.display = "none";
-		e.target.style.display = "none";
 	}
 
-	import(e) {
-		console.log(document.getElementById("import-form").serialize());
+	showModal() {
+		let modal = document.getElementById("importModal");
+
+		if (modal && window.bootstrap?.Modal) {
+			bootstrap.Modal.getOrCreateInstance(modal).show();
+		}
 	}
-	
-	activate(e) {
-		let element = e.currentTarget;
+
+	importModal(e) {
+		showImportModal();
+		e.preventDefault();
+	}
+
+	importTheme(e, element) {
+		element = element ?? e.target;
+		let iframe = document.getElementById("import-iframe");
+		let form = document.getElementById("import-form");
+		let options = document.getElementById("import-options");
+
+		if (iframe) iframe.style.display = "";
+		if (form) form.submit();
+		if (options) options.style.display = "none";
+		if (element) element.style.display = "none";
+		e.preventDefault();
+	}
+
+	import(e, element) {
+		let form = document.getElementById("import-form");
+		if (form) {
+			console.log(new URLSearchParams(new FormData(form)).toString());
+		}
+	}
+
+	activate(e, element) {
+		element = element ?? e.currentTarget;
+		if (!element || !element.dataset) {
+			return;
+		}
+
 		let slug = element.dataset.slug;
 		let market = element.dataset.market;
-		
+
 		element.classList.add("loading");
-		
+
 		ThemesModel.install(market, slug, function () {
 			setTimeout(function () {
 				element.classList.remove("loading");
 			}, 5000);
 		});
-		
-		document.getElementById("importModal").modal('show');
-		
+
+		showImportModal();
 		e.preventDefault();
 	}
 }

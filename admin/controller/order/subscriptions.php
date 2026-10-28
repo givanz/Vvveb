@@ -25,15 +25,16 @@ namespace Vvveb\Controller\Order;
 use Vvveb\Controller\Listing;
 
 class Subscriptions extends Listing {
-	protected $additionalPermissionCheck = ['order/subscription/save'];
-	
-	protected $type = 'subscription';
+	/** @var list<string> */
+	protected ?array $additionalPermissionCheck = ['order/subscription/save'];
 
-	protected $controller = 'subscription';
+	protected string $type = 'subscription';
 
-	protected $listController = 'subscriptions';
+	protected string $controller = 'subscription';
 
-	protected $list = 'subscription';
+	protected string $listController = 'subscriptions';
 
-	protected $module = 'order';
+	protected string $list = 'subscription';
+
+	protected string $module = 'order';
 }
