@@ -24,75 +24,137 @@ namespace Vvveb\System\Db;
 
 use Vvveb\System\Event;
 
+/**
+ * PostgreSQL database driver using the pgsql extension.
+ *
+ * Provides connection management, query execution with parameterised queries,
+ * result fetching, escaping, and schema introspection for PostgreSQL.
+ */
 class Pgsql extends DBDriver {
-	private static $link = null;
+	/** @var ?\PgSql\Connection The shared database connection (singleton per process). */
+	private static ?\PgSql\Connection $link = null;
 
-	//public $error;
+	/** @var mixed The last query result resource. */
+	private mixed $last_res;
 
-	private $stmt;
+	/** @var int Number of rows affected by the last query. */
+	public int $affected_rows = 0;
 
-	private $last_res;
+	/** @var int Number of rows returned by the last query. */
+	public int $num_rows = 0;
 
-	public $affected_rows = 0;
+	/** @var ?int The OID of the last inserted row, or null if none. */
+	public ?int $insert_id = null;
 
-	public $num_rows = 0;
+	/** @var bool Whether to use persistent connections. */
+	private static bool $persistent = false;
 
-	public $insert_id = null;
+	/** @var string Table name prefix. */
+	public string $prefix = ''; //'vv_';
 
-	private static $persistent = false;
+	/** @var string Identifier quote character for PostgreSQL. */
+	public string $quote  = '"';
 
-	public $prefix = ''; //'vv_';
-
-	public $quote  = '"';
-
-	public static function version() {
+	/**
+	 * Get the PostgreSQL client and server version information.
+	 *
+	 * @return array{client: string, server: string}|null Version info, or null if not connected.
+	 */
+	public static function version(): ?array {
 		if (self :: $link) {
 			return pg_version(self :: $link);
 		}
+
+		return null;
 	}
 
-	public static function info() {
+	/**
+	 * Get the PostgreSQL client and server version information.
+	 *
+	 * @return array{client: string, server: string}|null Version info, or null if not connected.
+	 */
+	public static function info(): ?array {
 		if (self :: $link) {
 			return pg_version(self :: $link);
 		}
+
+		return null;
 	}
 
-	public function error() {
+	/**
+	 * Get the error message from the last PostgreSQL operation.
+	 *
+	 * @return string The error message, or empty string if not connected.
+	 */
+	public function error(): string {
 		if (self :: $link) {
-			return pg_last_error(self :: $link) ?? '';
+			return pg_last_error(self :: $link);
 		}
+
+		return '';
 	}
 
-	public function errorCode() {
+	/**
+	 * Get the error code from the last PostgreSQL operation.
+	 *
+	 * @return int|string The error code, or 0 if not connected.
+	 */
+	public function errorCode(): int|string {
 		if (self :: $link) {
-			return pg_last_error(self :: $link) ?? 0;
+			return pg_last_error(self :: $link);
 		}
+
+		return 0;
 	}
 
-	public function get_result($stmt) {
+	/**
+	 * Pass through the statement result unchanged (no transformation needed for pgsql).
+	 *
+	 * @param mixed $stmt The statement result.
+	 *
+	 * @return mixed The same statement result.
+	 */
+	public function get_result(mixed $stmt): mixed {
 		return $stmt;
 	}
 
-	public function __construct($host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = DB_PORT, $prefix = DB_PREFIX) {
+	public function __construct() {
 		//return $this->connect($host, $dbname, $user, $pass, $port,  $prefix);
 	}
 
-	public function connect($host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = DB_PORT, $prefix = DB_PREFIX) {
-		if (! self :: $link) {
+	/**
+	 * Connect to the PostgreSQL database.
+	 *
+	 * Uses a singleton pattern — returns the existing connection if already open.
+	 * Supports both regular and persistent connections.
+	 *
+	 * @param string $host   Database host.
+	 * @param string $dbname Database name.
+	 * @param string $user   Database user.
+	 * @param string $pass   Database password.
+	 * @param string $port   Database port (5432 direct, 6432 for pgbouncer).
+	 * @param string $prefix Table name prefix.
+	 *
+	 * @return ?\PgSql\Connection The database connection, or null on failure.
+	 */
+	public function connect(string $host = DB_HOST, string $dbname = DB_NAME, string $user = DB_USER, string $pass = DB_PASS, string $port = DB_PORT, string $prefix = DB_PREFIX): ?\PgSql\Connection {
+		if (!self :: $link) {
+			$this->prefix = $prefix;
 			//port 5432 for direct pgsql connection 6432 for pgbouncer
 			$port           = $port ?: 5432;
 			$connect_string = "host=$host port=$port dbname=$dbname  user=$user password=$pass";
 
 			if (self :: $persistent) {
-				self :: $link = pg_pconnect($connect_string);
+				$link = pg_pconnect($connect_string);
 			} else {
-				self :: $link = pg_connect($connect_string);
+				$link = pg_connect($connect_string);
 			}
 
-			if (self :: $link) {
-				//				pg_set_error_verbosity(self :: $link, PGSQL_ERRORS_VERBOSE);
-			} else {
+			if (!$link) {
+				throw new \Exception('PostgreSQL connection failed');
 			}
+
+			self :: $link = $link;
 		}
 
 		//sync database time
@@ -101,10 +163,16 @@ class Pgsql extends DBDriver {
 		return self :: $link;
 	}
 
-	/*
-	 * Get all columns for a table used for sanitizing input
+	/**
+	 * Get all columns for a table used for sanitizing input.
+	 *
+	 * @param string $tableName The table name to introspect.
+	 * @param bool   $comment   Whether to include column comments (unused for pgsql).
+	 *
+	 * @return array<string, array<string, string|null>>|false
+	 *                                                         Associative array keyed by column name, or false on failure.
 	 */
-	function getColumnsMeta($tableName, $comment = false) {
+	public function getColumnsMeta(string $tableName, bool $comment = false): array|false {
 		$sql =
 		"SELECT data_type as t, column_name as name, column_default as d, is_nullable as n, character_maximum_length as l FROM information_schema.columns WHERE table_name ='$tableName'";
 
@@ -116,15 +184,21 @@ class Pgsql extends DBDriver {
 				$columns[$row['name']] = $row;
 			}
 
-			/* free result set */
+			// free result set
 			return $columns;
-		} else {
 		}
 
 		return false;
 	}
 
-	function getTableNames($db = DB_NAME) {
+	/**
+	 * Get all table names in the database.
+	 *
+	 * @param string $db The database name (unused — queries pg_catalog instead).
+	 *
+	 * @return array<int, string>|false List of table names, or false on failure.
+	 */
+	public function getTableNames(string $db = DB_NAME): array|false {
 		$sql =
 		"SELECT tablename as name FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema' ORDER BY name";
 
@@ -137,15 +211,24 @@ class Pgsql extends DBDriver {
 				$names[] = $row['name'];
 			}
 
-			/* free result set */
+			// free result set
 			return $names;
-		} else {
 		}
 
 		return false;
 	}
 
-	public function escape($string) {
+	/**
+	 * Escape a value for safe inclusion in a SQL query.
+	 *
+	 * Strings are escaped with pg_escape_string. Null values become 'null'.
+	 * All other types are returned as-is.
+	 *
+	 * @param mixed $string The value to escape.
+	 *
+	 * @return mixed The escaped value.
+	 */
+	public function escape(mixed $string): mixed {
 		if (is_string($string)) {
 			return pg_escape_string(self :: $link, $string);
 		}
@@ -157,24 +240,29 @@ class Pgsql extends DBDriver {
 		return $string;
 	}
 
-	public function escapeLiteral($string) {
-		if (is_string($string)) {
-			return pg_escape_literal(self :: $link, $string);
-		}
-
-		if (is_null($string)) {
-			return 'null';
-		}
-
-		return $string;
+	/**
+	 * Escape a string value for use in a SQL literal.
+	 *
+	 * Returns the escaped value without surrounding quotes, matching the
+	 * mysqli/sqlite drivers (callers add their own quotes).
+	 *
+	 * @param string $string The string to escape.
+	 *
+	 * @return string The escaped string.
+	 */
+	public function escapeLiteral(string $string): string {
+		return pg_escape_string(self :: $link, $string);
 	}
 
-	public function sqlLimit($start, $limit) {
-		return "LIMIT  $limit OFFSET $start";
-	}
-
-	public function fetchArray(&$result) {
-		if (pg_num_rows($result)) {
+	/**
+	 * Fetch a single row from a result resource.
+	 *
+	 * @param \PgSql\Result|false $result The pgsql result resource.
+	 *
+	 * @return array<string, mixed> The fetched row, or empty array if no rows.
+	 */
+	public function fetchArray(&$result): array {
+		if ($result && pg_num_rows($result)) {
 			$values = pg_fetch_assoc($result);
 
 			return $values;
@@ -183,14 +271,19 @@ class Pgsql extends DBDriver {
 		return [];
 	}
 
-	public function fetchAll(&$result) {
-		if (pg_num_rows($result)) {
+	/**
+	 * Fetch all rows from a result resource and free it.
+	 *
+	 * @param \PgSql\Result|false $result The pgsql result resource (set to false after freeing).
+	 *
+	 * @return array<int, array<string, mixed>> All result rows.
+	 */
+	public function fetchAll(&$result): array {
+		if ($result && pg_num_rows($result)) {
 			$values = pg_fetch_all($result);
 
-			if ($result) {
-				pg_free_result($result);
-				$result = false;
-			}
+			pg_free_result($result);
+			$result = false;
 
 			return $values;
 		}
@@ -198,8 +291,21 @@ class Pgsql extends DBDriver {
 		return [];
 	}
 
-	public function query($sql, $parameters = []) {
-		if (! self :: $link) {
+	/**
+	 * Execute a raw SQL query with optional positional parameters.
+	 *
+	 * Automatically connects if not connected. Uses pg_query_params when
+	 * parameters are provided, pg_query otherwise.
+	 *
+	 * @param string            $sql        The SQL query with $1, $2... placeholders.
+	 * @param array<int, mixed> $parameters Positional parameter values.
+	 *
+	 * @throws \Exception On query failure.
+	 *
+	 * @return \PgSql\Result|false The query result, or false on failure.
+	 */
+	public function query(string $sql, array $parameters = []): \PgSql\Result|false {
+		if (!self :: $link) {
 			$this->connect();
 		}
 
@@ -208,7 +314,7 @@ class Pgsql extends DBDriver {
 		try {
 			if ($parameters) {
 				if (LOG_SQL_QUERIES) {
-					error_log($this->debugSql($sql, $parameters));
+					error_log($this->debugSql($sql, $parameters, [], '$'));
 				}
 
 				$this->last_res = $result = @pg_query_params(self :: $link, $sql, $parameters);
@@ -222,7 +328,7 @@ class Pgsql extends DBDriver {
 
 			if ($this->last_res == false) {
 				$errorMessage = pg_last_error(self :: $link);
-				$message      = $errorMessage . "\n" . $this->debugSql($sql, $parameters) . "\n - " . $sql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
+				$message      = $errorMessage . "\n" . $this->debugSql($sql, $parameters, [], '$') . "\n - " . $sql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
 				throw new \Exception($message);
 			}
@@ -233,25 +339,45 @@ class Pgsql extends DBDriver {
 
 			return $this->last_res;
 		} catch (\Exception $e) {
-			$message = $e->getMessage() . "\n" . $this->debugSql($sql, $parameters) . "\n - " . $sql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
+			$message = $e->getMessage() . "\n" . $this->debugSql($sql, $parameters, [], '$') . "\n - " . $sql . "\n - " . print_r(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1), true);
 
 			throw new \Exception($message, $e->getCode());
 		}
-
-		return $result;
 	}
 
-	public function multi_query($sql) {
+	/**
+	 * Execute multiple SQL statements (delegates to query for PostgreSQL).
+	 *
+	 * @param string $sql The SQL statements to execute.
+	 *
+	 * @return \PgSql\Result|false The query result, or false on failure.
+	 */
+	public function multi_query(string $sql): \PgSql\Result|false {
 		return $this->query($sql);
 	}
 
-	public function close() {
+	/**
+	 * Close the database connection.
+	 *
+	 * @return bool|null True on success, null if not connected.
+	 */
+	public function close(): ?bool {
 		if (self :: $link) {
 			return pg_close(self :: $link);
 		}
+
+		return null;
 	}
 
-	public function get_one($query, $parameters = null) {
+	/**
+	 * Execute a query and return a single scalar value.
+	 *
+	 * @param string                 $query      The SQL query.
+	 * @param array<int, mixed>|null $parameters Positional parameter values.
+	 *
+	 * @return string|false The first column of the first row, or false if no results.
+	 */
+	public function get_one(string $query, ?array $parameters = null): string|false {
 		$res = $this->query($query, $parameters);
 
 		if (pg_num_rows($res)) {
@@ -261,23 +387,34 @@ class Pgsql extends DBDriver {
 		}
 	}
 
-	function get_row($query, $parameters) {
-		$res = $this->query($query . ' LIMIT 1', $parameters);
-
-		if ($res === null) {
-			$res = $this->last_res;
-		}
-
+	/**
+	 * Execute a query and return a single row.
+	 *
+	 * @param string            $query      The SQL query (LIMIT 1 is appended automatically).
+	 * @param array<int, mixed> $parameters Positional parameter values.
+	 *
+	 * @return array<string, mixed>|null The row as an associative array<array-key, mixed>, or null on failure.
+	 */
+	public function get_row(string $query, array $parameters): ?array {
+		$res    = $this->query($query . ' LIMIT 1', $parameters);
 		$values = pg_fetch_assoc($res);
 
 		if ($res) {
 			pg_free_result($res);
 		}
 
-		return $values;
+		return $values ?: null;
 	}
 
-	public function get_all($query, $parameters = null) {
+	/**
+	 * Execute a query and return all rows.
+	 *
+	 * @param string                 $query      The SQL query.
+	 * @param array<int, mixed>|null $parameters Positional parameter values.
+	 *
+	 * @return array<int, array<string, mixed>>|false All rows, or false if no results.
+	 */
+	public function get_all(string $query, ?array $parameters = null): array|false {
 		$res = $this->query($query, $parameters);
 
 		if (pg_num_rows($res)) {
@@ -293,7 +430,14 @@ class Pgsql extends DBDriver {
 		}
 	}
 
-	function fetch_row($res = null) {
+	/**
+	 * Fetch a single row from a result resource and free it.
+	 *
+	 * @param resource|null $res The pgsql result resource, or null to use the last result.
+	 *
+	 * @return array<string, mixed>|null The row as an associative array<array-key, mixed>, or null if no rows.
+	 */
+	public function fetch_row($res = null): ?array {
 		if ($res === null) {
 			$res = $this->last_res;
 		}
@@ -304,20 +448,34 @@ class Pgsql extends DBDriver {
 			pg_free_result($res);
 		}
 
-		return $values;
+		return $values ?: null;
 	}
 
-	// Prepare
-	public function execute($sql, $params = [], $paramTypes = []) {
-		list($sql, $params) = Event::trigger(__CLASS__,__FUNCTION__, $sql, $params);
+	/**
+	 * Prepare and execute a parameterised query.
+	 *
+	 * Fires an Event::trigger hook before execution. Converts named parameters
+	 * to positional $1, $2... placeholders for pg_query_params. Updates
+	 * affected_rows on success.
+	 *
+	 * @param string                $sql        The SQL query with :named parameters.
+	 * @param array<string, mixed>  $params     Named parameter values.
+	 * @param array<string, string> $paramTypes Optional explicit type overrides.
+	 *
+	 * @throws \Exception On query failure.
+	 *
+	 * @return \PgSql\Result|false The query result, or false on failure.
+	 */
+	public function execute(string $sql, array $params = [], array $paramTypes = []): \PgSql\Result|false {
+		[$sql, $params] = Event::trigger(__CLASS__, __FUNCTION__, $sql, $params);
 		//save orig sql for debugging info
 		$origSql = $sql;
 
-		if (! self :: $link) {
+		if (!self :: $link) {
 			$this->connect();
 		}
 
-		list($parameters, $types) = $this->paramsToQmark($sql, $params, $paramTypes, '$');
+		[$parameters, $types] = $this->paramsToQmark($sql, $params, $paramTypes, '$');
 
 		if (LOG_SQL_QUERIES) {
 			error_log($this->debugSql($origSql, $params, $paramTypes));
@@ -344,10 +502,5 @@ class Pgsql extends DBDriver {
 		}
 
 		return $this->last_res;
-	}
-
-	// Bind
-	public function bind($param, $value, $type = null) {
-		$this->stmt->bindValue($param, $value, $type);
 	}
 }
