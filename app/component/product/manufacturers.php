@@ -27,13 +27,12 @@ use Vvveb\System\Event;
 use function Vvveb\url;
 
 class Manufacturers extends ComponentBase {
-	public static $defaultOptions = [
-		'start' => 0,
-		//'language_id' => 1,
+	public static array $defaultOptions = [
+		'start'                    => 0,
 		'count'                    => ['url', 4],
-		'manufacturer_id'          => NULL,
+		'manufacturer_id'          => null,
 		'order'                    => ['url', 'price asc'],
-		'category_id'              => NULL,
+		'category_id'              => null,
 		'limit'                    => 7,
 		'page'                     => 1,
 		'type'                     => 'tags',
@@ -43,9 +42,14 @@ class Manufacturers extends ComponentBase {
 		'filter'                   => null,
 	];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function results() {
+	/**
+	 * Get manufacturers list with active filter state and URLs.
+	 *
+	 * @return array<string, mixed> Manufacturers data with manufacturer list and active flags.
+	 */
+	public function results(): array {
 		$category = new \Vvveb\Sql\ManufacturerSQL();
 		$results  = $category->getAll($this->options);
 
@@ -55,14 +59,14 @@ class Manufacturers extends ComponentBase {
 			$filter = $this->options['filter']['manufacturer_id'] ?? [];
 		}
 
-		foreach ($results['manufacturer']  as &$manufacturer) {
+		foreach ($results['manufacturer'] as &$manufacturer) {
 			if ($filter) {
 				$manufacturer['active'] = in_array($manufacturer['manufacturer_id'], $filter);
 			}
 			$manufacturer['url'] = url('product/manufacturer/index', $manufacturer);
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

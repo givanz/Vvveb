@@ -22,6 +22,8 @@
 
 namespace Vvveb\Component;
 
+use Vvveb\System\Cart\Currency;
+use Vvveb\System\Cart\Tax;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Traits\Product;
@@ -29,7 +31,7 @@ use Vvveb\System\Traits\Product;
 class Products extends ComponentBase {
 	use Product;
 
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'start'            => 0,
 		'page'             => 1,
 		'limit'            => 4,
@@ -38,60 +40,86 @@ class Products extends ComponentBase {
 		'language_id'      => null,
 		'site_id'          => null,
 		'type'             => 'product', // filter by custom product type
-		'manufacturer_id'  => NULL, // filter by manufacturer
-		'vendor_id'        => NULL, // filter by vendor
-		'taxonomy_item_id' => NULL, // filter by taxonomy (category/tag)
-		'product_image'    => true, // include product images/gallery
-		'product_id'       => [], // show only products with id's in the list, array with product id's [1,2,3]
-		'search'           => null, // show products that matches the search string, used on search page
-		'search_boolean'   => null, // use boolean search
-		'like'             => null, // search using like operator, slower and returns only matches that start with the searched string
+		'manufacturer_id'  => null,
+		'vendor_id'        => null,
+		'taxonomy_item_id' => null,
+		'product_image'    => true,
+		'product_id'       => [],
+		'search'           => null,
+		'search_boolean'   => null,
+		'like'             => null,
 		'slug'             => null, // show only products with matching slugs, array with product slugs  ['one','two']
-		'related'          => null, // show related products for the products specified at product_id, boolean
-		'variant'          => null, // [true, false] include variants
-		'promotion'        => null, // [true, false] include promotional price
-		'points'           => null, // [true, false] include points
-		'stock_status'     => null, // [true, false] include stock status info
-		'weight_type'      => null, // [true, false] include weight type info
-		'length_type'      => null, // [true, false] include length type info
-		'rating'           => null, // [true, false] include rating average
-		'reviews'          => null, // [true, false] include reviews count
-		'author'           => null, // [true, false] include author/admin info
+		'related'          => null,
+		'variant'          => null,
+		'promotion'        => null,
+		'points'           => null,
+		'stock_status'     => null,
+		'weight_type'      => null,
+		'length_type'      => null,
+		'rating'           => null,
+		'reviews'          => null,
+		'author'           => null,
 		'image_size'       => 'medium', //options: xlarge, large, medium, thumb - if null site settings is use
 		'image_resize'     => null, // options: cs = Crop & resize, c = crop, r = resize, s = stretch
-		'variant'          => null, //[true, false] include variants
-		'variant_price'    => NULL, // [true, false] include variants min max prices
-		'order_by'         => NULL, // default: product_id
-		'direction'        => NULL, // ['desc', 'asc'], //'ASC', default: 'DESC'
-		'404'              => NULL, // show 404 page if no product returned, used when added to shop/category etc pages
+		'variant'          => null,
+		'variant_price'    => null,
+		'order_by'         => null,
+		'direction'        => null,
+		'404'              => null, // show 404 page if no product returned, used when added to shop/category etc pages
 	];
 
-	private $tax;
+	/**
+	 * Currency code for the current session (e.g. 'USD', 'EUR').
+	 *
+	 * @var string
+	 */
+	protected string $currentCurrency = '';
 
-	private $currency;
+	/**
+	 * Tax calculator instance.
+	 *
+	 * @var \Vvveb\System\Cart\Tax
+	 */
+	protected ?Tax $tax = null;
 
-	private $currentCurrency;
+	/**
+	 * Currency formatter instance.
+	 *
+	 * @var \Vvveb\System\Cart\Currency
+	 */
+	protected ?Currency $currency = null;
 
-	public $options = [];
+	public array $options = [];
 
-	function cacheKey() {
-		if (isset($this->options['search']) || isset($this->options['page']) || isset($this->options['product_id'])) {
-			return false;
+	/**
+	 * Disable caching for search, pagination, or specific product lookups.
+	 *
+	 * @return string|null Parent cache key or null to disable caching.
+	 */
+	public function cacheKey(): ?string {
+		//page defaults to 1 and product_id to [] so only non-default values disable caching
+		if (!empty($this->options['search']) || ($this->options['page'] ?? 1) > 1 || !empty($this->options['product_id'])) {
+			return null;
 		}
 
 		return parent::cacheKey();
 	}
 
-	function results() {
+	/**
+	 * Get products list with filtering, sorting, pagination, and 404 handling.
+	 *
+	 * @return array<string, mixed> Products data with product list, limit, start, and search.
+	 */
+	public function results(): array {
 		$products = new \Vvveb\Sql\ProductSQL();
 
-		$this->options['limit'] = (int) ($this->options['limit'] ?? 4 ?: 4);
+		$this->options['limit'] = max(1, (int)($this->options['limit'] ?? 4) ?: 4);
 
-		if (($page = $this->options['page'] ?? false) && is_numeric($page)) {
+		if (($page = $this->options['page'] ?? false) && is_numeric($page) && $page > 0) {
 			$this->options['start'] = ($page - 1) * ($this->options['limit']);
 		}
 
-		$this->options['start'] = (int) ($this->options['start'] ?? 0 ?: 0);
+		$this->options['start'] = max(0, (int)($this->options['start'] ?? 0) ?: 0);
 
 		if ($this->options['filter'] ?? false) {
 			foreach ($this->options['filter'] as $name => $values) {
@@ -102,8 +130,8 @@ class Products extends ComponentBase {
 		}
 
 		if (isset($this->options['product_id']) &&
-			(isset($this->options['related']) || isset($this->options['variant']) || ($this->options['source'] ?? '' == 'autocomplete'))) {
-			if (! is_array($this->options['product_id'])) {
+			(isset($this->options['related']) || isset($this->options['variant']) || (($this->options['source'] ?? '') === 'autocomplete'))) {
+			if (!is_array($this->options['product_id'])) {
 				$this->options['product_id'] = [$this->options['product_id'] => 1];
 			}
 			$this->options['product_id'] = array_keys($this->options['product_id']);
@@ -112,41 +140,41 @@ class Products extends ComponentBase {
 		}
 
 		if (isset($this->options['order_by']) &&
-				! in_array($this->options['order_by'], ['product_id', 'price', 'created_at', 'updated_at'])) {
+				!in_array($this->options['order_by'], ['product_id', 'price', 'created_at', 'updated_at'])) {
 			unset($this->options['order_by']);
 		}
 
 		if (isset($this->options['direction']) &&
-				! in_array($this->options['direction'], ['asc', 'desc'])) {
+				!in_array($this->options['direction'], ['asc', 'desc'])) {
 			unset($this->options['direction']);
 		}
 
 		//if only one slug is provided then add it to array
-		if (isset($this->options['slug']) && ! is_array($this->options['slug'])) {
+		if (isset($this->options['slug']) && !is_array($this->options['slug'])) {
 			$this->options['slug'] = [$this->options['slug']];
 		}
 
 		//if only one manufacturer_id is provided then add it to array
-		if (isset($this->options['manufacturer_id']) && ! is_array($this->options['manufacturer_id'])) {
+		if (isset($this->options['manufacturer_id']) && !is_array($this->options['manufacturer_id'])) {
 			$this->options['manufacturer_id'] = [$this->options['manufacturer_id']];
 		}
 
 		//if only one vendor_id is provided then add it to array
-		if (isset($this->options['vendor_id']) && ! is_array($this->options['vendor_id'])) {
+		if (isset($this->options['vendor_id']) && !is_array($this->options['vendor_id'])) {
 			$this->options['vendor_id'] = [$this->options['vendor_id']];
 		}
 
 		//if only one taxonomy_item_id is provided then add it to array
-		if (isset($this->options['taxonomy_item_id']) && ! is_array($this->options['taxonomy_item_id'])) {
+		if (isset($this->options['taxonomy_item_id']) && !is_array($this->options['taxonomy_item_id'])) {
 			$this->options['taxonomy_item_id'] = [$this->options['taxonomy_item_id']];
 		}
 
 		//wildcard search for one word search
-		if (isset($this->options['search']) && strpos($this->options['search'], ' ') == false) {
+		if (isset($this->options['search']) && !str_contains($this->options['search'], ' ')) {
 			$this->options['search_boolean'] = true;
 		}
 
-		if (isset($this->options['search']) && isset($this->options['search_boolean'])) {
+		if (isset($this->options['search'], $this->options['search_boolean'])) {
 			$this->options['search'] .= '*';
 		}
 
@@ -162,15 +190,15 @@ class Products extends ComponentBase {
 		$results['start']  = $this->options['start'];
 		$results['search'] = $this->options['search'] ?? '';
 
-		if (! $results['product'] &&
+		if (!$results['product'] &&
 			isset($this->options['page']) &&
 			($this->options['page'] > 1) &&
-			(isset($this->options['404']) && $this->options['404']) &&
-			! $_SERVER['QUERY_STRING']) {
+			!empty($this->options['404']) &&
+			!($_SERVER['QUERY_STRING'] ?? '')) {
 			$results['404'] = true;
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

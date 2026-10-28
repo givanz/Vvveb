@@ -25,6 +25,10 @@ namespace Vvveb\Controller\Mail;
 use Vvveb\Controller\Base;
 
 class User extends Base {
-	function index() {
-	}
+	/**
+	 * Render the user mail template.
+	 *
+	 * @return void
+	 */
+	public function index(): void {}
 }

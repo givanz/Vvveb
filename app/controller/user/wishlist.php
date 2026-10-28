@@ -22,39 +22,68 @@
 
 namespace Vvveb\Controller\User;
 
+use function Vvveb\__;
 use Vvveb\Sql\User_wishlistSQL;
 
 class Wishlist extends Base {
-	function index() {
-	}
+	/**
+	 * Display the wishlist page.
+	 *
+	 * @return void
+	 */
+	public function index(): void {}
 
-	private function action($action) {
-		$productId = (int) ($this->request->request['product_id'] ?? false);
+	/**
+	 * Perform a wishlist action: add or remove a product.
+	 *
+	 * @param string $action
+	 *
+	 * @return void
+	 */
+	private function action(string $action): void {
+		$productId = (int)($this->request->post['product_id'] ?? false);
+		$userId    = (int)($this->global['user_id'] ?? 0);
+
+		if (!$userId) {
+			$this->view->errors[] = __('You need to be logged in to use the wishlist!');
+
+			return;
+		}
 
 		if ($productId) {
 			$wishlist = new User_wishlistSQL();
 
 			switch ($action) {
 				case 'add':
-				$result   = $wishlist->add(['user_id' => $this->global['user_id'], 'product_id' => $productId]);
+					$result   = $wishlist->add(['user_id' => $userId, 'product_id' => $productId]);
 
-				break;
+					break;
 
 				case 'remove':
-				$result   = $wishlist->delete(['user_id' => $this->global['user_id'], 'product_id' => [$productId]]);
+					$result   = $wishlist->delete(['user_id' => $userId, 'product_id' => [$productId]]);
 
-				break;
+					break;
 			}
 
-			return $this->index();
+			$this->index();
 		}
 	}
 
-	function add() {
-		return $this->action('add');
+	/**
+	 * Add a product to the wishlist.
+	 *
+	 * @return void
+	 */
+	public function add(): void {
+		$this->action('add');
 	}
 
-	function remove() {
-		return $this->action('remove');
+	/**
+	 * Remove a product from the wishlist.
+	 *
+	 * @return void
+	 */
+	public function remove(): void {
+		$this->action('remove');
 	}
 }

@@ -22,19 +22,19 @@
 
 return [
 	'first_name' => [
-		'notEmpty'   => '',
-		'maxLength'  => 100,
+		'notEmpty'  => '',
+		'maxLength' => 100,
 	],
 	'last_name' => [
-		'notEmpty'   => '',
-		'maxLength'  => 100,
+		'notEmpty'  => '',
+		'maxLength' => 100,
 	],
 	'email' => [
-		'notEmpty'   => '',
-		'maxLength'  => 100,
+		'notEmpty'  => '',
+		'maxLength' => 100,
 	],
 	'phone_number' => [
-		'notEmpty'   => '',
-		'maxLength'  => 100,
+		'notEmpty'  => '',
+		'maxLength' => 100,
 	],
 ];

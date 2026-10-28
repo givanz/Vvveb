@@ -13,8 +13,8 @@ $currencies = $current_component['currency'] ?? [];
 $active     = $current_component['active'] ?? [];
 $current    = $current_component['current'] ?? [];
 
-$_pagination_count = $currencies['count'] ?? 0;
-$_pagination_limit = isset($currencies['limit']) ? $currencies['limit'] : 5;
+$_pagination_count = $current_component['count'] ?? 0;
+$_pagination_limit = $current_component['limit'] ?? 5;
 ?>
 
 [data-v-component-currency] [data-v-currency-info-*] = $current_component['active']['@@__data-v-currency-info-(*)__@@']

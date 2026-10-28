@@ -22,55 +22,100 @@
 
 namespace Vvveb\Controller;
 
-use \Vvveb\System\Core\FrontController;
-use \Vvveb\System\Functions\Str;
 use function Vvveb\filter;
 use function Vvveb\siteSettings;
+use Vvveb\System\Core\FrontController;
+use Vvveb\System\Core\Request;
+use Vvveb\System\Core\Response;
 use Vvveb\System\Core\View;
 use Vvveb\System\Event;
+use Vvveb\System\Functions\Str;
 use Vvveb\System\Images;
 use Vvveb\System\Locale;
 use Vvveb\System\PageCache;
+use Vvveb\System\Session;
 use Vvveb\System\Sites;
 use Vvveb\System\User\Admin;
 use Vvveb\System\User\User;
 
 #[\AllowDynamicProperties]
 class Base {
-	protected $global;
+	/** @var array<string, mixed> */
+	protected array $global = [];
 
-	protected function language($default_language = false, $default_language_id = false, $default_locale = false,  $default_code = false, $languages = null) {
-		$languages = $languages ?? Locale::availableLanguages();
+	/** @var Request Request instance injected by FrontController DI. */
+	public Request $request;
+
+	/** @var Response Response instance injected by FrontController DI. */
+	public Response $response;
+
+	/** @var View View instance injected by FrontController DI. */
+	public View $view;
+
+	/** @var Session Session instance injected by FrontController DI. */
+	public Session $session;
+
+	/**
+	 * Set the current language based on request/session/default values.
+	 *
+	 * @param string|false                             $default_language
+	 * @param int|false                                $default_language_id
+	 * @param string|false                             $default_locale
+	 * @param string|false                             $default_code
+	 * @param array<string, array<string, mixed>>|null $languages
+	 *
+	 * @return void
+	 */
+	protected function language(string|false $default_language = false, int|false $default_language_id = false, string|false $default_locale = false, string|false $default_code = false, ?array $languages = null): void {
+		$languages ??= Locale::availableLanguages();
 
 		$default_rtl   = false;
-		$site_language = false;
 		$language      = false;
+		$language_id   = $default_language_id;
+		$locale        = $default_locale;
+		$code          = $default_code;
+		$rtl           = $default_rtl;
 
-		if (($lang = ($this->request->post['language'] ?? false)) && ! is_array($lang)) {
-			$language  = filter('/[A-Za-z_-]+/', $lang, 10);
+		//language can be set with a post or get request, post also persists it in the session
+		//a get request takes precedence over post for the current page
+		$postLanguage = null;
+		$getLanguage  = null;
 
-			if (isset($languages[$language])) {
-				$this->session->set('language', $language);
-				$this->session->set('language_id', $language_id = $languages[$language]['language_id']);
-				$this->session->set('locale', $locale = $languages[$language]['locale']);
-				$this->session->set('code', $code = $languages[$language]['code']);
-				$this->session->set('rtl', $rtl = ($languages[$language]['rtl'] ?? false));
+		if (($lang = ($this->request->post['language'] ?? false)) && !is_array($lang)) {
+			$lang = filter('/[A-Za-z_-]+/', $lang, 10);
+
+			if (isset($languages[$lang])) {
+				$postLanguage = $lang;
 			}
 		}
 
-		if (($lang = ($this->request->get['language'] ?? false)) && ! is_array($lang)) {
-			$language  = filter('/[A-Za-z_-]+/', $lang, 10);
+		if (($lang = ($this->request->get['language'] ?? false)) && !is_array($lang)) {
+			$lang = filter('/[A-Za-z_-]+/', $lang, 10);
 
-			if (isset($languages[$language])) {
-				$lg        = $languages[$language];
-				$language_id = $lg['language_id'];
-				$locale = $lg['locale'];
-				$code = $lg['code'];
-				$rtl = $lg['rtl'] ?? false;
+			if (isset($languages[$lang])) {
+				$getLanguage = $lang;
 			}
+		}
+
+		if ($postLanguage) {
+			$lg = $languages[$postLanguage];
+			$this->session->set('language', $postLanguage);
+			$this->session->set('language_id', $lg['language_id']);
+			$this->session->set('locale', $lg['locale']);
+			$this->session->set('code', $lg['code']);
+			$this->session->set('rtl', $lg['rtl'] ?? false);
+		}
+
+		if ($requestLanguage = ($getLanguage ?? $postLanguage)) {
+			$lg          = $languages[$requestLanguage];
+			$language    = $requestLanguage;
+			$language_id = $lg['language_id'];
+			$locale      = $lg['locale'];
+			$code        = $lg['code'];
+			$rtl         = $lg['rtl'] ?? false;
 		} else {
 			//don't set user session language for default language homepage
-			if (! isset($this->request->get['module']) || $this->request->get['module'] != 'index/index') {
+			if (!isset($this->request->get['module']) || $this->request->get['module'] !== 'index/index') {
 				$language    = $this->session->get('language') ?? $default_language;
 				$language_id = $this->session->get('language_id') ?? $default_language_id;
 				$locale      = $this->session->get('locale') ?? $default_locale;
@@ -80,7 +125,7 @@ class Base {
 		}
 
 		//if no language configured then set default language as current language
-		if (! $language) {
+		if (!$language) {
 			$language    = $default_language;
 			$language_id = $default_language_id;
 			$locale      = $default_locale;
@@ -89,8 +134,8 @@ class Base {
 		}
 
 		//if no default language configured then set first language as current language
-		if (! isset($languages[$language])) {
-			$language = null;
+		if (!isset($languages[$language])) {
+			$language            = null;
 			$default_language    = key($languages);
 			$lang                = $languages[$default_language] ?? [];
 
@@ -111,11 +156,19 @@ class Base {
 		$this->global['default_locale']      = $default_locale;
 		$this->global['default_language_id'] = $default_language_id;
 
-		Locale :: setLanguage($code);
+		Locale::setLanguage($code);
 	}
 
-	protected function currency($defaultCurrency = false, $defaultCurrencyId = false) {
-		if (($currency = ($this->request->post['currency'] ?? false)) && ! is_array($currency)) {
+	/**
+	 * Set the current currency based on request/session/default values.
+	 *
+	 * @param string|false $defaultCurrency
+	 * @param int|false    $defaultCurrencyId
+	 *
+	 * @return void
+	 */
+	protected function currency(string|false $defaultCurrency = false, int|false $defaultCurrencyId = false): void {
+		if (($currency = ($this->request->post['currency'] ?? false)) && !is_array($currency)) {
 			$currency   = filter('/[A-Za-z_-]+/', $currency, 50);
 			$currencies = Locale::availableCurrencies();
 
@@ -130,13 +183,13 @@ class Base {
 		$currency    = $this->session->get('currency');
 		$currency_id = $this->session->get('currency_id');
 
-		if (! $currency || ! $currency_id) {
+		if (!$currency || !$currency_id) {
 			$currencies = Locale::availableCurrencies();
 
 			if ($currencies) {
 				foreach ($currencies as $code => $c) {
-					if ($defaultCurrency && ($defaultCurrency == $c['code']) ||
-					   ($defaultCurrencyId && ($defaultCurrencyId == $c['currency_id']))) {
+					if (($defaultCurrency && $defaultCurrency === $c['code']) ||
+					   ($defaultCurrencyId && $defaultCurrencyId == $c['currency_id'])) {
 						$currency    = $c['code'];
 						$currency_id = $c['currency_id'];
 
@@ -145,7 +198,7 @@ class Base {
 				}
 
 				//if no site currency configured set first available currency
-				if (! $currency) {
+				if (!$currency) {
 					$c           = reset($currencies);
 					$currency    = $c['code'];
 					$currency_id = $c['currency_id'];
@@ -160,17 +213,35 @@ class Base {
 		$this->global['currency_id']         = $currency_id;
 	}
 
-	protected function initEcommerce($countryId, $regionId) {
+	/**
+	 * Initialize ecommerce tax settings for the given region.
+	 *
+	 * @param int $countryId
+	 * @param int $regionId
+	 *
+	 * @return void
+	 */
+	protected function initEcommerce(int $countryId, int $regionId): void {
 		$tax = \Vvveb\System\Cart\Tax::getInstance();
-		$tax->setRegionRules($countryId, $regionId, 'store');
+		$tax->setRegionRules($countryId, $regionId, 'store', $this->global['user_group_id'] ?? null);
 	}
 
-	function getGlobal() {
+	/**
+	 * Get the global template variables.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function getGlobal(): array {
 		return $this->global;
 	}
 
-	function init() {
-		if (! $this->session->get('csrf')) {
+	/**
+	 * Initialize the controller: sets up session, user data, site settings, language, and currency.
+	 *
+	 * @return string|null
+	 */
+	public function init(): ?string {
+		if (!$this->session->get('csrf')) {
 			$this->session->set('csrf', Str::random());
 		}
 
@@ -186,21 +257,23 @@ class Base {
 			}
 		}
 
-		$siteData = Sites :: getSiteData(SITE_ID);
+		$siteData = Sites::getSiteData(SITE_ID);
 
-		if (isset($siteData['state']) && $siteData['state'] != 'live') {
-			if (! $admin) {
+		if (isset($siteData['state']) && $siteData['state'] !== 'live') {
+			if (!$admin) {
 				$template = Sites::getStates()[$siteData['state']]['template'];
 				$this->view->template($template);
-
-				//die($this->view->render());
 				$this->response->output();
+
+				return '';
 			}
 		}
 
 		$site = siteSettings();
 
-		list($site) = Event::trigger(__CLASS__, __FUNCTION__, $site);
+		\Vvveb\System\Cart\Tax::getInstance()->pricesIncludeTax = !empty($site['prices_include_tax']);
+
+		[$site] = Event::trigger(__CLASS__, __FUNCTION__, $site);
 
 		$user = User::current();
 
@@ -208,29 +281,23 @@ class Base {
 			$user['avatar_url'] = Images::image($user['avatar'], 'user');
 		}
 
-
 		if ($admin && isset($admin['avatar'])) {
 			$admin['avatar_url'] = Images::image($admin['avatar'], 'admin');
 		}
-		/*
-				$site['url'] = \Vvveb\url('index/index',[
-						'host'   => $_SERVER['HTTP_HOST'] ?? false,
-						'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http',
-				]);
-		*/
+
 		$site['url'] = $siteData['host'] ?? ('//' . ($_SERVER['HTTP_HOST'] ?? ''));
 
-		$this->global['site_id']       = SITE_ID ?? 1;
+		$this->global['site_id']       = SITE_ID;
 		$this->global['user_id']       = $user['user_id'] ?? false;
 		$this->global['user_group_id'] = $user['user_group_id'] ?? 1;
 		$this->global['site']          = &$site;
-		$this->global['path']          = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . (V_SUBDIR_INSTALL && SITE_PATH ? '/' : '' ) . SITE_PATH;
-		$this->global['user']          = $user ?? [];
-		$this->global['admin']         = $admin ?? [];
+		$this->global['path']          = V_SUBDIR_INSTALL . (V_SUBDIR_INSTALL && SITE_PATH ? '/' : '') . SITE_PATH;
+		$this->global['user']          = $user;
+		$this->global['admin']         = $admin;
 		$this->global['current_year']  = date('Y');
 
 		$languages = Locale::availableLanguages();
-		$language  = $languages[$site['language'] ?? 'en'] ?? ['slug' => 'en', 'language_id' => 1, 'locale' => 'en', 'code' => 'en_US', $languages];
+		$language  = $languages[$site['language'] ?? 'en'] ?? ['slug' => 'en', 'language_id' => 1, 'locale' => 'en', 'code' => 'en_US'];
 
 		$this->language($language['slug'], $language['language_id'], $language['locale'], $language['code']);
 		$this->currency($site['currency'] ?? false, $site['currency_id'] ?? false);
@@ -270,15 +337,25 @@ class Base {
 			$this->view->errors[]  = 'This is a dummy error message!';
 			$this->view->success[] = 'This is a dummy success message!';
 			$this->view->info[]    = 'This is a dummy info message!';
-			if (! isset($this->view->message)) {
+			if (!isset($this->view->message)) {
 				$this->view->message[] = 'This is a dummy message!';
 			}
 		}
 
-		list($this->global) = Event::trigger(__CLASS__, __FUNCTION__ . ':after', $this->global);
+		[$this->global] = Event::trigger(__CLASS__, __FUNCTION__ . ':after', $this->global);
+
+		return null;
 	}
 
-	protected function redirect($url = '/', $parameters = []) {
+	/**
+	 * Redirect to the given URL with optional query parameters.
+	 *
+	 * @param string|array<string, mixed> $url
+	 * @param array<string, mixed>        $parameters
+	 *
+	 * @return never
+	 */
+	protected function redirect(string|array $url = '/', array $parameters = []): never {
 		$redirect = \Vvveb\url($url, $parameters);
 
 		if ($redirect) {
@@ -294,31 +371,30 @@ class Base {
 
 		header("Location: $url");
 
-		die();
+		exit();
 	}
 
 	/**
-	 * Call this method if the action requires login, if the user is not logged in, a login form will be shown.
+	 * Call this method if the action requires login; shows a login form if the user is not logged in.
 	 *
+	 * @return never
 	 */
-	protected function requireLogin() {
-		$view = view :: getInstance();
-		$view :: template(DS . 'login.html');
-
-		view :: getInstance()->render();
-		die();
+	protected function requireLogin(): never {
+		$this->view->template(DS . 'login.html');
+		$this->view->render();
+		exit();
 	}
 
 	/**
-	 * Call this function if the requeste information was not found, for example if the specifed news, image, profile etc is not found then call this function.
-	 * It shows a "Not found" page and it also send 404 http status code, this is usefull for search engines etc.
+	 * Show a "Not found" page and send a 404 (or other) HTTP status code.
 	 *
-	 * @param unknown_type $code
-	 * @param mixed $service
-	 * @param mixed $statusCode
-	 * @param null|mixed $message
+	 * @param array<string, mixed>|string|false $message
+	 * @param int                               $statusCode
+	 * @param mixed                             $service
+	 *
+	 * @return never
 	 */
-	protected function notFound($service = false, $message = null, $statusCode = 404) {
-		return FrontController::notFound($service, $message, $statusCode);
+	protected function notFound(string|array|false $message = false, int $statusCode = 404, mixed $service = false): never {
+		FrontController::notFound($service, $message, $statusCode);
 	}
 }

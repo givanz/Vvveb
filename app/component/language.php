@@ -23,7 +23,6 @@
 namespace Vvveb\Component;
 
 use function Vvveb\isSecure;
-use Vvveb\System\Cache;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Core\Request;
 use Vvveb\System\Core\View;
@@ -32,24 +31,32 @@ use Vvveb\System\Locale;
 use function Vvveb\url;
 
 class Language extends ComponentBase {
-	public static $defaultOptions = [
-		'start'   => 1,
-		'limit'   => 1000,
-		'status'  => 1,
-		'site_only' => true, //show only site available languages otherwise show all active
-		'default' => null, //'en',
+	public static array $defaultOptions = [
+		'start'     => 1,
+		'limit'     => 1000,
+		'status'    => 1,
+		'site_only' => true,
+		'default'   => null,
 	];
 
-	function cacheKey() {
-		//disable caching
-		return false;
+	/**
+	 * Disable caching for language component.
+	 *
+	 * @return null Always returns null to disable caching.
+	 */
+	public function cacheKey(): ?string {
+		return null;
 	}
 
-	//called when fetching data, when cache expires
-	function results() {
+	/**
+	 * Get available languages with URLs, hreflang tags, and active language info.
+	 *
+	 * @return array<string, mixed> Language data with language list, active language, and hreflang.
+	 */
+	public function results(): array {
 		$results = [];
 
-		$options = $this->options;
+		$options             = $this->options;
 		$results['language'] = Locale::availableLanguages();
 
 		$publicPath = \Vvveb\publicUrlPath();
@@ -64,13 +71,13 @@ class Language extends ComponentBase {
 			$results['current']    = $code = self :: $global['language'];
 			$language              = $results['language'][$code] ?? [];
 
-			if (! $language && isset($options['default'])) {
+			if (!$language && isset($options['default'])) {
 				$language = $results['language'][$options['default']] ?? [];
 			}
 
 			$code                  = $language['code'] ?? '';
 			$slug                  = $language['slug'] ?? '';
-			$shortcode             = \Vvveb\filter('/[a-z]+/',$code);
+			$shortcode             = \Vvveb\filter('/[a-z]+/', $code);
 			$img                   = "{$publicPath}img/flags/$shortcode.png";
 			$results['active'] 	   = [];
 
@@ -83,7 +90,7 @@ class Language extends ComponentBase {
 			$scheme = isSecure() ? 'https' : 'http';
 
 			foreach ($results['language'] as $code => &$language) {
-				$shortcode       = \Vvveb\filter('/[a-z]+/',$code);
+				$shortcode       = \Vvveb\filter('/[a-z]+/', $code);
 				$content         = [];
 				$lang            = [];
 				$language['img'] = "{$publicPath}img/flags/$shortcode.png";
@@ -92,13 +99,12 @@ class Language extends ComponentBase {
 				if (isset($view->content)) {
 					$content = $view->content[$language['slug']] ?? [];
 					//if translation is missing there is no slug
-					if (! isset($content['slug']) || ! $content['slug']) {
+					if (!isset($content['slug']) || !$content['slug']) {
 						unset($content['slug']);
 					}
 				}
 
-				$params               = ['language' => $language['slug'], 'host' => $_SERVER['HTTP_HOST'] ?? '', 'scheme' => $scheme] + $content + $request->get;
-
+				$params = ['language' => $language['slug'], 'host' => $_SERVER['HTTP_HOST'] ?? '', 'scheme' => $scheme] + $content + $request->get;
 
 				if (($language['language_id'] == $options['default_language_id']) && !self :: $global['default_lang_slug']) {
 					unset($params['language']);
@@ -113,7 +119,7 @@ class Language extends ComponentBase {
 			$view->hreflang = $hreflang;
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

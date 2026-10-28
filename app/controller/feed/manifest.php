@@ -22,14 +22,19 @@
 
 namespace Vvveb\Controller\Feed;
 
-use \Vvveb\Controller\Base;
-use \Vvveb\System\Images;
+use Vvveb\Controller\Base;
 use function Vvveb\siteSettings;
+use Vvveb\System\Images;
 use function Vvveb\url;
 
 #[\AllowDynamicProperties]
 class Manifest extends Base {
-	function index() {
+	/**
+	 * Output the PWA manifest as JSON.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$site        = siteSettings();
 		$description = $site['description'][$this->global['language_id']] ?? [];
 
@@ -37,7 +42,6 @@ class Manifest extends Base {
 			$logo    = Images::image($site['logo-src'], 'logo', [144, 144]);
 			$logo192 = Images::image($site['logo-src'], 'logo', [192, 192]);
 			$logo512 = Images::image($site['logo-src'], 'logo', [512, 512]);
-			$logo192 = Images::image($site['logo-src'], 'logo', [144, 144]);
 
 			$webbanner     = Images::image($site['webbanner-src'], 'webbanner', [540, 720]);
 			$webbanner1280 = Images::image($site['webbanner-src'], 'webbanner', [1280, 920]);
@@ -58,12 +62,12 @@ class Manifest extends Base {
 						'sizes' => '144x144',
 					],
 					1 => [
-						'src'   => $logo512,
+						'src'   => $logo192,
 						'type'  => 'image/png',
 						'sizes' => '192x192',
 					],
 					2 => [
-						'src'   => $logo192,
+						'src'   => $logo512,
 						'type'  => 'image/png',
 						'sizes' => '512x512',
 					],
@@ -73,9 +77,9 @@ class Manifest extends Base {
 				'background_color' => '#3367D6',
 				'display'          => 'standalone',
 				//'orientation'      => 'landscape',
-				'scope'            => '/',
-				'theme_color'      => '#3367D6',
-				'shortcuts'        => [
+				'scope'       => '/',
+				'theme_color' => '#3367D6',
+				'shortcuts'   => [
 					0 => [
 						'name'        => $description['description'] ?? '',
 						'short_name'  => $description['title'] ?? '',

@@ -22,8 +22,29 @@
 
 namespace Vvveb\Controller;
 
+/**
+ * 404 error page controller.
+ *
+ * Does not extend Base — instantiated standalone by FrontController::notFound().
+ */
 #[\AllowDynamicProperties]
-class Error404 extends Base {
-	function index() {
+class Error404 {// extends Base
+	/** @var array<string, mixed> */
+	public array $global = [];
+
+	/**
+	 * Get the global template variables (unused — kept for interface compatibility).
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function getGlobal(): array {
+		return $this->global;
 	}
+
+	/**
+	 * Render the 404 error page.
+	 *
+	 * @return void
+	 */
+	public function index(): void {}
 }

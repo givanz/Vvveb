@@ -32,19 +32,19 @@ return [
 	],
 */
 	'username' => [
-		'notEmpty'   => '',
-		'maxLength'  => 100,
+		'notEmpty'  => '',
+		'maxLength' => 100,
 	],
 	'email' => [
-		'notEmpty'   => '',
-		'maxLength'  => 100,
+		'notEmpty'  => '',
+		'maxLength' => 100,
 	],
 	'password' => [
 		//'passwordComplexity' => 'low',
-		'minLength'          => 6,
-		'maxLength'          => 32,
+		'minLength' => 6,
+		'maxLength' => 32,
 	],
 	'confirm_password' => [
-		'match'          => 'password',
+		'match' => 'password',
 	],
 ];

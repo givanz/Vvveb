@@ -27,13 +27,12 @@ use Vvveb\System\Event;
 use function Vvveb\url;
 
 class Vendors extends ComponentBase {
-	public static $defaultOptions = [
-		'start' => 0,
-		//'language_id' => 1,
+	public static array $defaultOptions = [
+		'start'                    => 0,
 		'count'                    => ['url', 4],
-		'vendor_id'                => NULL,
+		'vendor_id'                => null,
 		'order'                    => ['url', 'price asc'],
-		'category_id'              => NULL,
+		'category_id'              => null,
 		'limit'                    => 7,
 		'page'                     => 1,
 		'type'                     => 'tags',
@@ -43,7 +42,12 @@ class Vendors extends ComponentBase {
 		'filter'                   => false,
 	];
 
-	function results() {
+	/**
+	 * Get vendors list with active filter state and URLs.
+	 *
+	 * @return array<string, mixed> Vendors data with vendor list and active flags.
+	 */
+	public function results(): array {
 		$category = new \Vvveb\Sql\VendorSQL();
 		$results  = $category->getAll($this->options);
 
@@ -53,14 +57,14 @@ class Vendors extends ComponentBase {
 			$filter = $this->options['filter']['vendor_id'] ?? [];
 		}
 
-		foreach ($results['vendor']  as &$vendor) {
+		foreach ($results['vendor'] as &$vendor) {
 			if ($filter) {
 				$vendor['active'] = in_array($vendor['vendor_id'], $filter);
 			}
 			$vendor['url'] = url('product/vendor/index', $vendor);
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

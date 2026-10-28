@@ -26,24 +26,32 @@ use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Images;
 use Vvveb\System\User\User as UserClass;
-use function Vvveb\url;
 
 class User extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'user_id'  => null,
 		'username' => null,
 	];
 
-	protected $options = [];
+	protected array $options = [];
 
-	public $cacheExpire = 0; //seconds
+	public int $cacheExpire = 0;
 
-	function cacheKey() {
-		//disable caching
-		return false;
+	/**
+	 * Disable caching for user component.
+	 *
+	 * @return null Always returns null to disable caching.
+	 */
+	public function cacheKey(): ?string {
+		return null;
 	}
 
-	function results() {
+	/**
+	 * Get user profile data with avatar/cover images.
+	 *
+	 * @return array<string, mixed> User data with image URLs and profile info.
+	 */
+	public function results(): array {
 		if (isset($this->options['user_id']) || isset($this->options['username'])) {
 			$users = new \Vvveb\Sql\UserSQL();
 
@@ -57,20 +65,18 @@ class User extends ComponentBase {
 
 			foreach (['avatar', 'cover'] as $image) {
 				if (isset($results[$image])) {
-					$results[$image . '_url']= Images::image($results[$image], 'user');
+					$results[$image . '_url'] = Images::image($results[$image], 'user');
 				}
 			}
-
-			//$results['url'] = url('content/user/index', ['username' => $results['username']]);
 		} else {
 			$results = [];
 		}
 
-		if (! $results) {
+		if (!$results) {
 			$results = [];
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

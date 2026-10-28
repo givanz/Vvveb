@@ -27,7 +27,12 @@ use Vvveb\Controller\Base;
 use Vvveb\System\User\Admin;
 
 class User extends Base {
-	function index() {
+	/**
+	 * Display the author profile for the given admin_id or username.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$admin_id    = $this->request->get['admin_id'] ?? '';
 		$username    = $this->request->get['username'] ?? '';
 
@@ -40,7 +45,7 @@ class User extends Base {
 			} else {
 				$error = sprintf(__('%s not found!'), ucfirst(__('user')));
 
-				return $this->notFound(true, ['message' => $error, 'title' => $error]);
+				$this->notFound(['message' => $error, 'title' => $error]);
 			}
 		}
 	}

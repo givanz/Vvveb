@@ -25,11 +25,25 @@ namespace Vvveb\Controller\Checkout;
 use Vvveb\Controller\Base;
 
 class Confirm extends Base {
-	function index() {
+	/**
+	 * Display the order confirmation page after checkout.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$order                = $this->session->get('order');
 		$this->view->order    = $order;
 
-		if (! $order) {
+		if (!$order) {
+			$this->notFound();
+		}
+	}
+
+	public function failed(): void {
+		$order                = $this->session->get('order');
+		$this->view->order    = $order;
+
+		if (!$order) {
 			$this->notFound();
 		}
 	}

@@ -24,18 +24,18 @@ use function Vvveb\__;
 
 return [
 	'shipping_address.first_name' => [
-		['notEmpty'  => '',
-			'message'   => '%s must not be empty', ],
+		['notEmpty' => '',
+			'message'  => '%s must not be empty', ],
 
-		['maxLength'  => 100,
-			'message'    => __('%s must not be greater than 100'), ],
+		['maxLength' => 100,
+			'message'   => __('%s must not be greater than 100'), ],
 	],
 	'shipping_address.last_name' => [
-		['notEmpty'  => '',
-			'message'   => '%s must not be empty', ],
+		['notEmpty' => '',
+			'message'  => '%s must not be empty', ],
 
-		['maxLength'  => 100,
-			'message'    => __('%s must not be greater than 100'), ],
+		['maxLength' => 100,
+			'message'   => __('%s must not be greater than 100'), ],
 	], /*
 	'shipping_address.company' => [
 		['notEmpty'  => '',
@@ -45,39 +45,39 @@ return [
 			'message'    => __('%s must not be greater than 100'), ],
 	],*/
 	'shipping_address.address_1' => [
-		['notEmpty'  => '',
-			'message'   => '%s must not be empty', ],
+		['notEmpty' => '',
+			'message'  => '%s must not be empty', ],
 
-		['maxLength'  => 100,
-			'message'    => __('%s must not be greater than 100'), ],
+		['maxLength' => 100,
+			'message'   => __('%s must not be greater than 100'), ],
 	],
 	'shipping_address.address_2' => [
-		['notEmpty'  => '',
-			'message'   => '%s must not be empty', ],
+		['notEmpty' => '',
+			'message'  => '%s must not be empty', ],
 
-		['maxLength'  => 100,
-			'message'    => __('%s must not be greater than 100'), ],
+		['maxLength' => 100,
+			'message'   => __('%s must not be greater than 100'), ],
 	],
 	'shipping_address.city' => [
-		['notEmpty'  => '',
-			'message'   => '%s must not be empty', ],
+		['notEmpty' => '',
+			'message'  => '%s must not be empty', ],
 
-		['maxLength'  => 100,
-			'message'    => __('%s must not be greater than 100'), ],
+		['maxLength' => 100,
+			'message'   => __('%s must not be greater than 100'), ],
 	],
 	'shipping_address.post_code' => [
-		['notEmpty'  => '',
-			'message'   => '%s must not be empty', ],
+		['notEmpty' => '',
+			'message'  => '%s must not be empty', ],
 
-		['maxLength'  => 100,
-			'message'    => __('%s must not be greater than 100'), ],
+		['maxLength' => 100,
+			'message'   => __('%s must not be greater than 100'), ],
 	],
 	'shipping_address.country_id' => [
-		['notEmpty'  => '',
-			'message'   => '%s must not be empty', ],
+		['notEmpty' => '',
+			'message'  => '%s must not be empty', ],
 	],
 	'shipping_address.region_id' => [
-		['notEmpty'  => '',
-			'message'   => '%s must not be empty', ],
+		['notEmpty' => '',
+			'message'  => '%s must not be empty', ],
 	],
 ];

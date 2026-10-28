@@ -18,8 +18,6 @@ $products = $cart['products'] ?? [];
 //[data-v-component-cart] [data-v-cart-total] = $cart['total']
 [data-v-component-cart] [data-v-cart-total_formatted] = $cart['total_formatted']
 
-
-
 @cart-product|before = <?php
 $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['product_id' => 1, 'image' => '#']] : false;
 $products = empty($products) ? $_default : $products;
@@ -32,10 +30,15 @@ if($products) {
 	//@cart-product [data-v-product-content] = $product['content']
 
 	//catch all data attributes
-	@cart-product [data-v-cart-product-*]|innerText  = $product['@@__data-v-cart-product-(*)__@@']
+	@cart-product [data-v-cart-product-*]:not(a):not(button)|innerText = $product['@@__data-v-cart-product-(*)__@@']
+	@cart-product a[data-v-cart-product-*]:empty|innerText             = $product['@@__data-v-cart-product-(*)__@@']
+	@cart-product button[data-v-cart-product-*]:empty|innerText        = $product['@@__data-v-cart-product-(*)__@@']
+	
 	@cart-product a[data-v-cart-product-*]|href      = $product['@@__data-v-cart-product-(*)__@@']
+	@product a[data-v-product-*]|href = $prod['@@__data-v-product-(*)__@@']	
+	
 	@cart-product img[data-v-cart-product-*]|src     = $product['@@__data-v-cart-product-(*)__@@']
-	@cart-product input[data-v-cart-product-*]|value = $product['@@__data-v-cart-product-(*)__@@']	@cart-product|data-product_id = $product['product_id']
+	@cart-product input[data-v-cart-product-*]|value = $product['@@__data-v-cart-product-(*)__@@']	
 
 	@cart-product|data-product_id = $product['product_id']		
 	@cart-product|data-key = $key	
@@ -106,4 +109,5 @@ if(is_array($coupons)) foreach ($coupons as $index => $coupon) {
 
 @coupon|after = <?php }?>
 
-[data-v-component-cart] [data-v-cart-*]|innerText = $cart['@@__data-v-cart-(*)__@@']
+[data-v-component-cart] [data-v-cart-*]:not(a):not(button):not(input)|innerText = $cart['@@__data-v-cart-(*)__@@']
+

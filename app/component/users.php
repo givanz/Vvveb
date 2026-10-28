@@ -28,17 +28,22 @@ use Vvveb\System\Images;
 use function Vvveb\url;
 
 class Users extends ComponentBase {
-	public static $defaultOptions = [
-		'start'  => 0,
-		'limit'  => ['url', 4], //default get from url, if missing it will use a default of 4
-		'status' => 1, //1 enabled, 0 disabled
-		'search' => 1, //search in username and first and last names
-		'user_id' => 1, //array list of user_id's to filter
+	public static array $defaultOptions = [
+		'start'   => 0,
+		'limit'   => ['url', 4],
+		'status'  => 1,
+		'search'  => 1,
+		'user_id' => 1,
 	];
 
-	public $options = [];
+	public array $options = [];
 
-	function results() {
+	/**
+	 * Get users list with avatar images and profile URLs.
+	 *
+	 * @return array<string, mixed> Users data with user list and image URLs.
+	 */
+	public function results(): array {
 		$users = new \Vvveb\Sql\UserSQL();
 
 		$results = $users->getAll($this->options);
@@ -53,7 +58,7 @@ class Users extends ComponentBase {
 			}
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

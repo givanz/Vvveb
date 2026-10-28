@@ -24,49 +24,51 @@ namespace Vvveb\Component;
 
 use function Vvveb\model;
 use function Vvveb\session as sess;
-use Vvveb\Sql\CommentSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Images;
 use function Vvveb\url;
 
 class Comments extends ComponentBase {
-	protected $type = 'comment';
+	protected string $type = 'comment';
 
-	protected $route = 'content/post/index';
+	protected string $route = 'content/post/index';
 
-	protected $modelName = 'comment';
+	protected string $modelName = 'comment';
 
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'post_id'     => 'url',
 		'user_id'     => null,
 		'slug'        => 'url',
-		'post_title'  => NULL, //include post title (for recent comments etc)
+		'post_title'  => null, //include post title (for recent comments etc)
 		'status'      => 1, //approved comments
-		'language_id' => NULL,
+		'language_id' => null,
 		'start'       => 0,
 		'limit'       => 10,
-		'order'       => 'asc', //desc
+		'order'       => 'asc',
 	];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	//called when fetching data, when cache expires
-	function results() {
-		$this->modelInstance         = model($this->modelName); //new CommentSQL();
+	/**
+	 * Get comments sorted by parent hierarchy with avatars, URLs, and levels.
+	 *
+	 * @return array<string, mixed> Comments data with sorted comments, levels, and URLs.
+	 */
+	public function results(): array {
+		$this->modelInstance         = model($this->modelName);
 		$results                     = $this->modelInstance->getAll($this->options);
-		$results[$this->type]        = $results[$this->type] ?? [];
+		$results[$this->type] ??= [];
 
 		$order = $this->options['order'];
 
 		if ($results && isset($results[$this->type])) {
 			//sort comments by parent id and add child comments below parent
-			//usort($results[$this->type], function ($a, $b) use ($order) {
-			uasort($results[$this->type], function ($a, $b) use ($order) {
+			uasort($results[$this->type], function($a, $b) use ($order) {
 				//both root parents or both have same parent
 				if (($a['parent_id'] == 0 && $b['parent_id'] == 0) ||
-					($a['parent_id'] == $b['parent_id'])) {
-					if ($order == 'desc') {
+					($a['parent_id'] === $b['parent_id'])) {
+					if ($order === 'desc') {
 						return $b[$this->type . '_id'] <=> $a[$this->type . '_id'];
 					} else {
 						return $a[$this->type . '_id'] <=> $b[$this->type . '_id'];
@@ -83,27 +85,19 @@ class Comments extends ComponentBase {
 					return $a['parent_id'] <=> $b[$this->type . '_id'];
 				}
 
-				//b has parent bigger then a id
-				if ($b['parent_id'] != 0) {
-					return $a[$this->type . '_id'] <=> $b['parent_id'];
-				}
-
-				return 0;
+				//a is root, b has parent
+				return $a[$this->type . '_id'] <=> $b['parent_id'];
 			});
 
 			$level 	   = 0;
 			$parent_id = 0;
 
+			$language  = ['language' => $this->options['language']];
 
-			$language  = ['language'=> $this->options['language']];
-
-			if (self :: $global['default_language'] != self :: $global['language']) {
-			} else {
-				if (!self :: $global['default_lang_slug']) {
-					$language  = [];
-				}
+			if (self :: $global['default_language'] === self :: $global['language'] && !self :: $global['default_lang_slug']) {
+				$language  = [];
 			}
-			
+
 			foreach ($results[$this->type] as $id => &$comment) {
 				if ($comment['parent_id'] == 0) {
 					$level     = 0;
@@ -128,22 +122,22 @@ class Comments extends ComponentBase {
 					$comment['pubDate'] = date('r', strtotime($comment['created_at']));
 
 					$anchor                = '#comment-' . $comment[$this->type . '_id'];
-					
+
 					//url
 					$url                  = $language;
 
-					if ($comment['type'] != 'post' && $comment['type'] != 'page') {
+					if ($comment['type'] !== 'post' && $comment['type'] !== 'page') {
 						$url['type'] = $comment['type'];
 						$type        = 'post';
 					}
-					
+
 					//if translation is missing slug is not available
 					if (isset($comment['slug']) && $comment['slug']) {
 						$url['slug'] = $comment['slug'];
 					} else {
 						$url['post_id'] = $comment['post_id'];
 					}
-					
+
 					$comment['url']        =  url($this->route, $url) . $anchor;
 					$comment['full-url']   =  url($this->route, $url + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http']) . $anchor;
 				}
@@ -152,25 +146,30 @@ class Comments extends ComponentBase {
 			}
 		}
 
-		//list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
-
 		return $results;
 	}
 
-	//called on each request
-	function request(&$results, $index = 0) {
+	/**
+	 * Merge pending user comments from session into results.
+	 *
+	 * @param array<string, mixed> &$results Component results to modify.
+	 * @param int                  $index    Request index.
+	 *
+	 * @return array<string, mixed> Modified results with pending comments merged.
+	 */
+	public function request(array &$results, int $index = 0): array {
 		//check for user pending comments
 		$slug            = $this->options['slug'] ?? false;
 		$pendingComments = sess($this->type, []);
 
 		if ($slug && $pendingComments && isset($pendingComments[$slug])) {
 			$comments             = $pendingComments[$slug];
-			$results[$this->type] = $results[$this->type] + $comments;
+			$results[$this->type] += $comments;
 			$results['count'] += count($comments);
 		}
 
 		//for component event convention use `results` as function
-		list($results) = Event :: trigger(__CLASS__, 'results', $results);
+		[$results] = Event :: trigger(__CLASS__, 'results', $results);
 
 		return $results;
 	}

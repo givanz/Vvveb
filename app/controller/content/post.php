@@ -22,12 +22,11 @@
 
 namespace Vvveb\Controller\Content;
 
-use \Vvveb\Sql\PostSQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
-//use Vvveb\System\Component\Component;
 use function Vvveb\model;
 use function Vvveb\postTypes;
+use Vvveb\Sql\PostSQL;
 use Vvveb\System\Core\FrontController;
 use Vvveb\System\Event;
 use Vvveb\System\Locale;
@@ -35,25 +34,35 @@ use Vvveb\System\User\Admin;
 use function Vvveb\truncateWords;
 
 class Post extends Base {
-	public $type = 'post';
-
 	use CommentTrait;
+	/** @var string Content type identifier. */
+	public string $type = 'post';
 
-	function addComment() {
-		return $this->index();
+	/**
+	 * Alias for index() — handles comment submission for a post.
+	 *
+	 * @return void
+	 */
+	public function addComment(): void {
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display a single post or page by ID or slug.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		if (isset($this->request->post['content'])) {
 			$result = $this->insertComment();
 		}
 
-		$language   = $this->request->get['language'] ?? $this->global['language'] ?? $this->global['default_language'];
-		$post_id    = $this->request->get['post_id'] ?? '';
-		$slug       = $this->request->get['slug'] ?? '';
-		$type       = $this->request->get['type'] ?? null;
-		$created_at = $this->request->get['created_at'] ?? ''; //revision preview
-		$content    = [];
+		$language        = $this->request->get['language'] ?? $this->global['language'] ?? $this->global['default_language'];
+		$post_id         = $this->request->get['post_id'] ?? '';
+		$slug            = $this->request->get['slug'] ?? '';
+		$type            = $this->request->get['type'] ?? null;
+		$created_at      = $this->request->get['created_at'] ?? ''; //revision preview
+		$content         = [];
 		$languageContent = [];
 
 		//check for custom post or product
@@ -61,29 +70,29 @@ class Post extends Base {
 			$class     = '';
 			$postTypes = postTypes('post');
 
-			if (isset($postTypes[$type])) {
-			} else {
+			if (!isset($postTypes[$type])) {
 				$postTypes = postTypes('product');
 
 				if (isset($postTypes[$type])) {
 					$class = 'Product';
 					FrontController::redirect($class, 'index');
 
-					die();
+					exit();
 				} else {
 					$error = sprintf(__('%s not found!'), ucfirst(__($this->type)));
-					return $this->notFound(true, ['message' => $error, 'title' => $error]);
+					$this->notFound(['message' => $error, 'title' => $error]);
 				}
 			}
 		}
 
 		if ($post_id || $slug) {
-			$contentSql = new PostSQL();
-			$options    = $this->global + ['post_id' => $post_id, 'slug' => $slug, 'type' => $type ?? $this->type];
-			$content    = $contentSql->getContent($options) ?? [];
+			$contentSQL = new PostSQL();
+
+			$options    = $this->global + ['post_id' => $post_id, 'slug' => $slug, 'type' => $type ?? $this->type, 'status' => 'publish'];
+			$content    = $contentSQL->getContent($options) ?? [];
 
 			$class                           = __NAMESPACE__ . '\\' . ucfirst($this->type); //__CLASS__ is always Post
-			list($content, $language, $slug) = Event :: trigger($class,__FUNCTION__, $content, $language, $slug);
+			[$content, $language, $slug]     = Event::trigger($class, __FUNCTION__, $content, $language, $slug);
 
 			if ($content) {
 				if (isset($content[$language])) {
@@ -98,7 +107,7 @@ class Post extends Base {
 
 				if ($languageContent) {
 					if ($this->global['language'] != $languageContent['code']) {
-						Locale :: setLanguage($languageContent['code']);
+						Locale::setLanguage($languageContent['code']);
 					}
 
 					$this->global['language']    = $languageContent['code'];
@@ -131,13 +140,13 @@ class Post extends Base {
 					}
 
 					if (isset($languageContent['template']) && $languageContent['template']) {
-						$this->view->template($languageContent['template']);
+						$this->view->template($languageContent['template'], "content/{$this->type}.html");
 						//force post template if a different html template is selected
 						$this->view->tplFile("content/{$this->type}.tpl");
 					}
 				} else {
 					$error = sprintf(__('%s not found!'), ucfirst(__($this->type)));
-					return $this->notFound(true, ['message' => $error, 'title' => $error]);
+					$this->notFound(['message' => $error, 'title' => $error]);
 				}
 
 				$languageContent['title'] = $languageContent['name'];
@@ -160,11 +169,11 @@ class Post extends Base {
 						$languageContent['meta_description'] = truncateWords($languageContent['meta_description'], 160);
 					}
 				} else {
-					$excerpt = ($languageContent['excerpt'] ?? '') ?: $languageContent['content'];
+					$excerpt                             = ($languageContent['excerpt'] ?? '') ?: $languageContent['content'];
 					$languageContent['meta_description'] = truncateWords(strip_tags($excerpt), 160);
 				}
 
-				list($content, $languageContent, $language, $slug) = Event :: trigger($class, __FUNCTION__ . ':after', $content, $languageContent, $language, $slug);
+				[$content, $languageContent, $language, $slug] = Event::trigger($class, __FUNCTION__ . ':after', $content, $languageContent, $language, $slug);
 			} else {
 				//check for custom post or product
 				$class     = '';
@@ -184,17 +193,17 @@ class Post extends Base {
 					$this->request->get['type'] = $slug;
 					FrontController::redirect($class, 'index');
 
-					die();
+					exit();
 				} else {
 					$error = sprintf(__('%s not found!'), ucfirst(__($this->type)));
-					return $this->notFound(true, ['message' => $error, 'title' => $error]);
+					$this->notFound(['message' => $error, 'title' => $error]);
 				}
 			}
 		}
 
-		$this->view->post    = $languageContent;
-		$this->view->content = $content;
+		$this->view->post                   = $languageContent;
+		$this->view->content                = $content;
 		$this->view->default_comment_status = $this->global['site']['default_comment_status'] ?? false;
-		$this->view->anonymous_comments = $this->global['site']['anonymous_comments'] ?? false;
+		$this->view->anonymous_comments     = $this->global['site']['anonymous_comments'] ?? false;
 	}
 }

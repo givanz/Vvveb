@@ -31,7 +31,7 @@ if($questions && is_array($questions)) {
 		@question [data-v-question-content] = $question['content']
 		
 		@question img[data-v-question-*]|src = $question['@@__data-v-question-(*)__@@']
-		@question img[data-v-question-avatar]|width = <?php echo (int)($review['size'] ?? 60);?>
+		@question img[data-v-question-avatar]|width = <?php echo (int)($question['size'] ?? 60);?>
 		
 		@question [data-v-question-*]|innerText = $question['@@__data-v-question-(*)__@@']
 		

@@ -22,7 +22,7 @@
 
 namespace Vvveb\Component;
 
-use function Vvveb\prefixArrayKeys;
+use function Vvveb\humanReadable;
 use Vvveb\System\Cart\Currency;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Core\Request;
@@ -31,19 +31,25 @@ use Vvveb\System\Images;
 use Vvveb\System\Sites;
 
 class Order extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'order_id'          => null,
 		'customer_order_id' => null,
 		'user_id'           => null,
+		'language_id'       => null,
 		'email'             => null,
 		'image_size'        => 'thumb',
 	];
 
-	public $options = [];
+	public array $options = [];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function results() {
+	/**
+	 * Get single order details with products, images, totals, and shipping/payment data.
+	 *
+	 * @return array<string, mixed> Order data with products, totals, and formatted prices.
+	 */
+	public function results(): array {
 		$results = [];
 
 		$request = Request::getInstance();
@@ -68,13 +74,20 @@ class Order extends ComponentBase {
 							$product['images'] = json_decode($product['images'], true);
 
 							foreach ($product['images'] as &$image) {
-								$image['image'] = $host . Images::image($image['image'], 'product', $this->options['image_size']);
+								$image['image'] = Images::image($image['image'], 'product', $this->options['image_size']);
+								//don't add host for remote images
+								if (!str_contains($image['image'], ':')) {
+									$image['image'] = $host . $image['image'];
+								}
 							}
 						}
 
 						if (isset($product['image']) && $product['image']) {
-							$product['image'] = $host . Images::image($product['image'], 'product', $this->options['image_size']);
-							//$product['images'][] = ['image' => Images::image($product['image'], 'product')];
+							$product['image'] = Images::image($product['image'], 'product', $this->options['image_size']);
+							//don't add host for remote images
+							if (!str_contains($product['image'], ':')) {
+								$product['image'] = $host . $product['image'];
+							}
 						}
 
 						if (isset($product['option_value'])) {
@@ -97,14 +110,33 @@ class Order extends ComponentBase {
 
 				$order                    = &$results['order'];
 				$order['total_formatted'] = $currency->format($order['total']);
-				$order['shipping_data']   = isset($order['shipping_data']) ? json_decode($order['shipping_data'], true) : [];
-				$order['payment_data']    = isset($order['payment_data']) ? json_decode($order['payment_data'], true) : [];
+				$shippingData             = isset($order['shipping_data']) ? json_decode($order['shipping_data'], true) : [];
+				$paymentData              = isset($order['payment_data']) ? json_decode($order['payment_data'], true) : [];
 
-				$order += prefixArrayKeys('shipping_', $order['shipping_data']) ?? [];
-				$order += prefixArrayKeys('payment_', $order['payment_data']) ?? [];
+				if (!is_array($shippingData)) {
+					$shippingData = [];
+				}
+
+				if (!is_array($paymentData)) {
+					$paymentData = [];
+				}
+
+				$order['shipping_data'] = $shippingData;
+				$order['payment_data']  = $paymentData;
+
+				//human readable method titles, falling back to the stored method
+				//key (minus the -index suffix) when the gateway did not record one
+				$shippingMethod                = preg_replace('/-\d+$/', '', (string)($order['shipping_method'] ?? ''));
+				$paymentMethod                 = preg_replace('/-\d+$/', '', (string)($order['payment_method'] ?? ''));
+				$order['shipping_title']       = $shippingData['title'] ?? $shippingData['gateway'] ?? ($shippingMethod ? humanReadable($shippingMethod) : '');
+				$order['payment_title']        = $paymentData['title'] ?? $paymentData['gateway'] ?? ($paymentMethod ? humanReadable($paymentMethod) : '');
+				$order['shipping_description'] = $shippingData['description'] ?? $shippingData['text'] ?? '';
+				$order['payment_description']  = $paymentData['description'] ?? $paymentData['text'] ?? '';
+				//legacy alias, the customer note column is `notes`
+				$order['comment'] = $order['notes'] ?? '';
 			}
 
-			list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+			[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 		}
 
 		return $results;

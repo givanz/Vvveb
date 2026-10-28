@@ -22,12 +22,12 @@
 
 return [
 	'shipping_method' => [
-		'notEmpty'   => '',
+		'notEmpty' => '',
 	],
 	'payment_method' => [
-		'notEmpty'   => '',
+		'notEmpty' => '',
 	],
 	'notes' => [
-		'optional'   => '',
+		'optional' => '',
 	],
 ];

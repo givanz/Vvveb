@@ -41,7 +41,7 @@ class Reset extends Base {
 	 *
 	 * @return void
 	 */
-	public function reset() : void {
+	public function reset(): void {
 		$token           = $this->request->get['token'] ?? false;
 		$user            = $this->request->get['user'] ?? false;
 		$password        = $this->request->post['password'] ?? false;
@@ -72,12 +72,12 @@ class Reset extends Base {
 					}
 				}
 			} else {
-				die($error);
+				exit($error);
 			}
 		}
 
-		if (! $admin) {
-			die($error);
+		if (!$admin) {
+			exit($error);
 		}
 	}
 
@@ -86,14 +86,14 @@ class Reset extends Base {
 	 *
 	 * @return void
 	 */
-	public function index() : void {
+	public function index(): void {
 		$email      = $this->request->post['email'] ?? false;
 		$loginData  = [];
 
 		if ($email) {
 			$loginData['email'] = $email;
 
-			list($loginData) = Event::trigger(__CLASS__, __FUNCTION__ , $loginData);
+			[$loginData] = Event::trigger(__CLASS__, __FUNCTION__, $loginData);
 
 			if ($loginData) {
 				if (($adminData = User::get($loginData)) != false) {
@@ -103,11 +103,11 @@ class Reset extends Base {
 
 					$agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
-					if (strpos($agent, 'Linux') !== false) {
+					if (str_contains($agent, 'Linux')) {
 						$os = 'Linux';
-					} elseif (strpos($agent, 'Win') !== false) {
+					} elseif (str_contains($agent, 'Win')) {
 						$os = 'Windows';
-					} elseif (strpos($agent, 'Mac') !== false) {
+					} elseif (str_contains($agent, 'Mac')) {
 						$os = 'Mac';
 					} else {
 						$os = 'UnKnown';
@@ -129,7 +129,12 @@ class Reset extends Base {
 						'reset_url'        => $reset_url,
 					];
 
-					if (email($adminData['email'], __('Password reset'),'user/reset', $data)) {
+					\Vvveb\System\Notifications::trigger('user.password_reset', $data + [
+						'subject' => __('Password reset'),
+						'message' => __('A password reset was requested for your account.'),
+					]);
+
+					if (email($adminData['email'], __('Password reset'), 'user/reset', $data)) {
 						$success               = __('A reset email was sent, please use it to reset your password!');
 						$this->view->success[] = $success;
 						$this->session->set('success', ['login' => $success]);

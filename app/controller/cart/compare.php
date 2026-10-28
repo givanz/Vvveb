@@ -22,21 +22,27 @@
 
 namespace Vvveb\Controller\Cart;
 
-use \Vvveb\Sql\AttributeSQL;
-use \Vvveb\Sql\ProductSQL;
 use Vvveb\Controller\Base;
 use function Vvveb\session as sess;
+use Vvveb\Sql\AttributeSQL;
+use Vvveb\Sql\ProductSQL;
 use Vvveb\System\Cart\Currency;
 use Vvveb\System\Cart\Tax;
 use Vvveb\System\Images;
 use function Vvveb\url;
 
 class Compare extends Base {
-	function index() {
+	/**
+	 * Display a side-by-side comparison of selected products.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$product_id = $compare = sess('compare'); //[18, 19, 17, 16];
 		$results    = [];
 		$names      = [];
 		$specs      = [];
+		$attrs      = [];
 
 		if ($product_id) {
 			$names = [];
@@ -55,7 +61,7 @@ class Compare extends Base {
 			}
 
 			if ($results && isset($results['product'])) {
-				$tax      = Tax::getInstance($this->global);
+				$tax      = Tax::getInstance();
 				$currency = Currency::getInstance($this->global);
 
 				foreach ($results['product'] as $id => &$product) {
@@ -90,7 +96,14 @@ class Compare extends Base {
 		$this->view->specs    = $specs;
 	}
 
-	private function action($action) {
+	/**
+	 * Perform a comparison action: add or remove a product.
+	 *
+	 * @param string $action
+	 *
+	 * @return void
+	 */
+	private function action(string $action): void {
 		$productId = (int)($this->request->get['product_id'] ?? $this->request->post['product_id'] ?? false);
 
 		if ($productId) {
@@ -100,12 +113,12 @@ class Compare extends Base {
 				case 'add':
 					$compare[$productId] = $productId;
 
-				break;
+					break;
 
 				case 'remove':
 					unset($compare[$productId]);
 
-				break;
+					break;
 			}
 
 			sess(['compare' => $compare]);
@@ -114,11 +127,21 @@ class Compare extends Base {
 		$this->index();
 	}
 
-	function add() {
-		return $this->action('add');
+	/**
+	 * Add a product to the comparison list.
+	 *
+	 * @return void
+	 */
+	public function add(): void {
+		$this->action('add');
 	}
 
-	function remove() {
-		return $this->action('remove');
+	/**
+	 * Remove a product from the comparison list.
+	 *
+	 * @return void
+	 */
+	public function remove(): void {
+		$this->action('remove');
 	}
 }

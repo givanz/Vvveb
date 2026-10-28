@@ -67,7 +67,7 @@ if (isset($this->_component['menu']) && isset($this->_component['menu'][$_menu_i
 		 if (isset($_categories[$parent_id]['options']['columns'])) echo 'column-count:' . $_categories[$parent_id]['options']['columns'] .';';
 		 if (isset($_categories[$parent_id]['options']['width'])) echo 'width:' . $_categories[$parent_id]['options']['width'] .'%;';
 		 if (isset($_categories[$parent_id]['options']['sub-padding-x'])) echo 'padding-left:' . $_categories[$parent_id]['options']['sub-padding-x'] . 'px;padding-right:' . $_categories[$parent_id]['options']['sub-padding-x'] .'px;';
-		 if (isset($_categories[$parent_id]['options']['sub-padding-y'])) echo 'padding-top:' . $_categories[$parent_id]['options']['sub-padding-x'] . 'px;padding-bottom:' . $_categories[$parent_id]['options']['sub-padding-x'] .'px;';
+		 if (isset($_categories[$parent_id]['options']['sub-padding-y'])) echo 'padding-top:' . $_categories[$parent_id]['options']['sub-padding-y'] . 'px;padding-bottom:' . $_categories[$parent_id]['options']['sub-padding-y'] .'px;';
 		echo '"';
 		?>
 		

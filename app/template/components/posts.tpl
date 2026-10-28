@@ -21,7 +21,7 @@
 
 @post|deleteAllButFirstChild
 
-@posts [data-v-posts-category] = <?php $_category = current($posts['posts']);echo htmlspecialchars($_category['category']);?>
+@posts [data-v-posts-category] = <?php $_category = current($posts['posts'] ?? []);echo htmlspecialchars($_category['category'] ?? '');?>
 @posts [data-v-posts-count]    = $posts['count']
 
 
@@ -38,7 +38,10 @@ foreach ($_posts as $id => $post) {?>
 	//@post [data-v-post-excerpt] = $post['excerpt']
 
     //catch all data attributes
-    @post [data-v-post-*]|innerText = $post['@@__data-v-post-(*)__@@']
+    @post [data-v-post-*]:not(a):not(button)|innerText = $post['@@__data-v-post-(*)__@@']
+    @post a[data-v-post-*]:empty|innerText = $post['@@__data-v-post-(*)__@@']
+    @post button[data-v-post-*]:empty|innerText = $post['@@__data-v-post-(*)__@@']
+    
     @post img[data-v-post-*]|src = <?php
 		$image = $post['@@__data-v-post-(*)__@@'] ?? '';
 		$size = '@@__data-v-size__@@';
@@ -82,12 +85,15 @@ $categories = count($_categories);
 	@post [data-v-categories] [data-v-categories-cat]|deleteAllButFirstChild
 	
 	@post [data-v-categories-cat]|before = <?php 
-		foreach ($_categories as $cat){ $categories_count++;?>
+		foreach ($_categories as $cat) { 
+			$categories_count++;?>
 
-		@post [data-v-categories] [data-v-categories-cat] a[data-v-categories-cat-*]|href = $cat['@@__data-v-categories-cat-(*)__@@']	
-		@post [data-v-categories] [data-v-categories-cat] [data-v-categories-cat-*]|innerText = $cat['@@__data-v-categories-cat-(*)__@@']	
+			@post [data-v-categories] [data-v-categories-cat] a[data-v-categories-cat-*]|href = $cat['@@__data-v-categories-cat-(*)__@@']	
+			@post [data-v-categories] [data-v-categories-cat] [data-v-categories-cat-*]|innerText = $cat['@@__data-v-categories-cat-(*)__@@']	
 
-	@post [data-v-categories] [data-v-categories-cat]|after = <?php } ?>
+	@post [data-v-categories] [data-v-categories-cat]|after = <?php 
+		} 
+	?>
 	
 
 @post [data-v-tags]|before = <?php 
@@ -102,21 +108,28 @@ $tags = count($_tags);
 	@post [data-v-tags] [data-v-tags-tag]|deleteAllButFirstChild
 	
 	@post [data-v-tags] [data-v-tags-tag]|before = <?php 
-		foreach ($_tags as $tag){ $tags_count++;?>
+		foreach ($_tags as $tag) { 
+			$tags_count++;?>
 
-		@post [data-v-tags] [data-v-tags-tag] a[data-v-tags-tag-*]|href = $tag['@@__data-v-tags-tag-(*)__@@']	
-		@post [data-v-tags] [data-v-tags-tag] [data-v-tags-tag-*]|innerText = $tag['@@__data-v-tags-tag-(*)__@@']	
+			@post [data-v-tags] [data-v-tags-tag] a[data-v-tags-tag-*]|href = $tag['@@__data-v-tags-tag-(*)__@@']	
+			@post [data-v-tags] [data-v-tags-tag] [data-v-tags-tag-*]|innerText = $tag['@@__data-v-tags-tag-(*)__@@']	
 
-	@post [data-v-tags] [data-v-tags-tag]|after = <?php } ?>
-
+	@post [data-v-tags] [data-v-tags-tag]|after = <?php 
+		} 
+	?>
 
 
 @post [data-v-taxonomy] [data-v-tags-tax]|before = <?php 
 	$taxonomy_count = 0;
-	if (isset($post['taxonomy'])) { $taxonomy = count($post['taxonomy']);
-	foreach ($post['taxonomy'] as $tax){ $taxonomy_count++;?>
+	if (isset($post['taxonomy'])) { 
+		
+		$taxonomy = count($post['taxonomy']);
+		foreach ($post['taxonomy'] as $tax) { 
+			$taxonomy_count++;?>
 
-	@post [data-v-taxonomy] [data-v-taxonomy-tax] a[data-v-taxonomy-tax-*]|href = $tax['@@__data-v-taxonomy-tax-(*)__@@']	
-	@post [data-v-taxonomy] [data-v-taxonomy-tax] [data-v-taxonomy-tax-*]|innerText = $tax['@@__data-v-taxonomy-tax-(*)__@@']	
+			@post [data-v-taxonomy] [data-v-taxonomy-tax] a[data-v-taxonomy-tax-*]|href = $tax['@@__data-v-taxonomy-tax-(*)__@@']	
+			@post [data-v-taxonomy] [data-v-taxonomy-tax] [data-v-taxonomy-tax-*]|innerText = $tax['@@__data-v-taxonomy-tax-(*)__@@']	
 
-@post [data-v-taxonomy] [data-v-taxonomy-tax]|after = <?php } } ?>
+@post [data-v-taxonomy] [data-v-taxonomy-tax]|after = <?php 
+	} 
+} ?>

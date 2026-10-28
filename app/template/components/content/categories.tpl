@@ -30,10 +30,12 @@ $previous_component = isset($current_component)?$current_component:null;
 $categories = $current_component = $this->_component['content_categories'][$_content_categories_idx] ?? [];
 $_categories = $categories['categories'] ?? [];
 
-$_pagination_count = $categories['count'] ?? 0;
+$_pagination_count = $count = $categories['count'] ?? count($_categories);
 $_pagination_limit = isset($categories['limit']) ? $categories['limit'] : 5;
 $parent            = 0;	
 $generate_menu     = false;
+//alias for data-v-if="tags > 0" in single-post templates (in posts loop $tags is a count)
+$tags = $count;
 ?>
 	
 @categories|before = <?php

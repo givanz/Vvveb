@@ -22,28 +22,33 @@
 
 namespace Vvveb\Component\Product;
 
-use \Vvveb\Sql\AttributeSQL;
+use Vvveb\Sql\AttributeSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 
 class Attributes extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'start'       => 0,
 		'limit'       => 100,
-		'site_id'     => NULL,
-		'language_id' => NULL,
+		'site_id'     => null,
+		'language_id' => null,
 		'product_id'  => 'url',
-		'search'      => NULL,
+		'search'      => null,
 		'image_size'  => 'thumb',
 	];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function results() {
+	/**
+	 * Get product attributes with product_id filter normalization.
+	 *
+	 * @return array<string, mixed> Attributes data with attribute list.
+	 */
+	public function results(): array {
 		$category   = new AttributeSQL();
 
 		if (isset($this->options['product_id'])) {
-			if (! is_array($this->options['product_id'])) {
+			if (!is_array($this->options['product_id'])) {
 				$this->options['product_id'] = [$this->options['product_id']];
 			}
 		}
@@ -52,9 +57,9 @@ class Attributes extends ComponentBase {
 		$attributes = [];
 		$group      = false;
 
-		$results['attribute'] = $results['attribute'] ?? [];
+		$results['attribute'] ??= [];
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

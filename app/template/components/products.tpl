@@ -13,30 +13,33 @@
 	//use a counter to know which component instance we need to use if there are more than one component on page
 	if (isset($products_idx)) $products_idx++; else $products_idx = 0;
 	$previous_component = isset($current_component)?$current_component:null;
-	$products = $current_component = $this->_component['products'][$products_idx] ?? [];
+	$component = $current_component = $this->_component['products'][$products_idx] ?? [];
 
 	$index = 0;
-	$count = $products['count'] ?? 0;
-	$limit = isset($products['limit'])? $products['limit'] : 5;
+	$count = $component['count'] ?? 0;
+	$limit = isset($component['limit'])? $component['limit'] : 5;
 
 	//if page loaded in editor then set a fist empty product if there are no products 
 	//to render an empty product to avoid losing the html on edit
 	$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
 	//$_default = [0 => []];
-	$prods = empty($products['product']) ? $_default : $products['product'];
+	$products = empty($component['product']) ? $_default : $component['product'];
 ?>
 
-@products [data-v-products-category] = <?php $_category = current($products);echo htmlspecialchars($_category['category']);?>
-@products [data-v-products-count] = $products['count']
-@products [data-v-products-manufacturer] = <?php $_manufacturer = current($products);echo htmlspecialchars($_manufacturer['manufacturer']);?>
+@products [data-v-products-category] = <?php $_category = current($component);echo htmlspecialchars($_category['category']);?>
+@products [data-v-products-count] = $component['count']
+@products [data-v-products-manufacturer] = <?php $_manufacturer = current($component);echo htmlspecialchars($_manufacturer['manufacturer']);?>
 
 
 @product|before = <?php
 
-if ($prods) {
-	foreach ($prods as $id => $prod) { ?>
+if ($products) {
+	foreach ($products as $id => $prod) { ?>
 	
-	@product [data-v-product-*]|innerText = $prod['@@__data-v-product-(*)__@@']
+    //catch all data attributes
+	@product [data-v-product-*]:not(a):not(button)|innerText = $prod['@@__data-v-product-(*)__@@']
+	@product a[data-v-product-*]:empty|innerText = $prod['@@__data-v-product-(*)__@@']
+	@product button[data-v-product-*]:empty|innerText = $prod['@@__data-v-product-(*)__@@']
 	@product a[data-v-product-*]|href = $prod['@@__data-v-product-(*)__@@']
 
 
@@ -102,19 +105,17 @@ if ($prods) {
 	//image gallery
 	@product [data-v-product-images] [data-v-product-image]|before = <?php
 	if(isset($prod['images']) && is_array($prod['images']))
-	foreach ($prod['images'] as $prod_image_id => $image)  {
-	?>
+	foreach ($prod['images'] as $prod_image_id => $image) { ?>
 
 		@product [data-v-product-images] img[data-v-product-image-src]|src = $image['image']
 		@product [data-v-product-images] img[data-v-product-image-src]|data-v-id  = $prod_image_id
 		@product [data-v-product-images] img[data-v-product-image-src]|data-v-type = 'product_image'
 		@product [data-v-product-images] a[data-v-product-image-src]|href = $image['image']
 		
-		@product [data-v-product-images] [data-v-product-image]|after = <?php 
-	} ?>
+	@product [data-v-product-images] [data-v-product-image]|after = <?php 
+		} 
+	?>
 
-    //catch all data attributes
-    @product [data-v-product-*]|innerText = $prod['@@__data-v-product-(*)__@@']
 	//echo description directly to avoid htmlspecialchars escape
 	@product [data-v-product-content] = <?php echo($prod['content']);?>	
 	

@@ -22,9 +22,9 @@
 
 namespace Vvveb\Component;
 
-use \Vvveb\Sql\Product_VariantSQL;
 use function Vvveb\model;
 use function Vvveb\sanitizeHTML;
+use Vvveb\Sql\Product_variantSQL;
 use Vvveb\Sql\ProductSQL;
 use Vvveb\System\Cart\Currency;
 use Vvveb\System\Cart\Tax;
@@ -33,39 +33,45 @@ use Vvveb\System\Core\Request;
 use Vvveb\System\Event;
 use Vvveb\System\Images;
 use Vvveb\System\Locale;
-use Vvveb\System\Traits\Product as ProductTrait;
 use Vvveb\System\User\Admin;
 use function Vvveb\url;
 
 class Product extends ComponentBase {
-	//use ProductTrait;
-
-	public static $defaultOptions = [
-		'product_id'          => 'url',
-		'slug'                => 'url',
-		'status'              => 1,
-		'language_id'         => null,
-		'site_id'             => null,
-		'user_group_id'       => null, // user group id to use to calculate promotional price
-		'product_variant_id'  => null, // product variant id to display variant as default, for price and product options
-		'variant'             => null, //[true, false] include variants
-		'variant_price'       => null, //[true, false] include variants prices
-		'promotion'           => null, //[true, false] include promotional price
-		'points'              => null, //[true, false] include points
-		'stock_status'        => null, //[true, false] include stock status info
-		'weight_type'         => null, //[true, false] include weight type info
-		'length_type'         => null, //[true, false] include length type info
-		'rating'              => null, //[true, false] include rating average
-		'reviews'             => null, //[true, false] include reviews count
-		'image_size'          => 'large',    //options: xlarge, large, medium, thumb - if null site settings is used
-		'image_resize'        => null,    //options: cs = Crop & resize, c = crop, r = resize, s = stretch - if null site settings is used
+	public static array $defaultOptions = [
+		'product_id'         => 'url',
+		'slug'               => 'url',
+		'status'             => 1,
+		'language_id'        => null,
+		'site_id'            => null,
+		'user_group_id'      => null,
+		'product_variant_id' => null,
+		'variant'            => null,
+		'variant_price'      => null,
+		'promotion'          => null,
+		'points'             => null,
+		'stock_status'       => null,
+		'weight_type'        => null,
+		'length_type'        => null,
+		'rating'             => null,
+		'reviews'            => null,
+		'image_size'         => 'large',    //options: xlarge, large, medium, thumb - if null site settings is used
+		'image_resize'       => null,    //options: cs = Crop & resize, c = crop, r = resize, s = stretch - if null site settings is used
 	];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function results() {
+	/**
+	 * Get single product details with images, variants, pricing, tax, and URLs.
+	 *
+	 * @return array<string, mixed> Product data with images, variants, prices, and action URLs.
+	 */
+	public function results(): array {
 		$product = new ProductSQL();
 		$results = $product->get($this->options);
+
+		if (!isset($results['product_id'])) {
+			return [];
+		}
 
 		$results['images'] = [];
 
@@ -74,8 +80,7 @@ class Product extends ComponentBase {
 		}
 
 		if (isset($results['image'])) {
-			//$results['images'][] = ['image' => Images::image('product', $results['image'])];
-			$results['image']= Images::image($results['image'], 'product', $this->options['image_size']);
+			$results['image'] = Images::image($results['image'], 'product', $this->options['image_size']);
 		}
 
 		$results['add_cart_url']     = url('cart/cart/add', ['product_id' => $results['product_id']]);
@@ -88,14 +93,14 @@ class Product extends ComponentBase {
 		$variants = [];
 
 		if (isset($this->options['product_id'])) {
-			$variantSql = new Product_VariantSQL();
+			$variantSQL = new Product_variantSQL();
 			$voptions   = ['product_id' => $this->options['product_id'], 'start' => 0, 'limit' => 1];
 
 			if (isset($this->options['product_variant_id'])) {
 				$voptions['product_variant_id'] = [$this->options['product_variant_id']];
 			}
 
-			$variants = $variantSql->getAll($voptions);
+			$variants = $variantSQL->getAll($voptions);
 		}
 
 		$defaultVariant   = [];
@@ -114,7 +119,7 @@ class Product extends ComponentBase {
 
 		$results['product_variant_id']  = $defaultVariantId;
 
-		$this->tax             = Tax::getInstance($this->options);
+		$this->tax             = Tax::getInstance();
 		$this->currency        = Currency::getInstance($this->options);
 		$this->currentCurrency = Locale :: getCurrency();
 
@@ -137,19 +142,22 @@ class Product extends ComponentBase {
 		}
 
 		if (isset($results['promotion']) && $results['promotion']) {
-			$results['promotion_tax']           = $tax->addTaxes($results['promotion'], $results['tax_type_id']);
-			$results['promotion_tax_formatted'] = $currency->format($results['promotion_tax']);
-			$results['promotion_formatted']     = $currency->format($results['promotion']);
-			$results['promotion_discount']      = 100 - ceil($results['promotion'] * 100 / $results['price']);
+			$results['promotion_tax']           = $this->tax->addTaxes($results['promotion'], $results['tax_type_id']);
+			$results['promotion_tax_formatted'] = $this->currency->format($results['promotion_tax']);
+			$results['promotion_formatted']     = $this->currency->format($results['promotion']);
+
+			//guard against division by zero when a product has no base price
+			if (!empty($results['price'])) {
+				$results['promotion_discount'] = 100 - ceil($results['promotion'] * 100 / $results['price']);
+			}
 		}
 
-
-		if ($results['language_id'] != $this->options['default_language_id']) {
-			if ($results['name'] === null && isset($results['product_content'][$this->options['default_language_id']])) {
-				$langFallback = $results['product_content'][$this->options['default_language_id']];
-				$results['name']  = $langFallback['name'];
-				$results['slug']  = $langFallback['slug'];
-				$results['content']  = $langFallback['content'];
+		if ($results['language_id'] != ($this->options['default_language_id'] ?? null)) {
+			if ($results['name'] === null && isset($results['product_content'][$this->options['default_language_id'] ?? null])) {
+				$langFallback            = $results['product_content'][$this->options['default_language_id']];
+				$results['name']         = $langFallback['name'];
+				$results['slug']         = $langFallback['slug'];
+				$results['content']      = $langFallback['content'];
 				$results['language_id']  = $langFallback['language_id'];
 			}
 		}
@@ -158,22 +166,29 @@ class Product extends ComponentBase {
 		$results['pubDate'] = date('r', strtotime($results['created_at']));
 		$results['modDate'] = date('r', strtotime($results['updated_at']));
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}
 
-	//called on each request
-	function request(&$results, $index = 0) {
+	/**
+	 * Handle revision preview for product content on each request.
+	 *
+	 * @param array<string, mixed> &$results Product data to modify.
+	 * @param int                  $index    Request index.
+	 *
+	 * @return array<string, mixed> Modified product data.
+	 */
+	public function request(array &$results, int $index = 0): array {
 		$request    = Request::getInstance();
-		$created_at = $request->get['created_at'] ?? ''; //revision preview
+		$created_at = $request->get['created_at'] ?? '';
 
 		if ($created_at && $results['product_id']) {
 			//check if admin user to allow revision preview
 			$admin = Admin::current();
 
 			if ($admin) {
-				$revisions = model('post_content_revision');
+				$revisions = model('product_content_revision');
 				$revision  = $revisions->get(['created_at' => $created_at, 'product_id' => $results['product_id'], 'language_id' => $results['language_id']]);
 
 				if ($revision && isset($revision['content'])) {
@@ -186,11 +201,17 @@ class Product extends ComponentBase {
 		return $results;
 	}
 
-	//called by editor on page save for each component on page
-	//this method is called from admin app
-	static function editorSave($id, $fields, $type = 'product') {
+	/**
+	 * Save product content from editor on page save.
+	 *
+	 * @param int                              $id     Product ID.
+	 * @param array<int, array<string, mixed>> $fields Field data from editor.
+	 * @param string                           $type   Product type identifier.
+	 *
+	 * @return void
+	 */
+	public static function editorSave(int $id, array $fields, string $type = 'product'): void {
 		$products        = new ProductSQL();
-		$product_content = [];
 		$publicPath      = \Vvveb\publicUrlPath() . 'media/';
 
 		$product         = [];
@@ -200,32 +221,28 @@ class Product extends ComponentBase {
 			$name  = $field['name'];
 			$value = $field['value'];
 
-			if ($name == 'name') {
+			if ($name === 'name') {
 				$product_content[$name] = strip_tags($value);
+			} elseif ($name === 'images') {
+				continue;
+			} elseif ($name === 'content' || $name === 'excerpt') {
+				$product_content[$name] = sanitizeHTML($value);
 			} else {
-				if ($name == 'images') {
-				} else {
-					if ($name == 'content' || $name == 'excerpt') {
-						$product_content[$name] = sanitizeHTML($value);
-					} else {
-						if ($name == 'image') {
-							$value = str_replace($publicPath,'', $value);
-						}
-						$product[$name] = $value;
-					}
+				if ($name === 'image') {
+					$value = str_replace($publicPath, '', $value);
 				}
+				$product[$name] = $value;
 			}
 		}
 
 		if ($product_content) {
 			$product_content['language_id'] = self :: $global['language_id'];
-			//$product['product_id']['post_id'] = $id;
-			$result = $products->editContent(['product_content' => $product_content, 'product_id' => $id, 'language_id' => self :: $global['language_id']]);
+			$result                         = $products->editContent(['product_content' => $product_content, 'product_id' => $id, 'language_id' => self :: $global['language_id']]);
 		}
 
 		if ($product) {
 			$product['product_id'] = $id;
-			$result                = $products->edit(['product' => $product, 'product_content' => [], /*'product_content' => [$product_content],*/ 'product_id' => $id]);
+			$result                = $products->edit(['product' => $product, 'product_content' => [], 'product_id' => $id]);
 		}
 	}
 }

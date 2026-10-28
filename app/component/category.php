@@ -24,37 +24,61 @@ namespace Vvveb\Component;
 
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
+use Vvveb\System\Images;
+use function Vvveb\url;
 
 class Category extends ComponentBase {
-	public static $defaultOptions = [
-		'start'           => 0,
-		'language_id'     => 1,
-		'site_id'         => 1,
-		'count'           => ['url', 7],
-		'id_manufacturer' => NULL,
-		'order'           => ['url', 'price asc'],
-		'id_category'     => 'url',
-		'slug'            => 'url',
+	public static array $defaultOptions = [
+		'taxonomy_item_id' => 'url',
+		'slug'             => 'url',
+		'type'             => null,
+		'post_type'        => null,
+		'language_id'      => null,
+		'site_id'          => null,
 	];
 
-	public $cacheExpire = 0; //seconds
+	public int $cacheExpire = 0;
 
-	function __construct($class = __CLASS__) {
-		return parent::__construct($class);
+	/**
+	 * Disable caching for category component.
+	 *
+	 * @return null Always returns null to disable caching.
+	 */
+	public function cacheKey(): ?string {
+		return null;
 	}
 
-	function cacheKey() {
-		//disable caching
-		return false;
-	}
-
-	function results() {
+	/**
+	 * Get single category details with URL and image.
+	 *
+	 * @return array<string, mixed> Category data with URL, full-url, and image_url.
+	 */
+	public function results(): array {
 		$product = new \Vvveb\Sql\CategorySQL();
 		$results = $product->getCategory($this->options);
 
-		//$_REQUEST['taxonomy_item_id'] = $results['taxonomy_item_id'];
+		if ($results) {
+			$taxonomy_type = 'category';
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+			if (isset($this->options['type']) && $this->options['type'] === 'tags') {
+				$taxonomy_type = 'tag';
+			}
+
+			if (isset($this->options['post_type']) && $this->options['post_type']) {
+				$results['post_type'] = $this->options['post_type'];
+			}
+
+			$url = ['slug' => $results['slug']];
+
+			$results['url']      = url('content/' . $taxonomy_type . '/index', $url);
+			$results['full-url'] = url('content/' . $taxonomy_type . '/index', $url + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http']);
+
+			if (isset($results['image'])) {
+				$results['image_url'] = Images::image($results['image'], 'taxonomy_item');
+			}
+		}
+
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

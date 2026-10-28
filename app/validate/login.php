@@ -26,11 +26,11 @@ return [
 	],
 	'password' => [
 		'maxLength' => 100,
-	],
+	], /*
 	'csrf' => [
 		'session' => 'csrf',
-	],
-	/*	
+	],*/
+	/*
 	'captcha' => [
 			['captcha' => ''],
 	],	*/

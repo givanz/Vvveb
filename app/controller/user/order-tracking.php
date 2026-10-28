@@ -22,12 +22,17 @@
 
 namespace Vvveb\Controller\User;
 
-use function \Vvveb\__;
-use function \Vvveb\session as sess;
-use \Vvveb\Sql\OrderSQL;
+use function Vvveb\__;
+use function Vvveb\session as sess;
+use Vvveb\Sql\OrderSQL;
 
 class OrderTracking extends \Vvveb\Controller\Base {
-	function order() {
+	/**
+	 * Look up an order by customer_order_id and email.
+	 *
+	 * @return void
+	 */
+	public function order(): void {
 		$customer_order_id      = trim($this->request->post['customer_order_id'] ?? '');
 		$email                  = trim($this->request->post['email'] ?? '');
 		$csrf                   = $this->request->post['csrf'] ?? false;
@@ -52,9 +57,13 @@ class OrderTracking extends \Vvveb\Controller\Base {
 			$this->view->errors[] = __('Invalid request!');
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
-	}
+	/**
+	 * Display the order tracking form.
+	 *
+	 * @return void
+	 */
+	public function index(): void {}
 }

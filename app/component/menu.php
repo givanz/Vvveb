@@ -25,9 +25,9 @@ namespace Vvveb\Component;
 use function Vvveb\__;
 use function Vvveb\getCurrentUrl;
 use function Vvveb\sanitizeHTML;
-use Vvveb\Sql\menuSQL;
-use Vvveb\Sql\postSQL;
-use Vvveb\Sql\productSQL;
+use Vvveb\Sql\MenuSQL;
+use Vvveb\Sql\PostSQL;
+use Vvveb\Sql\ProductSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Images;
@@ -35,16 +35,21 @@ use Vvveb\System\Sites;
 use function Vvveb\url;
 
 class Menu extends ComponentBase {
-	public static $defaultOptions = [
-		'start'       => 0, //defaut, override from html
+	public static array $defaultOptions = [
+		'start'       => 0,
 		'limit'       => 10000,
-		'menu_id'     => null, //unset, set from html
-		'slug'        => null, //unset, set from html
-		'site_id'     => null, //unset, set from html
-		'language_id' => null, //unset, set from html
+		'menu_id'     => null,
+		'slug'        => null,
+		'site_id'     => null,
+		'language_id' => null,
 	];
 
-	function results() {
+	/**
+	 * Get menu items with product/post URLs, images, and hierarchy.
+	 *
+	 * @return array<string, mixed> Menu data with menu_item list and count.
+	 */
+	public function results(): array {
 		$options = $this->options;
 
 		//if menu id is set then ignore slug
@@ -52,12 +57,12 @@ class Menu extends ComponentBase {
 			unset($options['slug']);
 		}
 
-		$menuSql               = new menuSQL();
-		$results               = $menuSql->getMenuItems($options);
+		$menuSQL               = new MenuSQL();
+		$results               = $menuSQL->getMenuItems($options);
 		$noTranslationText     = '[' . __('No translation') . ']';
 
 		$defaultLanguage = true;
-		$language  = ['language'=> $options['language']];
+		$language        = ['language' => $options['language']];
 
 		if (self :: $global['default_language'] != self :: $global['language']) {
 			$defaultLanguage = false;
@@ -69,14 +74,16 @@ class Menu extends ComponentBase {
 
 		//count the number of child menus (subcategories) for each category
 		if (isset($results['menu_item'])) {
-			$productIds = [];
-			$postIds    = [];
+			$productIds       = [];
+			$postIds          = [];
+			$taxonomyProducts = [];
+			$taxonomyPosts    = [];
 
 			foreach ($results['menu_item'] as $taxonomy_item_id => &$category) {
 				$parent_id = $category['parent_id'] ?? false;
 				$type      = $category['type'] ?? 'link';
 
-				if (! isset($category['children'])) {
+				if (!isset($category['children'])) {
 					$category['children'] = 0;
 				}
 
@@ -100,79 +107,82 @@ class Menu extends ComponentBase {
 						$parent['children'] = 1;
 					}
 
-					if ($type == 'text') {
+					if ($type === 'text') {
 						$parent['has-text']    = true;
-						$category['content']   = $category['content'] ?? (! $defaultLanguage ? $noTranslationText : null);
+						$category['content']   = $category['content'] ?? (!$defaultLanguage ? $noTranslationText : null);
 					}
 				}
 
-				if ($type == 'product') {
+				if ($type === 'product') {
 					$productIds[$taxonomy_item_id]            = $category['item_id'];
 					$taxonomyProducts[$category['item_id']][] = $taxonomy_item_id;
 				}
 
-				if (($type == 'post' || $type == 'page') && $category['item_id']) {
+				if (($type === 'post' || $type === 'page') && $category['item_id']) {
 					$postIds[$category['item_id']]         = $category['item_id'];
 					$taxonomyPosts[$category['item_id']][] = $taxonomy_item_id;
 				}
 
-				if ($type == 'home') {
+				if ($type === 'home') {
 					$category['url']  = url('index/index', $language);
 					$category['name'] = $category['name'] ?: __('Home');
 				}
 
-				if ($type == 'blog') {
+				if ($type === 'blog') {
 					$category['url']  = url('content', $language);
 					$category['name'] = $category['name'] ?: __('Blog');
 				}
 
-				if ($type == 'shop') {
+				if ($type === 'shop') {
 					$category['url']  = url('product/index', $language);
 					$category['name'] = $category['name'] ?: __('Shop');
 				}
 
-				if ($type == 'link' && isset($category['url']) && (strncmp($category['url'], 'http', 4) !== 0)) {
-					$category['url'] = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . Sites::url($category['url'] ?? '');
+				if (($type === 'link' && isset($category['url'])) && (strncmp($category['url'], 'http', 4) !== 0)) {
+					$category['url'] = V_SUBDIR_INSTALL . Sites::url($category['url'] ?? '');
 				}
 
-				$category['name']          = $category['name'] ?? (! $defaultLanguage ? $noTranslationText : null);
-				$category['language_id']   = $category['language_id'] ?? $options['language_id'];
+				$category['name']          = $category['name'] ?? (!$defaultLanguage ? $noTranslationText : null);
+				$category['language_id'] ??= $options['language_id'];
 			}
 
 			//get product items
 			if ($productIds) {
 				$productOptions = [
-					'product_id'  => $productIds,
+					'product_id'  => array_values($productIds),
 					'language_id' => $options['language_id'],
-					//'site_id'     => $options['site_id'],
 				];
 
-				$productSql = new productSql();
-				$products   = $productSql->getAll($productOptions);
+				$productSQL = new ProductSQL();
+				$products   = $productSQL->getAll($productOptions);
 
-				if (isset($products['products']) && $products['products']) {
-					foreach ($products['products'] as $product) {
-						foreach ($taxonomyPosts[$product['product_id']] as $taxonomy_item_id) {
-							$taxonomy_item_id          = $productTaxonomy[$product['product_id']];
-							$category                  = &$results['menu_item'][$taxonomy_item_id];
-							$route                     = "product/{$category['type']}/index";
-							
-							$url                       = $language;
+				if (!empty($products['product'])) {
+					foreach ($products['product'] as $product) {
+						//map back from product id to the menu items referencing it
+						foreach ($taxonomyProducts[$product['product_id']] ?? [] as $taxonomy_item_id) {
+							if (!isset($results['menu_item'][$taxonomy_item_id])) {
+								continue;
+							}
 
-							if ($product['type'] != 'product') {
+							$category = &$results['menu_item'][$taxonomy_item_id];
+							$route    = "product/{$category['type']}/index";
+
+							$url      = $language;
+
+							if (($product['type'] ?? 'product') != 'product') {
 								$url['type'] = $product['type'];
 							}
 
 							//if translation is missing slug is not available
-							if (isset($product['slug'])) {
+							if (isset($product['slug']) && $product['slug']) {
 								$url['slug'] = $product['slug'];
 							} else {
 								$url['product_id'] = $product['product_id'];
-							}	
-						
+							}
+
 							$category['url']           = url($route, $url);
-							$category['name']          = $product['name'] ?? (! $defaultLanguage ? $noTranslationText : null);
-							$category['language_id']   = $product['language_id'] ?: $options['language_id'];
+							$category['name']          = $product['name'] ?? (!$defaultLanguage ? $noTranslationText : null);
+							$category['language_id']   = $product['language_id'] ?: ($options['language_id'] ?? null);
 						}
 					}
 				}
@@ -183,18 +193,17 @@ class Menu extends ComponentBase {
 				$postOptions = [
 					'post_id'     => $postIds,
 					'language_id' => $options['language_id'],
-					//'site_id'     => $options['site_id'],
 				];
 
-				$postSql = new postSql();
-				$posts   = $postSql->getAll($postOptions);
+				$postSQL = new PostSQL();
+				$posts   = $postSQL->getAll($postOptions);
 
 				if (isset($posts['post']) && $posts['post']) {
 					foreach ($posts['post'] as $post) {
 						foreach ($taxonomyPosts[$post['post_id']] as $taxonomy_item_id) {
-							$category                  = &$results['menu_item'][$taxonomy_item_id];
-							$route                     = "content/{$category['type']}/index";
-							$url                       = $post['slug'] ? url($route, ['slug'=> $post['slug'], 'post_id'=> $post['post_id']] + $language) : '/';
+							$category = &$results['menu_item'][$taxonomy_item_id];
+							$route    = "content/{$category['type']}/index";
+							$url      = $post['slug'] ? url($route, ['slug' => $post['slug'], 'post_id' => $post['post_id']] + $language) : '/';
 
 							//url
 							$url                  = $language;
@@ -203,16 +212,16 @@ class Menu extends ComponentBase {
 								$url['type'] = $post['type'];
 								$type        = 'post';
 							}
-							
+
 							//if translation is missing slug is not available
 							if (isset($post['slug']) && $post['slug']) {
 								$url['slug'] = $post['slug'];
 							} else {
 								$url['post_id'] = $post['post_id'];
-							}		
-					
+							}
+
 							$category['url']           = url($route, $url);
-							$category['name']          = $post['name'] ?? (! $defaultLanguage ? $noTranslationText : null);
+							$category['name']          = $post['name'] ?? (!$defaultLanguage ? $noTranslationText : null);
 							$category['language_id']   = $post['language_id'] ?? $options['language_id'];
 						}
 					}
@@ -222,13 +231,20 @@ class Menu extends ComponentBase {
 			$results = ['menu_item' => [], 'count' => 0];
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}
 
-	//called on each request
-	function request(&$results, $index = 0) {
+	/**
+	 * Set active menu item based on current URL match.
+	 *
+	 * @param array<string, mixed> $results Component results to modify.
+	 * @param int                  $index   Request index.
+	 *
+	 * @return array<string, mixed> Modified results with active flags.
+	 */
+	public function request(array &$results, int $index = 0): array {
 		if (isset($results['menu_item'])) {
 			$currentUrl            = getCurrentUrl();
 
@@ -240,10 +256,17 @@ class Menu extends ComponentBase {
 		return $results;
 	}
 
-	//called by editor on page save for each component on page
-	//this method is called from admin app
-	static function editorSave($id, $fields, $type = 'menu') {
-		$menu              = new menuSQL();
+	/**
+	 * Save menu item content from editor on page save.
+	 *
+	 * @param int                              $id     Menu item ID.
+	 * @param array<int, array<string, mixed>> $fields Field data from editor.
+	 * @param string                           $type   Menu type identifier.
+	 *
+	 * @return void
+	 */
+	public static function editorSave(int $id, array $fields, string $type = 'menu'): void {
+		$menu              = new MenuSQL();
 		$menu_item_content = [];
 		$menu_item         = [];
 
@@ -253,16 +276,16 @@ class Menu extends ComponentBase {
 
 			$name = trim(str_replace('item', '', $name), '- ');
 
-			if (! $name) {
+			if (!$name) {
 				continue;
 			}
 
-			if ($name == 'name') {
+			if ($name === 'name') {
 				$menu_item_content[$name] = strip_tags($value);
 			} else {
-				if ($name == 'content') {
+				if ($name === 'content') {
 					$menu_item_content[$name] = sanitizeHTML($value);
-				} else if ($name == 'img') {
+				} elseif ($name === 'img') {
 				} else {
 					$menu_item[$name] = $value;
 				}
@@ -272,13 +295,11 @@ class Menu extends ComponentBase {
 		$menu_item_content['language_id']      = self :: $global['language_id'];
 		$menu_item['menu_item_id']             = $id;
 
-		if ($menu_item_content) {
-			$menu_item_content['content'] = $menu_item_content['content'] ?? '';
-			$menu_item['menu_item_content'][] = $menu_item_content;
-		}
+		$menu_item_content['content'] ??= '';
+		$menu_item['menu_item_content'][] = $menu_item_content;
 
 		if ((isset($menu_item_content['name']) && $menu_item_content['name']) ||
-			(isset($menu_item_content['content']) && $menu_item_content['content'])) {
+			!empty($menu_item_content['content'])) {
 			$result = $menu->editMenuItem(['menu_item' => $menu_item, 'menu_item_id' => $id]);
 		}
 	}

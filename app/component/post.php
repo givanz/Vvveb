@@ -33,33 +33,40 @@ use Vvveb\System\Event;
 use Vvveb\System\Traits\Post as PostTrait;
 use Vvveb\System\User\Admin;
 
-class Post  extends ComponentBase {
+class Post extends ComponentBase {
 	use PostTrait;
 
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'post_id'        => 'url',
 		'language_id'    => null,
 		'site_id'        => null,
 		'slug'           => 'url',
-		'status'         => 'publish', //'publish', 'draft', 'pending', 'private', 'scheduled'
-		'comment_count'  => 1, // flag to include post comments count
-		'comment_status' => 1, // include only comments with status, 1 = published, 0 = unpublished/pending, 2 = spam, 3 = trash
-		'type'           => null, // filter by post type eg: post
-		'image_size'     => 'large', //options: xlarge, large, medium, thumb
-		'image_resize'   => null, //options: cs = Crop & resize, c = crop, r = resize, s = stretch
+		'status'         => 'publish',
+		'comment_count'  => 1,
+		'comment_status' => 1,
+		'type'           => null,
+		'image_size'     => 'large',
+		'image_resize'   => null,
 	];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	//called when fetching data, when cache expires
-	function results() {
+	/**
+	 * Get single post with content, images, and formatting.
+	 *
+	 * @return array<string, mixed> Post data with content, images, and metadata.
+	 */
+	public function results(): array {
 		$post = new PostSQL();
 
 		$results = $post->get($this->options);
 
-		//$languages = availableLanguages();
-		if (! isset($this->options['date_format'])) {
-			$site = siteSettings();
+		if (!isset($results['post_id'])) {
+			return [];
+		}
+
+		if (!isset($this->options['date_format'])) {
+			$site                         = siteSettings();
 			$this->options['date_format'] = $site['date_format'] ?? 'human';
 		}
 
@@ -67,29 +74,38 @@ class Post  extends ComponentBase {
 			$this->post($results, $this->options);
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}
 
-	//called on each request
-	function request(&$results, $index = 0) {
-		$created_at = $this->request->get['created_at'] ?? ''; //revision preview
+	/**
+	 * Handle password-protected posts and revision preview on each request.
+	 *
+	 * @param array<string, mixed> &$results Post data to modify.
+	 * @param int                  $index    Request index.
+	 *
+	 * @return array<string, mixed> Modified post data.
+	 */
+	public function request(array &$results, int $index = 0): array {
+		$created_at = $this->request->get['created_at'] ?? '';
 
-		if ($results['password']) {
+		if (isset($results['password']) && $results['password']) {
 			if (isset($this->request->post['password'])) {
-				if ($results['password'] == $this->request->post['password']) {
+				if ($results['password'] === $this->request->post['password']) {
 					$results['password'] = '';
+
 					return $results;
 				} else {
 					$results['content'] = '<p>' . __('Invalid password!') . '</p>';
 					$results['image']   = '';
+
 					return $results;
 				}
 			}
 
 			$results['content']  = '';
-			$results['image']  = '';
+			$results['image']    = '';
 		}
 
 		if ($created_at && $results['post_id']) {
@@ -110,9 +126,16 @@ class Post  extends ComponentBase {
 		return $results;
 	}
 
-	//called by editor on page save for each component on page
-	//this method is called from admin app
-	static function editorSave($id, $fields, $type = 'post') {
+	/**
+	 * Save post content from editor on page save.
+	 *
+	 * @param int                              $id     Post ID.
+	 * @param array<int, array<string, mixed>> $fields Field data from editor.
+	 * @param string                           $type   Post type identifier.
+	 *
+	 * @return void
+	 */
+	public static function editorSave(int $id, array $fields, string $type = 'post'): void {
 		$posts      = new PostSQL();
 		$publicPath = \Vvveb\publicUrlPath() . 'media/';
 
@@ -123,17 +146,17 @@ class Post  extends ComponentBase {
 			$name  = $field['name'];
 			$value = $field['value'];
 
-			if ($name == 'content') {
+			if ($name === 'content') {
 				$post_content[$name] = sanitizeHTML($value);
 			} else {
-				if ($name == 'excerpt') {
+				if ($name === 'excerpt') {
 					$post_content[$name] = sanitizeHTML($value);
 				} else {
-					if ($name == 'name') {
+					if ($name === 'name') {
 						$post_content[$name] =  strip_tags($value);
 					} else {
-						if ($name == 'image') {
-							$value = str_replace($publicPath,'', $value);
+						if ($name === 'image') {
+							$value = str_replace($publicPath, '', $value);
 						}
 						$post[$name] = $value;
 					}
@@ -143,13 +166,12 @@ class Post  extends ComponentBase {
 
 		if ($post_content) {
 			$post_content['language_id'] = self :: $global['language_id'];
-			//$post['post_content']['post_id'] = $id;
-			$result = $posts->editContent(['post_content' => $post_content, 'post_id' => $id, 'language_id' => self :: $global['language_id']]);
+			$result                      = $posts->editContent(['post_content' => $post_content, 'post_id' => $id, 'language_id' => self :: $global['language_id']]);
 		}
 
 		if ($post || $post_content) {
 			$post['post_id'] = $id;
-			$result          = $posts->edit(['post' => $post, 'post_content' => [], /* 'post_content' => [$post_content],*/ 'post_id' => $id]);
+			$result          = $posts->edit(['post' => $post, 'post_content' => [], 'post_id' => $id]);
 		}
 	}
 }

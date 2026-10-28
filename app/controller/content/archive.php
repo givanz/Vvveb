@@ -26,7 +26,12 @@ use Vvveb\Controller\Base;
 use Vvveb\System\Locale;
 
 class Archive extends Base {
-	function index() {
+	/**
+	 * Display the archive page for the given year and/or month.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		if (isset($this->request->get['month'])) {
 			$month             = $this->request->get['month'];
 			$this->view->month = $month;
@@ -36,7 +41,7 @@ class Archive extends Base {
 			if (class_exists('\IntlDateFormatter')) {
 				$dt = new \DateTime();
 				$dt->setDate(0, $month, 0);
-				$df         = new \IntlDateFormatter(Locale::getLanguage(), \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, NULL, NULL, 'MMMM');
+				$df         = new \IntlDateFormatter(Locale::getLanguage(), \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, null, null, 'MMMM');
 				$month_name = ucfirst(datefmt_format($df, $dt));
 			}
 

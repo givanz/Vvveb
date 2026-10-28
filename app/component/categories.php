@@ -29,39 +29,49 @@ use Vvveb\System\Images;
 use function Vvveb\url;
 
 class Categories extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'start'                    => 0,
 		'limit'                    => 7,
-		'site_id'                  => NULL,
-		'language_id'              => NULL,
+		'site_id'                  => null,
+		'language_id'              => null,
 		'order'                    => ['url', 'price asc'],
-		'taxonomy_id'              => NULL,
-		'post_id'                  => NULL,
-		'parent_id'                => NULL,
-		'search'                   => NULL,
+		'taxonomy_id'              => null,
+		'post_id'                  => null,
+		'parent_id'                => null,
+		'search'                   => null,
 		'type'                     => 'categories',
-		'post_type'                => NULL,
-		'count'             	   => false, //include number of posts
+		'post_type'                => null,
+		'count'                    => false,
 		'parents_only'             => false,
 		'parents_children_only'    => false,
 		'parents_without_children' => false,
 	];
 
-	function cacheKey() {
+	/**
+	 * Disable caching when search is active.
+	 *
+	 * @return string|null Parent cache key or null to disable caching.
+	 */
+	public function cacheKey(): ?string {
 		if (isset($this->options['search'])) {
-			return false;
+			return null;
 		}
 
 		return parent::cacheKey();
 	}
 
-	function results() {
+	/**
+	 * Get categories with child counts, images, URLs, and pagination.
+	 *
+	 * @return array<string, mixed> Categories data with nested children counts and pagination info.
+	 */
+	public function results(): array {
 		$category = new CategorySQL();
 
-		$results  = $category->getCategories($this->options);
+		$results       = $category->getCategories($this->options);
 		$taxonomy_type = 'category';
 
-		if (isset($this->options['type']) && $this->options['type'] == 'tags') {
+		if (isset($this->options['type']) && $this->options['type'] === 'tags') {
 			$taxonomy_type = 'tag';
 		}
 
@@ -71,7 +81,7 @@ class Categories extends ComponentBase {
 				$parent_id          = $category['parent_id'] ?? false;
 				$category['active'] = false;
 
-				if (! isset($category['children'])) {
+				if (!isset($category['children'])) {
 					$category['children'] = 0;
 				}
 
@@ -106,13 +116,20 @@ class Categories extends ComponentBase {
 		$results['start']  = $this->options['start'];
 		$results['search'] = $this->options['search'] ?? '';
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}
 
-	//called on each request
-	function request(&$results, $index = 0) {
+	/**
+	 * Set active category based on current request module and category_id.
+	 *
+	 * @param array<string, mixed> &$results Component results to modify.
+	 * @param int                  $index    Request index.
+	 *
+	 * @return array<string, mixed> Modified results with active flags.
+	 */
+	public function request(array &$results, int $index = 0): array {
 		$module     = \Vvveb\getModuleName();
 		$categoryId = false;
 
@@ -132,10 +149,9 @@ class Categories extends ComponentBase {
 				if ($categoryId == $category['taxonomy_item_id']) {
 					$key                        = key($categories);
 					$categories[$key]['active'] = true;
-					//$category['active'] = true;
-					$categoryId = $category['parent_id'];
+					$categoryId                 = $category['parent_id'];
 
-					if (! $categoryId) {
+					if (!$categoryId) {
 						break;
 					}
 				}

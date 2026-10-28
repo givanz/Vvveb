@@ -25,6 +25,10 @@ namespace Vvveb\Controller\Content;
 use Vvveb\Controller\Base;
 
 class Index extends Base {
-	function index() {
-	}
+	/**
+	 * Render the content listing page.
+	 *
+	 * @return void
+	 */
+	public function index(): void {}
 }

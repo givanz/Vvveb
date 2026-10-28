@@ -27,26 +27,31 @@ use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 
 class Fields extends ComponentBase {
-	public static $defaultOptions = [
-		'start'             => 0,
-		'limit'             => 100,
-		'site_id'           => NULL,
-		'language_id'       => NULL,
-		'field_group_id'    => NULL,
-		'type'              => NULL,
-		'subtype'           => NULL,
-		'post_type'         => NULL,
-		'product_id'        => 'url',
-		'post_id'           => 'url',
-		'user_id'           => 'url',
-		'order_id'          => 'url',
-		'taxonomy_item_id'  => 'url',
-		'field_id'          => NULL, //array with filed_id's to filter
+	public static array $defaultOptions = [
+		'start'            => 0,
+		'limit'            => 100,
+		'site_id'          => null,
+		'language_id'      => null,
+		'field_group_id'   => null,
+		'type'             => null,
+		'subtype'          => null,
+		'post_type'        => null,
+		'product_id'       => 'url',
+		'post_id'          => 'url',
+		'user_id'          => 'url',
+		'order_id'         => 'url',
+		'taxonomy_item_id' => 'url',
+		'field_id'         => null,
 	];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function results() {
+	/**
+	 * Get custom field values for the specified entity type with decoded settings.
+	 *
+	 * @return array<string, mixed> Fields data with field list containing decoded settings and values.
+	 */
+	public function results(): array {
 		$model      = false;
 		$field_type = trim($this->options['type'] ?? '');
 
@@ -55,11 +60,11 @@ class Fields extends ComponentBase {
 			$model     = model($field_type . '_field_value');
 		}
 
-		if (! $model) {
+		if (!$model) {
 			return [];
 		}
 
-		if (! $this->options['subtype']) {
+		if (!$this->options['subtype']) {
 			unset($this->options['subtype']);
 		}
 
@@ -71,7 +76,7 @@ class Fields extends ComponentBase {
 				$field['name']     = $field['settings']['name'];
 				$field['type']     = $field['settings']['type'];
 
-				if ($field['value'] && $field['value'][0] == '{') {
+				if ($field['value'] && $field['value'][0] === '{') {
 					$field['value'] = json_decode($field['value'], true);
 				}
 			}
@@ -80,13 +85,20 @@ class Fields extends ComponentBase {
 		$results['field'] = $results[$modelName] ?? [];
 		unset($results[$modelName]);
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}
 
-	//called on each request
-	function request(&$results, $index = 0) {
+	/**
+	 * Filter results by field_id array if specified.
+	 *
+	 * @param array<string, mixed> &$results Component results to filter.
+	 * @param int                  $index    Request index.
+	 *
+	 * @return array<string, mixed> Filtered results.
+	 */
+	public function request(array &$results, int $index = 0): array {
 		if (isset($this->options['field_id']) && is_array($this->options['field_id'])) {
 			$results = array_intersect_key($results, $this->options['field_id']);
 		}

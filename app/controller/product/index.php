@@ -26,9 +26,14 @@ use Vvveb\Controller\Base;
 use Vvveb\System\Core\View;
 
 class Index extends Base {
-	function index() {
-		$view = View::getInstance();
-		$view->order_by = $this->request->get['order_by'] ?? false;
+	/**
+	 * Display the product listing with optional sorting.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$view            = View::getInstance();
+		$view->order_by  = $this->request->get['order_by'] ?? false;
 		$view->direction = $this->request->get['direction'] ?? false;
 	}
 }

@@ -29,3 +29,4 @@ if (isset($lines) && is_array($lines)) {
 
 body|prepend = <?php $debug = defined('DEBUG') && DEBUG;?>
 [data-debug]|if_exists = $debug
+[data-no-debug]|if_exists = <?php (!$debug) ?>

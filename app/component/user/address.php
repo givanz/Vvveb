@@ -22,28 +22,37 @@
 
 namespace Vvveb\Component\User;
 
-use Vvveb\Sql\User_AddressSQL;
+use Vvveb\Sql\User_addressSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use function Vvveb\url;
 
 class Address extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'user_id' => null,
 		'start'   => 0,
 		'limit'   => 10,
 	];
 
-	//don't cache
-	function cacheKey() {
-		return false;
+	/**
+	 * Disable caching for user address component.
+	 *
+	 * @return null Always returns null to disable caching.
+	 */
+	public function cacheKey(): ?string {
+		return null;
 	}
 
-	function results() {
+	/**
+	 * Get user addresses with edit and delete URLs.
+	 *
+	 * @return array<string, mixed> Address data with user_address items.
+	 */
+	public function results(): array {
 		$results  = [];
 
 		if (isset($this->options['user_id'])) {
-			$user_address  = new User_AddressSQL();
+			$user_address  = new User_addressSQL();
 			$results       = $user_address->getAll($this->options);
 
 			if ($results && isset($results['user_address'])) {
@@ -54,12 +63,18 @@ class Address extends ComponentBase {
 			}
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}
 
-	//called on each request
-	function request($results, $index = 0) {
-	}
+	/**
+	 * Called on each request (no-op for user address).
+	 *
+	 * @param array<string, mixed> $results Component results.
+	 * @param int                  $index   Request index.
+	 *
+	 * @return void
+	 */
+	public function request(array $results, int $index = 0): void {}
 }

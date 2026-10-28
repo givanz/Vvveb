@@ -5,6 +5,7 @@
 
 @shippings|prepend = <?php
 $vvveb_is_page_edit = Vvveb\isEditor();
+$shipping_method = $shipping_method ?? '';
 if (isset($_shippings_idx)) $_shippings_idx++; else $_shippings_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
 $shippings = $current_component = $this->_component['checkout_shipping'][$_shippings_idx] ?? [];

@@ -22,20 +22,25 @@
 
 namespace Vvveb\Controller\Product;
 
-use \Vvveb\Sql\VendorSQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\Sql\VendorSQL;
 use Vvveb\System\Images;
 
 class Vendor extends Base {
-	function index() {
+	/**
+	 * Display the vendor page with their products.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$slug                    = $this->request->get['slug'] ?? '';
 		$this->view->vendor_name = $slug;
 
 		if ($slug) {
-			$vendorSql   = new VendorSQL();
+			$vendorSQL   = new VendorSQL();
 			$options     = $this->global + ['slug' => $slug];
-			$vendor      = $vendorSql->get($options);
+			$vendor      = $vendorSQL->get($options);
 
 			if ($vendor) {
 				$this->request->get['name']        = $vendor['name'];
@@ -52,7 +57,7 @@ class Vendor extends Base {
 				$this->view->vendor                  = $vendor;
 			} else {
 				$message = __('Vendor not found!');
-				$this->notFound(true, $message);
+				$this->notFound($message);
 			}
 		}
 	}

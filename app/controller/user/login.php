@@ -28,11 +28,18 @@ use Vvveb\System\User\User;
 class Login extends \Vvveb\Controller\Base {
 	use LoginTrait;
 
-	function index() {
+	/**
+	 * Handle login form display and logout action.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		if (isset($this->request->post['logout'])) {
 			User::logout();
 
-			return $this->login();
+			$this->login();
+
+			return;
 		}
 
 		$user = sess('user');
@@ -61,6 +68,6 @@ class Login extends \Vvveb\Controller\Base {
 			$this->session->delete('success');
 		}
 
-		return $this->login();
+		$this->login();
 	}
 }

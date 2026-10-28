@@ -24,23 +24,27 @@ namespace Vvveb\Controller\Cart;
 
 use Vvveb\Controller\Base;
 use Vvveb\System\Cart\Cart as ShoppingCart;
-use Vvveb\System\Core\View;
 use Vvveb\System\Event;
-use Vvveb\System\Payment;
-use Vvveb\System\Shipping;
-//use Vvveb\Trait\Cart as CartTrait;
 
 class Cart extends Base {
-//	use CartTrait;
+	use CartTrait;
 	use CouponTrait;
 
-	private $cart;
+	/** @var ShoppingCart|null Shopping cart instance. */
+	private ?ShoppingCart $cart = null;
 
-	function init() {
+	/**
+	 * Initialise the cart from session/request data.
+	 *
+	 * @return string|null
+	 */
+	public function init(): ?string {
 		parent::init();
 
-		$options = array_intersect_key($this->global['site'],
-			array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
+		$options = array_intersect_key(
+			$this->global['site'],
+			array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id'])
+		);
 
 		$encrypted_cart_id = false;
 
@@ -55,15 +59,17 @@ class Cart extends Base {
 				$this->cart->loadCart($cart_id);
 			}
 		}
+
+		return null;
 	}
 
-	function index() {
-		$payment    = Payment::getInstance();
-		$shipping   = Shipping::getInstance();
-
-		$checkoutInfo = [];
-		$this->view->payment  = $payment->getMethods($checkoutInfo);
-		$this->view->shipping = $shipping->getMethods($checkoutInfo);
+	/**
+	 * Display the shopping cart.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$checkoutInfo         = $this->session->get('checkout') ?? ['user' => $this->global['user']];
 
 		$product_id = $this->request->post['product_id'] ?? $this->request->get['product_id'] ?? false;
 		$module     = $this->request->get['module'] ?? $this->request->post['module'] ?? '';
@@ -72,17 +78,23 @@ class Cart extends Base {
 			$this->action('add', $product_id);
 		}
 
+		$hasShipping             = $this->cart->hasShipping();
+		$subscription            = $this->cart->getSubscription();
+		$hasPayment              = ($this->cart->getGrandTotal() > 0);
+
+		$this->shippingPayment($checkoutInfo, $hasShipping, $hasPayment);
+
 		$cart = [
 			'products'          => $this->cart->getAll(),
 			'totals'            => $this->cart->getAllTotals(),
 			'total_items'       => $this->cart->getNoProducts(),
 			'total_weight'      => $this->cart->getWeight(),
-			'total_price'       => $this->cart->getNoProducts(),
+			'subtotal'          => $this->cart->getSubTotal(),
 			'total'             => $this->cart->getGrandTotal(),
 			'coupons'           => $this->cart->getCoupons(),
 			'total_formatted'   => $this->cart->getGrandTotalFormatted(),
-			'cart_id'           => ($cardId = $this->cart->getId()),
-			'encrypted_cart_id' => $cardId ? $this->cart->getId() : '',
+			'cart_id'           => ($cartId = $this->cart->getId()),
+			'encrypted_cart_id' => $cartId ? $this->cart->getEncryptedId() : '',
 			'weight_unit'       => $this->global['site']['weight_type'],
 			'length_unit'       => $this->global['site']['length_type'],
 		];
@@ -90,7 +102,16 @@ class Cart extends Base {
 		$this->view->cart = $cart;
 	}
 
-	private function action($action, $productId = null, $quantity = 1) {
+	/**
+	 * Perform a cart action: add, update, or remove.
+	 *
+	 * @param string          $action
+	 * @param int|string|null $productId
+	 * @param int             $quantity
+	 *
+	 * @return void
+	 */
+	private function action(string $action, int|string|null $productId = null, int $quantity = 1): void {
 		$productId          = $this->request->request['product_id'] ?? $productId ?? false;
 		$key                = $this->request->request['key'] ?? false;
 		$quantity           = $this->request->request['quantity'] ?? $quantity;
@@ -98,8 +119,8 @@ class Cart extends Base {
 		$subscriptionPlanId = $this->request->request['subscription_plan_id'] ?? false;
 		$productVariantId   = $this->request->request['product_variant_id'] ?? false;
 
-		list($action, $productId, $key, $quantity, $option, $subscriptionPlanId) =
-		Event :: trigger(__CLASS__,__FUNCTION__, $action, $productId, $key, $quantity, $option, $subscriptionPlanId);
+		[$action, $productId, $key, $quantity, $option, $subscriptionPlanId] =
+		Event::trigger(__CLASS__, __FUNCTION__, $action, $productId, $key, $quantity, $option, $subscriptionPlanId);
 
 		if ($key || $productId) {
 			switch ($action) {
@@ -118,25 +139,39 @@ class Cart extends Base {
 
 					break;
 			}
-			//$this->view->success = $this->cart->$action($productId, $quantity);
 		}
 
 		$this->view->noJson = true;
 	}
 
-	function remove() {
+	/**
+	 * Remove an item from the cart and redisplay.
+	 *
+	 * @return void
+	 */
+	public function remove(): void {
 		$this->action('remove');
 
-		return $this->index();
+		$this->index();
 	}
 
-	function update() {
+	/**
+	 * Update a cart item quantity and redisplay.
+	 *
+	 * @return void
+	 */
+	public function update(): void {
 		$this->action('update');
 
-		return $this->index();
+		$this->index();
 	}
 
-	function add() {
-		return $this->index();
+	/**
+	 * Add an item to the cart and redisplay.
+	 *
+	 * @return void
+	 */
+	public function add(): void {
+		$this->index();
 	}
 }

@@ -30,7 +30,7 @@ $previous_component = isset($current_component)?$current_component:null;
 $product_categories = $current_component = $this->_component['product_categories'][$_product_categories_idx] ?? [];
 $_categories = $product_categories['categories'] ?? [];
 
-$_pagination_count = $product_categories['count'] ?? 0;
+$_pagination_count = $count = $product_categories['count'] ?? count($_categories);
 $_pagination_limit = isset($product_categories['limit']) ? $product_categories['limit'] : 5;
 $parent            = 0;	
 $generate_menu     = false;

@@ -1,5 +1,5 @@
 @addresscomp = [data-v-component-user-address]
-@address  = [data-v-component-user-address] [data-v-user_address]
+@address     = [data-v-component-user-address] [data-v-user_address]
 
 @address|deleteAllButFirstChild
 

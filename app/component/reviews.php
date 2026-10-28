@@ -22,31 +22,36 @@
 
 namespace Vvveb\Component;
 
-use Vvveb\Sql\Product_Review_MediaSQL;
+use Vvveb\Sql\Product_review_mediaSQL;
 use Vvveb\System\Images;
 
 class Reviews extends Comments {
-	protected $type = 'product_review';
+	protected string $type = 'product_review';
 
-	protected $route = 'product/product/index';
+	protected string $route = 'product/product/index';
 
-	protected $modelName = 'product_review';
+	protected string $modelName = 'product_review';
 
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'product_id'    => 'url',
 		'slug'          => 'url',
-		'product_title' => NULL, //include product title (for recent reviews etc)
-		'user_id'       => NULL,
-		'status'        => 1, //approved reviews
+		'product_title' => null,
+		'user_id'       => null,
+		'status'        => 1,
 		'start'         => 0,
 		'limit'         => 10,
-		'order'         => 'asc', //desc
-		'image_size'    => 'thumb', //options: xlarge, large, medium, thumb
+		'order'         => 'asc',
+		'image_size'    => 'thumb',
 	];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function results() {
+	/**
+	 * Get product reviews with images, gallery, and rating statistics.
+	 *
+	 * @return array<string, mixed> Reviews data with images, rating, summary, and stats.
+	 */
+	public function results(): array {
 		$results = parent::results();
 
 		//review images
@@ -62,11 +67,10 @@ class Reviews extends Comments {
 		}
 
 		//all product reviews images
-		$media   = new Product_Review_MediaSQL();
+		$media   = new Product_review_mediaSQL();
 		$gallery = $media->getAll($this->options + ['status' => 1])['product_review_media'] ?? [];
 
 		if ($gallery) {
-			//$gallery = Images::images($gallery, 'product', $this->options['image_size']);
 			foreach ($gallery as &$image) {
 				$image['thumb'] = Images::image($image['image'], 'product', $this->options['image_size']);
 				$image['image'] = Images::image($image['image'], 'product', 'xlarge');
@@ -81,8 +85,9 @@ class Reviews extends Comments {
 			$results += $stats;
 		}
 
-		$results['rating']     = number_format($results['rating'] ?? 0, 1);
-		$results['rating_int'] = ceil($results['rating']);
+		$rating                 = $results['rating'] ?? 0;
+		$results['rating_int']  = ceil($rating);
+		$results['rating']      = number_format($rating, 1);
 
 		//compute width and fill missing ratings
 		foreach ([1, 2, 3, 4, 5] as $rating) {
@@ -95,9 +100,6 @@ class Reviews extends Comments {
 				$results['summary'][$rating]['count']   = 0;
 			}
 		}
-
-		//$results['buyers'] = 5;
-		//$results['recommendations'] = 100;
 
 		return $results;
 	}

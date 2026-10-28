@@ -22,30 +22,41 @@
 
 namespace Vvveb\Component;
 
+use Vvveb\System\Cart\Cart as ShoppingCart;
 use Vvveb\System\Component\ComponentBase;
+use Vvveb\System\Event;
 
 class Checkout extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'language_id' => null,
 		'site_id'     => null,
 	];
 
-	public $cacheExpire = 0; //seconds
+	public int $cacheExpire = 0;
 
-	function cacheKey() {
-		//disable caching
-		return false;
+	protected array $options = [];
+
+	/**
+	 * Disable caching for checkout component.
+	 *
+	 * @return null Always returns null to disable caching.
+	 */
+	public function cacheKey(): ?string {
+		return null;
 	}
 
-	protected $options = [];
-
-	function results() {
+	/**
+	 * Get checkout results including cart contents and totals.
+	 *
+	 * @return array<string, mixed> Checkout data with product, total_items, and total.
+	 */
+	public function results(): array {
 		$cart                   = ShoppingCart::getInstance($this->options);
 		$results['product']     = $cart->getAll();
 		$results['total_items'] = $cart->getNoProducts();
 		$results['total']       = '500$';
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

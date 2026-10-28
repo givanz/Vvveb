@@ -15,8 +15,8 @@ $_categories = [];
 $previous_component = isset($current_component)?$current_component:null;
 $categories_pages = $current_component = $this->_component['categories_pages'][$_categories_pages_idx] ?? [];
 
-$_pagination_count = $posts['count'] ?? 0;
-$_pagination_limit = isset($posts['limit']) ? $posts['limit'] : 5;
+ $_pagination_count = $categories_pages['count'] ?? 0;
+$_pagination_limit = $categories_pages['limit'] ?? 5;
 $_categories = $categories_pages['categories'] ?? [];
 
 	

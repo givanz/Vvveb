@@ -20,32 +20,34 @@
  *
  */
 
-namespace Vvveb\Component;
+return [
+	/*
+	'username' => [
+		'notEmpty' => ''/*,
+		'maxLength' => 60 /*,
+	],
+*/
+	'display_name' => [
+		'notEmpty' => ''/*,
+			 'message' => '%s must not be empty'*/,
 
-use Vvveb\System\Component\ComponentBase;
-use Vvveb\System\Event;
-
-class Search extends ComponentBase {
-	public static $defaultOptions = [
-		'query' => null,
-		'limit' => 1000,
-		'page'  => 1,
-	];
-
-	protected $options = [];
-
-	public $cacheExpire = 0; //seconds
-
-	function cacheKey() {
-		//disable caching
-		return false;
-	}
-
-	function results() {
-		$results =  ['query' => $this->request->request['search'] ?? null];
-
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
-
-		return $results;
-	}
-}
+		'maxLength' => 255 /*,
+			 'message' => __('%s must not be greater than %d')*/,
+	],
+	'first_name' => [
+		'notEmpty'  => '',
+		'maxLength' => 32,
+	],
+	'last_name' => [
+		'notEmpty'  => '',
+		'maxLength' => 32,
+	],
+	'email' => [
+		'email'     => '',
+		'maxLength' => 100,
+	],
+	/*
+	'captcha' => [
+			['captcha' => ''],
+	],	*/
+];

@@ -28,15 +28,22 @@ use Vvveb\System\Images;
 use function Vvveb\url;
 
 class Admins extends ComponentBase {
-	public static $defaultOptions = [
-		'start'  => 0,
-		'limit'  => ['url', 4],
-		'status' => 1,
+	public static array $defaultOptions = [
+		'start'    => 0,
+		'limit'    => ['url', 4],
+		'status'   => 1,
+		'search'   => 1,
+		'admin_id' => 1,
 	];
 
-	public $options = [];
+	public array $options = [];
 
-	function results() {
+	/**
+	 * Get admins list with avatar images and profile URLs.
+	 *
+	 * @return array<string, mixed> Admins data with admin list and image URLs.
+	 */
+	public function results(): array {
 		$admins = new \Vvveb\Sql\AdminSQL();
 
 		$results = $admins->getAll($this->options);
@@ -51,7 +58,7 @@ class Admins extends ComponentBase {
 			}
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

@@ -25,18 +25,27 @@ namespace Vvveb\Controller\Content;
 use function Vvveb\__;
 use function Vvveb\model;
 use function Vvveb\sanitizeHTML;
+use function Vvveb\stripChars;
 use Vvveb\System\CacheManager;
 use Vvveb\System\Event;
 
 trait CommentTrait {
-	private function insertComment($commentType = 'comment', $commentName = 'comment') {
+	/**
+	 * Insert a comment (or review/question) from the current POST data.
+	 *
+	 * @param string $commentType Model name for the comment type (e.g. 'comment', 'product_review').
+	 * @param string $commentName Human-readable name used in success/error messages.
+	 *
+	 * @return array<string, mixed>|bool Insert result array or false on failure.
+	 */
+	private function insertComment(string $commentType = 'comment', string $commentName = 'comment'): array|bool {
 		$result = false;
 		$post   = &$this->request->post;
 
-		$commentsOpen = $this->global['site']['default_comment_status'] ?? false;
+		$commentsOpen      = $this->global['site']['default_comment_status'] ?? false;
 		$anonymousComments = $this->global['site']['anonymous_comments'] ?? false;
 
-		if (! $commentsOpen || (! $anonymousComments && ! $this->global['user'])) {
+		if (!$commentsOpen || (!$anonymousComments && !$this->global['user'])) {
 			return [];
 		}
 
@@ -47,26 +56,41 @@ trait CommentTrait {
 			isset($post['lastname-empty']) && empty($post['lastname-empty']) &&
 			isset($post['subject-empty']) && empty($post['subject-empty']));
 
-			$user = $this->global['user'];
+			$user = $this->global['user'] ?? false;
 
 			if ($user) {
-				$user['author'] = $user['display_name'];
+				$post['author'] = $user['display_name'] ?? '';
+				$post['email']  = $user['email'] ?? '';
+			}
+
+			//author, content and email are required for the comment to be stored
+			foreach (['author', 'content', 'email'] as $field) {
+				if (!isset($post[$field]) || trim((string)$post[$field]) === '') {
+					$this->view->errors[] = __('Please fill in all required fields!');
+
+					return false;
+				}
+			}
+
+			//never persist the honeypot fields in the stored data
+			foreach (['firstname-empty', 'lastname-empty', 'subject-empty'] as $spamField) {
+				unset($post[$spamField]);
 			}
 
 			//sanitize html and inline js code
 			$post['content'] = sanitizeHTML($post['content']);
 			$post['author']  = sanitizeHTML(stripChars($post['author']));
 
-			$comment   = array_merge($post, $user, [
+			$commentData   = array_merge($post, is_array($user) ? $user : [], [
 				'created_at'  => date('Y-m-d H:i:s'),
 				'status'      => 0,
 				'notSpam'     => $notSpam,
 				'commentType' => $commentType,
 				'commentName' => $commentName,
-				'user_id' => $user['user_id'] ?? false,
+				'user_id'     => is_array($user) ? ($user['user_id'] ?? false) : false,
 			]);
 
-			list($comment) = Event :: trigger(__CLASS__, __FUNCTION__ , $comment);
+			[$comment] = Event::trigger(__CLASS__, __FUNCTION__, $commentData);
 
 			if ($comment && $comment['notSpam']) {
 				//$sql       = new \Vvveb\Sql\CommentSQL();
@@ -76,16 +100,17 @@ trait CommentTrait {
 				if ($result[$commentType]) {
 					$comment["{$commentType}_id"] = $result[$commentType];
 
-					$comments                                                  = $this->session->get('comments', []);
-					$comments[$comment['slug']][$comment["{$commentType}_id"]] = $comment;
+					$slug                                                      = $comment['slug'] ?? '';
+					$comments                                                  = $this->session->get($commentType) ?? [];
+					$comments[$slug][$comment["{$commentType}_id"]]            = $comment;
 					$this->session->set($commentType, $comments);
 
 					// clear notifications cache
-					CacheManager :: clearObjectCache('component', 'notifications');
+					CacheManager::clearObjectCache('component', 'notifications');
 
 					$this->view->success[] = ucfirst($commentName) . __(' was posted!');
 				} else {
-					$this->view->errors[] = sprintf(__('Error adding %s!'), $text);
+					$this->view->errors[] = sprintf(__('Error adding %s!'), $commentType);
 				}
 			} else {
 				//optional add comment with spam status

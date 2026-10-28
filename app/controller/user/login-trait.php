@@ -22,27 +22,36 @@
 
 namespace Vvveb\Controller\User;
 
-use \Vvveb\System\Functions\Str;
 use function Vvveb\__;
-use Vvveb\Sql\User_Failed_LoginSQL;
+use Vvveb\Sql\User_failed_loginSQL;
 use Vvveb\System\Event;
+use Vvveb\System\Functions\Str;
 use Vvveb\System\User\User;
 use Vvveb\System\Validator;
 
 trait LoginTrait {
-	protected $redirectUrl;
+	/** @var string|null URL to redirect to after successful login. */
+	protected ?string $redirectUrl = null;
 
-	//failed attemps per minute Y-m-d H:i:00
-	protected $failedTimeInterval = 'Y-m-d H:00:00'; //failed attemps per hour
+	/** @var string Date format string for grouping failed login attempts. */
+	protected string $failedTimeInterval = 'Y-m-d H:00:00';
 
-	protected $failedCount = 10; //the number of failures before account is locked
+	/** @var int Maximum failed login attempts before account lockout. */
+	protected int $failedCount = 10;
 
-	function login() {
+	/**
+	 * Process login form submission: validate credentials, log failures, authenticate.
+	 *
+	 * @return void
+	 */
+	public function login(): void {
 		if (isset($this->request->post['logout'])) {
 			$success             = __('Logout successful!');
 			$this->view->success = [$success];
 
-			return User::logout();
+			User::logout();
+
+			return;
 		}
 
 		$validator = new Validator(['login']);
@@ -51,7 +60,7 @@ trait LoginTrait {
 			if (($errors = $validator->validate($this->request->post)) === true) {
 				$userInfo = $this->request->post;
 
-				$failedLogin   = new User_Failed_LoginSQL();
+				$failedLogin   = new User_failed_loginSQL();
 				$date          = date($this->failedTimeInterval);
 				$lastIp        = $_SERVER['REMOTE_ADDR'] ?? '';
 				$failedAttemps = $failedLogin->get(['updated_at' => $date, 'status' => 1] + $userInfo);
@@ -63,27 +72,30 @@ trait LoginTrait {
 					return;
 				}
 
-				list($userInfo) = Event :: trigger(__CLASS__, __FUNCTION__ , $userInfo);
+				[$userInfo] = Event::trigger(__CLASS__, __FUNCTION__, $userInfo);
 
-				if ($userInfo) {
-					if ($user = User::login($userInfo)) {
-						$success = __('Login successful!');
-						$this->session->set('success', ['login' => $success]);
-						$this->session->close();
-						$this->view->success['login']         = $success;
-						$this->view->global['user_id']        = $user['user_id'];
-						$this->redirect($this->redirectUrl ?? 'user/index');
-					} else {
-						//user not found or wrong password
-						$this->view->errors['login'] = __('Authentication failed, wrong email or password!');
-						$this->session->set('csrf', Str::random());
-						//increment failed attempts
-						$failedLogin->logFailed(['last_ip' => $lastIp, 'updated_at' => $date] + $userInfo);
-					}
+				if (!$userInfo) {
+					//cancelled by event listener
+					return;
+				}
+
+				if ($user = User::login($userInfo)) {
+					$success = __('Login successful!');
+					$this->session->set('success', ['login' => $success]);
+					$this->session->close();
+					$this->view->success['login']         = $success;
+					$this->view->global['user_id']        = $user['user_id'];
+					$this->redirect($this->redirectUrl ?? 'user/index');
 				} else {
-					if ($errors !== true) {
-						$this->view->errors['login'] = $errors;
-					}
+					//user not found or wrong password
+					$this->view->errors['login'] = __('Authentication failed, wrong email or password!');
+					$this->session->set('csrf', Str::random());
+					//increment failed attempts
+					$failedLogin->logFailed(['last_ip' => $lastIp, 'updated_at' => $date] + $userInfo);
+				}
+			} else {
+				if ($errors != true) {
+					$this->view->errors['login'] = $errors;
 				}
 			}
 		}

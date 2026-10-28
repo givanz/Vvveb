@@ -28,21 +28,30 @@ use Vvveb\System\Event;
 use Vvveb\System\Payment as PaymentApi;
 
 class Payment extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'checkout' => null,
 	];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function cacheKey() {
-		//disable caching
-		return false;
+	/**
+	 * Disable caching for payment component.
+	 *
+	 * @return null Always returns null to disable caching.
+	 */
+	public function cacheKey(): ?string {
+		return null;
 	}
 
-	function results() {
+	/**
+	 * Get available payment methods with count.
+	 *
+	 * @return array<string, mixed> Payment data with payment methods and count.
+	 */
+	public function results(): array {
 		$checkoutInfo = [];
 
-		if ($this->options['checkout']) {
+		if (isset($this->options['checkout']) && $this->options['checkout']) {
 			$checkoutInfo = sess('checkout', []) ?? [];
 		}
 
@@ -50,8 +59,10 @@ class Payment extends ComponentBase {
 		$payment            = PaymentApi::getInstance();
 		$results['payment'] = $payment->getMethods($checkoutInfo);
 		$results['count']   = $results['payment'] ? count($results['payment']) : 0;
+		//$siteSettings       = siteSettings();
+		//$results['default'] = $siteSettings['payment_method'] ?? '';
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

@@ -21,22 +21,24 @@ $_pagination_limit = isset($product['limit']) ? $product['limit'] : 5;
 @product|data-v-id = $product['product_id']
 
 //manual echo to avoid html escape
-@product [data-v-product-content] = <?php echo($product['content']);?>
+@product [data-v-product-content] = <?php echo($product['content'] ?? '');?>
 
 //catch all data attributes
-@product [data-v-product-*]|innerText = $product['@@__data-v-product-(*)__@@']
+@product [data-v-product-*]:not(a):not(button)|innerText = $product['@@__data-v-product-(*)__@@']
+@product a[data-v-product-*]:empty|innerText = $product['@@__data-v-product-(*)__@@']
+@product button[data-v-product-*]:empty|innerText = $product['@@__data-v-product-(*)__@@']
+
+
 @product input[data-v-product-*]|value = $product['@@__data-v-product-(*)__@@']
 @product a[data-v-product-*]|href = $product['@@__data-v-product-(*)__@@']
 
-
 @product button[data-v-product-*]|formaction = $product['@@__data-v-product-(*)__@@']
-@product a[data-v-product-*]|href = $product['@@__data-v-product-(*)__@@']
 @product [name="product_variant_id"] = $product['product_variant_id']
 
 
 @product img[data-v-product-main-image]|src = $product['image']
 @product [data-v-product-main-image-background-image]|style = <?php echo 'background-image: url(\'' . $product['image'] . '\');';?>
-@product a[data-v-product-main-image]|href = <?php echo reset($product['images'])['image'];?>
+@product a[data-v-product-main-image]|href = <?php echo $product['images'] ? reset($product['images'])['image'] : '';?>
 
 @images [data-v-product-image]|deleteAllButFirstChild
 
@@ -63,7 +65,7 @@ if($_images) {
 	}
 }
 
-$component = $previous_component;
+$current_component = $component = $previous_component;
 ?>
 
 

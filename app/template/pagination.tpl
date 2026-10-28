@@ -10,7 +10,7 @@ $parameters = [];//@@__data-v-parameters__@@;
 
 if ($query_string) {
 	$query_string = ($_SERVER['QUERY_STRING'] ?? '');
-	$query_string = $query_string ? "?$query_string" : '';
+	$query_string = $query_string ? '?' . htmlspecialchars($query_string) : '';
 }
 
 if ($parent_component) {
@@ -48,19 +48,15 @@ $current_page = max($current_page, 1);
 
 if ($pagecount > $maxpages)
 {
-	if ($current_page > $visible_pages)
-	{
-		if (($current_page + $visible_pages) > $pagecount)
-		{
+	if ($current_page > $visible_pages) {
+		if (($current_page + $visible_pages) > $pagecount)  {
 			$page = $pagecount - $visible_pages - 1;
 			$page_stop = $pagecount;
-		} else 
-		{
+		} else {
 			$page = $current_page - $visible_pages;
 			$page_stop = $current_page + $visible_pages;
 		}
-	} else
-	{
+	} else {
 		$page = 1;
 		$page_stop = $maxpages;
 	}

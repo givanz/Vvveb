@@ -22,11 +22,16 @@
 
 namespace Vvveb\Controller\Feed;
 
-use \Vvveb\Controller\Base;
+use Vvveb\Controller\Base;
 use Vvveb\System\Functions\Str;
 
 class Index extends Base {
-	function index() {
+	/**
+	 * Serve RSS or XML feed files from the theme directory.
+	 *
+	 * @return string|null Template path when an RSS feed is found.
+	 */
+	public function index(): ?string {
 		$rss = $this->request->get['rss'] ?? false;
 
 		if ($rss) {
@@ -48,7 +53,9 @@ class Index extends Base {
 				}
 			}
 
-			$this->notFound(true);
+			$this->notFound();
 		}
+
+		return null;
 	}
 }

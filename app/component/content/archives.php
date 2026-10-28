@@ -27,36 +27,38 @@ use Vvveb\System\Event;
 use Vvveb\System\Locale;
 
 class Archives extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'start'           => 0,
 		'language_id'     => 1,
 		'site_id'         => 1,
 		'count'           => ['url', 4],
-		'id_manufacturer' => NULL,
+		'id_manufacturer' => null,
 		'order'           => ['url', 'price asc'],
-		'id_category'     => NULL,
+		'id_category'     => null,
 		'limit'           => 0,
-		'start'           => 1,
 		'type'            => 'post',
-		'interval'        => 'month', //year, month, day
+		'interval'        => 'month',
 	];
 
-	function results() {
+	/**
+	 * Get content archives with localized month names and URLs.
+	 *
+	 * @return array<string, mixed> Archives data with formatted month names and archive URLs.
+	 */
+	public function results(): array {
 		$post    = new \Vvveb\Sql\PostSQL();
 		$results = $post->getArchives($this->options) ?? [];
 
-		$df	= false;
+		$df	 = false;
 
 		if (class_exists('\IntlDateFormatter')) {
 			$dt = new \DateTime();
-			$df = new \IntlDateFormatter(Locale::getLanguage(), \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, NULL, NULL, 'MMMM');
+			$df = new \IntlDateFormatter(Locale::getLanguage(), \IntlDateFormatter::NONE, \IntlDateFormatter::NONE, null, null, 'MMMM');
 		}
 
 		foreach ($results['archives'] as $index => &$archive) {
 			if (isset($archive['month'])) {
 				$monthNum              = $archive['month'];
-				//$dateObj               = \DateTime::createFromFormat('!m', $monthNum);
-				//$monthName             = $dateObj->format('F');
 
 				$archive['month_text'] = $monthNum;
 
@@ -64,7 +66,7 @@ class Archives extends ComponentBase {
 					$archive['month_text'] = ucfirst(datefmt_format($df, $dt));
 					$dt->setDate(0, $archive['month'], 0);
 				} else {
-					$archive['month_text'] = date('F',mktime(0,0,0,$monthNum,1,$archive['year']));
+					$archive['month_text'] = date('F', mktime(0, 0, 0, $monthNum, 1, $archive['year']));
 				}
 			}
 
@@ -78,7 +80,7 @@ class Archives extends ComponentBase {
 			$archive['url'] = htmlspecialchars(\Vvveb\url('content/archive/index', $archive));
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

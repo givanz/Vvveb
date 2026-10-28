@@ -25,6 +25,10 @@ namespace Vvveb\Controller\Mail;
 use Vvveb\Controller\Base;
 
 class Order extends Base {
-	function index() {
-	}
+	/**
+	 * Render the order mail template.
+	 *
+	 * @return void
+	 */
+	public function index(): void {}
 }

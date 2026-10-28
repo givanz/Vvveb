@@ -23,16 +23,21 @@
 namespace Vvveb\Controller\User;
 
 use function Vvveb\session as sess;
+use Vvveb\System\User\User;
 
 #[\AllowDynamicProperties]
 class Base extends \Vvveb\Controller\Base {
-	function __construct() {
+	/**
+	 * Check login status on construction; redirect to login if not authenticated.
+	 *
+	 * @return void
+	 */
+	public function __construct() {
 		$user = sess('user');
 
-		if (! $user) {
+		if (!$user) {
 			$this->redirect('/user/login');
-
-			die(0);
+			exit();
 		}
 
 		if (isset($this->request->post['logout'])) {

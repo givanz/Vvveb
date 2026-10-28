@@ -30,22 +30,31 @@ use Vvveb\System\Event;
 use function Vvveb\url;
 
 class Breadcrumb extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'absoluteURL' => null,
-		'blog' => true,
-		'shop' => true,
+		'blog'        => true,
+		'shop'        => true,
 	];
 
-	public $options = [];
+	public array $options = [];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function cacheKey() {
-		//disable caching
-		return false;
+	/**
+	 * Disable caching for breadcrumb component.
+	 *
+	 * @return null Always returns null to disable caching.
+	 */
+	public function cacheKey(): ?string {
+		return null;
 	}
 
-	function results() {
+	/**
+	 * Build breadcrumb navigation based on current request module.
+	 *
+	 * @return array<string, mixed> Breadcrumb data with breadcrumb array of text/url pairs.
+	 */
+	public function results(): array {
 		$request     = Request::getInstance();
 		$module      = $request->get['module'] ?? '';
 		$slug        = $request->get['slug'] ?? '';
@@ -61,13 +70,13 @@ class Breadcrumb extends ComponentBase {
 		}
 
 		if (($this->options['default_language'] != $this->options['language']) || self :: $global['default_lang_slug']) {
-			$urlOptions += ['language'=> $this->options['language']];
+			$urlOptions += ['language' => $this->options['language']];
 		}
 
 		if ($type && $type != 'post' && $type != 'product') {
 			$shopText = __(ucfirst($type));
 			$blogText = __(ucfirst($type));
-			$urlOptions += ['type'=> $type];
+			$urlOptions += ['type' => $type];
 		}
 
 		$breadcrumb = [
@@ -87,10 +96,11 @@ class Breadcrumb extends ComponentBase {
 					$category = new CategorySQL();
 					$result   = $category->getCategory(
 						['product_id' => $product_id, 'limit' => 1, 'type' => 'categories', 'post_type' => 'product']
-						+ self :: $global);
+						+ self :: $global
+					);
 
 					if ($result && isset($result['taxonomy_item_id'])) {
-						$cat = ['slug' => $result['slug']];
+						$cat          = ['slug' => $result['slug']];
 						$breadcrumb[] = ['text' => $result['name'], 'url' => url('product/category/index', $cat + $urlOptions)];
 					}
 				}
@@ -139,10 +149,11 @@ class Breadcrumb extends ComponentBase {
 					$category = new CategorySQL();
 					$result   = $category->getCategory(
 						['post_id' => $post_id, 'limit' => 1, 'type' => 'categories', 'post_type' => 'post']
-						+ self :: $global);
+						+ self :: $global
+					);
 
 					if ($result && isset($result['taxonomy_item_id'])) {
-						$cat = ['slug' => $result['slug']];
+						$cat          = ['slug' => $result['slug']];
 						$breadcrumb[] = ['text' => $result['name'], 'url' => url('content/category/index', $cat + $urlOptions)];
 					}
 				}
@@ -158,10 +169,11 @@ class Breadcrumb extends ComponentBase {
 					$category = new CategorySQL();
 					$result   = $category->getCategory(
 						['post_id' => $post_id, 'limit' => 1, 'type' => 'categories', 'post_type' => 'page']
-						+ self :: $global);
+						+ self :: $global
+					);
 
 					if ($result && isset($result['taxonomy_item_id'])) {
-						$cat = ['slug' => $result['slug'], 'type' => 'page'];
+						$cat          = ['slug' => $result['slug'], 'type' => 'page'];
 						$breadcrumb[] = ['text' => $result['name'], 'url' => url('content/category/index', $cat + $urlOptions)];
 					}
 				}
@@ -192,7 +204,7 @@ class Breadcrumb extends ComponentBase {
 			'breadcrumb' => $breadcrumb,
 		];
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

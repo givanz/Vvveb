@@ -21,11 +21,12 @@ $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : f
 $breadcrumb['breadcrumb'] = empty($breadcrumb['breadcrumb']) ? $_default : $breadcrumb['breadcrumb'];
 
 if($breadcrumb && is_array($breadcrumb['breadcrumb'])) {
-	foreach ($breadcrumb['breadcrumb'] as $index => $breadcrumb) {$index++;?>
+	foreach ($breadcrumb['breadcrumb'] as $index => $item) {
+	?>
 		
-		@item [data-v-breadcrumb-item-*]|innerText = $breadcrumb['@@__data-v-breadcrumb-item-(*)__@@']
+		@item [data-v-breadcrumb-item-*]|innerText = $item['@@__data-v-breadcrumb-item-(*)__@@']
 		
-		@item a[data-v-breadcrumb-item-*]|href = $breadcrumb['@@__data-v-breadcrumb-item-(*)__@@']
+		@item a[data-v-breadcrumb-item-*]|href = $item['@@__data-v-breadcrumb-item-(*)__@@']
 	
 	@item|after = <?php 
 	} 

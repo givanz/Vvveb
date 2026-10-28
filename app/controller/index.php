@@ -29,12 +29,14 @@ class Index extends Base {
 	/**
 	 * Homepage.
 	 *
+	 * @return void
 	 */
-	function index() {
-		$site = Sites :: getSiteData(SITE_ID);
+	public function index(): void {
+		$site = Sites::getSiteData(SITE_ID);
 
-		if (isset($site['template']) && is_array($site['template'])) {
+		if (isset($site['template']) && is_array($site['template']) && $site['state'] === 'live') {
 			$lang = $this->global['language_id'];
+
 			if (isset($site['template'][$lang])) {
 				$template = $site['template'][$lang];
 			} else {

@@ -26,13 +26,20 @@ use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 
 class Compare extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 	];
 
-	public $options = [];
+	public array $options = [];
 
-	function results() {
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+	/**
+	 * Get product comparison results.
+	 *
+	 * @return array<string, mixed> Comparison data triggered by event.
+	 */
+	public function results(): array {
+		$results = [];
+
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

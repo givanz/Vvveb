@@ -24,45 +24,56 @@ namespace Vvveb\Controller\User;
 
 use function Vvveb\__;
 use Vvveb\Sql\CountrySQL;
-use Vvveb\Sql\User_AddressSQL;
+use Vvveb\Sql\User_addressSQL;
 use function Vvveb\url;
 
 class Address extends Base {
-	function index() {
-	}
+	/**
+	 * Display the address listing page.
+	 *
+	 * @return void
+	 */
+	public function index(): void {}
 
-	private function save() {
-	}
-
-	private function data() {
+	/**
+	 * Load shared data for the address forms (countries, regions).
+	 *
+	 * @return void
+	 */
+	private function data(): void {
 		$countryModel      = new CountrySQL();
 		$options           = $this->global;
 		$options['status'] = 1;
 		unset($options['limit']);
-		
+
 		$country	              = $countryModel->getAll($options);
-		$this->view->countries = $country['country'] ?? [];		
-		
-		$country	              = $countryModel->getAll($options);
-		$this->view->regions = $country['country'] ?? [];
+		$this->view->countries = $country['country'] ?? [];
+
+		$regionModel         = new \Vvveb\Sql\RegionSQL();
+		$regions             = $regionModel->getAll($options);
+		$this->view->regions = $regions['region'] ?? [];
 
 		$this->view->regionsUrl   = url(['module' => 'checkout/checkout', 'action' => 'regions']);
 	}
 
-	function delete() {
+	/**
+	 * Delete a saved address.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
 		$user_address_id = $this->request->get['user_address_id'] ?? false;
-		$user_address    = [];
 
-		$addressModel = new User_AddressSQL();	
+		$addressModel = new User_addressSQL();
 		if ($user_address_id) {
 			if (is_numeric($user_address_id)) {
 				$user_address_id = [$user_address_id];
 			}
-			
+
 			$options      = ['user_address_id' => $user_address_id, 'user_id' => $this->global['user_id']];
 			$result       = $addressModel->delete($options);
-			
-			if (! $result) {
+
+			if (!$result) {
 				$this->view->errors = [$addressModel->error];
 			} else {
 				$message               =  __('Address deleted!');
@@ -70,18 +81,23 @@ class Address extends Base {
 			}
 		}
 	}
-		
-	function edit() {
+
+	/**
+	 * Edit an existing address or add a new one.
+	 *
+	 * @return void
+	 */
+	public function edit(): void {
 		$user_address_id = $this->request->get['user_address_id'] ?? false;
 		$user_address    = [];
 
-		$addressModel = new User_AddressSQL();
+		$addressModel = new User_addressSQL();
 
 		if ($user_address_id) {
 			$options      = ['user_address_id' => $user_address_id, 'user_id' => $this->global['user_id']];
 			$user_address = $addressModel->get($options);
 
-			if (! $user_address) {
+			if (!$user_address) {
 				$this->notFound();
 			}
 		}
@@ -98,7 +114,7 @@ class Address extends Base {
 				$result = $addressModel->add($options);
 			}
 
-			if (! $result) {
+			if (!$result) {
 				$this->view->errors = [$addressModel->error];
 			} else {
 				$message               =  __('Address saved!');

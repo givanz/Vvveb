@@ -6,7 +6,7 @@ $categories_count = 0;
 
 $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : [];
 $_default = [0 => []];
-$_categories = $posts['categories'] ?? $_default : $posts['categories'];
+$_categories = $posts['categories'] ?? $_default;
 $categories = count($post['categories']);
 ?>
 
@@ -27,7 +27,7 @@ $categories_count = 0;
 
 $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : [];
 $_default = [0 => []];
-$_tags = $posts['tags'] ?? $_default : $posts['tags'];
+$_tags = $posts['tags'] ?? $_default;
 $tags = count($post['tags']);
 ?>
 	@post [data-v-post-tags] [data-v-post-tags-tag]|before = <?php 

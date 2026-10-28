@@ -27,28 +27,36 @@ use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Locale;
 
-
 class Currency extends ComponentBase {
-	public static $defaultOptions = [
-		'start'   => 1,
-		'limit'   => 1000,
-		'status'  => 1,
-		'site_only' => true, //show only site available currencies otherwise show all active
-		'default' => null,
+	public static array $defaultOptions = [
+		'start'     => 1,
+		'limit'     => 1000,
+		'status'    => 1,
+		'site_only' => true,
+		'default'   => null,
 	];
 
-	function cacheKey() {
-		//disable caching
-		return false;
+	/**
+	 * Disable caching for currency component.
+	 *
+	 * @return null Always returns null to disable caching.
+	 */
+	public function cacheKey(): ?string {
+		return null;
 	}
 
-	function results() {
+	/**
+	 * Get available currencies and current active currency.
+	 *
+	 * @return array<string, mixed> Currency data with active, current, and currency list.
+	 */
+	public function results(): array {
 		$results             = [];
 		$results['active']   = false;
 		$results['current']  = self :: $global['currency'];
 		$results['currency'] = Locale::availableCurrencies();
 
-		if (isset($results['currency']) && $results['currency']) {
+		if ($results['currency']) {
 			if (isset($this->options['site_only']) && $this->options['site_only'] && self :: $global['currencies']) {
 				$results['currency'] = array_intersect_key($results['currency'], self :: $global['currencies']);
 			}
@@ -56,13 +64,13 @@ class Currency extends ComponentBase {
 			$code     = session('currency') ?? self :: $global['currency'];
 
 			if ($code && isset($results['currency'][$code])) {
-				$currency = $results['currency'][$code] ?? [];
+				$currency              = $results['currency'][$code];
 				$results['current']    = $code;
 				$results['active']     = $currency;
 			}
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

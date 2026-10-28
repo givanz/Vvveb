@@ -25,7 +25,12 @@ namespace Vvveb\Controller\User;
 use Vvveb\System\User\User;
 
 class Index extends Base {
-	function index() {
+	/**
+	 * Display the user dashboard, redirect to login if not authenticated.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$user    = User::current();
 		$message = $this->session->get('message');
 
@@ -34,7 +39,7 @@ class Index extends Base {
 			$this->view->messages[] = $message;
 		}
 
-		if (! $user) {
+		if (!$user) {
 			$this->redirect('/user/login');
 		}
 	}

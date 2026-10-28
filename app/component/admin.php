@@ -29,23 +29,21 @@ use Vvveb\System\User\Admin as AdminClass;
 use function Vvveb\url;
 
 class Admin extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'admin_id' => null,
 		'username' => null,
 	];
 
-	protected $options = [];
+	protected array $options = [];
 
-	public $cacheExpire = 0;
+	public int $cacheExpire = 0;
 
-	//seconds
-	/*
-		function cacheKey() {
-			//disable caching
-			return false;
-		}
-	*/
-	function results() {
+	/**
+	 * Get admin user data with avatar/cover images and profile URL.
+	 *
+	 * @return array<string, mixed> Admin data with image URLs and profile info.
+	 */
+	public function results(): array {
 		if (isset($this->options['admin_id']) || isset($this->options['username'])) {
 			$admins = new \Vvveb\Sql\AdminSQL();
 
@@ -59,17 +57,17 @@ class Admin extends ComponentBase {
 
 			foreach (['avatar', 'cover'] as $image) {
 				if (isset($results[$image])) {
-					$results[$image . '_url']= Images::image($results[$image], 'admin');
+					$results[$image . '_url'] = Images::image($results[$image], 'admin');
 				}
 			}
 
-			$results['website'] = $results['website'] ?? $results['url'];
+			$results['website'] ??= $results['url'];
 			$results['url'] = url('content/user/index', ['username' => $results['username']]);
 		} else {
 			$results = [];
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

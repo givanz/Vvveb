@@ -26,11 +26,16 @@ use function Vvveb\__;
 use Vvveb\Controller\Base;
 use function Vvveb\session as sess;
 use Vvveb\Sql\OrderSQL;
-use Vvveb\Sql\Return_ReasonSQL;
+use Vvveb\Sql\Return_reasonSQL;
 use Vvveb\Sql\ReturnSQL;
 
 class ReturnForm extends Base {
-	function save() {
+	/**
+	 * Process a return request submission.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$customer_order_id      = $this->request->post['customer_order_id'] ?? false;
 		$email                  = $this->request->post['email'] ?? '';
 		$csrf                   = $this->request->post['csrf'] ?? false;
@@ -45,12 +50,14 @@ class ReturnForm extends Base {
 				if ($results && $results['order']) {
 					$this->request->post['order_id']             = $results['order']['order_id'];
 					$this->request->post['return_resolution_id'] =  1;
-					$this->request->post['return_status_id']     =  1;
-					$this->request->post['product_id']           =  1;
+					$this->request->post['return_status_id'] ??= 1;
+					$this->request->post['product_id'] ??= $results['order']['product_id'] ?? false;
 				} else {
 					$this->view->errors['return'] = sprintf(__('Order %s not found!'), htmlspecialchars($customer_order_id));
 
-					return $this->index();
+					$this->index();
+
+					return;
 				}
 
 				$data    = $this->request->post + $this->global;
@@ -70,11 +77,16 @@ class ReturnForm extends Base {
 			$this->view->errors[] = __('Invalid request!');
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
-		$reason  = new Return_ReasonSQL();
+	/**
+	 * Display the return form with available return reasons.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$reason  = new Return_reasonSQL();
 		$reasons = $reason->getAll($this->global + ['start' => 0, 'limit' => 100])['return_reason'] ?? [];
 
 		$this->view->return_reason_id = $reasons;

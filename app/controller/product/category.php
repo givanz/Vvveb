@@ -22,57 +22,18 @@
 
 namespace Vvveb\Controller\Product;
 
-use \Vvveb\Sql\CategorySQL;
-use function Vvveb\__;
-use Vvveb\Controller\Base;
-use Vvveb\System\Images;
+use Vvveb\Controller\Content\Category as Base;
 
 class Category extends Base {
-	protected $type = 'category';
+	/** @var string Taxonomy type name. */
+	protected string $type = 'category';
 
-	function index() {
-		$slug                      = $this->request->get['slug'] ?? '';
-		$type                      = $this->request->get['type'] ?? 'product';
-		$this->view->category_name = $slug;
+	/** @var string Object type handled by this category. */
+	protected string $object = 'product';
 
-		if ($slug) {
-			$categorySql = new CategorySQL();
-			$options     = $this->global + ['slug' => $slug];
-			if ($type) {
-				$options['post_type'] = $type;
-			}
+	/** @var string Route namespace. */
+	protected string $namespace = 'product';
 
-			$category    = $categorySql->getCategoryBySlug($options);
-
-			if ($category) {
-				$this->request->get['category_id'] = $this->request->request['taxonomy_item_id'] = $category['taxonomy_item_id'];
-				$this->request->get['name']        = $category['name'];
-
-				if (isset($category['image']) && $category['image']) {
-					$category['image_url'] = Images::image($category['image'], 'product', 'medium');
-				}
-
-				$category['title'] = $category['name'];
-				if (isset($this->global['site']['description']['title'])) {
-					$category['title'] = $category['title'] . ' - ' . $this->global['site']['description']['title'];
-				}
-
-				$this->request->get['taxonomy_item_id'] = $category['taxonomy_item_id'];
-				$this->request->get['slug']             = $category['slug'];
-				$this->view->category                   = $category;
-
-				if ($type != 'product') {
-					//product/category-page.html
-					$template = 'product/' . $this->type . '-' . $type . '.html';
-					if ($template) {
-						$this->view->template($template);
-						$this->view->tplFile('product/' . $this->type . '.tpl');
-					}
-				}
-			} else {
-				$message = sprintf(__('%s not found!'), ucfirst(__($this->type)));
-				$this->notFound(true, ['message' => $message, 'title' => $message]);
-			}
-		}
-	}
+	/** @var string Fully-qualified class name for event dispatching. */
+	protected string $class = __CLASS__;
 }

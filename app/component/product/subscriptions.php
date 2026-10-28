@@ -22,28 +22,33 @@
 
 namespace Vvveb\Component\Product;
 
-use \Vvveb\Sql\Product_SubscriptionSQL;
+use Vvveb\Sql\Product_subscriptionSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 
 class Subscriptions extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'start'       => 0,
 		'limit'       => 7,
-		'site_id'     => NULL,
-		'language_id' => NULL,
+		'site_id'     => null,
+		'language_id' => null,
 		'product_id'  => 'url',
-		'parent_id'   => NULL,
-		'search'      => NULL,
+		'parent_id'   => null,
+		'search'      => null,
 	];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function results() {
-		$category = new Product_SubscriptionSQL();
+	/**
+	 * Get product subscriptions list.
+	 *
+	 * @return array<string, mixed> Subscriptions data from query.
+	 */
+	public function results(): array {
+		$category = new Product_subscriptionSQL();
 		$results  = $category->getAll($this->options);
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

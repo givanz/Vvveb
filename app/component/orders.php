@@ -28,7 +28,7 @@ use Vvveb\System\Images;
 use function Vvveb\url;
 
 class Orders extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'start'              => 0,
 		'limit'              => ['url', 4],
 		'user_id'            => null,
@@ -47,18 +47,23 @@ class Orders extends ComponentBase {
 		'site_id'            => null,
 	];
 
-	public $options = [];
+	public array $options = [];
 
-	function results() {
+	/**
+	 * Get orders list with images and order URLs.
+	 *
+	 * @return array<string, mixed> Orders data with order list and images.
+	 */
+	public function results(): array {
 		$orders = new \Vvveb\Sql\OrderSQL();
 
 		if (isset($this->options['order_by']) &&
-				! in_array($this->options['order_by'], ['order_id', 'created_at', 'updated_at'])) {
+				!in_array($this->options['order_by'], ['order_id', 'created_at', 'updated_at'])) {
 			unset($this->options['order_by']);
 		}
 
 		if (isset($this->options['direction']) &&
-				! in_array($this->options['direction'], ['asc', 'desc'])) {
+				!in_array($this->options['direction'], ['asc', 'desc'])) {
 			unset($this->options['direction']);
 		}
 
@@ -67,7 +72,7 @@ class Orders extends ComponentBase {
 		if (isset($results['order'])) {
 			foreach ($results['order'] as $id => &$order) {
 				if (isset($order['images'])) {
-					$order['images'] = json_decode($order['images'], 1);
+					$order['images'] = json_decode($order['images'], true);
 
 					foreach ($order['images'] as &$image) {
 						$image = Images::image('order', $image);
@@ -82,7 +87,7 @@ class Orders extends ComponentBase {
 			}
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

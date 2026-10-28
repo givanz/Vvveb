@@ -22,19 +22,19 @@
 
 return [
 	'card.number' => [
-		'notEmpty'   => '',
-		'maxLength'  => 19,
+		'notEmpty'  => '',
+		'maxLength' => 19,
 	],
 	'card.expiryMonth' => [
-		'notEmpty'   => '',
-		'maxLength'  => 2,
+		'notEmpty'  => '',
+		'maxLength' => 2,
 	],
 	'card.expiryYear' => [
-		'notEmpty'   => '',
-		'maxLength'  => 2,
+		'notEmpty'  => '',
+		'maxLength' => 2,
 	],
 	'card.cvv' => [
-		'notEmpty'   => '',
-		'maxLength'  => 4,
+		'notEmpty'  => '',
+		'maxLength' => 4,
 	],
 ];

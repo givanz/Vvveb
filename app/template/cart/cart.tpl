@@ -1,8 +1,8 @@
 import(common.tpl)
 
-[data-v-cart-page][data-v-cart-total_items] = $cart['total_items']
-//[data-v-cart-page] [data-v-cart-total] = $cart['total']
-[data-v-cart-page] [data-v-cart-total_formatted] = $cart['total_formatted']
+[data-v-cart-page] [data-v-cart-total_items] = $this->cart['total_items']
+[data-v-cart-page] [data-v-cart-total_weight] = $this->cart['total_weight']
+[data-v-cart-page] [data-v-cart-total_formatted] = $this->cart['total_formatted']
 //[data-v-cart-page] [data-v-cart-*]|innerText = $this->cart['@@__data-v-cart-(*)__@@']
 
 @cart-product = [data-v-cart] [data-v-cart-product]
@@ -10,16 +10,12 @@ import(common.tpl)
 @cart-product|deleteAllButFirstChild
 @cart-product|before = <?php
 
-$products  = $this->cart['products'];
-$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['product_id' => 1, 'product_id' => 1, 'image' => '#']] : false;
+$products  = $this->cart['products'] ?? [];
+$_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => ['product_id' => 1, 'image' => '#']] : false;
 $products = empty($products) ? $_default : $products;
 
 if(is_array($products)) foreach ($products as $key => $product) {
 ?>
-
-	//@cart-product [data-v-cart-product-name] = $product['name']
-	//@cart-product [data-v-cart-product-content] = $product['content']
-	//@cart-product [data-v-cart-product-amount] = <?php echo htmlspecialchars($product['amount']);?>
 
 	@cart-product|data-product_id = $product['product_id']	
 	@cart-product|data-key = $key	
@@ -58,7 +54,7 @@ if($option_value) {
 @total|deleteAllButFirstChild
 @total|before = <?php
 
-$totals  = $this->cart['totals'];
+$totals  = $this->cart['totals'] ?? [];
 $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
 $totals = empty($totals) ? $_default : $totals;
 
@@ -78,7 +74,7 @@ if(is_array($totals)) foreach ($totals as $index => $total) {
 @coupon|deleteAllButFirstChild
 @coupon|before = <?php
 
-$coupons  = $this->cart['coupons'];
+$coupons  = $this->cart['coupons'] ?? [];
 $_default = (isset($vvveb_is_page_edit) && $vvveb_is_page_edit ) ? [0 => []] : false;
 $coupons = empty($coupons) ? $_default : $coupons;
 

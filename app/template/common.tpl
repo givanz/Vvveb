@@ -10,7 +10,7 @@ form[data-v-url-params]|action = <?php echo Vvveb\url('@@__data-v-url__@@' , @@_
 
 /* [data-v-img]|href = <?php echo htmlspecialchars(Vvveb\url('@@__data-v-img__@@'));?> */
 
-head base|href = <?php if($vvveb_is_page_edit) echo Vvveb\themeUrlPath()?>
+head base|href = <?php if(isset($vvveb_is_page_edit) && $vvveb_is_page_edit) echo Vvveb\themeUrlPath()?>
 
 //csrf
 input[data-v-csrf]|value = <?php echo \Vvveb\session('csrf');?>

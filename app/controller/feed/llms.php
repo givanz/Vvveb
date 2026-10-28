@@ -17,19 +17,36 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
  */
 
-namespace Vvveb\Controller\Checkout;
+namespace Vvveb\Controller\Feed;
 
 use Vvveb\Controller\Base;
 
-class Order extends Base {
-	function index() {
-		$order = $this->session->get('order');
+class Llms extends Base {
+	/**
+	 * Output the vllms.html file with absolute sitemap URLs.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$text   = '';
+		$robots = DIR_PUBLIC . 'vllms.html';
 
-		if (! $order) {
-			$this->notFound();
+		if (file_exists($robots)) {
+			$text = @file_get_contents($robots);
 		}
+
+		$path = V_SUBDIR_INSTALL . ($this->global['path'] ?: '');
+		$host = 'https://' . ($_SERVER['HTTP_HOST'] ?? '') . $path;
+
+		// change sitemap urls to absolute
+		if ($path) {
+			$text = preg_replace('@(sitemap):\s+/@', "$1: {$host}/", $text);
+			$text = preg_replace('@(disallow):\s+/@', "$1: {$path}/", $text);
+		}
+
+		$this->response->setType('text');
+		$this->response->output($text);
 	}
 }

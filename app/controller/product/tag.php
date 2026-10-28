@@ -22,6 +22,10 @@
 
 namespace Vvveb\Controller\Product;
 
+/**
+ * Product tag listing controller — extends category with type 'tag'.
+ */
 class Tag extends Category {
-	protected $type = 'tag';
+	/** @var string Taxonomy type name. */
+	protected string $type = 'tag';
 }

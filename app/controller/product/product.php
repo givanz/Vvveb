@@ -22,12 +22,12 @@
 
 namespace Vvveb\Controller\Product;
 
-use \Vvveb\Sql\ProductSQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use Vvveb\Controller\Content\CommentTrait;
 use function Vvveb\model;
 use function Vvveb\postTypes;
+use Vvveb\Sql\ProductSQL;
 use Vvveb\System\Core\FrontController;
 use Vvveb\System\Event;
 use Vvveb\System\Locale;
@@ -35,19 +35,34 @@ use Vvveb\System\User\Admin;
 use function Vvveb\truncateWords;
 
 class Product extends Base {
-	public $type = 'product';
-
 	use CommentTrait;
+	/** @var string Content type identifier. */
+	public string $type = 'product';
 
-	function addReview() {
-		return $this->index();
+	/**
+	 * Handles review submission.
+	 *
+	 * @return void
+	 */
+	public function addReview(): void {
+		$this->index();
 	}
 
-	function addQuestion() {
-		return $this->index();
+	/**
+	 * Handles question submission.
+	 *
+	 * @return void
+	 */
+	public function addQuestion(): void {
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display a single product by ID or slug.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		if (isset($this->request->post['content'])) {
 			if (isset($this->request->post['rating'])) {
 				$result = $this->insertComment('product_review', __('review'));
@@ -56,12 +71,12 @@ class Product extends Base {
 			}
 		}
 
-		$language   = $this->request->get['language'] ?? $this->global['language'] ?? $this->global['default_language'];
-		$product_id = $this->request->get['product_id'] ?? '';
-		$slug       = $this->request->get['slug'] ?? '';
-		$type       = $this->request->get['type'] ?? '';
-		$created_at = $this->request->get['created_at'] ?? ''; //revision preview
-		$content    = [];
+		$language        = $this->request->get['language'] ?? $this->global['language'] ?? $this->global['default_language'];
+		$product_id      = $this->request->get['product_id'] ?? '';
+		$slug            = $this->request->get['slug'] ?? '';
+		$type            = $this->request->get['type'] ?? '';
+		$created_at      = $this->request->get['created_at'] ?? ''; //revision preview
+		$content         = [];
 		$languageContent = [];
 
 		//check for custom post or product
@@ -69,29 +84,28 @@ class Product extends Base {
 			$class     = '';
 			$postTypes = postTypes('product');
 
-			if (isset($postTypes[$type])) {
-			} else {
+			if (!isset($postTypes[$type])) {
 				$postTypes = postTypes('post');
 
 				if (isset($postTypes[$type])) {
 					$class = 'Content';
 					FrontController::redirect($class, 'index');
 
-					die();
+					exit();
 				} else {
 					$error = sprintf(__('%s not found!'), ucfirst(__($this->type)));
-					return $this->notFound(true, ['message' => $error, 'title' => $error]);
+					$this->notFound(['message' => $error, 'title' => $error]);
 				}
 			}
 		}
 
 		if ($product_id || $slug) {
-			$contentSql = new ProductSQL();
-			$options    = $this->global + ['product_id' => $product_id, 'slug' => $slug, 'type' => $type ?? $this->type, 'status' => 1];
-			$content    = $contentSql->getContent($options);
+			$contentSQL = new ProductSQL();
+			$options    = $this->global + ['product_id' => $product_id, 'slug' => $slug, 'type' => $type ?: $this->type, 'status' => 1];
+			$content    = $contentSQL->getContent($options);
 
 			$class                           = __NAMESPACE__ . '\\' . ucfirst($this->type); //__CLASS__ is always Product
-			list($content, $language, $slug) = Event :: trigger($class,__FUNCTION__, $content, $language, $slug);
+			[$content, $language, $slug]     = Event::trigger($class, __FUNCTION__, $content, $language, $slug);
 
 			if ($content) {
 				if (isset($content[$language])) {
@@ -106,7 +120,7 @@ class Product extends Base {
 
 				if ($languageContent) {
 					if ($this->global['language'] != $languageContent['code']) {
-						Locale :: setLanguage($languageContent['code']);
+						Locale::setLanguage($languageContent['code']);
 					}
 
 					$this->global['language']    = $languageContent['code'];
@@ -145,7 +159,7 @@ class Product extends Base {
 					}
 				} else {
 					$error = sprintf(__('%s not found!'), ucfirst(__($this->type)));
-					return $this->notFound(true, ['message' => $error, 'title' => $error]);
+					$this->notFound(['message' => $error, 'title' => $error]);
 				}
 
 				$languageContent['title'] = $languageContent['name'];
@@ -171,11 +185,11 @@ class Product extends Base {
 						$languageContent['meta_description'] = truncateWords($languageContent['meta_description'], 160);
 					}
 				} else {
-					$excerpt = ($languageContent['excerpt'] ?? '') ?: $languageContent['content'];
+					$excerpt                             = ($languageContent['excerpt'] ?? '') ?: $languageContent['content'];
 					$languageContent['meta_description'] = truncateWords(strip_tags($excerpt), 160);
 				}
 
-				list($content, $languageContent, $language, $slug) = Event :: trigger($class, __FUNCTION__ . ':after', $content, $languageContent, $language, $slug);
+				[$content, $languageContent, $language, $slug] = Event::trigger($class, __FUNCTION__ . ':after', $content, $languageContent, $language, $slug);
 			} else {
 				//check for custom post or product
 				$class     = '';
@@ -195,10 +209,10 @@ class Product extends Base {
 					$this->request->get['type'] = $slug;
 					FrontController::redirect($class, 'index');
 
-					die();
+					exit();
 				} else {
 					$error = sprintf(__('%s not found!'), ucfirst(__($this->type)));
-					return $this->notFound(true, ['message' => $error, 'title' => $error]);
+					$this->notFound(['message' => $error, 'title' => $error]);
 				}
 			}
 

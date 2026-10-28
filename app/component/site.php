@@ -29,25 +29,34 @@ use Vvveb\System\Event;
 use function Vvveb\url;
 
 class Site extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'site_id'     => null,
 		'language_id' => null,
 	];
 
-	protected $options = [];
+	protected array $options = [];
 
-	public $cacheExpire = 0; //seconds
+	public int $cacheExpire = 0;
 
-	function cacheKey() {
-		//disable caching
-		return false;
+	/**
+	 * Disable caching for site component.
+	 *
+	 * @return null Always returns null to disable caching.
+	 */
+	public function cacheKey(): ?string {
+		return null;
 	}
 
-	function results() {
+	/**
+	 * Get site settings with logos, URLs, and site configuration.
+	 *
+	 * @return array<string, mixed> Site data with logo URLs, site URL, and settings.
+	 */
+	public function results(): array {
 		$results = siteSettings($this->options['site_id'], $this->options['language_id']);
 
-		if (! $results) {
-			$results    = ['logo'=>'logo.png', 'logo-sticky' => 'logo.png', 'logo-dark' => 'logo-white.png', 'logo-dark-sticky' => 'logo-white.png', 'favicon' => 'favicon.ico'];
+		if (!$results) {
+			$results    = ['logo' => 'logo.png', 'logo-sticky' => 'logo.png', 'logo-dark' => 'logo-white.png', 'logo-dark-sticky' => 'logo-white.png', 'favicon' => 'favicon.ico'];
 			$publicPath = \Vvveb\publicUrlPath() . 'media';
 
 			foreach ($results as $key => &$value) {
@@ -59,21 +68,27 @@ class Site extends ComponentBase {
 
 		if ($this->options['default_language'] != $this->options['language'] || self :: $global['default_lang_slug']) {
 			$urlOptions = ['language' => $this->options['language']];
-		} else {
 		}
 
-		$results['url']      = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . '/'; //url('index/index');
-		$results['full-url'] = SITE_URL; //url('index/index', $urlOptions + ['host' => '*.*.*']);
+		$results['url']      = V_SUBDIR_INSTALL . '/';
+		$results['full-url'] = SITE_URL;
 
 		$results['site_id'] = $this->options['site_id'];
-		list($results)      = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results]          = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}
 
-	//called by editor on page save for each component on page
-	//this method is called from admin app
-	static function editorSave($id, $fields, $type = 'site') {
+	/**
+	 * Save site settings from editor on page save.
+	 *
+	 * @param int                              $id     Site ID.
+	 * @param array<int, array<string, mixed>> $fields Field data from editor.
+	 * @param string                           $type   Site type identifier.
+	 *
+	 * @return void
+	 */
+	public static function editorSave(int $id, array $fields, string $type = 'site'): void {
 		$sites      = new SiteSQL();
 		$result     = [];
 		$site       = $sites->get(['site_id' => $id]);
@@ -87,8 +102,8 @@ class Site extends ComponentBase {
 				$name  = $field['name'];
 				$value = $field['value'];
 
-				if ($name == 'favicon' || $name == 'webbanner' || strpos($name, 'logo') !== false) {
-					$value = str_replace($publicPath,'', $value);
+				if ($name === 'favicon' || $name === 'webbanner' || str_contains($name, 'logo')) {
+					$value = str_replace($publicPath, '', $value);
 				}
 				$settings[$name] = $value;
 			}

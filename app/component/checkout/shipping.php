@@ -28,21 +28,30 @@ use Vvveb\System\Event;
 use Vvveb\System\Shipping as ShippingApi;
 
 class Shipping extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'checkout' => null,
 	];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function cacheKey() {
-		//disable caching
-		return false;
+	/**
+	 * Disable caching for shipping component.
+	 *
+	 * @return null Always returns null to disable caching.
+	 */
+	public function cacheKey(): ?string {
+		return null;
 	}
 
-	function results() {
+	/**
+	 * Get available shipping methods with count.
+	 *
+	 * @return array<string, mixed> Shipping data with shipping methods and count.
+	 */
+	public function results(): array {
 		$checkoutInfo = [];
 
-		if ($this->options['checkout']) {
+		if (isset($this->options['checkout']) && $this->options['checkout']) {
 			$checkoutInfo = sess('checkout', []) ?? [];
 		}
 
@@ -50,8 +59,10 @@ class Shipping extends ComponentBase {
 		$shipping            = ShippingApi::getInstance();
 		$results['shipping'] = $shipping->getMethods($checkoutInfo);
 		$results['count']    = $results['shipping'] ? count($results['shipping']) : 0;
+		//$siteSettings        = siteSettings();
+		//$results['default']  = $siteSettings['payment_method'] ?? '';
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

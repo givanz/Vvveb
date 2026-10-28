@@ -26,21 +26,26 @@ use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 
 class Wishlist extends ComponentBase {
-	public static $defaultOptions = [
-		'start'            => 0,
-		'page'             => 1,
-		'limit'            => 4,
-		'language_id'      => null,
-		'site_id'          => null,
-		'user_id'          => NULL,
-		'image_size'       => 'medium',
+	public static array $defaultOptions = [
+		'start'       => 0,
+		'page'        => 1,
+		'limit'       => 4,
+		'language_id' => null,
+		'site_id'     => null,
+		'user_id'     => null,
+		'image_size'  => 'medium',
 	];
 
-	public $options = [];
+	public array $options = [];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function results() {
+	/**
+	 * Get wishlist products with pagination and search support.
+	 *
+	 * @return array<string, mixed> Wishlist data with product list, limit, start, and search.
+	 */
+	public function results(): array {
 		$products = new \Vvveb\Sql\User_wishlistSQL();
 
 		if ($page = $this->options['page']) {
@@ -59,7 +64,7 @@ class Wishlist extends ComponentBase {
 		$results['start']  = $this->options['start'];
 		$results['search'] = $this->options['search'] ?? '';
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

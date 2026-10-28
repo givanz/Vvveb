@@ -22,63 +22,173 @@
 
 namespace Vvveb\Component\Product;
 
-use \Vvveb\Sql\Product_VariantSQL;
-use \Vvveb\Sql\ProductSQL;
+use function Vvveb\__;
+use Vvveb\Sql\Product_variantSQL;
+use Vvveb\Sql\ProductSQL;
 use Vvveb\System\Cart\Currency;
 use Vvveb\System\Cart\Tax;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use Vvveb\System\Images;
+use Vvveb\System\Locale;
+use function Vvveb\url;
 
 class Variants extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'start'       => 0,
-		'limit'       => NULL,
-		'site_id'     => NULL,
-		'language_id' => NULL,
+		'limit'       => null,
+		'site_id'     => null,
+		'language_id' => null,
 		'product_id'  => 'url',
-		'parent_id'   => NULL,
-		'search'      => NULL,
+		'parent_id'   => null,
+		'search'      => null,
+		'name'        => null,
+		'url'         => null,
 	];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function results() {
-		$productSql      = new ProductSQL();
-		$variantSql      = new Product_VariantSQL();
+	/**
+	 * Get product variants with pricing, tax, option names, and URLs.
+	 *
+	 * @return array<string, mixed> Variants data with count and product_variant list.
+	 */
+	public function results(): array {
+		$productSQL      = new ProductSQL();
+		$variantSQL      = new Product_variantSQL();
 
-		$product = [];
-
-		if ($this->options['product_id']) {
-			$product = $productSql->get(['product_id' => $this->options['product_id']]);
-		}
-
-		$results  = $variantSql->getAll($this->options);
+		$product  = [];
+		$variants = [];
 		$count 	  = 0;
 
-		if ($results && isset($results['product_variant'])) {
-			$variants  = &$results['product_variant'];
-			$tax       = Tax::getInstance($this->options);
-			$currency  = Currency::getInstance($this->options);
+		if (isset($this->options['product_id']) && $this->options['product_id']) {
+			$product  = $productSQL->get(['product_id' => $this->options['product_id']]);
+			$variants = $product['product_variant'] ?? [];
+		}
 
-			if ($variants) {
-				foreach ($variants as &$variant) {
-					$count++;
+		if ($variants) {
+			$language = [];
 
-					if ($variant['image']) {
-						$variant['image'] = Images::image($variant['image'], 'option', $this->options['image_size']);
+			if (($product['language_id'] != ($this->options['default_language_id'] ?? null))) {
+				$language = ['language' => $this->options['language']];
+
+				if ($product['name'] === null && isset($product['product_content'][$this->options['default_language_id'] ?? null])) {
+					$langFallback            = $product['product_content'][$this->options['default_language_id'] ?? null];
+					$product['name']         = $langFallback['name'];
+					$product['slug']         = $langFallback['slug'];
+					$product['content']      = $langFallback['content'];
+					$product['language_id']  = $langFallback['language_id'];
+				} else {
+					if (!$product['name']) {
+						$product['name']   = '[' . __('No translation') . ']';
+					}
+				}
+			} else {
+				if ($this->options['default_lang_slug']) {
+					$language = ['language' => $this->options['language']];
+				}
+			}
+
+			$optionIds = [];
+
+			if (isset($this->options['name'])) {
+				if (isset($product['option'])) {
+					foreach ($product['option'] as $id => &$option) {
+						unset($option['array_key']);
+					}
+				} else {
+					$product['option'] = [];
+				}
+
+				if (isset($product['product_option'])) {
+					$product_option_value = &$product['product_option_value'];
+					$product_option       = &$product['product_option'];
+
+					$option_value_content = [];
+					$names                = [];
+
+					$default = '';
+
+					if ($product['language_id'] != $this->options['default_language_id']) {
+						$default = '[' . __('No translation') . ']';
 					}
 
-					if ($variant['price']) {
-						$variant['price_tax']       = $tax->addTaxes($variant['price'], $product['tax_type_id'] ?? 0);
-						$variant['price_formatted'] = $currency->format($variant['price_tax']);
+					foreach ($product['option_value_content'] as &$value) {
+						$option_value_content[$value['option_id']][$value['option_value_id']] = $value;
+						$names[$value['option_value_id']]                                     = $value['name'] ?? $default;
 					}
+
+					foreach ($product_option_value as &$value) {
+						if (isset($product_option[$value['product_option_id']])) {
+							$product_option[$value['product_option_id']]['values'][$value['product_option_value_id']] = $value;
+							$optionIds[$value['product_option_id']][$value['product_option_value_id']]                = $names[$value['option_value_id']] ?? $default;
+						}
+					}
+
+					$product['option_value_content'] = $option_value_content;
+				} else {
+					$product['product_option'] = [];
+				}
+			}
+
+			$tax             = Tax::getInstance();
+			$currency        = Currency::getInstance($this->options);
+			$currentCurrency = Locale :: getCurrency();
+
+			$url = $language + ['host' => SITE_URL, 'scheme' => $_SERVER['REQUEST_SCHEME'] ?? 'http'];
+
+			if ($product['type'] != 'product') {
+				$url['type'] = $product['type'];
+			}
+
+			//if translation is missing slug is not available
+			if (isset($product['slug'])) {
+				$url['slug'] = $product['slug'];
+			} else {
+				$url['product_id'] = $product['product_id'];
+			}
+
+			$product['url'] = url('product/product/index', $url);
+
+			foreach ($variants as $opts => &$variant) {
+				$count++;
+
+				if ($variant['image']) {
+					$variant['image'] = Images::image($variant['image'], 'option', $this->options['image_size']);
+				}
+
+				if ($variant['price']) {
+					$variant['price_tax']           = $tax->addTaxes($variant['price'], $product['tax_type_id'] ?? 0);
+					$variant['price_formatted']     = $currency->format($variant['price']);
+					$variant['price_tax_formatted'] = $currency->format($variant['price_tax']);
+					$variant['price_currency']      = $currentCurrency;
+				}
+
+				if (isset($this->options['name'])) {
+					$keys = explode(',', $opts);
+					$name = '';
+					foreach ($keys as $key) {
+						$r = explode(':', $key);
+						$o = $r[0];
+						$v = $r[1];
+
+						if ($name) {
+							$name .= ' / ';
+						}
+
+						$name .= $optionIds[$o][$v];
+					}
+
+					$variant['name'] = $product['name'] . ' - ' . $name;
+					$variant['url']  = $product['url'] . '?product_variant_id=' . $variant['product_variant_id'];
 				}
 			}
 		}
 
-		$results['count'] = $count;
-		list($results)    = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		$results['count']           = $count;
+		$results['product_variant'] = $variants;
+
+		[$results]    = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

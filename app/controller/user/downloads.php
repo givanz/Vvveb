@@ -28,28 +28,38 @@ use Vvveb\Sql\Digital_asset_logSQL;
 use Vvveb\Sql\Digital_assetSQL;
 
 class Downloads extends Base {
-	function index() {
-	}
+	/**
+	 * Display the downloads listing page.
+	 *
+	 * @return void
+	 */
+	public function index(): void {}
 
-	function download() {
+	/**
+	 * Serve a digital asset file for download after verifying access.
+	 *
+	 * @return never
+	 */
+	public function download(): never {
 		$public           = $this->request->get['public'] ?? false;
 		$digital_asset_id = $this->request->get['digital_asset_id'] ?? false;
 		$userKey          = $this->request->get['key'] ?? false;
 		$customerOrderId  = $this->request->get['customer_order_id'] ?? false;
 		$key              = getConfig('app.key');
 
-		if ($digital_asset_id && $public && ($key == $userKey)) {
+		if ($digital_asset_id && $public && ($key === $userKey)) {
 			$digital_asset = new Digital_assetSQL();
 
 			$results = $digital_asset->get(
-			[
-				'digital_asset_id' => $digital_asset_id,
-				'language_id'      => $this->global['language_id'],
-				'user_id'          => $this->global['user_id'],
-				'order_status_id'  => 4,
-			]);
+				[
+					'digital_asset_id' => $digital_asset_id,
+					'language_id'      => $this->global['language_id'],
+					'user_id'          => $this->global['user_id'],
+					'order_status_id'  => 4,
+				]
+			);
 
-			if ($results && isset($results['file']) && ($customerOrderId == $results['customer_order_id'])) {
+			if ($results && isset($results['file']) && ($customerOrderId === $results['customer_order_id'])) {
 				$digital_asset_log = new Digital_asset_logSQL();
 				$digital_asset_log->add([
 					'digital_asset_log' => [
@@ -64,6 +74,10 @@ class Downloads extends Base {
 				$public   = $results['public'];
 				$file     = DIR_STORAGE . 'digital_assets' . DS . $filename;
 
+				if (!file_exists($file)) {
+					exit(__('File not found!'));
+				}
+
 				header('Content-Description: File Transfer');
 				header('Content-Type: application/octet-stream');
 				header('Content-Disposition: attachment; filename="' . $public . '"');
@@ -74,12 +88,12 @@ class Downloads extends Base {
 
 				readfile($file);
 			} else {
-				die(__('Invalid download!'));
+				exit(__('Invalid download!'));
 			}
 		} else {
-			die(__('Invalid download!'));
+			exit(__('Invalid download!'));
 		}
 
-		die(0);
+		exit();
 	}
 }

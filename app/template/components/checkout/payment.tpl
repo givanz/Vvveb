@@ -5,6 +5,7 @@
 
 @payments|prepend = <?php
 $vvveb_is_page_edit = Vvveb\isEditor();
+$payment_method = $payment_method ?? '';
 if (isset($_payments_idx)) $_payments_idx++; else $_payments_idx = 0;
 $previous_component = isset($current_component)?$current_component:null;
 $payments = $current_component = $this->_component['checkout_payment'][$_payments_idx] ?? [];
@@ -25,7 +26,7 @@ if($payments && is_array($payments['payment'])) {
 		
 		@payment input[data-v-payment-*] = $payment['@@__data-v-payment-(*)__@@']
 		
-		@payment input[data-v-payment-key][type=radio]|addNewAttribute = <?php if ($payment_method == $key) echo 'checked';?>
+		@payment input[data-v-payment-key]|addNewAttribute = <?php if ($payment_method == $key) echo 'checked';?>
 
 		@payment .collapse|addClass = <?php if (($payment_method == $key) && !$vvveb_is_page_edit) echo 'show';?>
 		

@@ -22,10 +22,10 @@
 
 namespace Vvveb\Component\Product;
 
-use \Vvveb\Sql\Product_Option_ValueSQL;
-use \Vvveb\Sql\Product_OptionSQL;
-use \Vvveb\Sql\Product_VariantSQL;
-use \Vvveb\Sql\ProductSQL;
+use Vvveb\Sql\Product_option_valueSQL;
+use Vvveb\Sql\Product_optionSQL;
+use Vvveb\Sql\Product_variantSQL;
+use Vvveb\Sql\ProductSQL;
 use Vvveb\System\Cart\Currency;
 use Vvveb\System\Cart\Tax;
 use Vvveb\System\Component\ComponentBase;
@@ -33,88 +33,95 @@ use Vvveb\System\Event;
 use Vvveb\System\Images;
 
 class Options extends ComponentBase {
-	public static $defaultOptions = [
-		'start'               => 0,
-		'limit'               => NULL,
-		'site_id'             => NULL,
-		'language_id'         => NULL,
-		'product_id'          => 'url',
-		'product_variant_id'  => NULL,
-		'parent_id'           => NULL,
-		'search'              => NULL,
+	public static array $defaultOptions = [
+		'start'              => 0,
+		'limit'              => null,
+		'site_id'            => null,
+		'language_id'        => null,
+		'product_id'         => 'url',
+		'product_variant_id' => null,
+		'parent_id'          => null,
+		'search'             => null,
+		'image_size'         => 'thumb',
 	];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function results() {
-		$productSql      = new ProductSQL();
-		$optionSql       = new Product_OptionSQL();
-		$optionValuesSql = new Product_Option_ValueSQL();
-		$variantSql      = new Product_VariantSQL();
+	/**
+	 * Get product options with option values, pricing, tax, and default variant selection.
+	 *
+	 * @return array<string, mixed> Options data with count and product_option values.
+	 */
+	public function results(): array {
+		$productSQL      = new ProductSQL();
+		$optionSQL       = new Product_optionSQL();
+		$optionvaluesSQL = new Product_option_valueSQL();
+		$variantSQL      = new Product_variantSQL();
 
 		$product = [];
+		$count   = 0;
 
-		if (isset($this->options['product_id'])) {
-			$product = $productSql->get(['product_id' => $this->options['product_id']]);
-		}
+		if (isset($this->options['product_id']) && $this->options['product_id']) {
+			$product = $productSQL->get(['product_id' => $this->options['product_id']]);
 
-		$results  = $optionSql->getAll($this->options);
-		$values   = $optionValuesSql->getAll($this->options);
+			$results  = $optionSQL->getAll($this->options);
+			$values   = $optionvaluesSQL->getAll($this->options);
 
-		$voptions   = ['product_id' => $this->options['product_id'], 'start' => 0, 'limit' => 1];
+			$voptions   = ['product_id' => $this->options['product_id'], 'start' => 0, 'limit' => 1];
 
-		if (isset($this->options['product_variant_id'])) {
-			$voptions['product_variant_id'] = [$this->options['product_variant_id']];
-		}
+			if (isset($this->options['product_variant_id'])) {
+				$voptions['product_variant_id'] = [$this->options['product_variant_id']];
+			}
 
-		$variants   = $variantSql->getAll($voptions);
+			$variants   = $variantSQL->getAll($voptions);
 
-		$defaultVariant = [];
-		$defaultOptions = [];
+			$defaultVariant = [];
+			$defaultOptions = [];
 
-		if ($variants && isset($variants['product_variant'])) {
-			$defaultVariant = current($variants['product_variant']);
-		}
+			if ($variants && isset($variants['product_variant'])) {
+				$defaultVariant = current($variants['product_variant']);
+			}
 
-		if ($defaultVariant) {
-			$json           = '{' . preg_replace('/(\d+)/', '"\1"', $defaultVariant['options']) . '}';
-			$defaultOptions = json_decode($json, true);
-		}
+			if ($defaultVariant) {
+				$json           = '{' . preg_replace('/(\d+)/', '"\1"', $defaultVariant['options']) . '}';
+				$defaultOptions = json_decode($json, true);
+			}
 
-		$count = 0;
+			$count = 0;
 
-		if ($results && isset($results['product_option'])) {
-			$options  = &$results['product_option'];
-			$tax      = Tax::getInstance($this->options);
-			$currency = Currency::getInstance($this->options);
+			if ($results && isset($results['product_option'])) {
+				$options  = &$results['product_option'];
+				$tax      = Tax::getInstance();
+				$currency = Currency::getInstance($this->options);
 
-			if ($values && isset($values['product_option_value'])) {
-				foreach ($values['product_option_value'] as &$value) {
-					$count++;
+				if ($values && isset($values['product_option_value'])) {
+					foreach ($values['product_option_value'] as &$value) {
+						$count++;
 
-					if ($value['image']) {
-						$value['image'] = Images::image($value['image'], 'option', $this->options['image_size']);
-					}
+						if ($value['image']) {
+							$value['image'] = Images::image($value['image'], 'option', $this->options['image_size']);
+						}
 
-					if ($value['price']) {
-						$value['price_tax']       = $tax->addTaxes($value['price'], $product['tax_type_id'] ?? 0);
-						$value['price_formatted'] = $value['price_operator'] . $currency->format($value['price_tax']);
-					}
+						if ($value['price']) {
+							$value['price_tax']       = $tax->addTaxes($value['price'], $product['tax_type_id'] ?? 0);
+							$value['price_formatted'] = $value['price_operator'] . $currency->format($value['price_tax']);
+						}
 
-					if (isset($defaultOptions[$value['product_option_id']]) &&
-						$defaultOptions[$value['product_option_id']] == $value['product_option_value_id']) {
-						$value['checked'] = true;
-					}
+						if (isset($defaultOptions[$value['product_option_id']]) &&
+							$defaultOptions[$value['product_option_id']] === $value['product_option_value_id']) {
+							$value['checked'] = true;
+						}
 
-					if (isset($options[$value['product_option_id']])) {
-						$options[$value['product_option_id']]['values'][] = $value;
+						if (isset($options[$value['product_option_id']])) {
+							$options[$value['product_option_id']]['values'][] = $value;
+						}
 					}
 				}
 			}
 		}
 
 		$results['count'] = $count;
-		list($results)    = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results]        = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

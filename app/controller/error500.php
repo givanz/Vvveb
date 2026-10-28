@@ -22,11 +22,29 @@
 
 namespace Vvveb\Controller;
 
+/**
+ * 500 error page controller.
+ *
+ * Does not extend Base — instantiated standalone by FrontController::notFound().
+ */
 #[\AllowDynamicProperties]
-class Error500 {/* extends Base */
-	function getGlobal() {
+class Error500 {// extends Base
+	/** @var array<string, mixed> */
+	public array $global = [];
+
+	/**
+	 * Get the global template variables (unused — kept for interface compatibility).
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function getGlobal(): array {
+		return $this->global;
 	}
 
-	function index() {
-	}
+	/**
+	 * Render the 500 error page.
+	 *
+	 * @return void
+	 */
+	public function index(): void {}
 }

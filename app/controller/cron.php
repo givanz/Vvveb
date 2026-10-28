@@ -22,19 +22,29 @@
 
 namespace Vvveb\Controller;
 
+use Vvveb\System\Core\Request;
+
+/**
+ * Cron job controller — invoked via HTTP with a secret key or from CLI.
+ */
 #[\AllowDynamicProperties]
 class Cron {
-	function _construct() {
-	}
+	/** @var Request Request instance injected by FrontController DI. */
+	public Request $request;
 
-	function index() {
-		if (defined('CLI')) {
-		} else {
-			$key     = $this->request->get['key'];
+	/**
+	 * Entry point for cron execution. Validates the cron key for HTTP requests
+	 * then runs all registered cron jobs.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		if (!defined('CLI')) {
+			$key     = $this->request->get['key'] ?? '';
 			$cronkey = \Vvveb\getConfig('app.cronkey');
 
 			if ($key != $cronkey) {
-				die('Invalid key!');
+				exit('Invalid key!');
 			}
 		}
 
@@ -47,20 +57,21 @@ class Cron {
 			litespeed_finish_request();
 		}
 
-		if (! empty($this->request->post) || defined('CLI')) {
-			die();
+		$results = \Vvveb\System\Cron::runAll();
+
+		//single background-queue pass for hosts without a persistent worker
+		try {
+			$results['queue'] = \Vvveb\System\Queue::cronPass();
+		} catch (\Throwable $e) {
+			\Vvveb\logError('[Queue] Cron pass failed: ' . $e->getMessage());
 		}
 
-		die();
-	}
+		if (defined('CLI')) {
+			foreach ($results as $name => $result) {
+				echo $name . ': ' . json_encode($result) . "\n";
+			}
+		}
 
-	function call() {
-		$cronkey  = \Vvveb\getConfig('app.cronkey');
-
-		$options  = [
-			'timeout'   => 0.01,
-			'blocking'  => false,
-			'sslverify' => false,
-		];
+		exit();
 	}
 }

@@ -24,48 +24,45 @@ namespace Vvveb\Controller\Checkout;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\Controller\Cart\CartTrait;
 use Vvveb\Controller\Cart\CouponTrait;
 use Vvveb\Controller\User\LoginTrait;
 use function Vvveb\email;
+use function Vvveb\model;
 use function Vvveb\prefixArrayKeys;
 use function Vvveb\siteSettings;
 use Vvveb\Sql\CountrySQL;
 use Vvveb\Sql\RegionSQL;
-use Vvveb\Sql\User_AddressSQL;
+use Vvveb\Sql\User_addressSQL;
 use Vvveb\System\CacheManager;
 use Vvveb\System\Cart\Cart;
 use Vvveb\System\Cart\Order;
 use Vvveb\System\Event;
-use Vvveb\System\Payment;
-use Vvveb\System\Shipping;
 use Vvveb\System\Sites;
 use Vvveb\System\User\User;
 use Vvveb\System\Validator;
 use function Vvveb\url;
 
 class Checkout extends Base {
-	use LoginTrait, CouponTrait;
+	use CartTrait;
+	use CouponTrait;
+	use LoginTrait;
 
-	private $cart;
+	/** @var Cart|null Shopping cart instance. */
+	private ?Cart $cart = null;
 
-	/*
-	use LoginTrait {
-		login as protected loginBase;
-	}
-	
-
-	function login() {
-		$this->loginBase();
-		
-		return $this->index();
-	}
-	*/
-
-	function init() {
+	/**
+	 * Initialise the cart for the checkout process.
+	 *
+	 * @return string|null
+	 */
+	public function init(): ?string {
 		parent::init();
 
-		$options = array_intersect_key($this->global['site'],
-			array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
+		$options = array_intersect_key(
+			$this->global['site'],
+			array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id'])
+		);
 
 		$encrypted_cart_id = false;
 
@@ -80,9 +77,16 @@ class Checkout extends Base {
 				$this->cart->loadCart($cart_id);
 			}
 		}
+
+		return null;
 	}
 
-	function regions() {
+	/**
+	 * Return regions for a given country as JSON (AJAX endpoint).
+	 *
+	 * @return void
+	 */
+	public function regions(): void {
 		$country_id   = $this->request->get['country_id'] ?? false;
 		$regions      = [];
 
@@ -99,7 +103,14 @@ class Checkout extends Base {
 		$this->response->output($regions);
 	}
 
-	private function data(&$checkoutInfo) {
+	/**
+	 * Load shared checkout data: countries and regions for address forms.
+	 *
+	 * @param array<string, mixed> &$checkoutInfo
+	 *
+	 * @return void
+	 */
+	private function data(array &$checkoutInfo): void {
 		$countryModel      = new CountrySQL();
 		$options           = $this->global;
 		$options['status'] = 1;
@@ -107,23 +118,174 @@ class Checkout extends Base {
 		$country               = $countryModel->getAll($options);
 		$this->view->countries = $country['country'] ?? [];
 
-		//set default contry and region
-		$checkoutInfo['billing_country_id']  = $checkoutInfo['billing_country_id'] ?? $this->global['site']['country_id'] ?? false;
-		$checkoutInfo['shipping_country_id'] = $checkoutInfo['shipping_country_id'] ?? $this->global['site']['country_id'] ?? false;
-		$checkoutInfo['shipping_region_id']  = $checkoutInfo['shipping_region_id'] ?? $this->global['site']['region_id'] ?? false;
-		$checkoutInfo['billing_region_id']   = $checkoutInfo['billing_region_id'] ?? $this->global['site']['region_id'] ?? false;
-		$country_id                          = $checkoutInfo['billing_country_id'] ?? $checkoutInfo['shipping_country_id'] ?? false;
+		//set default country and region
+		$checkoutInfo['billing_country_id'] ??= $this->global['site']['country_id'] ?? false;
+		$checkoutInfo['shipping_country_id'] ??= $this->global['site']['country_id'] ?? false;
+		$checkoutInfo['shipping_region_id'] ??= $this->global['site']['region_id'] ?? false;
+		$checkoutInfo['billing_region_id'] ??= $this->global['site']['region_id'] ?? false;
+		$country_id                          = $checkoutInfo['billing_country_id'] ?: $checkoutInfo['shipping_country_id'] ?: false;
 
 		if ($country_id) {
 			$region   = new RegionSQL();
-			$regions	 = $region->getAll(['country_id' => $country_id]);
+			$regions  = $region->getAll(['country_id' => $country_id]);
 
 			$this->view->regions = $regions['region'] ?? [];
 		}
 		$this->view->regionsUrl   = url(['module' => 'checkout/checkout', 'action' => 'regions']);
 	}
 
-	function index() {
+	/**
+	 * Create pending core subscription rows for subscription products.
+	 *
+	 * Gateway-agnostic: every payment method gets a local pending record at
+	 * checkout time. Gateway-backed methods (Stripe) claim these rows when
+	 * provisioning instead of inserting duplicates; manual methods
+	 * (bank transfer, COD) stay pending until confirmed.
+	 * Idempotent per order: retried submits skip already created rows.
+	 *
+	 * @param int|string           $order_id     Order id.
+	 * @param array<string, mixed> $checkoutInfo Checkout information.
+	 *
+	 * @return void
+	 */
+	private function createPendingSubscriptions(int|string $order_id, array $checkoutInfo): void {
+		$items = $this->cart->getSubscription();
+
+		if (!$items) {
+			return;
+		}
+
+		try {
+			$model    = model('subscription');
+			$userId   = (int)($checkoutInfo['user_id'] ?? $this->global['user_id'] ?? 0);
+			$existing = $model->getAll(['user_id' => $userId, 'language_id' => $this->global['language_id'] ?? 1] + $this->global)['subscription'] ?? [];
+			$have     = [];
+
+			foreach ($existing as $row) {
+				if ((int)($row['order_id'] ?? 0) === (int)$order_id) {
+					$have[(int)($row['subscription_plan_id'] ?? 0) . ':' . (int)($row['product_id'] ?? 0)] = true;
+				}
+			}
+
+			foreach ($items as $item) {
+				$planId    = (int)($item['subscription_plan_id'] ?? 0);
+				$productId = (int)($item['product_id'] ?? 0);
+				$plan      = $item['subscription'] ?? [];
+
+				if (!$planId || !$productId || empty($plan) || isset($have["$planId:$productId"])) {
+					continue;
+				}
+
+				$period = $plan['period'] ?? 'month';
+				$cycle  = max(1, (int)($plan['cycle'] ?? 1));
+
+				try {
+					$next = (new \DateTime())->modify("+$cycle $period")->format('Y-m-d H:i:s');
+				} catch (\Throwable $e) {
+					$next = date('Y-m-d H:i:s', strtotime('+1 month'));
+				}
+
+				$trialStatus = !empty($plan['trial_status']) && !empty($plan['trial_length']);
+
+				$model->add(['subscription' => [
+					'order_id'               => (int)$order_id,
+					'order_product_id'       => 0,
+					'site_id'                => SITE_ID,
+					'user_id'                => $userId,
+					'payment_method'         => $checkoutInfo['payment_method'] ?? '',
+					'product_id'             => $productId,
+					'quantity'               => (int)($item['quantity'] ?? 1),
+					'subscription_plan_id'   => $planId,
+					'price'                  => (float)($item['price'] ?? 0),
+					'period'                 => $period,
+					'cycle'                  => $cycle,
+					'length'                 => (int)($plan['length'] ?? 0),
+					'subscription_status_id' => 1,
+					'date_next'              => $next,
+					'trial_status'           => $trialStatus ? 1 : 0,
+					'trial_price'            => (float)($item['trial_price'] ?? 0),
+					'trial_period'           => $plan['trial_period'] ?? 'day',
+					'trial_cycle'            => max(1, (int)($plan['trial_cycle'] ?? 1)),
+					'trial_length'           => (int)($plan['trial_length'] ?? 0),
+					'trial_left'             => (int)($plan['trial_length'] ?? 0),
+					'notes'                  => '',
+					'created_at'             => date('Y-m-d H:i:s'),
+					'updated_at'             => date('Y-m-d H:i:s'),
+				]] + $this->global);
+
+				$have["$planId:$productId"] = true;
+			}
+		} catch (\Throwable $e) {
+			//subscription rows are auxiliary, never block the order
+		}
+	}
+
+	/**
+	 * Rotate the single-use checkout submit token.
+	 *
+	 * @return string New token stored in the session.
+	 */
+	private function rotateCheckoutToken(): string {
+		$tokens   = $this->session->get('checkout_tokens') ?? [];
+
+		if (!is_array($tokens)) {
+			$tokens = [];
+		}
+
+		$token    = bin2hex(random_bytes(16));
+		$tokens[] = $token;
+		$this->session->set('checkout_tokens', array_slice($tokens, -5));
+
+		return $token;
+	}
+
+	/**
+	 * Consume a submit token: true once, then spent (double posts fail).
+	 *
+	 * @param string $token Posted token.
+	 *
+	 * @return bool True when the token was valid and is now spent.
+	 */
+	private function consumeCheckoutToken(string $token): bool {
+		$tokens = $this->session->get('checkout_tokens') ?? [];
+
+		if (!is_array($tokens) || $token === '') {
+			return false;
+		}
+
+		$key = array_search($token, $tokens, true);
+
+		if ($key === false) {
+			return false;
+		}
+
+		unset($tokens[$key]);
+		$this->session->set('checkout_tokens', array_values($tokens));
+
+		return true;
+	}
+
+	/**
+	 * Current (newest) submit token, creating one when the pool is empty.
+	 *
+	 * @return string Token for the checkout form.
+	 */
+	private function currentCheckoutToken(): string {
+		$tokens = $this->session->get('checkout_tokens') ?? [];
+
+		if (!is_array($tokens) || !$tokens) {
+			return $this->rotateCheckoutToken();
+		}
+
+		return (string)end($tokens);
+	}
+
+	/**
+	 * Main checkout action — handles the entire checkout flow.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		//buy now product
 		if (isset($this->request->request['product_id'])) {
 			$productId          = $this->request->request['product_id'];
@@ -134,12 +296,16 @@ class Checkout extends Base {
 			$this->cart->add($productId, $quantity, $option, $productVariantId, $subscriptionPlanId);
 		}
 
-		if (! $this->cart->hasProducts()) {
-			return $this->redirect('cart/cart/index');
+		if (!$this->cart->hasProducts()) {
+			$this->redirect('cart/cart/index');
+
+			return;
 		}
 
 		if (isset($this->request->post['login'])) {
-			return $this->login();
+			$this->login();
+
+			return;
 		}
 
 		$order    = Order::getInstance();
@@ -152,26 +318,23 @@ class Checkout extends Base {
 		$this->view->hasShipping = $hasShipping;
 		$this->view->hasPayment  = $hasPayment;
 
-		$payment              = Payment::getInstance();
-		$this->view->payment  = $payment->getMethods($checkoutInfo);
+		$methods   = $this->shippingPayment($checkoutInfo, $hasShipping, $hasPayment);
+		$shipping  = $methods['shipping'];
+		$payment   = $methods['payment'];
 
-		if ($hasShipping) {
-			$shipping             = Shipping::getInstance();
-			$this->view->shipping = $shipping->getMethods($checkoutInfo);
-		}
+		//shipping/payment totals are only added to the cart by setMethod() above,
+		//so refresh the grand total, otherwise the stored order total and the
+		//amount sent to the payment gateway miss shipping (and payment fees).
+		$grandTotal = $this->cart->getGrandTotal();
 
-		if ($hasShipping && isset($this->request->post['shipping_method'])) {
-			$shipping_method = $this->request->post['shipping_method'];
-			$shipping->setMethod($shipping_method);
-			$checkoutInfo['shipping_method'] = $shipping_method;
-			$this->view->shipping_method     = $shipping_method;
-		}
-
-		if ($hasPayment && isset($this->request->post['payment_method'])) {
-			$payment_method = $this->request->post['payment_method'];
-			$payment->setMethod($payment_method);
-			$checkoutInfo['payment_method'] = $payment_method;
-			$this->view->payment_method     = $payment_method;
+		//a zero sub-total with a paid shipping method still requires payment
+		if (!$hasPayment && $grandTotal > 0) {
+			$hasPayment              = true;
+			$this->view->hasPayment  = $hasPayment;
+			$methods                 = $this->shippingPayment($checkoutInfo, $hasShipping, $hasPayment);
+			$shipping                = $methods['shipping'] ?? $shipping;
+			$payment                 = $methods['payment'] ?? $payment;
+			$grandTotal              = $this->cart->getGrandTotal();
 		}
 
 		$this->data($checkoutInfo);
@@ -179,16 +342,14 @@ class Checkout extends Base {
 		if ($this->request->post) {
 			if (isset($this->request->post['phone_number']) ||
 				isset($this->request->post['billing_address']) ||
-				isset($this->request->post['billing_address_id']) || /*
-				isset($this->request->post['shipping_method']) ||
-				isset($this->request->post['payment_method']) ||*/
+				isset($this->request->post['billing_address_id']) ||
 				isset($this->request->post['email'])) {
 				$rules = ['checkout'];
 
 				// guest checkout
-				if (! $this->global['user_id']) {
+				if (!$this->global['user_id']) {
 					//password is provided
-					if (isset($this->request->post['register']) && $this->request->post['register'] == 'true') {
+					if (isset($this->request->post['register']) && $this->request->post['register'] === 'true') {
 						$rules[] = 'checkout_signup';
 					} else {
 						$rules[] = 'guest';
@@ -198,7 +359,7 @@ class Checkout extends Base {
 					$rules[] = 'guest';
 
 					foreach (['first_name', 'last_name', 'email', 'phone_number'] as $field) {
-						$this->request->post[$field] = $this->request->post[$field] ?? $this->global['user'][$field];
+						$this->request->post[$field] ??= $this->global['user'][$field];
 					}
 				}
 
@@ -208,10 +369,8 @@ class Checkout extends Base {
 
 					if (isset($this->request->post['billing_address'])) {
 						//if billing name is missing use account name
-						//$this->request->post['billing_address']['first_name'] ??= $this->request->post['first_name'];
-						//$this->request->post['billing_address']['last_name'] ??= $this->request->post['last_name'];
-						$this->request->post['billing_address']['first_name'] = $this->request->post['billing_address']['first_name'] ?? $this->request->post['first_name'] ?? '';
-						$this->request->post['billing_address']['last_name']  = $this->request->post['billing_address']['last_name'] ?? $this->request->post['last_name'] ?? '';
+						$this->request->post['billing_address']['first_name'] ??= $this->request->post['first_name'] ?? '';
+						$this->request->post['billing_address']['last_name'] ??= $this->request->post['last_name'] ?? '';
 
 						$billing_address = $this->request->post['billing_address'];
 						$this->request->post += prefixArrayKeys('billing_', $billing_address);
@@ -220,12 +379,11 @@ class Checkout extends Base {
 					//user address
 					$rules[]            = 'checkout_billing';
 					$billing_address_id = $this->request->post['billing_address_id'];
-					$addressSql         = new User_AddressSQL();
-					$address            = $addressSql->get($this->global + ['user_address_id' => $billing_address_id]);
+					$addressSQL         = new User_addressSQL();
+					$address            = $addressSQL->get($this->global + ['user_address_id' => $billing_address_id]);
 
 					if ($address) {
 						$this->request->post['billing_address'] = $address;
-						//$this->request->post += prefixArrayKeys('billing_', $address);
 					}
 				}
 
@@ -236,12 +394,11 @@ class Checkout extends Base {
 
 				if ($hasShipping) {
 					//different shipping address is selected
-					if (isset($this->request->post['different_shipping_address']) && ! empty($this->request->post['different_shipping_address'])) {
+					if (isset($this->request->post['different_shipping_address']) && !empty($this->request->post['different_shipping_address'])) {
 						$rules[] = 'checkout_shipping';
 
 						if (isset($this->request->post['shipping_address'])) {
 							$shipping_address = $this->request->post['shipping_address'];
-							//$this->request->post += prefixArrayKeys('shipping_', $shipping_address);
 						}
 					} else {
 						//use billing address as shipping address
@@ -249,7 +406,6 @@ class Checkout extends Base {
 
 						if (isset($this->request->post['billing_address'])) {
 							$this->request->post['shipping_address'] = $this->request->post['billing_address'];
-							//$this->request->post += prefixArrayKeys('shipping_', $this->request->post['shipping_address']);
 						}
 					}
 				}
@@ -258,47 +414,84 @@ class Checkout extends Base {
 				$post         = $this->request->post;
 				$validator    = new Validator($rules);
 
-				if (! $hasShipping) {
+				if (!$hasShipping) {
 					$validator->removeRule('shipping_method');
 				}
 
-				if (! $hasPayment) {
+				if (!$hasPayment) {
 					$validator->removeRule('payment_method');
 				}
 
-				$checkoutInfo = ($validator->filter($this->request->post) ?? []) + $checkoutInfo;
+				$checkoutInfo = $validator->filter($this->request->post) + $checkoutInfo;
 				$this->session->set('checkout', $checkoutInfo);
 
+				//nested address arrays are not validation rules so the filter drops them, preserve them from post
+				foreach (['billing_address', 'shipping_address'] as $addressKey) {
+					if (isset($this->request->post[$addressKey])) {
+						$checkoutInfo[$addressKey] = $this->request->post[$addressKey];
+					}
+				}
+
 				if (($errors = $validator->validate($this->request->post)) === true) {
+					//single-use submit token: retried posts (double click, back button)
+					//must not create duplicate orders. Only enforced when the theme
+					//posts the field, so older themes keep working.
+					if (isset($this->request->post['submit_token'])) {
+						if (!$this->consumeCheckoutToken((string)$this->request->post['submit_token'])) {
+							$placedOrder = $this->session->get('order');
+
+							if (!empty($placedOrder['order_id'])) {
+								//duplicate of an already placed order
+								$this->redirect('checkout/confirm/index');
+
+								return;
+							}
+
+							$this->view->errors[] = __('Invalid checkout session! Please try again.');
+							$this->session->set('checkout', $checkoutInfo);
+							$this->view->checkout     = $checkoutInfo;
+							$this->view->submit_token = $this->rotateCheckoutToken();
+
+							return;
+						}
+					}
+
+					$this->view->submit_token        = $this->currentCheckoutToken();
 					$checkoutInfo['products']        = $this->cart->getAll();
 					$checkoutInfo['product_options'] = $this->cart->getProductOptions();
 					$checkoutInfo['totals']          = $this->cart->getAllTotals();
+					//recalculate after totals (shipping, payment fees, taxes, coupons)
+					//were added, the $grandTotal captured before setMethod() is stale
+					$grandTotal                      = $this->cart->getGrandTotal();
 					$checkoutInfo['total']           = $grandTotal;
-					$checkoutInfo += prefixArrayKeys('shipping_', $checkoutInfo['shipping_address']);
-					$checkoutInfo += prefixArrayKeys('billing_', $checkoutInfo['billing_address']);
+					//shipping address is only present for orders with shipping, billing address is always validated
+					$shippingAddress = $checkoutInfo['shipping_address'] ?? [];
+					$billingAddress  = $checkoutInfo['billing_address'] ?? [];
+					$checkoutInfo += prefixArrayKeys('shipping_', $shippingAddress);
+					$checkoutInfo += prefixArrayKeys('billing_', $billingAddress);
 					$checkoutInfo += $this->global;
 
 					//create user account if password is provided
-					if (isset($checkoutInfo['password']) && ! $this->global['user_id']) {
+					if (isset($checkoutInfo['password']) && !$this->global['user_id']) {
 						$userInfo = [];
 
 						foreach (['first_name', 'last_name', 'email', 'phone_number', 'password'] as $field) {
-							$userInfo[$field] = $checkoutInfo[$field] ?? NULL;
+							$userInfo[$field] = $checkoutInfo[$field] ?? null;
 						}
 
 						$userInfo['display_name'] = $userInfo['first_name'] . ' ' . $userInfo['last_name'];
-						$userInfo['username']     = strtolower(str_replace(' ', '', $userInfo['first_name'] . $userInfo['last_name'])) . '-' . rand();
+						$userInfo['username']     = strtolower(str_replace(' ', '', $userInfo['first_name'] . $userInfo['last_name'])) . '-' . random_int(1000, 999999);
 
 						$result = User::add($userInfo);
 
 						if ($result) {
 							if (isset($result['user'])) {
-								$checkoutInfo['user_id'] = $result['user'] ?? NULL;
+								$checkoutInfo['user_id'] = $result['user'];
 								$userInfo                = User::get(['user_id' => $checkoutInfo['user_id']]);
 								//check if user was added before automatic login
 								if ($userInfo) {
 									\Vvveb\session(['user' => $userInfo]);
-									$checkoutInfo['user'] = $userInfo;
+									$checkoutInfo['user']          = $userInfo;
 									$this->view->global['user_id'] = $userInfo['user_id'];
 								}
 							} else {
@@ -317,17 +510,17 @@ class Checkout extends Base {
 
 					//if new address add to user account
 					if (empty($this->request->post['billing_address_id']) && $user_id) {
-						$addressSql = new User_AddressSQL();
-						$address    = $addressSql->add(['user_address' => $this->request->post['billing_address'] + ['user_id' => $user_id]]);
+						$addressSQL = new User_addressSQL();
+						$address    = $addressSQL->add(['user_address' => $this->request->post['billing_address'] + ['user_id' => $user_id]]);
 					}
 
 					//if account does not have a phone number set add phone number to user profile for next order
-					if ($this->global['user_id'] && ! $this->global['user']['phone_number']) {
+					if ($this->global['user_id'] && !$this->global['user']['phone_number']) {
 						User::update(['phone_number' => $checkoutInfo['phone_number']], ['user_id' => $this->global['user_id']]);
 						User::session(['phone_number' => $checkoutInfo['phone_number']]);
 					}
 
-					if (! $checkoutInfo['user_id']) {
+					if (!$checkoutInfo['user_id']) {
 						unset($checkoutInfo['user_id']); //if anonymous then unset user_id
 					}
 
@@ -345,7 +538,7 @@ class Checkout extends Base {
 					//default order status
 					$checkoutInfo['order_status_id']  = 1;
 
-					$site = Sites :: getSiteData(SITE_ID);
+					$site = Sites::getSiteData(SITE_ID);
 
 					$order_url = url('user/orders', [
 						'host'   => $site['host'] ?? false,
@@ -357,7 +550,7 @@ class Checkout extends Base {
 
 					$this->view->errors = [];
 
-					list($checkoutInfo) = Event::trigger(__CLASS__, 'add', $checkoutInfo);
+					[$checkoutInfo] = Event::trigger(__CLASS__, 'add', $checkoutInfo);
 
 					$checkoutInfo = $order->add($checkoutInfo);
 
@@ -369,7 +562,7 @@ class Checkout extends Base {
 
 						$this->view->messages[] = __('Order placed!');
 						$this->session->set('order', $checkoutInfo);
-						$site = siteSettings();
+						$this->createPendingSubscriptions($order_id, $checkoutInfo);
 
 						$shippingData = $checkoutInfo['shipping_data'];
 						$paymentData  = $checkoutInfo['payment_data'];
@@ -377,18 +570,79 @@ class Checkout extends Base {
 						try {
 							if ($hasShipping) {
 								$shippingOk = $shipping->ship($checkoutInfo);
+
+								if ($shippingOk !== true) {
+									//shipping failed: don't charge, keep the cart, skip mail and confirmation
+									$this->view->errors[] = $shipping->getError() ?: __('Shipping failed! Please try again or choose another shipping method.');
+									$this->session->delete('order');
+									$this->session->set('checkout', $checkoutInfo);
+									$this->view->checkout     = $checkoutInfo;
+									$this->view->submit_token = $this->currentCheckoutToken();
+
+									return;
+								}
 							}
 
 							if ($hasPayment) {
-								$paymentOk  = $payment->authorize($checkoutInfo);
+								//idempotency reference so retried submits don't double-charge
+								$checkoutInfo['idempotency_key'] ??= hash('sha256', implode('|', [$order_id, $checkoutInfo['payment_method'] ?? '', number_format((float)($checkoutInfo['total'] ?? 0), 2, '.', ''), $checkoutInfo['currency'] ?? '']));
+								$paymentResult   = $payment->purchase($checkoutInfo);
+								$paymentRedirect = $payment->getRedirectUrl();
+
+								if ($paymentRedirect || (is_array($paymentResult) && ($paymentResult['status'] ?? '') === \Vvveb\System\PaymentMethod::STATUS_REDIRECT)) {
+									//off-site gateway: persist payment data and hand control to the gateway
+									$paymentRedirect = $paymentRedirect ?: ($paymentResult['redirect'] ?? '');
+									$this->session->set('order', $checkoutInfo);
+
+									if (($shippingData !== $checkoutInfo['shipping_data']) || ($paymentData !== $checkoutInfo['payment_data'])) {
+										$order->edit(['shipping_data' => $checkoutInfo['shipping_data'], 'payment_data' => $checkoutInfo['payment_data']], $order_id);
+									}
+
+									if (preg_match('#^https?://#i', $paymentRedirect)) {
+										//absolute gateway URL: url() only handles internal routes
+										$this->session->close();
+										header("Location: $paymentRedirect");
+
+										exit();
+									}
+
+									$this->redirect($paymentRedirect);
+
+									return;
+								}
+
+								if ($paymentResult !== true) {
+									//failed payment: stay on checkout, keep the cart, skip mail and confirmation
+									$this->view->errors[] = $payment->getError() ?: __('Payment failed! Please try again or choose another payment method.');
+									$this->session->delete('order');
+
+									if (($shippingData !== $checkoutInfo['shipping_data']) || ($paymentData !== $checkoutInfo['payment_data'])) {
+										$order->edit(['shipping_data' => $checkoutInfo['shipping_data'], 'payment_data' => $checkoutInfo['payment_data']], $order_id);
+									}
+
+									$this->session->set('checkout', $checkoutInfo);
+									$this->view->checkout     = $checkoutInfo;
+									$this->view->submit_token = $this->currentCheckoutToken();
+
+									return;
+								}
+
+								$paymentOk = true;
 							}
 						} catch (\Exception $e) {
 							$this->view->errors[] = $e->getMessage();
+							$this->session->delete('order');
+							$this->session->set('checkout', $checkoutInfo);
+							$this->view->checkout     = $checkoutInfo;
+							$this->view->submit_token = $this->currentCheckoutToken();
+
+							return;
 						}
 
-						list($checkoutInfo, $order_id, $site) = Event::trigger(__CLASS__, 'add:after', $checkoutInfo, $order_id, $site);
+						$siteSettings                             = siteSettings();
+						[$checkoutInfo, $order_id, $siteSettings] = Event::trigger(__CLASS__, 'add:after', $checkoutInfo, $order_id, $siteSettings);
 
-						if (($shippingData != $checkoutInfo['shipping_data']) || ($paymentData != $checkoutInfo['payment_data'])) {
+						if (($shippingData !== $checkoutInfo['shipping_data']) || ($paymentData !== $checkoutInfo['payment_data'])) {
 							$order->edit(['shipping_data' => $checkoutInfo['shipping_data'], 'payment_data' => $checkoutInfo['payment_data']], $order_id);
 						}
 
@@ -396,24 +650,47 @@ class Checkout extends Base {
 							$error =  __('Error sending order confirmation mail!');
 							$title = sprintf(__('Order confirmation #%s'), $customer_order_id);
 
-							if (! email([$checkoutInfo['email'], $site['admin-email']], $title, 'order/new', $checkoutInfo + ['title' => $title])) {
+							\Vvveb\System\Notifications::trigger('order.new', $checkoutInfo + [
+								'subject' => $title,
+								'message' => $title,
+							]);
+
+							if (!email([$checkoutInfo['email'], $siteSettings['admin-email']], $title, 'order/new', $checkoutInfo + ['title' => $title])) {
 								$this->session->set('errors', $error);
 								$this->view->errors[] = $error;
 							}
 						} catch (\Exception $e) {
-							if (DEBUG) {
+							$error = __('Error sending order confirmation mail!');
+
+							if (defined('DEBUG') && DEBUG) {
 								$error .= "\n" . $e->getMessage();
 							}
 							$this->session->set('errors', $error);
 							$this->view->errors[] = $error;
 						}
 
+						// check low stock threshold for each ordered product
+						foreach ($checkoutInfo['products'] ?? [] as $product) {
+							try {
+								if (!empty($product['product_id'])) {
+									\Vvveb\System\Notifications::checkLowStock([
+										'product_id' => $product['product_id'],
+										'name'       => $product['name'] ?? '',
+										'quantity'   => $product['stock_quantity'] ?? $product['quantity'] ?? 0,
+									]);
+								}
+							} catch (\Throwable $e) {
+							}
+						}
+
 						$this->cart->empty();
 
 						// clear notifications cache
-						CacheManager :: clearObjectCache('component', 'notifications');
+						CacheManager::clearObjectCache('component', 'notifications');
 
-						return $this->redirect('checkout/confirm/index');
+						$this->redirect('checkout/confirm/index');
+
+						return;
 					} else {
 						$this->view->errors[] = __('Error creating checkout!');
 					}
@@ -425,6 +702,7 @@ class Checkout extends Base {
 			$this->session->set('checkout', $checkoutInfo);
 		}
 
-		$this->view->checkout = $checkoutInfo;
+		$this->view->checkout     = $checkoutInfo;
+		$this->view->submit_token = $this->currentCheckoutToken();
 	}
 }

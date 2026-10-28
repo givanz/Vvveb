@@ -23,6 +23,10 @@
 namespace Vvveb\Controller\User;
 
 class Comments extends Base {
-	function index() {
-	}
+	/**
+	 * Display the user's comments.
+	 *
+	 * @return void
+	 */
+	public function index(): void {}
 }

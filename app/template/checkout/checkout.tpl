@@ -73,18 +73,18 @@ input[name="different_shipping_address"]|addNewAttribute =
 ?>
 
 [data-v-address] input[name="billing_address_id"]|addNewAttribute = <?php 
-	if (isset($_POST['billing_address_id']) && ($_POST['billing_address_id'] == $address['user_address_id'])) echo ' checked';
+	if (isset($_POST['billing_address_id']) && isset($address['user_address_id']) && ($_POST['billing_address_id'] == $address['user_address_id'])) echo ' checked';
 ?>
 
 
 [data-v-payment] input[name="payment_method"]|addNewAttribute = <?php 
 	$payment_method = $_POST['payment_method'] ?? $this->checkout['payment_method'] ?? '';
-	if ($payment_method == $payment['name']) echo ' checked';
+	if (isset($payment['name']) && $payment_method == $payment['name']) echo ' checked';
 ?>
 
 [data-v-shipping] input[name="shipping_method"]|addNewAttribute = <?php 
 	$shipping_method = $_POST['shipping_method'] ?? $this->checkout['shipping_method'] ?? '';
-	if ($shipping_method == $shipping['name']) echo ' checked';
+	if (isset($shipping['name']) && $shipping_method == $shipping['name']) echo ' checked';
 ?>
 
 @country = [data-v-countries] option[data-v-option]

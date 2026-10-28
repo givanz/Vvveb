@@ -28,21 +28,27 @@ use Vvveb\System\Images;
 use function Vvveb\url;
 
 class Pages extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'start'            => 0,
 		'limit'            => 7,
 		'posts_start'      => 0,
-		'posts_limit'      => NULL,
+		'posts_limit'      => null,
 		'type'             => 'categories',
 		'post_type'        => 'post',
-		'site_id'          => NULL,
+		'site_id'          => null,
 		'order'            => ['url', 'price asc'],
-		'taxonomy_item_id' => NULL,
+		'taxonomy_item_id' => null,
 		'page'             => 1,
-		'parent_id'        => NULL,
+		'parent_id'        => null,
+		'levels'           => null,
 	];
 
-	function results() {
+	/**
+	 * Get category pages with embedded post counts and images.
+	 *
+	 * @return array<string, mixed> Pages data with categories containing post counts and images.
+	 */
+	public function results(): array {
 		$category = new \Vvveb\Sql\CategorySQL();
 		$results  = $category->getCategoriesPages($this->options);
 
@@ -52,16 +58,17 @@ class Pages extends ComponentBase {
 				$parent_id          = $category['parent_id'] ?? false;
 				$category['active'] = false;
 
-				if (! isset($category['children'])) {
-					$category['children'] = 0;
+				if (!isset($category['children'])) {
+					$category['children']    = 0;
+					$category['posts_count'] = 0;
 				}
 
-				if (isset($category['post']) && $category['post'] && $category['post'][0] = '[') {
+				if ((isset($category['post']) && $category['post']) && $category['post'][0] === '[') {
 					$category['post'] = json_decode($category['post'], true);
 
 					if (is_array($category['post'])) {
 						if (isset($this->options['posts_limit'])) {
-							$category['post'] = array_slice($category['post'], 0 , $this->options['posts_limit']);
+							$category['post'] = array_slice($category['post'], 0, $this->options['posts_limit']);
 
 							if (isset($category['image'])) {
 								$category['image'] = Images::image($category['image'], 'post', $this->options['image_size'] ?? 'medium');
@@ -90,7 +97,7 @@ class Pages extends ComponentBase {
 			}
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

@@ -25,7 +25,12 @@ namespace Vvveb\Controller\Search;
 use Vvveb\Controller\Base;
 
 class Index extends Base {
-	function index() {
+	/**
+	 * Display search results.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$search = $this->request->get['search'] ?? '';
 		$type   = $this->request->get['type'] ?? '';
 
@@ -33,6 +38,10 @@ class Index extends Base {
 		$this->view->type   = $type;
 	}
 
-	function autocomplete() {
-	}
+	/**
+	 * Autocomplete endpoint (currently a stub).
+	 *
+	 * @return void
+	 */
+	public function autocomplete(): void {}
 }

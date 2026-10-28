@@ -25,7 +25,12 @@ namespace Vvveb\Controller\Cart;
 use function Vvveb\__;
 
 trait CouponTrait {
-	function coupon() {
+	/**
+	 * Apply a coupon to the cart.
+	 *
+	 * @return void
+	 */
+	public function coupon(): void {
 		$coupon = $this->request->request['coupon'] ?? '';
 
 		if ($coupon) {
@@ -36,10 +41,15 @@ trait CouponTrait {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function removeCoupon() {
+	/**
+	 * Remove a coupon from the cart.
+	 *
+	 * @return void
+	 */
+	public function removeCoupon(): void {
 		$coupon = $this->request->request['coupon'] ?? '';
 
 		if ($coupon) {
@@ -50,6 +60,6 @@ trait CouponTrait {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 }

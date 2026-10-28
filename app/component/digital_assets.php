@@ -29,7 +29,7 @@ use Vvveb\System\Event;
 use function Vvveb\url;
 
 class Digital_assets extends ComponentBase {
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'start'           => 0,
 		'user_id'         => null,
 		'product_id'      => null,
@@ -38,11 +38,16 @@ class Digital_assets extends ComponentBase {
 		'digital_asset'   => ['url', 'price asc'],
 	];
 
-	public $options = [];
+	public array $options = [];
 
-	public $cacheExpire = 0; //no cache
+	public int $cacheExpire = 0;
 
-	function results() {
+	/**
+	 * Get digital assets with secure download URLs.
+	 *
+	 * @return array<string, mixed> Digital assets data with download URLs.
+	 */
+	public function results(): array {
 		$digital_asset = new Digital_assetSQL();
 
 		$results = $digital_asset->getAll($this->options);
@@ -50,7 +55,7 @@ class Digital_assets extends ComponentBase {
 
 		if (isset($results['digital_asset'])) {
 			foreach ($results['digital_asset'] as $id => &$digital_asset) {
-				$digital_asset['url'] = url('user/downloads/download',[
+				$digital_asset['url'] = url('user/downloads/download', [
 					'digital_asset_id'  => $digital_asset['digital_asset_id'],
 					'public'            => str_replace(['/', '-'], '_', $digital_asset['public']),
 					'customer_order_id' => $digital_asset['customer_order_id'],
@@ -59,7 +64,7 @@ class Digital_assets extends ComponentBase {
 			}
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

@@ -23,5 +23,6 @@
 namespace Vvveb\Controller\Content;
 
 class Page extends Post {
-	public $type = 'page';
+	/** @var string Content type identifier. */
+	public string $type = 'page';
 }

@@ -35,7 +35,12 @@ use function Vvveb\url;
 class Signup extends \Vvveb\Controller\Base {
 	use Spam;
 
-	function addUser() {
+	/**
+	 * Process user registration form submission.
+	 *
+	 * @return void
+	 */
+	public function addUser(): void {
 		//$this->checkAlreadyLoggedIn();
 		$validator = new Validator(['signup']);
 
@@ -47,15 +52,15 @@ class Signup extends \Vvveb\Controller\Base {
 			$userInfo                 = $validator->filter($this->request->post);
 			$userInfo['display_name'] = $userInfo['username'] ?? '';
 
-			if (! isset($userInfo['username']) && isset($userInfo['first_name'])) {
-				$userInfo['username']     = $userInfo['first_name'] . $userInfo['last_name'];
+			if (!isset($userInfo['username']) && isset($userInfo['first_name'])) {
+				$userInfo['username']     = $userInfo['first_name'] . ($userInfo['last_name'] ?? '');
 			}
 			$userInfo['spam']     	   = $isSpam;
 
-			list($userInfo) = Event :: trigger(__CLASS__, __FUNCTION__ , $userInfo);
+			[$userInfo] = Event::trigger(__CLASS__, __FUNCTION__, $userInfo);
 
 			//plugins can also be used to detect spam and set the flag
-			if ($userInfo['spam']) {
+			if (isset($userInfo['spam']) && $userInfo['spam']) {
 				$this->view->errors['login'] = __('Spam');
 
 				return;
@@ -69,13 +74,13 @@ class Signup extends \Vvveb\Controller\Base {
 				if ($result) {
 					if (isset($result['user'])) {
 						$message = __('User created!');
-						$this->session->set('success',  ['login' => $message]);
+						$this->session->set('success', ['login' => $message]);
 						$this->view->success['login'][]     = $message;
 						$user_id                            = $result['user'];
-						$this->request->request['user_id']  = $user_id;
+						$this->request->get['user_id']      = $user_id;
 
 						$site     = siteSettings();
-						$siteData = Sites :: getSiteData(SITE_ID);
+						$siteData = Sites::getSiteData(SITE_ID);
 
 						$userInfo['website'] = url('user/index', [
 							'host'   => $siteData['host'] ?? false,
@@ -85,19 +90,27 @@ class Signup extends \Vvveb\Controller\Base {
 						try {
 							$error =  __('Error sending account creation mail!');
 
-							if (! email([$userInfo['email'], $site['admin-email']], __('Your account has been created!'), 'user/signup', ['user' => $userInfo] + $this->global)) {
+							\Vvveb\System\Notifications::trigger('user.signup', ['user' => $userInfo] + $this->global + [
+								'subject' => __('Your account has been created!'),
+								'message' => __('Your account has been created!'),
+							]);
+							
+							if (!email([$userInfo['email'], $site['admin-email']], __('Your account has been created!'), 'user/signup', ['user' => $userInfo] + $this->global)) {
 								$this->session->set('errors', ['login' => $error]);
 								$this->view->errors[] = $error;
 							}
 						} catch (\Exception $e) {
-							if (DEBUG) {
+							$error = __('Error creating user!');
+
+							if (defined('DEBUG') && DEBUG) {
 								$error .= "\n" . $e->getMessage();
 							}
+
 							$this->session->set('errors', ['login' => $error]);
 							$this->view->errors['login'] = $error;
 						}
 
-						return $this->redirect('user/login/index');
+						$this->redirect('user/login/index');
 					} else {
 						$this->view->errors['login'] = '';
 
@@ -116,7 +129,12 @@ class Signup extends \Vvveb\Controller\Base {
 		}
 	}
 
-	function index() {
+	/**
+	 * Handle sign-up page request.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		if ($this->request->post) {
 			$this->addUser();
 		}

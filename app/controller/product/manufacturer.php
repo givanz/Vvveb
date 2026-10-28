@@ -22,20 +22,25 @@
 
 namespace Vvveb\Controller\Product;
 
-use \Vvveb\Sql\ManufacturerSQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\Sql\ManufacturerSQL;
 use Vvveb\System\Images;
 
 class Manufacturer extends Base {
-	function index() {
+	/**
+	 * Display the manufacturer page with their products.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$slug                          = $this->request->get['slug'] ?? '';
 		$this->view->manufacturer_name = $slug;
 
 		if ($slug) {
-			$manufacturerSql = new ManufacturerSQL();
+			$manufacturerSQL = new ManufacturerSQL();
 			$options         = $this->global + ['slug' => $slug];
-			$manufacturer    = $manufacturerSql->get($options);
+			$manufacturer    = $manufacturerSQL->get($options);
 
 			if ($manufacturer) {
 				$this->request->get['name']        = $manufacturer['name'];
@@ -43,7 +48,6 @@ class Manufacturer extends Base {
 				if (isset($manufacturer['image'])) {
 					$manufacturer['image_url'] = Images::image($manufacturer['image'], 'manufacturer');
 				}
-
 
 				$manufacturer['title'] = $manufacturer['name'];
 				if (isset($this->global['site']['description']['title'])) {
@@ -55,7 +59,7 @@ class Manufacturer extends Base {
 				$this->view->manufacturer_name             = $manufacturer['name'];
 			} else {
 				$message = __('Manufacturer not found!');
-				$this->notFound(true, $message);
+				$this->notFound($message);
 			}
 		}
 	}

@@ -25,31 +25,48 @@ namespace Vvveb\Controller\Content;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use Vvveb\Sql\CategorySQL;
+use Vvveb\System\Event;
 use Vvveb\System\Images;
 
 class Category extends Base {
-	protected $type = 'category';
+	/** @var string Taxonomy type name. */
+	protected string $type = 'category';
 
-	function index() {
+	/** @var string Object type handled by this category. */
+	protected string $object = 'post';
+
+	/** @var string Route namespace. */
+	protected string $namespace = 'content';
+
+	/** @var string Fully-qualified class name for event dispatching. */
+	protected string $class = __CLASS__;
+
+	/**
+	 * Display posts filtered by category slug.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$slug                      = $this->request->get['slug'] ?? '';
-		$type                      = $this->request->get['type'] ?? 'post';
+		$type                      = $this->request->get['type'] ?? $this->object;
 		$this->view->category_name = $slug;
 
 		if ($slug) {
-			$categorySql = new CategorySQL();
+			$categorySQL = new CategorySQL();
 			$options     = $this->global + ['slug' => $slug];
 			if ($type) {
 				$options['post_type'] = $type;
 			}
 
-			$category    = $categorySql->getCategoryBySlug($options);
+			$category    = $categorySQL->getCategoryBySlug($options);
 
 			if ($category) {
 				$this->request->get['category_id'] = $this->request->request['taxonomy_item_id'] = $category['taxonomy_item_id'];
 				$this->request->get['name']        = $category['name'];
 
 				if (isset($category['image']) && $category['image']) {
-					$category['image_url'] = Images::image($category['image'], 'product', 'medium');
+					$size                  = [$this->global['site']['category_width'] ?? 150, $this->global['site']['category_height'] ?? 150];
+					$category['image_url'] = Images::image($category['image'], 'category', $size, $this->global['site']['category_method'] ?? 'cs');
 				}
 
 				$category['title'] = $category['name'];
@@ -59,19 +76,19 @@ class Category extends Base {
 
 				$this->request->get['taxonomy_item_id'] = $category['taxonomy_item_id'];
 				$this->request->get['slug']             = $category['slug'];
-				$this->view->category                   = $category;
 
-				if ($type != 'post') {
+				[$category, $type]    = Event :: trigger($this->class, __FUNCTION__ . ':after', $category, $type);
+				$this->view->category = $category;
+
+				if ($type != $this->object) {
 					//content/category-page.html
-					$template = 'content/' . $this->type . '-' . $type . '.html';
-					if ($template) {
-						$this->view->template($template);
-						$this->view->tplFile('content/' . $this->type . '.tpl');
-					}
+					$template = $this->namespace . '/' . $this->type . '-' . $type . '.html';
+					$this->view->template($template);
+					$this->view->tplFile($this->namespace . '/' . $this->type . '.tpl');
 				}
 			} else {
 				$message = sprintf(__('%s not found!'), ucfirst(__($this->type)));
-				$this->notFound(true, ['message' => $message, 'title' => $message]);
+				$this->notFound(['message' => $message, 'title' => $message]);
 			}
 		}
 	}

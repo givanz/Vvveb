@@ -25,7 +25,12 @@ namespace Vvveb\Controller\Feed;
 use Vvveb\Controller\Base;
 
 class Robots extends Base {
-	function index() {
+	/**
+	 * Output the vrobots.txt file with absolute sitemap URLs.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$text   = '';
 		$robots = DIR_PUBLIC . 'vrobots.txt';
 
@@ -33,7 +38,7 @@ class Robots extends Base {
 			$text = @file_get_contents($robots);
 		}
 
-		$path = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . ($this->global['path'] ? $this->global['path'] : '');
+		$path = V_SUBDIR_INSTALL . ($this->global['path'] ?: '');
 		$host = 'https://' . ($_SERVER['HTTP_HOST'] ?? '') . $path;
 
 		// change sitemap urls to absolute

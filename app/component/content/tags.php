@@ -26,12 +26,12 @@ use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 
 class Tags extends ComponentBase {
-	public static $defaultOptions = [
-		'language_id'              => NULL,
-		'count'                    => NULL,
-		'id_manufacturer'          => NULL,
+	public static array $defaultOptions = [
+		'language_id'              => null,
+		'count'                    => null,
+		'id_manufacturer'          => null,
 		'order'                    => ['url', 'price asc'],
-		'id_category'              => NULL,
+		'id_category'              => null,
 		'start'                    => 0,
 		'limit'                    => 7,
 		'page'                     => 1,
@@ -42,11 +42,16 @@ class Tags extends ComponentBase {
 		'parents_without_children' => false,
 	];
 
-	function results() {
+	/**
+	 * Get content tags from category taxonomy.
+	 *
+	 * @return array<string, mixed> Tags data from category query.
+	 */
+	public function results(): array {
 		$category = new \Vvveb\Sql\CategorySQL();
 		$results  = $category->getCategories($this->options);
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

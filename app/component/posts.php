@@ -22,7 +22,6 @@
 
 namespace Vvveb\Component;
 
-use function Vvveb\__;
 use function Vvveb\get;
 use function Vvveb\getSetting;
 use function Vvveb\siteSettings;
@@ -34,7 +33,7 @@ use Vvveb\System\Traits\Post;
 class Posts extends ComponentBase {
 	use Post;
 
-	public static $defaultOptions = [
+	public static array $defaultOptions = [
 		'page'               => ['url'],
 		'post_id'            => 'url',
 		'language_id'        => null,
@@ -49,15 +48,14 @@ class Posts extends ComponentBase {
 		'excerpt_limit'      => 200,
 		'comment_count'      => 1,
 		'comment_status'     => 1,
-		'taxonomy_item_id'   => NULL,
-		'taxonomy_item_slug' => NULL,
-		'search'             => NULL,
-		'search_boolean'     => NULL,
-		'like'               => NULL,
-		'admin_id'           => NULL,
-		//archive
-		'month'              => NULL,
-		'year'               => NULL,
+		'taxonomy_item_id'   => null,
+		'taxonomy_item_slug' => null,
+		'search'             => null,
+		'search_boolean'     => null,
+		'like'               => null,
+		'admin_id'           => null,
+		'month'              => null,
+		'year'               => null,
 		'image_size'         => 'medium',
 		'categories'         => null,
 		'tags'               => null,
@@ -68,9 +66,14 @@ class Posts extends ComponentBase {
 		'404'                => null,
 	];
 
-	public $options = [];
+	public array $options = [];
 
-	function __construct($options) {
+	/**
+	 * Initialize posts component with module-specific option overrides.
+	 *
+	 * @param array<string, mixed> $options Component options.
+	 */
+	public function __construct(array $options = []) {
 		parent::__construct($options);
 
 		$module = \Vvveb\getModuleName();
@@ -80,11 +83,11 @@ class Posts extends ComponentBase {
 				break;
 
 			case 'content/category':
-				if (isset($this->options['taxonomy_item_id']) && $this->options['taxonomy_item_id'] == 'page') {
+				if (isset($this->options['taxonomy_item_id']) && $this->options['taxonomy_item_id'] === 'page') {
 					$this->options['taxonomy_item_id'] = get('taxonomy_item_id');
 				}
 
-				if (isset($this->options['taxonomy_item_slug']) && $this->options['taxonomy_item_slug'] == 'page') {
+				if (isset($this->options['taxonomy_item_slug']) && $this->options['taxonomy_item_slug'] === 'page') {
 					$this->options['taxonomy_item_slug'] = get('slug');
 				}
 
@@ -92,79 +95,87 @@ class Posts extends ComponentBase {
 		}
 	}
 
-	function cacheKey() {
+	/**
+	 * Disable caching for search, pagination, or specific post lookups.
+	 *
+	 * @return string|null Parent cache key or null to disable caching.
+	 */
+	public function cacheKey(): ?string {
 		if (isset($this->options['search']) || isset($this->options['page']) || isset($this->options['post_id'])) {
-			return false;
+			return null;
 		}
 
 		return parent::cacheKey();
 	}
 
-	function results() {
+	/**
+	 * Get posts list with filtering, sticky posts, pagination, and 404 handling.
+	 *
+	 * @return array<string, mixed> Posts data with post list, limit, start, search, and archive info.
+	 */
+	public function results(): array {
 		$posts = new PostSQL();
 
-		$this->options['limit'] = (int) ($this->options['limit'] ?? 4 ?: 4);
+		$this->options['limit'] = max(1, (int)($this->options['limit'] ?? 4) ?: 4);
 
-		if (($page = $this->options['page'] ?? false) && is_numeric($page)) {
+		if (($page = $this->options['page'] ?? false) && is_numeric($page) && $page > 0) {
 			$this->options['start'] = ($page - 1) * ($this->options['limit']);
 		}
 
-		$this->options['start'] = (int) ($this->options['start'] ?? 0 ?: 0);
+		$this->options['start'] = max(0, (int)($this->options['start'] ?? 0) ?: 0);
 
-
-		if (isset($this->options['post_id']) && is_array($this->options['post_id']) && $this->options['source'] == 'autocomplete') {
+		if (isset($this->options['post_id']) && is_array($this->options['post_id']) && $this->options['source'] === 'autocomplete') {
 			$this->options['post_id'] = array_keys($this->options['post_id']);
 		} else {
 			$this->options['post_id'] = [];
 		}
 
 		if (isset($this->options['order_by']) &&
-				! in_array($this->options['order_by'], ['post_id', 'admin_id', 'sort_order', 'parent', 'type', 'created_at', 'updated_at', 'slug', 'name'])) {
+				!in_array($this->options['order_by'], ['post_id', 'admin_id', 'sort_order', 'parent', 'type', 'created_at', 'updated_at', 'slug', 'name'])) {
 			unset($this->options['order_by']);
 		}
 
 		if (isset($this->options['direction']) &&
-				! in_array($this->options['direction'], ['asc', 'desc'])) {
+				!in_array($this->options['direction'], ['asc', 'desc'])) {
 			unset($this->options['direction']);
 		}
 
 		//wildcard search for one word search
-		if (isset($this->options['search']) && strpos($this->options['search'], ' ') == false) {
+		if (isset($this->options['search']) && !str_contains($this->options['search'], ' ')) {
 			$this->options['search_boolean'] = true;
 		}
 
-		if (isset($this->options['search']) && isset($this->options['search_boolean'])) {
+		if (isset($this->options['search'], $this->options['search_boolean'])) {
 			$this->options['search'] .= '*';
 		}
 
-		if (! isset($this->options['sticky'])) {
-			$stickyPosts = getSetting('posts', 'sticky');
+		if (!isset($this->options['sticky'])) {
+			$stickyPosts             = getSetting('posts', 'sticky');
 			$this->options['sticky'] = $stickyPosts;
 		}
 
 		//if only one taxonomy_item_id is provided then add it to array
-		if (isset($this->options['taxonomy_item_id']) && ! is_array($this->options['taxonomy_item_id'])) {
+		if (isset($this->options['taxonomy_item_id']) && !is_array($this->options['taxonomy_item_id'])) {
 			$this->options['taxonomy_item_id'] = [$this->options['taxonomy_item_id']];
 		}
 
-		$results = $posts->getAll($this->options);
+		$results               = $posts->getAll($this->options);
 		$this->options['type'] = $this->options['type'] ?: 'post';
 
-		if (! isset($this->options['date_format'])) {
-			$site = siteSettings();
+		if (!isset($this->options['date_format'])) {
+			$site                         = siteSettings();
 			$this->options['date_format'] = $site['date_format'] ?? 'human';
 		}
 
 		if ($results && isset($results['post'])) {
 			if ($this->options['sticky']) {
-				$stickyOptions = $this->options;
+				$stickyOptions            = $this->options;
 				$stickyOptions['post_id'] = $this->options['sticky'];
-				$stickyOptions['start'] = 0;
+				$stickyOptions['start']   = 0;
 				unset($stickyOptions['limit']);
 				$sticky = $posts->getAll($stickyOptions);
 
 				if ($sticky && isset($sticky['post'])) {
-					//$count = count($sticky['post']);
 					$results['post'] = $sticky['post'] + $results['post'];
 				}
 			}
@@ -187,27 +198,34 @@ class Posts extends ComponentBase {
 		$results['start']  = $this->options['start'];
 		$results['search'] = $this->options['search'] ?? '';
 
-		if (! $results['post'] &&
+		if (!$results['post'] &&
 			isset($this->options['page']) &&
 			($this->options['page'] > 1) &&
-			(isset($this->options['404']) && $this->options['404']) &&
-			! $_SERVER['QUERY_STRING']) {
+			!empty($this->options['404']) &&
+			!($_SERVER['QUERY_STRING'] ?? '')) {
 			$results['404'] = true;
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event :: trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}
 
-	//called on each request
-	function request(&$results, $index = 0) {
+	/**
+	 * Hide password-protected post content on each request.
+	 *
+	 * @param array<string, mixed> &$results Posts data to modify.
+	 * @param int                  $index    Request index.
+	 *
+	 * @return void
+	 */
+	public function request(array &$results, int $index = 0): void {
 		if (isset($results['post']) && $results['post']) {
 			foreach ($results['post'] as &$post) {
 				if ($post['password']) {
 					$post['content']  = ''; //__('Password protected!');
 					$post['excerpt']  = ''; //__('Password protected!');
-					$post['image']  = PUBLIC_PATH . 'media/locked.svg';
+					$post['image']    = PUBLIC_PATH . 'media/locked.svg';
 				}
 			}
 		}

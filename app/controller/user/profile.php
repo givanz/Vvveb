@@ -29,38 +29,58 @@ use Vvveb\System\User\User;
 use Vvveb\System\Validator;
 
 class Profile extends Base {
-	function download() {
+	/**
+	 * Export the current user's data as an XML download.
+	 *
+	 * @return never
+	 */
+	public function download(): never {
 		header('Content-Disposition: attachment; filename=user.xml');
 		header('Content-Type: application/octet-stream');
 
 		$data = User::get(['user_id' => $this->global['user_id']]);
+
+		if (!$data) {
+			exit(__('User not found!'));
+		}
+
 		unset($data['password']);
 		$xml = new \SimpleXMLElement('<root/>');
-		array_walk_recursive($data, function ($value, $key) use ($xml) {
+		array_walk_recursive($data, function($value, $key) use ($xml): void {
 			$xml->addChild($key, $value);
 		});
 		echo $xml->asXML();
 
-		die();
+		exit();
 	}
 
-	function delete() {
+	/**
+	 * Request account deletion (sets status to 3) and log out.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
 		//status set to 3 = request delete
 		$result = User::update(['status' => 3], ['user_id' => $this->global['user_id']]);
 
-		if (! $result) {
+		if (!$result) {
 			$userModel          = new UserSQL();
 			$this->view->errors = [$userModel->error];
 		} else {
 			User::logout();
-			$message               =  __('Account deleted!');
+			$message               =  __('Account deletion request submitted!');
 			$this->session->set('success', ['login' => $message]);
 			$this->view->success[] = $message;
 			$this->redirect('/user/login');
 		}
 	}
 
-	function save() {
+	/**
+	 * Save profile changes submitted via the profile edit form.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$validator    = new Validator(['user']);
 
 		if (isset($this->request->post['user'])) {
@@ -69,10 +89,10 @@ class Profile extends Base {
 				$user['user_id'] = $this->global['user_id'];
 				$user['bio']     = sanitizeHTML($user['bio'] ?? '');
 				unset($user['username'], $user['status'], $user['user'], $user['token'], $user['created_at']);
-				
+
 				$result = User::update($user, ['user_id' => $this->global['user_id']]);
 
-				if (! $result) {
+				if (!$result) {
 					$userModel          = new UserSQL();
 					$this->view->errors = [$userModel->error];
 				} else {
@@ -87,7 +107,12 @@ class Profile extends Base {
 		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display the current user's profile.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$user = User::get(['user_id' => $this->global['user_id']]);
 		unset($user['password']);
 

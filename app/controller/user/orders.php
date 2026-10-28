@@ -23,9 +23,17 @@
 namespace Vvveb\Controller\User;
 
 class Orders extends Base {
-	function index() {
-	}
+	/**
+	 * Display the user's order history.
+	 *
+	 * @return void
+	 */
+	public function index(): void {}
 
-	function order() {
-	}
+	/**
+	 * Display a single order detail (currently a stub).
+	 *
+	 * @return void
+	 */
+	public function order(): void {}
 }
