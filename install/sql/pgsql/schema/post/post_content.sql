@@ -7,7 +7,7 @@ CREATE TABLE post_content (
   "name" varchar(191) NOT NULL,
   "slug" varchar(191) NOT NULL,
   "content" text NOT NULL,
-  "excerpt" text DEFAULT '',
+  "excerpt" text,
   "meta_keywords" text NOT NULL DEFAULT '',
   "meta_description" text NOT NULL DEFAULT '',
   PRIMARY KEY ("post_id","language_id")

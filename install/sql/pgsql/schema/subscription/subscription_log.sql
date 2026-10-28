@@ -13,4 +13,5 @@ CREATE TABLE "subscription_log" (
 -- PRIMARY KEY ("subscription_log_id")
 );
 
+CREATE INDEX "subscription_log_subscription_id" ON "subscription_log" ("subscription_id");
 -- SELECT setval('subscription_log_subscription_log_id_seq', 0, true); -- last inserted id by sample data

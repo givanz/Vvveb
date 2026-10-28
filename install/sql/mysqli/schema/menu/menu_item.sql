@@ -11,6 +11,7 @@ CREATE TABLE `menu_item` (
   `sort_order` int(3) NOT NULL DEFAULT 0,
   `status` tinyint NOT NULL DEFAULT 0,
   PRIMARY KEY (`menu_item_id`),
-  KEY `parent_id` (`parent_id`)
+  KEY `parent_id` (`parent_id`),
+  KEY `menu_id` (`menu_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
 

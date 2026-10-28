@@ -13,5 +13,4 @@ CREATE TABLE taxonomy (
   -- PRIMARY KEY("taxonomy_id")
 );
 
-CREATE INDEX "taxonomy_id" ON taxonomy ("taxonomy_id");
 SELECT setval('taxonomy_taxonomy_id_seq', 5, true); -- last inserted id by sample data

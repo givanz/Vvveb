@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS `media_content`;
 
 CREATE TABLE `media_content` (
-  `media_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `media_id` INT UNSIGNED NOT NULL,
   `language_id` INT UNSIGNED NOT NULL,
   `name` varchar(191) NOT NULL DEFAULT "",
   `caption` varchar(191) NOT NULL DEFAULT "",

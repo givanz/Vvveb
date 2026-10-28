@@ -7,5 +7,6 @@ CREATE TABLE `cart` (
   `data` TEXT NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`cart_id`),
-  KEY `user_id` (`user_id`)
-);
+  KEY `user_id` (`user_id`),
+  KEY `session_id` (`session_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

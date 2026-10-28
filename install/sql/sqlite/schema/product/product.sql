@@ -32,7 +32,7 @@ CREATE TABLE `product` (
 `width` decimal(15,8) NOT NULL DEFAULT '0.00000000',
 `height` decimal(15,8) NOT NULL DEFAULT '0.00000000',
 `length_type_id` INT NOT NULL DEFAULT 0,
-`date_available` date NOT NULL DEFAULT '1000-01-01',
+`date_available` date,
 `template` TEXT NOT NULL DEFAULT '',
 `views` INTEGER NOT NULL DEFAULT 0,
 `subtract_stock` TINYINT NOT NULL DEFAULT 1,
@@ -48,5 +48,10 @@ CREATE TABLE `product` (
 
 
 
-CREATE INDEX `product_type_status_date` ON `product` (`type`);
+CREATE INDEX `product_type_status_date` ON `product` (`type`,`status`,`created_at`);
+CREATE INDEX `product_stock_status_id` ON `product` (`stock_status_id`);
+CREATE INDEX `product_vendor_id` ON `product` (`vendor_id`);
+CREATE INDEX `product_manufacturer_id` ON `product` (`manufacturer_id`);
+CREATE INDEX `product_barcode` ON `product` (`barcode`);
+CREATE INDEX `product_sku` ON `product` (`sku`);
 

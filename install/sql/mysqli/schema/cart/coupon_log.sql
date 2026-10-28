@@ -7,5 +7,8 @@ CREATE TABLE `coupon_log` (
   `user_id` INT UNSIGNED NOT NULL,
   `discount` decimal(15,4) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`coupon_log_id`)
+  PRIMARY KEY (`coupon_log_id`),
+  KEY `coupon_id` (`coupon_id`),
+  KEY `order_id` (`order_id`),
+  KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

@@ -13,4 +13,5 @@ CREATE TABLE order_shipment (
   -- PRIMARY KEY("order_shipment_id")
 );
 
+CREATE INDEX "order_shipment_order_id" ON order_shipment ("order_id");
 -- SELECT setval('order_shipment_order_shipment_id_seq', 0, true); -- last inserted id by sample data

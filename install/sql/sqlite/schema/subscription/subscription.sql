@@ -25,17 +25,14 @@ CREATE TABLE `subscription` (
   `trial_left` smallint(6) NOT NULL,
   `trial_status` tinyint NOT NULL,
   `date_next` datetime NOT NULL,
-  `note` text NOT NULL,
+  `notes` text NOT NULL,
   `subscription_status_id` INT NOT NULL,
-  `tracking` TEXT NOT NULL,
-  `language_id` INT NOT NULL,
-  `currency_id` INT NOT NULL,
-  `ip` TEXT NOT NULL,
-  `forwarded_ip` TEXT NOT NULL,
-  `user_agent` TEXT NOT NULL,
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
---  PRIMARY KEY (`subscription_id`),
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX `subscription_order_id` ON `subscription` (`order_id`);
+CREATE INDEX `subscription_user_id` ON `subscription` (`user_id`);
+CREATE INDEX `subscription_product_id` ON `subscription` (`product_id`);
+CREATE INDEX `subscription_subscription_plan_id` ON `subscription` (`subscription_plan_id`);
+CREATE INDEX `subscription_subscription_status_id` ON `subscription` (`subscription_status_id`);

@@ -12,8 +12,8 @@ CREATE TABLE `coupon` (
 `logged_in` TINYINT NOT NULL,
 `free_shipping` TINYINT NOT NULL,
 `status` TINYINT NOT NULL,
-`from_date` date NOT NULL DEFAULT '1000-01-01',
-`to_date` date NOT NULL DEFAULT '1000-01-01',
+`from_date` date,
+`to_date` date,
 `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- PRIMARY KEY (`coupon_id`)

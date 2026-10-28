@@ -27,7 +27,7 @@ use function Vvveb\getTemplateList;
 use function Vvveb\sanitizeFileName;
 use function Vvveb\session as sess;
 use Vvveb\Sql\LanguageSQL;
-use Vvveb\Sql\menu_itemSQL;
+use Vvveb\Sql\Menu_itemSQL;
 use Vvveb\Sql\RoleSQL;
 use Vvveb\Sql\SiteSQL;
 use Vvveb\System\Core\View;
@@ -40,17 +40,19 @@ use Vvveb\System\User\Admin;
 
 define('REQUIRED_EXTENSIONS', ['mysqli', 'mysqlnd', 'xml', 'libxml', 'pcre',  'zip', 'dom', 'curl', 'gettext']);
 define('WRITABLE_FOLDERS', ['storage', 'storage/cache', 'storage/model', 'storage/compiled-templates', 'config', 'config/sites.php', 'public/media/', 'public/themes', 'public/image-cache', 'plugins']);
-define('MIN_PHP_VERSION', '7.4.0');
+define('MIN_PHP_VERSION', '8.3.0');
 define('DEFAULT_LANG', 'en_US');
 
 #[\AllowDynamicProperties]
 class Index extends Base {
-	private $config = ['engine' => 'mysqli', 'host' => '127.0.0.1', 'database'  => 'vvveb', 'user'  => 'root', 'password'  => '', 'port'  => null, 'prefix'  => ''];
+	/** @var array{engine: string, host: string, database: string, user: string, password: string, port: string|null, prefix: string} */
+	private array $config = ['engine' => 'mysqli', 'host' => '127.0.0.1', 'database' => 'vvveb', 'user' => 'root', 'password' => '', 'port' => null, 'prefix' => ''];
 
-	private $subdir = '';
+	/** @var string */
+	private string $subdir = '';
 
-	function __construct() {
-		if (! ($lang = sess('install_language'))) {
+	public function __construct() {
+		if (!($lang = sess('install_language'))) {
 			$lang = Locale::userPreferedLanguage();
 
 			if ($lang) {
@@ -62,7 +64,7 @@ class Index extends Base {
 			Locale::setLanguage($lang);
 		}
 
-		$this->subdir = (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : \Vvveb\detectSubDir());
+		$this->subdir = (V_SUBDIR_INSTALL ?: \Vvveb\detectSubDir());
 
 		if (\Vvveb\is_installed()) {
 			$admin   = false;
@@ -82,9 +84,9 @@ class Index extends Base {
 			if ($admin && isset($admin['status']) && $admin['status'] == '1') {
 				$this->redirect($this->subdir . '/');
 
-				die(__('Already installed! To reinstall remove config/db.php') . "\n");
+				exit(__('Already installed! To reinstall remove config/db.php') . "\n");
 			} else {
-				if (! $admin || ! isset($admin['role_id']) || $admin['role_id'] != '1') {
+				if (!$admin || !isset($admin['role_id']) || $admin['role_id'] != '1') {
 					$message .= __('Invalid installation. No user with "super admin" role found!');
 					$this->view         = View :: getInstance();
 					$this->view->info[] = $message;
@@ -93,7 +95,12 @@ class Index extends Base {
 		}
 	}
 
-	private function checkRequirements() {
+	/**
+	 * Check PHP requirements: version, extensions, and writable folders.
+	 *
+	 * @return array<int, string> List of unmet requirements.
+	 */
+	private function checkRequirements(): array {
 		$notMet = [];
 
 		if (version_compare(PHP_VERSION, MIN_PHP_VERSION) < 0) {
@@ -101,7 +108,7 @@ class Index extends Base {
 		}
 
 		foreach (REQUIRED_EXTENSIONS as $extension) {
-			if (! extension_loaded($extension)) {
+			if (!extension_loaded($extension)) {
 				$notMet[] = sprintf(__('PHP extension %s is not installed'), $extension);
 			}
 		}
@@ -109,7 +116,7 @@ class Index extends Base {
 		foreach (WRITABLE_FOLDERS as $folder) {
 			$path = DIR_ROOT . $folder;
 
-			if (! is_writable($path) && ! @chmod($path, 0750)) {
+			if (!is_writable($path) && !@chmod($path, 0750)) {
 				$notMet[] = sprintf(__('"%s" is not writable'), $folder);
 			}
 		}
@@ -117,7 +124,16 @@ class Index extends Base {
 		return $notMet;
 	}
 
-	private function replaceInFile($file, $search, $replace) {
+	/**
+	 * Replace a string in a file.
+	 *
+	 * @param string          $file    The file path.
+	 * @param string|string[] $search  The string(s) to search for.
+	 * @param string|string[] $replace The replacement string(s).
+	 *
+	 * @return int|false Number of bytes written, or false on failure.
+	 */
+	private function replaceInFile(string $file, string|array $search, string|array $replace): int|false {
 		$content = file_get_contents($file);
 
 		if ($content) {
@@ -125,51 +141,64 @@ class Index extends Base {
 
 			return file_put_contents($file, $content);
 		}
+
+		return false;
 	}
 
-	private function writeConfig($data) {
+	/**
+	 * Write database configuration.
+	 *
+	 * @param array<string, mixed> $data The configuration data.
+	 *
+	 * @return mixed
+	 */
+	private function writeConfig(array $data): mixed {
 		return \Vvveb\setConfig('db', $data);
-		$configFile = DIR_ROOT . 'config/db.php';
-		file_put_contents($configFile, "<?php\n return " . var_export($data, true) . ';');
-		clearstatcache(true, $configFile);
 	}
 
-	private function import($noimport = false) {
+	/**
+	 * Import database schema and data from POST parameters.
+	 *
+	 * @param bool $noimport Whether to skip data import.
+	 *
+	 * @return void
+	 */
+	private function import(bool $noimport = false): void {
 		$config = $this->config;
 
-		array_walk($this->request->post, function ($value, $key) use (&$config) {
+		array_walk($this->request->post, function($value, $key) use (&$config): void {
 			if (isset($config[$key])) {
 				$config[$key] = $value;
 			}
 		});
 
-		$config['engine'] = $config['engine'] ? $config['engine'] : 'mysqli';
+		$config['engine'] = $config['engine'] ?: 'mysqli';
 
-		if ($config['engine'] == 'sqlite') {
+		if ($config['engine'] === 'sqlite') {
 			$config['host'] = DIR_STORAGE . 'sqlite/vvveb.db';
 		}
 
 		extract($config);
 
-		$prefix                       = $prefix ?? '';
+		$prefix ??= '';
 		$data['default']              = $config['engine'];
 		$data['connections'][$engine] = $config;
 
 		try {
-			if (! defined('DB_ENGINE')) {
+			if (!defined('DB_ENGINE')) {
 				define('DB_ENGINE', $engine);
-				define('DB_HOST',   $host);
-				define('DB_USER',   $user);
-				define('DB_PASS',   $password);
-				define('DB_NAME',   $database);
+				define('DB_HOST', $host);
+				define('DB_USER', $user);
+				define('DB_PASS', $password);
+				define('DB_NAME', $database);
 				define('DB_PREFIX', $prefix);
-				define('DB_PORT',   $port);
-				define('DIR_SQL',   DIR_APP . 'sql/' . DB_ENGINE . '/');
+				define('DB_PORT', $port);
+				define('DIR_SQL', DIR_APP . 'sql/' . DB_ENGINE . '/');
 			}
 
-			$import = new \Vvveb\System\Import\Sql($engine, $host, $database, $user, $password, $port, $prefix);
+			$import = new \Vvveb\System\Import\Sql($engine, $database, $prefix);
 			//$import->createDb($database);
-			if ($engine == 'mysqli') {
+			if ($engine === 'mysqli') {
 				$import->createDb($database);
 			}
 			$import->setPath(DIR_ROOT . "install/sql/$engine/schema/");
@@ -192,19 +221,26 @@ class Index extends Base {
 		}
 	}
 
-	private function themeTemplates($theme) {
+	/**
+	 * Get available templates for a given theme.
+	 *
+	 * @param string $theme The theme slug.
+	 *
+	 * @return array<string, string> Associative array of filename => title.
+	 */
+	private function themeTemplates(string $theme): array {
 		$templates = getTemplateList($theme);
 
 		$files = ['index.html' => 'Home page'];
 		foreach ($templates as $template) {
 			foreach (['error', 'index.'] as $type) {
-				if (strpos($template['filename'], $type) !== false) {
+				if (str_contains($template['filename'], $type)) {
 					continue 2;
 				}
 			}
 
 			$files[$template['filename']] = $template['title'];
-			if ($template['folder'] != null) {
+			if ($template['folder'] !== null) {
 				break;
 			}
 		}
@@ -212,19 +248,32 @@ class Index extends Base {
 		return $files;
 	}
 
-	function getThemeTemplates() {
+	/**
+	 * Return theme templates as JSON for AJAX requests.
+	 *
+	 * @return array<string, string>|null
+	 */
+	public function getThemeTemplates(): ?array {
 		$theme = $this->request->get['theme'];
 		if ($theme) {
 			$files = $this->themeTemplates($theme);
 
 			$this->response->setType('json');
+
 			return $files;
 		}
+
+		return null;
 	}
 
-	function index() {
-		$requirements   = $this->checkRequirements();
-		$noimport 	     = $this->request->post['noimport'] ?? false;
+	/**
+	 * Main installer page — step 1: database configuration and language selection.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$requirements  = $this->checkRequirements();
+		$noimport      = $this->request->post['noimport'] ?? false;
 
 		if ($requirements) {
 			$this->view->requirements     = $requirements;
@@ -264,14 +313,19 @@ class Index extends Base {
 		$languages          = array_intersect_key($languagesList, $installedLanguages);
 		$this->view->config = $this->config;
 
-		if (! defined('CLI')) {
+		if (!defined('CLI')) {
 			$this->view->languagesList    = $languages;
 			$this->view->currentLanguage  = sess('install_language') ?? DEFAULT_LANG;
 		}
 	}
 
-	function install() {
-		if (! defined('CLI')) {
+	/**
+	 * Main installer page — step 2: admin user, site settings, theme, and final setup.
+	 *
+	 * @return void
+	 */
+	public function install(): void {
+		if (!defined('CLI')) {
 			$themes      =  ThemesList :: getList();
 			$activeTheme = key($themes);
 
@@ -281,13 +335,13 @@ class Index extends Base {
 			$this->view->count  = count($themes);
 		}
 
-		$isRootPublic             = (constant('PUBLIC_PATH') == DIRECTORY_SEPARATOR) ? 'true' : 'false';
+		$isRootPublic             = (constant('PUBLIC_PATH') === DIRECTORY_SEPARATOR) ? 'true' : 'false';
 		$this->view->publicPath   = PUBLIC_PATH;
 		$this->view->isRootPublic = $isRootPublic;
 
 		$languagesList      = include DIR_SYSTEM . 'data/languages-list.php';
 
-		if (! defined('CLI')) {
+		if (!defined('CLI')) {
 			$this->view->languagesList    = $languagesList;
 			$this->view->currentLanguage  = sess('install_language') ?? DEFAULT_LANG;
 		}
@@ -368,11 +422,11 @@ class Index extends Base {
 			unset($site['settings']);
 			@\Vvveb\setConfig('sites.* * *', $site);
 
-			$lang = $language ?? sess('install_language') ?? 'en_US';
+			$lang               = $language;
 			$languageModel      = new LanguageSQL();
 
 			//set default language
-			if ($lang && $lang != 'en_US') {
+			if ($lang && $lang !== 'en_US' && isset($languagesList[$lang])) {
 				$language           = $languagesList[$lang];
 				$language['name']   = preg_replace('/^(\w+).*/', '$1', $language['name']);
 				$language['slug']   = preg_replace('/^(\w+).*/', '$1', $language['code']);
@@ -393,7 +447,10 @@ class Index extends Base {
 					}
 
 					$inserted[]   = $code;
-					$ln           = $languagesList[$code];
+					$ln           = $languagesList[$code] ?? null;
+					if (!$ln) {
+						continue;
+					}
 					$ln['name']   = preg_replace('/^(\w+).*/', '$1', $ln['name']);
 					$ln['slug']   = preg_replace('/^(\w+).*/', '$1', $ln['code']);
 					$ln['locale'] = $ln['code'];
@@ -408,7 +465,7 @@ class Index extends Base {
 
 			//change admin login path
 			if ($isRootPublic && $adminPath &&
-				($adminPath != 'admin' && $adminPath != 'vadmin')) {
+				($adminPath !== 'admin' && $adminPath !== 'vadmin')) {
 				$from = DIR_PUBLIC . 'vadmin';
 				$to   = DIR_PUBLIC . $adminPath;
 
@@ -435,7 +492,7 @@ class Index extends Base {
 				@\Vvveb\setConfig($app . '.key', Str::random(32));
 			}
 
-			$subdir = $this->request->post['subdir'] ?? $this->subdir ?? false;
+			$subdir = $this->request->post['subdir'] ?? $this->subdir;
 
 			if ($subdir) {
 				$subdir = sanitizeFileName($subdir);
@@ -443,12 +500,11 @@ class Index extends Base {
 				$subdir = '/' . trim($subdir, '/ ');
 
 				//try to set subdir in env.php and .htaccess
-				$this->replaceInFile(DIR_ROOT . 'env.php', "define('V_SUBDIR_INSTALL', false" , "define('V_SUBDIR_INSTALL', '{$subdir}'");
-				$this->replaceInFile(DIR_ROOT . '.htaccess', 'RewriteRule ^ index.php [L]' , "RewriteRule ^ {$subdir}/index.php [L]");
+				$this->replaceInFile(DIR_ROOT . 'env.php', "define('V_SUBDIR_INSTALL', false", "define('V_SUBDIR_INSTALL', '$subdir'");
+				$this->replaceInFile(DIR_ROOT . '.htaccess', 'RewriteRule ^ index.php [L]', "RewriteRule ^ $subdir/index.php [L]");
 			}
 
-
-			$menus = new menu_itemSQL();
+			$menus = new Menu_itemSQL();
 
 			if ($subdir || $isRootPublic == 'false') {
 				//add subdir path to menu links
@@ -460,7 +516,7 @@ class Index extends Base {
 					foreach ($menuItems as $menuItem) {
 						$data = ['url' => $sub . $menuItem['url'], 'menu_item_content' => []];
 						if ($menuItem['content']) {
-							$content = str_replace('"/media/', '"' . PUBLIC_PATH . 'media/', $menuItem['content']);
+							$content                   = str_replace('"/media/', '"' . PUBLIC_PATH . 'media/', $menuItem['content']);
 							$data['menu_item_content'] = [['content' => $content, 'language_id' => 1]];
 						}
 
@@ -480,7 +536,7 @@ class Index extends Base {
 			}
 
 			//admin auto login
-			if (! defined('CLI')) {
+			if (!defined('CLI')) {
 				$adminInfo = Admin::get(['admin_id' => 1]);
 
 				if ($adminInfo) {

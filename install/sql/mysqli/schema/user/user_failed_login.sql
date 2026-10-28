@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS `user_failed_login`;
 CREATE TABLE `user_failed_login` (
   `user_id` INT UNSIGNED NOT NULL,
   `count` INT UNSIGNED DEFAULT 0,
-  `last_ip` VARCHAR(16) NOT NULL DEFAULT '',
+  `last_ip` VARCHAR(45) NOT NULL DEFAULT '',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`, `updated_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

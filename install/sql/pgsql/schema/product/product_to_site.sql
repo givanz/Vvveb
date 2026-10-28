@@ -5,3 +5,5 @@ CREATE TABLE product_to_site (
   "site_id" smallint NOT NULL DEFAULT 0,
   PRIMARY KEY("product_id","site_id")
 );
+
+CREATE INDEX IF NOT EXISTS "product_to_site_site" ON product_to_site ("site_id");

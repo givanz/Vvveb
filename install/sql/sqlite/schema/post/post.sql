@@ -19,7 +19,7 @@ CREATE TABLE `post` (
 );
 
 
-CREATE INDEX `post_type_status_date` ON `post` (`type`);
+CREATE INDEX `post_type_status_date_post_id` ON `post` (`type`,`status`,`sort_order`,`created_at`,`post_id`);
 CREATE INDEX `post_parent` ON `post` (`parent`);
 CREATE INDEX `post_author` ON `post` (`admin_id`);
 CREATE INDEX `post_updated_at` ON `post` (`updated_at`);

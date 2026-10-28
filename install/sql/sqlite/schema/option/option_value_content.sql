@@ -7,3 +7,5 @@ CREATE TABLE `option_value_content` (
   `name` TEXT NOT NULL,
   PRIMARY KEY (`option_value_id`,`language_id`)
 );
+
+CREATE INDEX `option_value_content_option_id_language_id` ON `option_value_content` (`option_id`, `language_id`);

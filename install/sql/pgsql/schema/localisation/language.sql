@@ -12,7 +12,7 @@ CREATE TABLE language (
   "slug" varchar(12) NOT NULL,
   "rtl" smallint NOT NULL DEFAULT 0,
   "sort_order" int NOT NULL DEFAULT 0,
-  "status" smallint NOT NULL,
+  "status" smallint NOT NULL DEFAULT 0,
   "default" smallint NOT NULL DEFAULT 0
   -- PRIMARY KEY("language_id")
 );

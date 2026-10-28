@@ -8,3 +8,5 @@ CREATE TABLE `order_shipment` (
 `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- PRIMARY KEY (`order_shipment_id`)
 );
+
+CREATE INDEX `order_shipment_order_id` ON `order_shipment` (`order_id`);

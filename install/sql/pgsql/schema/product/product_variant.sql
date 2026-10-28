@@ -17,4 +17,5 @@ CREATE TABLE product_variant (
   -- PRIMARY KEY("product_variant_id")
 );
 
-CREATE INDEX "product_variant_product_id_product_option" ON "product_variant" ("product_id","product_variant_id", "options");
+CREATE INDEX "product_variant_product_id" ON product_variant ("product_id","stock_quantity","options");
+CREATE INDEX "product_variant_options" ON product_variant ("options");

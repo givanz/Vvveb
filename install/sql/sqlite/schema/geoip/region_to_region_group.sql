@@ -8,3 +8,7 @@ CREATE TABLE `region_to_region_group` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 --  PRIMARY KEY (`region_to_region_group_id`)
 );
+
+CREATE INDEX `region_to_region_group_country_id` ON `region_to_region_group` (`country_id`);
+CREATE INDEX `region_to_region_group_region_id` ON `region_to_region_group` (`region_id`);
+CREATE INDEX `region_to_region_group_region_group_id` ON `region_to_region_group` (`region_group_id`);

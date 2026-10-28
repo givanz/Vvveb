@@ -13,4 +13,5 @@ CREATE TABLE tax_rule (
   -- PRIMARY KEY("tax_rule_id")
 );
 
+CREATE INDEX "tax_rule" ON tax_rule ("tax_type_id","tax_rate_id");
 SELECT setval('tax_rule_tax_rule_id_seq', 2, true); -- last inserted id by sample data

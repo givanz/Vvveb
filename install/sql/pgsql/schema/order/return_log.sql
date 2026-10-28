@@ -14,4 +14,5 @@ CREATE TABLE return_log (
   -- PRIMARY KEY("return_log_id")
 );
 
+CREATE INDEX "return_log_return_id" ON return_log ("return_id");
 -- SELECT setval('return_log_return_log_id_seq', 0, true); -- last inserted id by sample data

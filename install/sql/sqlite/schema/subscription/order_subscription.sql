@@ -23,3 +23,5 @@ CREATE TABLE `order_subscription` (
 );
 
 CREATE INDEX `order_subscription_order_id` ON `order_subscription` (`order_id`);
+CREATE INDEX `order_subscription_product_id` ON `order_subscription` (`product_id`);
+CREATE INDEX `order_subscription_subscription_plan_id` ON `order_subscription` (`subscription_plan_id`);

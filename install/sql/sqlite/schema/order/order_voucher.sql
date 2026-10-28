@@ -14,3 +14,6 @@ CREATE TABLE `order_voucher` (
 `amount` decimal(15,4) NOT NULL
 -- PRIMARY KEY (`order_voucher_id`)
 );
+
+CREATE INDEX `order_voucher_order_id` ON `order_voucher` (`order_id`);
+CREATE INDEX `order_voucher_voucher_id` ON `order_voucher` (`voucher_id`);

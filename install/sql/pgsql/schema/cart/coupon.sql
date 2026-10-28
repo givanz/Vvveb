@@ -15,8 +15,8 @@ CREATE TABLE coupon (
   "logged_in" smallint NOT NULL,
   "free_shipping" smallint NOT NULL,
   "status" smallint NOT NULL,
-  "from_date" date NOT NULL DEFAULT '1000-01-01',
-  "to_date" date NOT NULL DEFAULT '1000-01-01',
+  "from_date" date,
+  "to_date" date,
   "created_at" timestamp(0) NOT NULL DEFAULT now(),
   "updated_at" timestamp(0) NOT NULL DEFAULT now()
   -- PRIMARY KEY("coupon_id")

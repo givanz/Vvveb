@@ -5,3 +5,5 @@ CREATE TABLE `product_related` (
 `product_related_id` INT NOT NULL,
 PRIMARY KEY (`product_id`,`product_related_id`)
 );
+
+CREATE INDEX IF NOT EXISTS `product_related_related` ON `product_related` (`product_related_id`);

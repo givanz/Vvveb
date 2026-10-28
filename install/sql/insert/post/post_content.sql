@@ -1,7 +1,5 @@
 INSERT INTO `post_content` VALUES 
 
-            
-            
 (1,1,'Begin each day by telling yourself','hello-world-1',
 '<p>
 	Begin each day by telling yourself:
@@ -60,7 +58,6 @@ INSERT INTO `post_content` VALUES
 , 'Today I shall be meeting with interference, ingratitude, insolence, disloyalty, ill-will, and selfishness all of them due to the offenders` ignorance of what is good or evil.', 'Welcome to Vvveb',''),
             
 
-
 (2,1,'Confession','hello-world-2',
 '<p>Not finding an explanation in science I began to seek for it in life, hoping to find it among the people around me. And I began to observe how the people around me people like myself - lived, and what their attitude was to this question which had brought me to despair.</p>
 <p>And this is what I found among people who were in the same position as myself as regards education and manner of life.</p>
@@ -80,71 +77,8 @@ INSERT INTO `post_content` VALUES
 
 <p>It was like this: I, my reason, have acknowledged that life is senseless. If there is nothing higher than reason (and there is not: nothing can prove that there is, then reason is the creator of life for me. If reason did not exist there would be for me no life. How can reason deny life when it is the creator of life? Or to put it the other way: were there no life, my reason would not exist; therefore reason is life`s son. Life is all. Reason is its fruit yet reason rejects life itself! I felt that there was something wrong here.</p>
 ','','',''),
-            
-            
-            
-(3,1,'The work is accomplished, and there is no resting in it','hello-world-3',
-'
-<p>All in the world know the beauty of the beautiful, and in doing this they have (the idea of) what ugliness is; they all know the skill of the skilful, and in doing this they have (the idea of) what the want of skill is.</p>
 
-<p>So it is that existence and nonexistence give birth the one to (the idea of) the other; that difficulty and ease produce the one (the idea of) the other; that length and shortness fashion out the one the figure of the other; that (the ideas of) height and lowness arise from the contrast of the one with the other; that the musical notes and tones become harmonious through the relation of one with another; and that being before and behind give the idea of one following another.</p>
-
-<p>Therefore the sage manages affairs without doing anything, and conveys his instructions without the use of speech.</p>
-
-<p>All things spring up, and there is not one which declines to show itself; they grow, and there is no claim made for their ownership; they go through their processes, and there is no expectation (of a reward for the results). The work is accomplished, and there is no resting in it (as an achievement).</p>
-
-<blockquote>
-	<p>
-	<span>The work is done, but how no one can see;</span>
-	<br />
-	<span>`This this that makes the power not cease to be.</span>
-	</p>
-</blockquote>
-', '','',''),
-            
-            
-(4,1,'Aenean ligula justo, viverra in lacus porttitor','hello-world-4','
-                <h2>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</h2>
-                <p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin. Praesent at tempus lectus, eleifend blandit felis. Fusce augue arcu, consequat a nisl aliquet, consectetur elementum turpis. Donec iaculis lobortis nisl, et viverra risus imperdiet eu. Etiam mollis posuere elit non sagittis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quis arcu a magna sodales venenatis. Integer non diam sit amet magna luctus mollis ac eu nisi. In accumsan tellus ut dapibus blandit.</p>
-
-                <blockquote>
-					<p>
-                    Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.
-					</p>
-                </blockquote>
-
-                <p>Praesent ac magna sed massa euismod congue vitae vitae risus. Nulla lorem augue, mollis non est et, eleifend elementum ante. Nunc id pharetra magna. Praesent vel orci ornare, blandit mi sed, aliquet nisi. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</p>', '','',''),
-            
-            
-(5,1,'Sed viverra pellentesque dictum','hello-world-5','
-                <h2>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</h2>
-                <p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin. Praesent at tempus lectus, eleifend blandit felis. Fusce augue arcu, consequat a nisl aliquet, consectetur elementum turpis. Donec iaculis lobortis nisl, et viverra risus imperdiet eu. Etiam mollis posuere elit non sagittis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quis arcu a magna sodales venenatis. Integer non diam sit amet magna luctus mollis ac eu nisi. In accumsan tellus ut dapibus blandit.</p>
-
-                <blockquote>
-					<p>
-                    Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.
-					</p>
-                </blockquote>
-
-                <p>Praesent ac magna sed massa euismod congue vitae vitae risus. Nulla lorem augue, mollis non est et, eleifend elementum ante. Nunc id pharetra magna. Praesent vel orci ornare, blandit mi sed, aliquet nisi. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</p>', 'Et ut aliquid blanditiis id sit et. Est ea ut tenetur veritatis recusandae est voluptatem.','',''),
-            
-            
-(6,1,'Mauris viverra cursus ante laoreet eleifend','hello-world-6','
-                <h2>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</h2>
-                <p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin. Praesent at tempus lectus, eleifend blandit felis. Fusce augue arcu, consequat a nisl aliquet, consectetur elementum turpis. Donec iaculis lobortis nisl, et viverra risus imperdiet eu. Etiam mollis posuere elit non sagittis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quis arcu a magna sodales venenatis. Integer non diam sit amet magna luctus mollis ac eu nisi. In accumsan tellus ut dapibus blandit.</p>
-
-                <blockquote>
-					<p>
-						Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.
-					</p>
-                </blockquote>
-
-                <p>Praesent ac magna sed massa euismod congue vitae vitae risus. Nulla lorem augue, mollis non est et, eleifend elementum ante. Nunc id pharetra magna. Praesent vel orci ornare, blandit mi sed, aliquet nisi. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</p>', 
-				'Et et saepe suscipit debitis a accusamus nulla in amet molestiae voluptates dolor autem vitae optio ipsa mollitia voluptatem vitae.','',''),
-
-
-            
-(7,1,'Contact us','contact','<p>
+(3,1,'Contact us','contact','<p>
             Powerful and easy to use drag and drop website builder for blogs, presentation or ecommerce stores.
           </p>
 
@@ -168,7 +102,7 @@ INSERT INTO `post_content` VALUES
 			  </a>
 			</p>', '','',''),
             
-(8,1,'Shipping & Delivery','shipping-delivery','
+(4,1,'Shipping & Delivery','shipping-delivery','
                 <h2>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</h2>
                 <p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin. Praesent at tempus lectus, eleifend blandit felis. Fusce augue arcu, consequat a nisl aliquet, consectetur elementum turpis. Donec iaculis lobortis nisl, et viverra risus imperdiet eu. Etiam mollis posuere elit non sagittis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quis arcu a magna sodales venenatis. Integer non diam sit amet magna luctus mollis ac eu nisi. In accumsan tellus ut dapibus blandit.</p>
 
@@ -180,133 +114,10 @@ INSERT INTO `post_content` VALUES
 
                 <p>Praesent ac magna sed massa euismod congue vitae vitae risus. Nulla lorem augue, mollis non est et, eleifend elementum ante. Nunc id pharetra magna. Praesent vel orci ornare, blandit mi sed, aliquet nisi. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</p>', '','',''),
 				
-(9,1,'Terms and conditions','terms-conditions','Terms & Conditions', '','',''),
-
-(10,1,'Privacy policy','privacy-policy','Privacy Policy', '','',''),
-
-(11,1,'About','about','
-<div class="my-5"><img src="../../media/biglogo.png"></div>
-<hr class="my-5 border">
-<p>Powerful and easy to use drag and drop website builder for blogs, presentation or ecommerce stores.</p>
-<p>The html for sections blocks and components and this template are built using Bootstrap 5.</p>
-<hr class="my-5 border">
-<h6>Better Security</h6>
-<p>Vvveb is 100% safe against sql injections, a vulerability that affects most CMS.</p>
-<h6>Unlimited customization</h6>
-<p>Vvveb uses only html for templating for maximum flexibility.</p>
-<h6>Advanced Ecommerce</h6>
-<p>Vvveb is a full featured ecommerce platform with advanced functionality.</p>
-<h6>Full Localization</h6>
-<p>Publish content in multiple languages or sell in different currencies.</p>
-', '','',''),
-(12,1,'Services','services','Services', '','',''),
-(13,1,'Pricing','pricing','Pricing', '','',''),
-(14,1,'Portfolio','portfolio','Portfolio', '','',''),
-(15,1,'Marketplace','marketplace', '
-<div class="text-center m-4">
-<div class="my-5"><img src="../../media/biglogo.png"></div>
-<h1 class="mb-3">Marketplace vendor</h1>
-<p class="lead">Become a vendor and sell your products on our marketplace</p>
-<p class="lead">Access a market of million of customers</p>
-<div class="mt-4"><a href="/vendor/signup" class="btn btn-primary btn-lg btn-login"><span>Signup now</span> <i class="la la-arrow-right float-end ms-2"></i></a> <a href="/vendor" class="btn btn-secondary btn-lg"><span>Login</span> <i class="la la-user float-end ms-2"></i></a></div>
-<div class="mt-4">Frequently asked questions:</div>
-<div class="my-4 text-start row">
-<div class="col-md-6 mx-auto">
-<details>
-<summary>What kind of products can I sell?</summary>
-<p>You can sell any products that match our categories.</p>
-</details>
-<details>
-<summary>How much does it cost?</summary>
-<p>It`s free, we only take a ##% comission on each sale.</p>
-</details>
-<details>
-<summary>Q3</summary>
-<p>A</p>
-</details>
-<details>
-<summary>Q4</summary>
-<p>A</p>
-</details>
-<br>
-<p class="">Check our <a href="/blog">knowledge base</a> for more information </p>
-</div>
-</div>
-<p class="text-muted small">Our marketplace is subject to certain <a href="/page/terms-conditions-9">terms and conditions</a></p>
-</div>','Marketplace','',''),
-(16,1,'Subscription policy','subscription-policy','Subscription policy', '','',''),
-
-(1,2,'Incepe fiecare zi prin a-ti spune','buna-lume-1','
-<blockquote cite="https://en.wikipedia.org/wiki/Marcus_Aurelius">
-	<p>Spuneţi în fiecare dimineaţă: astăzi o să mă întâlnesc cu un om nechibzuit, nerecunoscător, neruşinat, viclean, invidios, nesociabil. Toate defectele acestea sunt urmările neştiinţei oamenilor cu privire la bine şi la rău. Eu însă am recunoscut clar că binele din firea sa este frumos, şi răul este urât, că omul care păcătuieşte contra mea, în realitate îmi este înrudit, nu doar că am fi din acelaşi sânge şi origine, ci fiindcă suntem deopotrivă părtaşi la raţiune, la menirea divină.</p>
-	<cite class="small">
-		<a href="https://en.wikipedia.org/wiki/Marcus_Aurelius" class="text-decoration-none" target="blank">Marcus Aurelius</a>
-	</cite>	
-</blockquote>','','',''),
-
-
-(2,2,'Buna lume 2','buna-lume-2','Confesiuni', 'Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.','',''),
-(3,2,'Buna lume 3','buna-lume-3', 'Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.','','',''),
-(4,2,'Buna lume 4','buna-lume-4','Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.','','',''),
-(5,2,'Buna lume 5','buna-lume-5', 'Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.','','',''),
-(6,2,'Buna lume 6','buna-lume-6', 'Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.','','',''),
-(7,2,'Contacteaza-ne','contact','<p class="lead">
-			Unealta puternica si usor de folosit pentru a realiza blog-uri, site-uri de prezentare sau magazine online.
-          </p>
-
-          <p class="lead">
-            The html for sections blocks and components and this template are built using Bootstrap 5.
-          </p>
-
-
-          	<p class="mt-5">
-			  <span><i class="la la-lg la-envelope"></i> Email:</span>
-			  <span>
-				<a href="mailto:contact@mysite.com">
-					<span>contact@mysite.com</span>
-				</a>
-			  </span>
-			</p>
-			<p class="">
-			  <span><i class="la la-lg la-phone"></i> Phone:</span> 
-			  <a href="tel:5511112377">
-				<span>+55 (111) 123 777</span>
-			  </a>
-			</p>', '','',''),
-            
-(8,2,'Expediere si livrare','livrare','
-                <h2>Expediere si livrare</h2>
-                <p>Mauris viverra cursus ante laoreet eleifend. Donec vel fringilla ante. Aenean finibus velit id urna vehicula, nec maximus est sollicitudin. Praesent at tempus lectus, eleifend blandit felis. Fusce augue arcu, consequat a nisl aliquet, consectetur elementum turpis. Donec iaculis lobortis nisl, et viverra risus imperdiet eu. Etiam mollis posuere elit non sagittis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quis arcu a magna sodales venenatis. Integer non diam sit amet magna luctus mollis ac eu nisi. In accumsan tellus ut dapibus blandit.</p>
-
-                <blockquote>
-					<p>
-                    Quisque sagittis non ex eget vestibulum. Sed nec ultrices dui. Cras et sagittis erat. Maecenas pulvinar, turpis in dictum tincidunt, dolor nibh lacinia lacus.
-					</p>
-                </blockquote>
-
-                <p>Praesent ac magna sed massa euismod congue vitae vitae risus. Nulla lorem augue, mollis non est et, eleifend elementum ante. Nunc id pharetra magna. Praesent vel orci ornare, blandit mi sed, aliquet nisi. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</p>', '','',''),
-				
-(9,2,'Termeni si conditii','termeni-conditii','Termeni si conditii', '','',''),
-
-(10,2,'Politica confidentialitate','politica-confidentialitate','Politica confidentialitate', '','',''),
-
-(11,2,'Despre','despre','
-<div class="my-5 text-center"><img src="../../media/biglogo.png"></div>
-<hr class="my-5 border">
-<p>Unealta puternica si usor de folosit pentru a realiza blog-uri, site-uri de prezentare sau magazine online.</p>
-<p>The html for sections blocks and components and this template are built using Bootstrap 5.</p>
-<hr class="my-5 border">
-<h6>Better Security</h6>
-<p>Vvveb is 100% safe against sql injections, a vulerability that affects most CMS.</p>
-<h6>Unlimited customization</h6>
-<p>Vvveb uses only html for templating for maximum flexibility.</p>
-<h6>Advanced Ecommerce</h6>
-<p>Vvveb is a full featured ecommerce platform with advanced functionality.</p>
-<h6>Full Localization</h6>
-<p>Publish content in multiple languages or sell in different currencies.</p>
-', '','',''),
-(12,2,'Servicii','servicii','Servicii', '','',''),
-(13,2,'Preturi','preturi','Preturi', '','',''),
-(14,2,'Portfoliu','portfoliu','Portfoliu', '','',''),
-(15,2,'Piata','piata','piata', '','',''),
-(16,2,'Politica subscriptii','politica-subscriptii','Politica subscriptii', '','','');
+(5,1,'Terms and conditions','terms-conditions','<div>Terms & Conditions</div>', '','',''),
+(6,1,'Privacy policy','privacy-policy','<div>Privacy Policy</div>', '','',''),
+(7,1,'About','about','<div>About</div>', '','',''),
+(8,1,'Services','services','<div>Services</div>', '','',''),
+(9,1,'Pricing','pricing','<div>Pricing</div>', '','',''),
+(10,1,'Portfolio','portfolio','<div>Portfolio</div>', '','',''),
+(11,1,'Subscription policy','subscription-policy','<div>Subscription policy</div>', '','','');

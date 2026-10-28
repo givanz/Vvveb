@@ -4,7 +4,7 @@ CREATE TABLE `field` (
 `field_id` INTEGER PRIMARY KEY AUTOINCREMENT,
 `field_group_id` INT NOT NULL,
 `type` TEXT NOT NULL,
-`default` TEXT NOT NULL,
+`default` TEXT NOT NULL DEFAULT '',
 `settings` TEXT NOT NULL,
 `validation` TEXT NOT NULL,
 `presentation` TEXT NOT NULL,

@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS `product_variant`;
 CREATE TABLE `product_variant` (
   `product_variant_id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `product_id` INT UNSIGNED NOT NULL,
-  `options`TEXT NOT NULL DEFAULT '',
+  `options` TEXT NOT NULL DEFAULT '',
   `image` TEXT NOT NULL DEFAULT '',
   `price` decimal(15,4) NOT NULL DEFAULT 0.0000,
   `old_price` decimal(15,4) NOT NULL DEFAULT 0.0000,
@@ -16,3 +16,4 @@ CREATE TABLE `product_variant` (
 );
 
 CREATE INDEX `product_variant_product_id_product_option` ON `product_variant` (`product_id`,`product_variant_id`, `options`);
+CREATE INDEX `product_variant_options` ON `product_variant` (`options`);

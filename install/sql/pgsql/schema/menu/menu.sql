@@ -11,5 +11,4 @@ CREATE TABLE menu (
   -- PRIMARY KEY("menu_id")
 );
 
-CREATE INDEX "menu_menu_id" ON menu ("menu_id");
 SELECT setval('menu_menu_id_seq', 5, true); -- last inserted id by sample data

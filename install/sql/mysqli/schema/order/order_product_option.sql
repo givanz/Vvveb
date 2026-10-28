@@ -10,5 +10,7 @@ CREATE TABLE `order_product_option` (
   `name` varchar(191) NOT NULL,
   `price` decimal(15,4) NOT NULL DEFAULT '0.0000',
   `type` varchar(32) NOT NULL DEFAULT '',
-  PRIMARY KEY (`order_product_option_id`)
+  PRIMARY KEY (`order_product_option_id`),
+  KEY `order_id` (`order_id`),
+  KEY `order_product_id` (`order_product_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

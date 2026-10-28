@@ -9,3 +9,5 @@ CREATE TABLE `subscription_log` (
   `created_at` datetime NOT NULL
 --  PRIMARY KEY (`subscription_log_id`)
 );
+
+CREATE INDEX `subscription_log_subscription_id` ON `subscription_log` (`subscription_id`);

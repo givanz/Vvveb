@@ -8,7 +8,7 @@ CREATE TABLE `language` (
 `slug` TEXT NOT NULL,
 `rtl` TINYINT NOT NULL DEFAULT 0,
 `sort_order` INTEGER NOT NULL DEFAULT 0,
-`status` TINYINT NOT NULL,
+`status` TINYINT NOT NULL DEFAULT 0,
 `default` TINYINT NOT NULL DEFAULT 0
 -- PRIMARY KEY (`language_id`)
 );

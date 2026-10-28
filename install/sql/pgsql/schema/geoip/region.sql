@@ -12,4 +12,5 @@ CREATE TABLE region (
   -- PRIMARY KEY("region_id")
 );
 
+CREATE INDEX "region_country_id" ON region ("country_id");
 SELECT setval('region_region_id_seq', 4343, true); -- last inserted id by sample data

@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS `order_total`;
 
 CREATE TABLE `order_total` (
-`order_total_id`INTEGER PRIMARY KEY AUTOINCREMENT,
+`order_total_id` INTEGER PRIMARY KEY AUTOINCREMENT,
 `order_id` INT NOT NULL,
 `key` TEXT NOT NULL DEFAULT '',
 `title` TEXT NOT NULL,

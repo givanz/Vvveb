@@ -13,4 +13,6 @@ CREATE TABLE voucher_log (
   -- PRIMARY KEY("voucher_log_id")
 );
 
+CREATE INDEX "voucher_log_voucher_id" ON voucher_log ("voucher_id");
+CREATE INDEX "voucher_log_order_id" ON voucher_log ("order_id");
 -- SELECT setval('voucher_log_voucher_log_id_seq', 0, true); -- last inserted id by sample data

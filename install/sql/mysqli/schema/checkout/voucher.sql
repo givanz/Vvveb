@@ -12,5 +12,6 @@ CREATE TABLE `voucher` (
   `credit` decimal(15,4) NOT NULL,
   `status` tinyint NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`voucher_id`)
+  PRIMARY KEY (`voucher_id`),
+  KEY `order_id` (`order_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

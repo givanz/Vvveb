@@ -14,3 +14,4 @@ CREATE TABLE `menu_item` (
 );
 
 CREATE INDEX `menu_item_parent_id` ON `menu_item` (`parent_id`);
+CREATE INDEX `menu_item_menu_id` ON `menu_item` (`menu_id`);

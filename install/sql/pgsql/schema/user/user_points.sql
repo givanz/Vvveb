@@ -14,5 +14,7 @@ CREATE TABLE user_points (
   -- PRIMARY KEY("user_points_id")
 );
 
+CREATE INDEX "user_points_user_id" ON user_points ("user_id");
+CREATE INDEX "user_points_order_id" ON user_points ("order_id");
 
 -- SELECT setval('user_points_user_points_id_seq', 0, true); -- last inserted id by sample data

@@ -15,7 +15,7 @@ CREATE TABLE `admin` (
 `cover` TEXT NOT NULL DEFAULT '',
 `bio` TEXT NOT NULL DEFAULT '',
 `role_id` INT  DEFAULT NULL,
-`site_access` INT NOT NULL DEFAULT '[]',
+`site_access` TEXT NOT NULL,
 `status` INT NOT NULL DEFAULT '0',
 `secret` TEXT NOT NULL DEFAULT '',
 `token` TEXT NOT NULL DEFAULT '',

@@ -12,3 +12,6 @@ CREATE TABLE `order_product_option` (
 `type` TEXT NOT NULL DEFAULT ''
 -- PRIMARY KEY (`order_product_option_id`)
 );
+
+CREATE INDEX `order_product_option_order_id` ON `order_product_option` (`order_id`);
+CREATE INDEX `order_product_option_order_product_id` ON `order_product_option` (`order_product_id`);

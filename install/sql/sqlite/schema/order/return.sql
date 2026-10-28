@@ -14,7 +14,7 @@ CREATE TABLE `return` (
 `model` TEXT NOT NULL,
 `quantity` INTEGER NOT NULL,
 `opened` TINYINT NOT NULL,
-`return_reason_id` INT NOT NULL,
+`return_reason_id` INT NOT NULL DEFAULT 0,
 `return_resolution_id` INT NOT NULL DEFAULT 0,
 `return_status_id` INT NOT NULL DEFAULT 0,
 `note` text NOT NULL,
@@ -23,4 +23,8 @@ CREATE TABLE `return` (
 `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- PRIMARY KEY (`return_id`)
 );
+
+CREATE INDEX `return_order_id` ON `return` (`order_id`);
+CREATE INDEX `return_product_id` ON `return` (`product_id`);
+CREATE INDEX `return_user_id` ON `return` (`user_id`);
 

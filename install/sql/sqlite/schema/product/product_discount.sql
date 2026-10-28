@@ -7,9 +7,10 @@ CREATE TABLE `product_discount` (
 `quantity` INTEGER NOT NULL DEFAULT '0',
 `priority` INTEGER NOT NULL DEFAULT '1',
 `price` decimal(15,4) NOT NULL DEFAULT '0.0000',
-`from_date` date NOT NULL DEFAULT '1000-01-01',
-`to_date` date NOT NULL DEFAULT '1000-01-01'
+`from_date` date,
+`to_date` date
 -- PRIMARY KEY (`product_discount_id`)
 );
 
 CREATE INDEX `product_discount_product_id` ON `product_discount` (`product_id`);
+CREATE INDEX `product_discount_user_group_id` ON `product_discount` (`user_group_id`);

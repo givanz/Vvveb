@@ -12,4 +12,7 @@ CREATE TABLE region_to_region_group (
   -- PRIMARY KEY("region_to_region_group_id")
 );
 
+CREATE INDEX "region_to_region_group_country_id" ON region_to_region_group ("country_id");
+CREATE INDEX "region_to_region_group_region_id" ON region_to_region_group ("region_id");
+CREATE INDEX "region_to_region_group_region_group_id" ON region_to_region_group ("region_group_id");
 SELECT setval('region_to_region_group_region_to_region_group_id_seq', 108, true); -- last inserted id by sample data

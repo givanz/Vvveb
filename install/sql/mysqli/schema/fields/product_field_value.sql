@@ -8,3 +8,5 @@ CREATE TABLE `product_field_value` (
   `value` text NOT NULL,
   PRIMARY KEY (`product_field_value_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX `product_field_value_field` ON `product_field_value` (`field_id`);

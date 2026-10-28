@@ -4,7 +4,7 @@ CREATE TABLE `product_subscription` (
 `product_id` INT NOT NULL,
 `subscription_plan_id` INT NOT NULL,
 `user_group_id` INT NOT NULL,
-`type` char(1) NOT NULL DEFAULT '',
+`type` char(1) NOT NULL DEFAULT '', -- empty = original price, p = percentage discount, f = fixed discount, n = flat price
 `discount` decimal(15,4) NOT NULL DEFAULT 0,
 `price` decimal(15,4) NOT NULL DEFAULT 0.0000, 
 `trial_price` decimal(15,4) NOT NULL DEFAULT 0.0000

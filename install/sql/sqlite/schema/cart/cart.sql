@@ -11,3 +11,4 @@ CREATE TABLE `cart` (
 );
 
 CREATE INDEX `cart_user_id` ON `cart` (`user_id`);
+CREATE INDEX `cart_session_id` ON `cart` (`session_id`);

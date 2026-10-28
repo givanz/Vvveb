@@ -16,3 +16,4 @@ CREATE TABLE `product_review` (
 
 
 CREATE INDEX `product_review_product_id` ON `product_review` (`product_id`, `user_id`, `status`);
+CREATE INDEX `product_review_user_id` ON `product_review` (`user_id`);

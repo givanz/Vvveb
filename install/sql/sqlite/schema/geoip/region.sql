@@ -8,3 +8,5 @@ CREATE TABLE `region` (
 `status` TINYINT NOT NULL DEFAULT '1'
 -- PRIMARY KEY (`region_id`)
 );
+
+CREATE INDEX `region_country_id` ON `region` (`country_id`);

@@ -8,5 +8,6 @@ CREATE TABLE `tax_rate` (
   `type` char(1) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`tax_rate_id`)
+  PRIMARY KEY (`tax_rate_id`),
+  KEY `region_group_id` (`region_group_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

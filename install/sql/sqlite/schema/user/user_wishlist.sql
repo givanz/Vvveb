@@ -6,3 +6,5 @@ CREATE TABLE `user_wishlist` (
 `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 PRIMARY KEY (`user_id`,`product_id`)
 );
+
+CREATE INDEX IF NOT EXISTS `user_wishlist_product` ON `user_wishlist` (`product_id`);

@@ -19,7 +19,7 @@ PRIMARY KEY (`comment_id`)
 );
 
 
-CREATE INDEX `comment_post_id` ON `comment` (`post_id`);
+CREATE INDEX `comment_post_id` ON `comment` (`post_id`, `status`);
 CREATE INDEX `comment_parent` ON `comment` (`parent_id`);
 CREATE INDEX `comment_email` ON `comment` (`email`);
 

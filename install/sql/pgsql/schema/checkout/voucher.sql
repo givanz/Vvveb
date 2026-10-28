@@ -18,4 +18,5 @@ CREATE TABLE voucher (
   -- PRIMARY KEY("voucher_id")
 );
 
+CREATE INDEX "voucher_order_id" ON voucher ("order_id");
 SELECT setval('voucher_voucher_id_seq', 1, true); -- last inserted id by sample data

@@ -13,3 +13,4 @@ CREATE TABLE `product_review_media` (
 
 CREATE INDEX `product_review_media_product_id_image` ON `product_review_media` (`product_id`, `user_id`);
 CREATE INDEX `product_review_media_product_review_id_image` ON `product_review_media` (`product_review_id`);
+CREATE INDEX `product_review_media_user_id` ON `product_review_media` (`user_id`);

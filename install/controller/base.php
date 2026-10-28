@@ -22,27 +22,59 @@
 
 namespace Vvveb\Controller;
 
-use \Vvveb\System\Core\Request as Request;
+use Vvveb\System\Core\FrontController;
+use Vvveb\System\Core\Request;
+use Vvveb\System\Core\Response;
 use Vvveb\System\Core\View;
+use Vvveb\System\Session;
 
 #[\AllowDynamicProperties]
 class Base {
-	function __construct() {
+	/** @var Request Request instance injected by FrontController DI. */
+	public Request $request;
+
+	/** @var Response Response instance injected by FrontController DI. */
+	public Response $response;
+
+	/** @var View View instance injected by FrontController DI. */
+	public View $view;
+
+	/** @var Session Session instance injected by FrontController DI. */
+	public Session $session;
+
+	public function __construct() {
 		$this->request = Request::getInstance();
 		$this->view    = View::getInstance();
+		$this->session = Session::getInstance();
 	}
 
-	function redirect($url = '/') {
+	/**
+	 * Redirect to the given URL and terminate.
+	 *
+	 * @param string $url The URL to redirect to.
+	 *
+	 * @return void
+	 */
+	public function redirect(string $url = '/'): void {
 		if (defined('CLI')) {
 			return;
 		}
 
 		session_write_close();
 		header("Location: $url");
-		die();
+		exit();
 	}
 
-	function notFound($service = false, $message = null,  $statusCode = 404) {
+	/**
+	 * Show a 404 not-found response.
+	 *
+	 * @param bool        $service    Whether this is a service request.
+	 * @param string|null $message    Optional error message.
+	 * @param int         $statusCode HTTP status code.
+	 *
+	 * @return mixed
+	 */
+	public function notFound(bool $service = false, ?string $message = null, int $statusCode = 404): mixed {
 		return FrontController::notFound($service, $message, $statusCode);
 	}
 }

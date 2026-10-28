@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS `product_meta`;
 CREATE TABLE `product_meta` (
   `product_id` INT NOT NULL,
   `namespace` TEXT NOT NULL DEFAULT '',
-  `key` TEXT NOT NULL,
+  `key` TEXT NOT NULL DEFAULT '',
   `value` TEXT
   -- PRIMARY KEY (`product_id`, `namespace`, `key`)
 );

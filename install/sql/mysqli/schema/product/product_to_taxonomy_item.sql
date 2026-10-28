@@ -5,4 +5,4 @@ CREATE TABLE `product_to_taxonomy_item` (
   `taxonomy_item_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`product_id`,`taxonomy_item_id`),
   KEY `taxonomy_item_id` (`taxonomy_item_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

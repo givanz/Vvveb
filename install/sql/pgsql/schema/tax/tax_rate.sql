@@ -16,4 +16,5 @@ CREATE TABLE tax_rate (
   -- PRIMARY KEY("tax_rate_id")
 );
 
+CREATE INDEX "tax_rate_region_group_id" ON tax_rate ("region_group_id");
 SELECT setval('tax_rate_tax_rate_id_seq', 3, true); -- last inserted id by sample data

@@ -17,5 +17,6 @@ CREATE TABLE menu_item (
   -- PRIMARY KEY("menu_item_id")
 );
 
+CREATE INDEX "menu_item_menu_id" ON menu_item ("menu_id");
 CREATE INDEX "menu_item_parent_id" ON menu_item ("parent_id");
 SELECT setval('menu_item_menu_item_id_seq', 68, true); -- last inserted id by sample data

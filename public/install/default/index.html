@@ -29,6 +29,7 @@
 			</a>
 
 			<form method="post" class="m-2">
+				 <input type="hidden" name="csrf" data-v-csrf>
 				 <select name="language" class="form-select py-2" onchange="this.form.submit()" data-v-language-list>
 					<option value="en">English</option>
 					<option value="ro">Romanian</option>
@@ -112,6 +113,7 @@
 					  <div class="card-body">
 							<p class="card-text text-muted">Please fill the form, contact your hosting provider for details</p>
 							<form method="post">
+							 <input type="hidden" name="csrf" data-v-csrf>
 							 <div class="mb-3 row">
 								<label for="engine" class="col-sm-4 col-form-label">Database engine</label>
 								<div class="col-sm-8">

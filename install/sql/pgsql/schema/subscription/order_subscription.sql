@@ -21,9 +21,9 @@ CREATE TABLE "order_subscription" (
   "period" TEXT CHECK( period IN ('day','week','month','year') ) NOT NULL DEFAULT 'month',
   "cycle" smallint NOT NULL,
   "length" smallint NOT NULL
-  -- PRIMARY KEY ("order_subscription_id")
---  KEY "order_id" ("order_id")
 );
 
--- CREATE INDEX "order_subscription_order_id" ON "order_subscription" ("order_id");
+CREATE INDEX "order_subscription_order_id" ON "order_subscription" ("order_id");
+CREATE INDEX "order_subscription_product_id" ON "order_subscription" ("product_id");
+CREATE INDEX "order_subscription_subscription_plan_id" ON "order_subscription" ("subscription_plan_id");
 -- SELECT setval('order_subscription_order_subscription_id_seq', 0, true); -- last inserted id by sample data

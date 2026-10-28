@@ -11,4 +11,4 @@ CREATE TABLE IF NOT EXISTS `message` (
 -- KEY `type_status_date` (`status`, `type`,`created_at`,`message_id`)
 );
 
-CREATE INDEX `message_status_type_date` ON `message` (`status`, `type`,`created_at`,`message_id`);
+CREATE INDEX `message_status_type_date` ON `message` (`type`, `status`,`created_at`,`message_id`);

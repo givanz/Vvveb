@@ -17,4 +17,6 @@ CREATE TABLE order_product_option (
   -- PRIMARY KEY("order_product_option_id")
 );
 
+CREATE INDEX "order_product_option_order_id" ON order_product_option ("order_id");
+CREATE INDEX "order_product_option_order_product_id" ON order_product_option ("order_product_id");
 -- SELECT setval('order_product_option_order_product_option_id_seq', 0, true); -- last inserted id by sample data

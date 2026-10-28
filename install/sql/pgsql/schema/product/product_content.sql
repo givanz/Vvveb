@@ -6,7 +6,7 @@ CREATE TABLE product_content (
   "name" varchar(191) NOT NULL DEFAULT '',
   "slug" varchar(191) NOT NULL DEFAULT '',
   "content" text DEFAULT NULL,
-  "excerpt" text DEFAULT '',
+  "excerpt" text,
   "meta_title" varchar(191) NOT NULL DEFAULT '',
   "meta_description" varchar(191) NOT NULL DEFAULT '',
   "meta_keywords" varchar(191) NOT NULL DEFAULT '',

@@ -9,3 +9,5 @@ CREATE TABLE `return_log` (
 `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- PRIMARY KEY (`return_log_id`)
 );
+
+CREATE INDEX `return_log_return_id` ON `return_log` (`return_id`);

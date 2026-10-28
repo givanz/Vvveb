@@ -35,7 +35,7 @@ CREATE TABLE `product` (
   `date_available` date,
   `type` varchar(20) NOT NULL DEFAULT 'product',
   `template` varchar(191) NOT NULL DEFAULT '',
-  `views` INT(5)  unsigned NOT NULL DEFAULT 0,
+  `views` INT UNSIGNED NOT NULL DEFAULT 0,
   `subtract_stock` tinyint NOT NULL DEFAULT 1,
   `minimum_quantity` INT UNSIGNED NOT NULL DEFAULT 1,
   `subscription_onetime` tinyint UNSIGNED NOT NULL DEFAULT 1,
@@ -44,10 +44,10 @@ CREATE TABLE `product` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`product_id`),
-  KEY `type_status_date` (`type`,`status`,`created_at`,`product_id`),
+  KEY `type_status_date` (`type`,`status`,`created_at`),
   KEY `stock_status_id` (`stock_status_id`),
   KEY `vendor_id` (`vendor_id`),
-  KEY `manufacturer_id` (`stock_status_id`),
+  KEY `manufacturer_id` (`manufacturer_id`),
   KEY `barcode` (`barcode`),
   KEY `sku` (`sku`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

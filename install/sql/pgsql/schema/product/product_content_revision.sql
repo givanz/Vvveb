@@ -11,7 +11,7 @@ CREATE TABLE product_content_revision (
   "content" text DEFAULT NULL,
   "admin_id" int check ("admin_id" > 0) NOT NULL,
   "created_at" timestamp(0) NOT NULL DEFAULT now(),
-  PRIMARY KEY("product_id","language_id","created_at")
+  PRIMARY KEY("product_id","language_id","created_at","admin_id")
 );
 
 

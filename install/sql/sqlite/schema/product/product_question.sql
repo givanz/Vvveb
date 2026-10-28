@@ -16,3 +16,4 @@ CREATE TABLE `product_question` (
 
 
 CREATE INDEX `product_question_product_id` ON `product_question` (`product_id`, `user_id`, `status`);
+CREATE INDEX `product_question_user_id` ON `product_question` (`user_id`);

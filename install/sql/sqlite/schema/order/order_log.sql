@@ -10,3 +10,5 @@ CREATE TABLE `order_log` (
 `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- PRIMARY KEY (`order_log_id`)
 );
+
+CREATE INDEX `order_log_order_id` ON `order_log` (`order_id`);

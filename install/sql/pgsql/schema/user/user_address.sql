@@ -15,8 +15,8 @@ CREATE TABLE user_address (
   "post_code" varchar(10) NOT NULL,
   "country_id" int check ("country_id" > 0) NOT NULL DEFAULT 0,
   "region_id" int check ("region_id" > 0) NOT NULL DEFAULT 0,
-  "default_address" smallint check ("default_address" > 0) NOT NULL DEFAULT 0,
-  "fields" text NOT NULL
+  "default_address" smallint check ("default_address" >= 0) NOT NULL DEFAULT 0,
+  "fields" text DEFAULT NULL
   -- PRIMARY KEY("user_address_id")
 );
 

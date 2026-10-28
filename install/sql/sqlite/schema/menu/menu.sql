@@ -7,4 +7,3 @@ CREATE TABLE `menu` (
 -- PRIMARY KEY (`menu_id`)
 );
 
-CREATE INDEX `menu_menu_id` ON `menu` (`menu_id`);

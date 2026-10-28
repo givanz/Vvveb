@@ -19,10 +19,10 @@ CREATE TABLE "user" (
   "display_name" varchar(250) NOT NULL DEFAULT '',
   "avatar" varchar(250) NOT NULL DEFAULT '',
   "cover" varchar(250) NOT NULL DEFAULT '',
-  "bio" varchar(250) NOT NULL DEFAULT '',
+  "bio" varchar(250) DEFAULT NULL,
   "token" varchar(32) NOT NULL DEFAULT '',
   "secret" varchar(32) NOT NULL DEFAULT '',
-  "subscribe" smallint check ("status" >= 0) NOT NULL DEFAULT '0',
+  "subscribe" smallint check ("subscribe" >= 0) NOT NULL DEFAULT 0,
   "last_ip" varchar(40) NOT NULL DEFAULT '',
   "created_at" timestamp(0) NOT NULL DEFAULT now(),
   "updated_at" timestamp(0) NOT NULL DEFAULT now()

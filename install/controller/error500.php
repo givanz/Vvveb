@@ -23,6 +23,5 @@
 namespace Vvveb\Controller;
 
 class Error500 extends Base {
-	function index() {
-	}
+	public function index(): void {}
 }

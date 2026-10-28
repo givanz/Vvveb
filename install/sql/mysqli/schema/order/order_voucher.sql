@@ -12,5 +12,7 @@ CREATE TABLE `order_voucher` (
   `to_email` varchar(96) NOT NULL,
   `message` text NOT NULL,
   `amount` decimal(15,4) NOT NULL,
-  PRIMARY KEY (`order_voucher_id`)
+  PRIMARY KEY (`order_voucher_id`),
+  KEY `order_id` (`order_id`),
+  KEY `voucher_id` (`voucher_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

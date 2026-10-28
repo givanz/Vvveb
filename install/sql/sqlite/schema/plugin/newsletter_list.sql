@@ -1,4 +1,4 @@
--- DROP TABLE IF EXISTS `newsletter_list`;
+DROP TABLE IF EXISTS `newsletter_list`;
 
 CREATE TABLE IF NOT EXISTS `newsletter_list` (
   `newsletter_list_id` INTEGER PRIMARY KEY AUTOINCREMENT,

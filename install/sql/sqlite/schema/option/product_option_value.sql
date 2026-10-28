@@ -13,6 +13,12 @@ CREATE TABLE `product_option_value` (
 `points_operator` TEXT NOT NULL DEFAULT '+',
 `points` INT NOT NULL DEFAULT 0,
 `weight_operator` TEXT NOT NULL DEFAULT '+',
-`weight` decimal(15,8) NOT NULL DEFAULT 0
+`weight` decimal(15,8) NOT NULL DEFAULT 0,
+`width_operator` TEXT NOT NULL DEFAULT '+',
+`width` decimal(15,8) NOT NULL DEFAULT 0,
+`height_operator` TEXT NOT NULL DEFAULT '+',
+`height` decimal(15,8) NOT NULL DEFAULT 0,
+`length_operator` TEXT NOT NULL DEFAULT '+',
+`length` decimal(15,8) NOT NULL DEFAULT 0
 -- PRIMARY KEY (`product_option_value_id`)
 );

@@ -5,3 +5,5 @@ CREATE TABLE `menu_to_site` (
   `site_id` tinyint(6) NOT NULL,
   PRIMARY KEY (`menu_id`,`site_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX `menu_to_site_site` ON `menu_to_site` (`site_id`);

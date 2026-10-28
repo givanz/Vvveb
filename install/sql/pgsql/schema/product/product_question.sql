@@ -17,5 +17,6 @@ CREATE TABLE product_question (
   -- PRIMARY KEY("product_question_id")
 );
 
-CREATE INDEX "product_question_product_id" ON product_question ("product_id");
+CREATE INDEX "product_question_product_id" ON product_question ("product_id", "status");
+CREATE INDEX "product_question_user_id" ON product_question ("user_id");
 SELECT setval('product_question_product_question_id_seq', 5, true); -- last inserted id by sample data

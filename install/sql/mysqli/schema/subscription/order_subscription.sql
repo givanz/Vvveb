@@ -20,5 +20,7 @@ CREATE TABLE `order_subscription` (
   `cycle` smallint(6) NOT NULL,
   `length` smallint(6) NOT NULL,
   PRIMARY KEY (`order_subscription_id`),
-  KEY `order_id` (`order_id`)
+  KEY `order_id` (`order_id`),
+  KEY `product_id` (`product_id`),
+  KEY `subscription_plan_id` (`subscription_plan_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

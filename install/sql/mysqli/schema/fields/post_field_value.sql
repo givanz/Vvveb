@@ -6,4 +6,6 @@ CREATE TABLE `post_field_value` (
   `language_id` int(10) UNSIGNED NOT NULL,
   `value` text NOT NULL,
   PRIMARY KEY  (`post_id`, `field_id`, `language_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX `post_field_value_field` ON `post_field_value` (`field_id`);

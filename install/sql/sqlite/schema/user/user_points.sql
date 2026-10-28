@@ -9,3 +9,6 @@ CREATE TABLE `user_points` (
 `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- PRIMARY KEY (`user_points_id`)
 );
+
+CREATE INDEX `user_points_user_id` ON `user_points` (`user_id`);
+CREATE INDEX `user_points_order_id` ON `user_points` (`order_id`);

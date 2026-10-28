@@ -8,3 +8,5 @@ CREATE TABLE `user_field_value` (
   `sort_order` int(3) NOT NULL DEFAULT 0,
   PRIMARY KEY (`user_field_value_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX `user_field_value_field` ON `user_field_value` (`field_id`);

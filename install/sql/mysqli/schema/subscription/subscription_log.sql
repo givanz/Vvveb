@@ -7,5 +7,6 @@ CREATE TABLE `subscription_log` (
   `notify` tinyint NOT NULL DEFAULT 0,
   `note` text NOT NULL,
   `created_at` datetime NOT NULL,
-  PRIMARY KEY (`subscription_log_id`)
+  PRIMARY KEY (`subscription_log_id`),
+  KEY `subscription_id` (`subscription_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

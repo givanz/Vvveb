@@ -9,8 +9,11 @@ CREATE TABLE product_option (
   "product_id" int check ("product_id" > 0) NOT NULL,
   "option_id" int check ("option_id" > 0) NOT NULL,
   "value" text NOT NULL,
-  "required" smallint NOT NULL DEFAULT 0
+  "required" smallint NOT NULL DEFAULT 0,
+  "sort_order" smallint NOT NULL DEFAULT 0
   -- PRIMARY KEY("product_option_id")
 );
 
+CREATE INDEX "product_option_product_id" ON product_option ("product_id");
+CREATE INDEX "product_option_option_id" ON product_option ("option_id");
 SELECT setval('product_option_product_option_id_seq', 3, true); -- last inserted id by sample data

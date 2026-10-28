@@ -9,4 +9,4 @@ CREATE TABLE `admin_auth_token` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX `admin_auth_token_token` ON `admin` (`token`,`admin_id`);
+CREATE INDEX `admin_auth_token_token` ON `admin_auth_token` (`token`,`admin_id`);

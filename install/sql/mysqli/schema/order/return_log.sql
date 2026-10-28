@@ -7,5 +7,6 @@ CREATE TABLE `return_log` (
   `notify` tinyint NOT NULL,
   `note` text NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`return_log_id`)
+  PRIMARY KEY (`return_log_id`),
+  KEY `return_id` (`return_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

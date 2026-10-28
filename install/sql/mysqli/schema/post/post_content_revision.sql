@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS `post_content_revision`;
 
 CREATE TABLE `post_content_revision` (
-  `post_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `post_id` INT UNSIGNED NOT NULL,
   `language_id` INT UNSIGNED NOT NULL,
   `content` longtext,
   `admin_id` INT UNSIGNED NOT NULL,

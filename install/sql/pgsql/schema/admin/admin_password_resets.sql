@@ -1,6 +1,10 @@
-DROP TABLE IF EXISTS admin_password_resets;
-CREATE TABLE admin_password_resets (
+DROP TABLE IF EXISTS "admin_password_resets";
+
+CREATE TABLE "admin_password_resets" (
   "email" varchar(191) NOT NULL,
   "token" varchar(191) NOT NULL,
-  "created_at" timestamp(0) NOT NULL DEFAULT now()
+  "created_at" timestamp(0) NULL DEFAULT NULL,
+  PRIMARY KEY ("email","token")
 );
+
+CREATE INDEX "admin_password_resets_email" ON "admin_password_resets" ("email");

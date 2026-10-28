@@ -99,6 +99,7 @@
 								<p class="card-text" style="color:#777">These can be later changed from admin.</p>
 								
 									<form method="post">
+									 <input type="hidden" name="csrf" data-v-csrf>
 									 <div class="mb-3 row">
 										<label for="title" class="col-sm-3 col-form-label">Primary language</label>
 										<div class="col-sm-9">
@@ -142,7 +143,7 @@
 									  <div class="mb-3 row">
 										<label for="username" class="col-sm-3 col-form-label">User name</label>
 										<div class="col-sm-9">
-										  <input type="text" class="form-control" id="username" placeholder="User" name="admin[username]" value="admin" required>
+										  <input type="text" class="form-control" id="username" placeholder="User" name="admin[username]" value="admin" pattern="[A-Za-z0-9_-]{3,60}" required>
 										</div>
 									  </div>
 									  <!--
@@ -157,7 +158,7 @@
 										<label for="password" class="col-sm-3 col-form-label">Password</label>
 										<div class="col-sm-9">
 											<div class="input-group">
-											  <input type="text" class="form-control" id="password" placeholder="User password" name="admin[password]" value="" aria-label="User password" autocomplete="new-password">
+											  <input type="text" class="form-control" id="password" placeholder="User password" name="admin[password]" value="" aria-label="User password" autocomplete="new-password" minlength="8" required>
 											  <button class="btn btn-sm py-0 btn-toggle fs-5" type="button" onclick="randomizePassword(this, 'password')">
 												<i class="icon-shuffle-outline"></i>
 												<!-- &#x1F3B2; -->
@@ -173,7 +174,7 @@
 										<label for="display_name" class="col-sm-3 col-form-label">Admin login path</label>
 										<div class="col-sm-9">
 										  <div class="input-group">
-												<input type="text" class="form-control" id="admin-path" placeholder="Username" name="admin-path" value="admin" required>
+												<input type="text" class="form-control" id="admin-path" placeholder="Username" name="admin-path" value="admin" pattern="[A-Za-z0-9_-]{1,64}" required>
 											  <button class="btn btn-sm py-0 btn-toggle fs-5" id="rand-path-btn" type="button" onclick="randomizeAdminPath()">
 											  	<i class="icon-shuffle-outline"></i>
 												<!-- &#x1F3B2; -->
@@ -302,7 +303,7 @@ function randomizePassword() {
 }
 
 function randomizeAdminPath() {
-	document.getElementById("admin-path").value = 'vadmin-' + randomPassword(32, "abcdefghijklmnopqrstuvwxyz!@<>ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"); 
+	document.getElementById("admin-path").value = 'vadmin-' + randomPassword(32, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"); 
 };
 
 randomizePassword();

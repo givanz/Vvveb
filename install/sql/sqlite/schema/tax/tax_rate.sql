@@ -10,3 +10,5 @@ CREATE TABLE `tax_rate` (
 `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- PRIMARY KEY (`tax_rate_id`)
 );
+
+CREATE INDEX `tax_rate_region_group_id` ON `tax_rate` (`region_group_id`);

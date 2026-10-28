@@ -5,8 +5,8 @@ CREATE TABLE `digital_asset` (
 `admin_id` INT NOT NULL,
 `file` TEXT NOT NULL,
 `public` TEXT NOT NULL,
-`created_at` datetime NOT NULL
+`created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- PRIMARY KEY (`digital_asset_id`)
 );
 
-CREATE INDEX `digital_asset_admin` ON `post` (`admin_id`);
+CREATE INDEX `digital_asset_admin` ON `digital_asset` (`admin_id`);

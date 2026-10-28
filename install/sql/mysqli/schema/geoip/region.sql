@@ -6,5 +6,6 @@ CREATE TABLE `region` (
   `name` varchar(128) NOT NULL,
   `code` varchar(32) NOT NULL,
   `status` tinyint NOT NULL DEFAULT '1',
-  PRIMARY KEY (`region_id`)
+  PRIMARY KEY (`region_id`),
+  KEY `country_id` (`country_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

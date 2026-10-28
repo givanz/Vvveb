@@ -8,5 +8,6 @@ CREATE TABLE `order_log` (
   `public` tinyint NOT NULL DEFAULT '0',
   `note` text NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`order_log_id`)
+  PRIMARY KEY (`order_log_id`),
+  KEY `order_id` (`order_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

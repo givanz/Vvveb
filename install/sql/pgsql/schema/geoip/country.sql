@@ -9,7 +9,7 @@ CREATE TABLE country (
   "name" varchar(128) NOT NULL,
   "iso_code_2" varchar(2) NOT NULL,
   "iso_code_3" varchar(3) NOT NULL,
-  "status" smallint NOT NULL DEFAULT 1
+  "status" smallint NOT NULL DEFAULT 0
   -- PRIMARY KEY("country_id")
 );
 

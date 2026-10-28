@@ -6,5 +6,7 @@ CREATE TABLE `voucher_log` (
   `order_id` INT UNSIGNED NOT NULL,
   `credit` decimal(15,4) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`voucher_log_id`)
+  PRIMARY KEY (`voucher_log_id`),
+  KEY `voucher_id` (`voucher_id`),
+  KEY `order_id` (`order_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

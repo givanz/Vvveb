@@ -14,3 +14,5 @@ CREATE TABLE product_field_value (
 );
 
 -- SELECT setval('product_field_value_field_value_id_seq', 0, true); -- last inserted id by sample data
+
+CREATE INDEX IF NOT EXISTS "product_field_value_field" ON product_field_value ("field_id");

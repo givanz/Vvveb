@@ -14,3 +14,5 @@ CREATE TABLE `voucher` (
 `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- PRIMARY KEY (`voucher_id`)
 );
+
+CREATE INDEX `voucher_order_id` ON `voucher` (`order_id`);

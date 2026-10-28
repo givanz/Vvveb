@@ -9,7 +9,7 @@ CREATE TABLE vendor (
   "admin_id" int check ("admin_id" >= 0) NOT NULL DEFAULT 0,
   "name" varchar(191) NOT NULL DEFAULT '',
   "slug" varchar(191) NOT NULL DEFAULT '',
-  "image" varchar(191) NOT NULL,
+  "image" varchar(191) NOT NULL DEFAULT '',
   "sort_order" int NOT NULL DEFAULT 0
   -- PRIMARY KEY("vendor_id")
 );

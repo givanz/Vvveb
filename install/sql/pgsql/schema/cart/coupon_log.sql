@@ -13,4 +13,7 @@ CREATE TABLE coupon_log (
   -- PRIMARY KEY("coupon_log_id")
 );
 
+CREATE INDEX "coupon_log_coupon_id" ON coupon_log ("coupon_id");
+CREATE INDEX "coupon_log_order_id" ON coupon_log ("order_id");
+CREATE INDEX "coupon_log_user_id" ON coupon_log ("user_id");
 -- SELECT setval('coupon_log_coupon_log_id_seq', 0, true); -- last inserted id by sample data

@@ -23,6 +23,5 @@
 namespace Vvveb\Controller;
 
 class Error404 extends Base {
-	function index() {
-	}
+	public function index(): void {}
 }

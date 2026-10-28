@@ -10,5 +10,6 @@ CREATE TABLE `product_discount` (
   `from_date` date,
   `to_date` date,
   PRIMARY KEY (`product_discount_id`),
-  KEY `product_id` (`product_id`)
+  KEY `product_id` (`product_id`),
+  KEY `user_group_id` (`user_group_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

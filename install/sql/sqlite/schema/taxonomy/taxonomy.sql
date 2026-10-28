@@ -8,7 +8,3 @@ CREATE TABLE `taxonomy` (
 `site_id` INT UNSIGNED NOT NULL DEFAULT 0
 -- PRIMARY KEY (`taxonomy_id`)
 );
-
-
-
-CREATE INDEX `taxonomy_taxonomy_id` ON `taxonomy` (`taxonomy_id`);

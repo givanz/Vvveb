@@ -14,5 +14,11 @@ CREATE TABLE `product_option_value` (
   `points` int(8) NOT NULL DEFAULT 0,
   `weight_operator` varchar(1) NOT NULL DEFAULT '+',
   `weight` decimal(15,8) NOT NULL DEFAULT 0,
+  `width_operator` varchar(1) NOT NULL DEFAULT '+',
+  `width` decimal(15,8) NOT NULL DEFAULT 0,
+  `height_operator` varchar(1) NOT NULL DEFAULT '+',
+  `height` decimal(15,8) NOT NULL DEFAULT 0,
+  `length_operator` varchar(1) NOT NULL DEFAULT '+',
+  `length` decimal(15,8) NOT NULL DEFAULT 0,
   PRIMARY KEY (`product_option_value_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;

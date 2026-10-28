@@ -6,5 +6,6 @@ CREATE TABLE `order_shipment` (
   `shipping_method` varchar(191) NOT NULL,
   `tracking_number` varchar(191) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`order_shipment_id`)
+  PRIMARY KEY (`order_shipment_id`),
+  KEY `order_id` (`order_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
