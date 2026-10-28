@@ -52,6 +52,16 @@ return [
 	'/user/comments'                         => ['module' => 'user/comments/index'],
 	'/user/profile'                          => ['module' => 'user/profile/index'],
 
+	//user subscriptions
+	'/user/subscriptions'                                      => ['module' => 'user/subscriptions/index'],
+	'/user/subscriptions/#page#'                               => ['module' => 'user/subscriptions/index'],
+	'/user/subscription/#subscription_id#'                     => ['module' => 'user/subscription/index'],
+	'/user/subscription/#subscription_id#/cancel'              => ['module' => 'user/subscription/cancel'],
+	'/user/subscription/#subscription_id#/swap'                => ['module' => 'user/subscription/swap'],
+	'/user/subscription/#subscription_id#/skip'                => ['module' => 'user/subscription/skip'],
+	'/user/subscription/#subscription_id#/pause'               => ['module' => 'user/subscription/pause'],
+	'/user/subscription/#subscription_id#/resume'              => ['module' => 'user/subscription/resume'],
+
 	//user wishlist
 	'/user/wishlist'                     => ['module' => 'user/wishlist/index'],
 	'/user/wishlist/add/#product_id#'    => ['module' => 'user/wishlist/add'],
@@ -117,14 +127,16 @@ return [
 	'/cart/voucher'                 => ['module' => 'checkout/cart/voucher'],
 
 	//'/checkout/#product_id#'  => ['module' => 'checkout/checkout/index'],
-	'/checkout/pay'                          => ['module' => 'checkout/pay'],
 	'/checkout/confirm'                      => ['module' => 'checkout/confirm/index'],
-	'/checkout/confirm/{customer_order_id}'  => ['module' => 'checkout/order/index'],
+	'/checkout/confirm/{customer_order_id}' => ['module' => 'checkout/confirm/index'],
+	'/checkout/failed'                      => ['module' => 'checkout/confirm/failed'],
+	'/checkout/failed/{customer_order_id}'  => ['module' => 'checkout/confirm/failed'],
 	'/checkout'                              => ['module' => 'checkout/checkout/index'],
 	'/checkout/{cart_id}'                    => ['module' => 'checkout/checkout/index'],
 
 	//feeds
 	'/feed/{rss}' => ['module' => 'feed/index'],
+	'/llms.txt'   => ['module' => 'feed/llms/index'],
 	'/robots.txt' => ['module' => 'feed/robots/index'],
 	/*
 	'/feed/posts'     => ['module' => 'feed/posts'],

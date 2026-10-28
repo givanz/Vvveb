@@ -21,6 +21,7 @@
  */
 
 return [
+	'/rest'  => ['module' => 'index'],
 	'/rest/'                                       => ['module' => 'index'],
 
 	//posts

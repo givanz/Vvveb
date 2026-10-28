@@ -37,6 +37,6 @@
  		'options' => [
  		],
  	],
- 	'key'     => 'FM4qmc4bDEldhU4Aafdu2HAhoH3lvZiW',
- 	'cronkey' => 'eNRkZ894TTDxxOaKREsh5GnhAscYlHt5',
+ 	'key'     => '',
+ 	'cronkey' => '',
  ];

@@ -22,11 +22,11 @@
 
  return [
  	'* * *' => [
- 		'name'     => 'Default site',
+ 		'name'     => 'Default',
  		'host'     => '*.*.*',
  		'path'     => '',
  		'theme'    => 'landing',
- 		'template' => '',
+ 		'template' => [],
  		'state'    => 'live',
  		'site_id'  => 1,
 	]
