@@ -34,7 +34,7 @@ class Code extends Base {
 	/**
 	 * @var array<int, string> File extensions denied for saving by non-admin roles.
 	 */
-	protected array $saveDenyExtensions = ['php', 'tpl', 'svg', 'js', 'exe', 'html', 'phtml', 'htaccess', 'phar'];
+	protected array $saveDenyExtensions = ['php', 'tpl', 'sql', 'svg', 'js', 'exe', 'html', 'phtml', 'htaccess', 'phar'];
 
 	/**
 	 * Returns the base directory path for a given type.
