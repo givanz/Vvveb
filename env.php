@@ -20,41 +20,36 @@
  *
  */
 
-/*
-Check .sql files for changes and recompile, use on dev only
-*/
+// Check .sql files for changes and recompile, use on dev only
 define('SQL_CHECK', true);
 
-/*
- Page cache needs web server support for maximum performance, make sure that apache has .htaccess support and nginx is configured according to included nginx.conf
- */
+// Page cache needs web server support for maximum performance, make sure that apache has .htaccess support and nginx is configured according to included nginx.conf
 define('PAGE_CACHE', true);
 
 /*
 Disable on production to hide error messages, if enabled it will show detailed error messages 
 Warning: Enabling debug will decrease performance
 */
-defined('DEBUG') || define('DEBUG', false);
+defined('DEBUG') || define('DEBUG', true);
 defined('VTPL_DEBUG') || define('VTPL_DEBUG', false);
-defined('GETTEXT') || define('GETTEXT', true);
+defined('GETTEXT') || define('GETTEXT', true);//if false gettext is emulated in php and a bit slower
 
-/*
-If enabled if a plugin generates an error it will be automatically disabled
-*/
+// If enabled if a plugin generates an error it will be automatically disabled
 defined('DISABLE_PLUGIN_ON_ERORR') || define('DISABLE_PLUGIN_ON_ERORR', false);
 
 //no trailing slash for subdir path
 //defined('V_SUBDIR_INSTALL') || define('V_SUBDIR_INSTALL', '/vvveb');
-defined('V_SUBDIR_INSTALL') || define('V_SUBDIR_INSTALL', false);
+defined('V_SUBDIR_INSTALL') || define('V_SUBDIR_INSTALL', '');
 
 //if shared session is enabled then user session (login) will work on all subdomains on multisite installations
 defined('V_SHARED_SESSION') || define('V_SHARED_SESSION', false);
 
 defined('LOG_SQL_QUERIES') || define('LOG_SQL_QUERIES', false);
 
-defined('REST') || define('REST', false);
-defined('GRAPHQL') || define('GRAPHQL', false);
+defined('REST') || define('REST', true);
+defined('GRAPHQL') || define('GRAPHQL', true);
 defined('GRAPHQL_CAMELCASE') || define('GRAPHQL_CAMELCASE', true);
+defined('MCP') || define('MCP', true);
 
 if (DEBUG) {
     ini_set('display_errors', 1);
