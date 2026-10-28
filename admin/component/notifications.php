@@ -25,7 +25,6 @@ namespace Vvveb\Component;
 use function Vvveb\commentStatusBadgeClass;
 use function Vvveb\orderStatusBadgeClass;
 use Vvveb\Sql\StatSQL;
-use Vvveb\System\Cache;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Core\View;
 use Vvveb\System\Event;
@@ -33,24 +32,35 @@ use Vvveb\System\Update;
 use function Vvveb\url;
 
 class Notifications extends ComponentBase {
-	public static $defaultOptions = [
+	/** @var array<string, mixed> Default options (empty for notifications). */
+	public static array $defaultOptions = [
 	];
 
-	public $options = [];
+	/** @var array<string, mixed> Resolved options for this component. */
+	public array $options = [];
 
-	private $stats;
+	/** @var StatSQL|null Statistics query instance. */
+	private ?StatSQL $stats = null;
 
-	private $count = 0;
+	/** @var int Total notification count. */
+	private int $count = 0;
 
-	private $notifications = [];
+	/** @var array<string, mixed> Aggregated notification data. */
+	private array $notifications = [];
 
-	private $menu = [];
+	/** @var array<string, mixed> Menu badge data for sidebar notifications. */
+	private array $menu = [];
 
-	protected function orders() {
-		$orderCount      = $this->stats->getOrdersCount($this->options)['orders'] ?? [];
+	/**
+	 * Gather order notification counts and update menu badges.
+	 *
+	 * @return void
+	 */
+	protected function orders(): void {
+		$orderCount     = $this->stats->getOrdersCount($this->options)['orders'] ?? [];
 
-		$orderStatsusNew = 1; //get from site config
-		$newOrders       = ($orderCount[$orderStatsusNew]['count'] ?? 0);
+		$orderStatusNew = 1; //get from site config
+		$newOrders      = ($orderCount[$orderStatusNew]['count'] ?? 0);
 
 		if ($newOrders > 0) {
 			$this->count += $newOrders;
@@ -59,12 +69,13 @@ class Notifications extends ComponentBase {
 			$this->menu['sales']['badge-class'] =  'badge bg-success-subtle text-body mx-2';
 		}
 
-		$url = ['module' => 'product/products'];
-		//set order name as array keys
+		//link order status notifications to the orders list filtered by status
+		$url = ['module' => 'order/orders'];
+		//re-key by human readable status name
 		foreach ($orderCount as $type => $orders) {
 			if (isset($orders['name'])) {
 				$orders['badge']             = orderStatusBadgeClass($orders['order_status_id']);
-				$orders['icon']              = 'icon-bag-handle-outline';
+				$orders['icon']              = 'shopping-bag';
 				$orders['url']               = url($url + ['filter[order_status_id]' => $orders['order_status_id']]);
 				$orderCount[$orders['name']] = $orders;
 				unset($orderCount[$type]);
@@ -74,21 +85,30 @@ class Notifications extends ComponentBase {
 		$this->notifications['orders'] = $orderCount + $this->notifications['orders'];
 	}
 
-	protected function users() {
+	/**
+	 * Gather user registration counts for current month and year.
+	 *
+	 * @return void
+	 */
+	protected function users(): void {
 		$userCount      = $this->stats->getUsersCount($this->options)['users'] ?? [];
 
-		$currentYear  = intval(date('Y'));
-		$currentMonth = intval(date('n'));
+		$currentYear  = (int)(date('Y'));
+		$currentMonth = (int)(date('n'));
 
 		$monthCount = 0;
 		$yearCount  = 0;
 
 		foreach ($userCount as $m) {
-			if ($m['year'] == $currentYear) {
+			//db drivers return year/month as strings, compare as integers
+			$year  = (int)($m['year'] ?? 0);
+			$month = (int)($m['month'] ?? 0);
+
+			if ($year === $currentYear) {
 				$yearCount += $m['count'];
 			}
 
-			if ($m['year'] == $currentYear && $m['month'] == $currentMonth) {
+			if ($year === $currentYear && $month === $currentMonth) {
 				$monthCount += $m['count'];
 			}
 		}
@@ -101,12 +121,17 @@ class Notifications extends ComponentBase {
 		$this->notifications['users']['month']['url']   = $url;
 	}
 
-	protected function products() {
+	/**
+	 * Gather product stock notification counts.
+	 *
+	 * @return void
+	 */
+	protected function products(): void {
 		$productCount = $this->stats->getProductStockCount($this->options)['products'] ?? [];
 		$url          = ['module' => 'product/products'];
 
 		foreach ($productCount as $type => &$products) {
-			$products['icon']  = 'icon-cube-outline';
+			$products['icon']  = 'box';
 			$products['badge'] = commentStatusBadgeClass($products['stock_status_id']);
 			$products['url']   = url($url + ['filter[stock_status_id]' => $products['stock_status_id']]);
 		}
@@ -114,118 +139,101 @@ class Notifications extends ComponentBase {
 		$this->notifications['products'] = $productCount + $this->notifications['products'];
 	}
 
-	protected function comments() {
-		$commentCount      = $this->stats->getCommentsCount($this->options)['comments'] ?? [];
-		$comment_status    = [
-			0  => 'pending',
-			1  => 'approved',
-			2  => 'spam',
-			3  => 'trash',
+	/**
+	 * Aggregate status notifications for comments-like content types.
+	 *
+	 * Shared by comments(), reviews() and questions(): counts new items into
+	 * the total and menu badges, then re-keys counts by status name with
+	 * icon, badge and URL for each status.
+	 *
+	 * @param string            $key      Result key in notifications.
+	 * @param array<int, mixed> $counts   Status rows keyed by status id.
+	 * @param string            $module   Module for status filter URLs.
+	 * @param string            $icon     Icon class for all statuses.
+	 * @param string            $menu     Menu key for the badge.
+	 * @param string|null       $menuItem Submenu item key for the badge, or null for none.
+	 *
+	 * @return void
+	 */
+	protected function statusNotifications(string $key, array $counts, string $module, string $icon, string $menu, ?string $menuItem = null): void {
+		$statusNames = [
+			0 => 'pending',
+			1 => 'approved',
+			2 => 'spam',
+			3 => 'trash',
 		];
 
-		$commentStatsusNew = 0; //get from site config
-		$newComments       = ($commentCount[$commentStatsusNew]['count'] ?? 0);
+		$newItems = ($counts[0]['count'] ?? 0); //get from site config
 
-		if ($newComments > 0) {
-			$this->count += $newComments;
-			$this->menu['post']                = [];
-			$this->menu['post']['badge']       =  $newComments;
-			$this->menu['post']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
+		if ($newItems > 0) {
+			$this->count += $newItems;
+			$this->menu[$menu]['badge']       =  ($this->menu[$menu]['badge'] ?? 0) + $newItems;
+			$this->menu[$menu]['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
 
-			$this->menu['post']['items']['comments']                = [];
-			$this->menu['post']['items']['comments']['badge']       =  $newComments;
-			$this->menu['post']['items']['comments']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
+			if ($menuItem) {
+				$this->menu[$menu]['items'][$menuItem]['badge']       =  $newItems;
+				$this->menu[$menu]['items'][$menuItem]['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
+			}
 		}
 
-		$url = ['module' => 'content/comments'];
+		$url = ['module' => $module];
 
-		foreach ($commentCount as $type => $comments) {
-			$comments['icon']                     = 'la la-comment';
-			$comments['badge']                    = commentStatusBadgeClass($comments['status']);
-			$comments['url']                      = url($url + ['status' => $comments['status']]);
-			$commentCount[$comment_status[$type]] = $comments;
-			unset($commentCount[$type]);
+		foreach ($counts as $type => $items) {
+			$items['icon']                        = $icon;
+			$items['badge']                       = commentStatusBadgeClass($items['status']);
+			$items['url']                         = url($url + ['status' => $items['status']]);
+			$counts[$statusNames[$type] ?? $type] = $items;
+			unset($counts[$type]);
 		}
 
-		$this->notifications['comments'] = $commentCount + $this->notifications['comments'];
+		$this->notifications[$key] = $counts + $this->notifications[$key];
 	}
 
-	protected function reviews() {
-		$reviewCount       = $this->stats->getReviewsCount($this->options)['reviews'] ?? [];
-		$comment_status    = [
-			0  => 'pending',
-			1  => 'approved',
-			2  => 'spam',
-			3  => 'trash',
-		];
+	/**
+	 * Gather comment notification counts and update menu badges.
+	 *
+	 * @return void
+	 */
+	protected function comments(): void {
+		$commentCount = $this->stats->getCommentsCount($this->options)['comments'] ?? [];
 
-		$reviewStatsusNew = 0; //get from site config
-		$newReviews       = ($reviewCount[$reviewStatsusNew]['count'] ?? 0);
-
-		if ($newReviews > 0) {
-			$this->count += $newReviews;
-			//$this->menu['product'] = [];
-			$this->menu['product']['badge']       =  $newReviews;
-			$this->menu['product']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
-
-			//$this->menu['product']['items']['reviews'] = [];
-			$this->menu['product']['items']['reviews']['badge']       =  $newReviews;
-			$this->menu['product']['items']['reviews']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
-		}
-
-		$url = ['module' => 'product/product-reviews'];
-
-		foreach ($reviewCount as $type => $reviews) {
-			$reviews['icon']                     = ' la la-comments';
-			$reviews['badge']                    =  commentStatusBadgeClass($reviews['status']);
-			$reviews['url']                      = url($url + ['status' => $reviews['status']]);
-			$reviewCount[$comment_status[$type]] = $reviews;
-			unset($reviewCount[$type]);
-		}
-
-		$this->notifications['reviews'] = $reviewCount + $this->notifications['reviews'];
+		$this->statusNotifications('comments', $commentCount, 'content/comments', 'message', 'post', 'comments');
 	}
 
-	protected function questions() {
-		$questionCount      = $this->stats->getQuestionsCount($this->options)['questions'] ?? [];
-		$comment_status     = [
-			0  => 'pending',
-			1  => 'approved',
-			2  => 'spam',
-			3  => 'trash',
-		];
+	/**
+	 * Gather review notification counts and update menu badges.
+	 *
+	 * @return void
+	 */
+	protected function reviews(): void {
+		$reviewCount = $this->stats->getReviewsCount($this->options)['reviews'] ?? [];
 
-		$questionStatsusNew = 0; //get from site config
-		$newQuestions       = ($questionCount[$questionStatsusNew]['count'] ?? 0);
-
-		if ($newQuestions > 0) {
-			$this->count += $newQuestions;
-			//$this->menu['product'] = [];
-			$this->menu['product']['badge']       =  ($this->menu['product']['badge'] ?? 0) + $newQuestions;
-			$this->menu['product']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
-
-			//$this->menu['product']['items']['questions'] = [];
-			$this->menu['product']['items']['questions']['badge']       =  $newQuestions;
-			$this->menu['product']['items']['questions']['badge-class'] =  'badge bg-primary-subtle text-body mx-2';
-		}
-
-		$url = ['module' => 'product/product-questions'];
-
-		foreach ($questionCount as $type => $questions) {
-			$questions['icon']                     = 'la la-question-circle';
-			$questions['badge']                    = commentStatusBadgeClass($questions['status']);
-			$questions['url']                      = url($url + ['status' => $questions['status']]);
-			$questionCount[$comment_status[$type]] = $questions;
-			unset($questionCount[$type]);
-		}
-
-		$this->notifications['questions'] = $questionCount + $this->notifications['questions'];
+		$this->statusNotifications('reviews', $reviewCount, 'product/product-reviews', 'messages', 'product', 'reviews');
 	}
 
-	function request(&$results, $index) {
+	/**
+	 * Gather question notification counts and update menu badges.
+	 *
+	 * @return void
+	 */
+	protected function questions(): void {
+		$questionCount = $this->stats->getQuestionsCount($this->options)['questions'] ?? [];
+
+		$this->statusNotifications('questions', $questionCount, 'product/product-questions', 'help-circle', 'product', 'questions');
+	}
+
+	/**
+	 * Apply notification menu badges to the view menu on first request.
+	 *
+	 * @param array<string, mixed> $results Component results.
+	 * @param int                  $index   Request index.
+	 *
+	 * @return void
+	 */
+	public function request(array &$results, int $index = 0): void {
 		//add menu notification count
 
-		if ($results['menu'] && $index == 0) {
+		if ($results['menu'] && $index === 0) {
 			$view       = View::getInstance();
 
 			if (isset($view->menu) && $view->menu) {
@@ -234,42 +242,46 @@ class Notifications extends ComponentBase {
 		}
 	}
 
-	function results() {
+	/**
+	 * Get aggregated notification results for orders, users, products, comments,
+	 * reviews, questions, and system updates.
+	 *
+	 * @return array{notifications: array<string, mixed>, count: int, menu: array<string, mixed>}
+	 */
+	public function results(): array {
 		// return [];
-		$cache = Cache::getInstance();
-
 		$this->notifications = [
 			'updates' => [
-				'core' => ['hasUpdate' => 1, 'version' => '1.0'],
+				'core' => ['hasUpdate' => 0, 'version' => V_VERSION],
 			],
 			'orders' => [
-				'processing' => ['count' => 0, 'icon' => 'icon-bag-handle-outline', 'badge' => 'bg-primary-subtle text-body'],
-				'complete'   => ['count' => 0, 'icon' => 'icon-bag-handle-outline', 'badge' => 'bg-success-subtle text-body'],
-				'processed'  => ['count' => 0, 'icon' => 'icon-bag-handle-outline', 'badge' => 'bg-secondary-subtle text-body'],
+				'processing' => ['count' => 0, 'icon' => 'shopping-bag', 'badge' => 'bg-primary-subtle text-body'],
+				'complete'   => ['count' => 0, 'icon' => 'shopping-bag', 'badge' => 'bg-success-subtle text-body'],
+				'processed'  => ['count' => 0, 'icon' => 'shopping-bag', 'badge' => 'bg-secondary-subtle text-body'],
 			],
 			'users' => [
-				'month' => ['count' => 0, 'icon' => 'icon-person-outline', 'badge' => 'bg-secondary-subtle text-body'],
-				'year'  => ['count' => 0, 'icon' => 'icon-person-outline', 'badge' => 'bg-secondary-subtle text-body'],
+				'month' => ['count' => 0, 'icon' => 'user', 'badge' => 'bg-secondary-subtle text-body'],
+				'year'  => ['count' => 0, 'icon' => 'user', 'badge' => 'bg-secondary-subtle text-body'],
 			],
 			'products' => [
 			],
 			'comments' => [
-				'pending'   => ['count' => 0, 'icon' => 'la la-comment', 'badge' => 'bg-primary-subtle text-body'],
-				'approved'  => ['count' => 0, 'icon' => 'la la-comment', 'badge' => 'bg-secondary-subtle text-body'],
-				'spam'      => ['count' => 0, 'icon' => 'la la-comment', 'badge' => 'bg-secondary-subtle text-body'],
-				'trash'     => ['count' => 0, 'icon' => 'la la-comment', 'badge' => 'bg-secondary-subtle text-body'],
+				'pending'  => ['count' => 0, 'icon' => 'message', 'badge' => 'bg-primary-subtle text-body'],
+				'approved' => ['count' => 0, 'icon' => 'message', 'badge' => 'bg-secondary-subtle text-body'],
+				'spam'     => ['count' => 0, 'icon' => 'message', 'badge' => 'bg-secondary-subtle text-body'],
+				'trash'    => ['count' => 0, 'icon' => 'message', 'badge' => 'bg-secondary-subtle text-body'],
 			],
 			'reviews' => [
-				'pending'   => ['count' => 0, 'icon' => 'la la-comment', 'badge' => 'bg-primary-subtle text-body'],
-				'approved'  => ['count' => 0, 'icon' => 'la la-comment', 'badge' => 'bg-secondary-subtle text-body'],
-				'spam'      => ['count' => 0, 'icon' => 'la la-comment', 'badge' => 'bg-secondary-subtle text-body'],
-				'trash'     => ['count' => 0, 'icon' => 'la la-comment', 'badge' => 'bg-secondary-subtle text-body'],
+				'pending'  => ['count' => 0, 'icon' => 'message', 'badge' => 'bg-primary-subtle text-body'],
+				'approved' => ['count' => 0, 'icon' => 'message', 'badge' => 'bg-secondary-subtle text-body'],
+				'spam'     => ['count' => 0, 'icon' => 'message', 'badge' => 'bg-secondary-subtle text-body'],
+				'trash'    => ['count' => 0, 'icon' => 'message', 'badge' => 'bg-secondary-subtle text-body'],
 			],
 			'questions' => [
-				'pending'   => ['count' => 0, 'icon' => 'la la-question-circle', 'badge' => 'bg-primary-subtle text-body'],
-				'approved'  => ['count' => 0, 'icon' => 'la la-question-circle', 'badge' => 'bg-secondary-subtle text-body'],
-				'spam'      => ['count' => 0, 'icon' => 'la la-question-circle', 'badge' => 'bg-secondary-subtle text-body'],
-				'trash'     => ['count' => 0, 'icon' => 'la la-question-circle', 'badge' => 'bg-secondary-subtle text-body'],
+				'pending'  => ['count' => 0, 'icon' => 'help-circle', 'badge' => 'bg-primary-subtle text-body'],
+				'approved' => ['count' => 0, 'icon' => 'help-circle', 'badge' => 'bg-secondary-subtle text-body'],
+				'spam'     => ['count' => 0, 'icon' => 'help-circle', 'badge' => 'bg-secondary-subtle text-body'],
+				'trash'    => ['count' => 0, 'icon' => 'help-circle', 'badge' => 'bg-secondary-subtle text-body'],
 			],
 		];
 
@@ -282,10 +294,10 @@ class Notifications extends ComponentBase {
 		$this->questions();
 
 		$update  = new Update();
-		$updates = $update->checkUpdates('core') ?? [];
+		//$updates = $update->checkUpdates('core') ?? [];
 
-		$this->notifications['updates']['core'] = $updates;
-		$this->count += max($updates['hasUpdate'] ?? 0, 0);
+		//$this->notifications['updates']['core'] = $updates;
+		//$this->count += max($updates['hasUpdate'] ?? 0, 0);
 
 		$results = [
 			'notifications' => $this->notifications,
@@ -293,7 +305,7 @@ class Notifications extends ComponentBase {
 			'menu'          => $this->menu,
 		];
 
-		list($results) = Event::trigger(__CLASS__, __FUNCTION__, $results);
+		[$results] = Event::trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

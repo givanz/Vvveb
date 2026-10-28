@@ -29,39 +29,49 @@ use Vvveb\System\Event;
 use Vvveb\System\Import\Rss;
 
 class News extends ComponentBase {
-	protected $domain = 'https://blog.vvveb.com';
+	/** @var string Domain URL for the news feed. */
+	protected string $domain = 'https://blog.vvveb.com';
 
-	protected $url = '/feed/news';
+	/** @var string Path to the news feed endpoint. */
+	protected string $url = '/feed/news';
 
-	public static $defaultOptions = [
+	/** @var array{page: int, limit: int} Default options for pagination. */
+	public static array $defaultOptions = [
 		'page'  => 0,
 		'limit' => 10,
 	];
 
-	public $options = [];
+	/** @var array<string, mixed> Resolved options for this component. */
+	public array $options = [];
 
-	function getNews() {
+	/**
+	 * Fetch news items from the RSS feed.
+	 *
+	 * @return array<int, mixed> Parsed news items, or empty array on failure.
+	 */
+	public function getNews(): array {
 		$feed = getUrl($this->domain . $this->url, true, 604800, 3, false);
 
 		if ($feed) {
 			$rss = new Rss($feed);
 
-			$result = $rss->get($this->options['page'], $this->options['limit']);
-
-			return $result;
+			return $rss->get($this->options['page'], $this->options['limit']);
 		}
 
 		return [];
 	}
 
-	function results() {
-		list($this->domain, $this->url) = Event::trigger(__CLASS__, 'url', $this->domain, $this->url);
+	/**
+	 * Get news component results including domain, URL, and news items.
+	 *
+	 * @return array{domain: string, url: string, news: array<int, mixed>, count: int}
+	 */
+	public function results(): array {
+		[$this->domain, $this->url] = Event::trigger(__CLASS__, 'url', $this->domain, $this->url);
 
 		$cache = Cache::getInstance();
 		// check for news ~twice a week
-		$news = $cache->cache('vvveb', 'news', function () {
-			return $this->getNews();
-		}, 259200);
+		$news = $cache->cache('vvveb', 'news', fn (): array => $this->getNews(), 259200);
 
 		$results = [
 			'domain' => $this->domain,
@@ -70,7 +80,7 @@ class News extends ComponentBase {
 			'count'  => count($news),
 		];
 
-		list($results) = Event::trigger(__CLASS__, __FUNCTION__, $results);
+		[$results] = Event::trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

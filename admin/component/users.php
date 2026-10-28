@@ -28,37 +28,44 @@ use Vvveb\System\Event;
 use Vvveb\System\Images;
 
 class Users extends ComponentBase {
-	public static $defaultOptions = [
-		'start'            => 0,
-		'limit'            => 10,
-		'site_id'          => null,
-		'user_id'          => 'url',
-		'user'             => ['url', 'price asc'],
-		'order_by'         => NULL,
-		'direction'        => ['url', 'asc', 'desc'],
+	/** @var array<string, mixed> Default options for user listing. */
+	public static array $defaultOptions = [
+		'start'     => 0,
+		'limit'     => 10,
+		'site_id'   => null,
+		'user_id'   => 'url',
+		'user'      => ['url', 'price asc'],
+		'order_by'  => null,
+		'direction' => ['url', 'asc', 'desc'],
 	];
 
-	public $options = [];
+	/** @var array<string, mixed> Resolved options for this component. */
+	public array $options = [];
 
-	function results() {
-		$users = new UserSQL();
-
-		$results = $users->getAll($this->options);
-
+	/**
+	 * Get users with validated sort parameters and resolved images.
+	 *
+	 * @return array<string, mixed> Users with resolved images.
+	 */
+	public function results(): array {
 		if (isset($this->options['order_by']) &&
-				! in_array($this->options['order_by'], ['user_id', 'created_at', 'email', 'username'])) {
+				!in_array($this->options['order_by'], ['user_id', 'created_at', 'email', 'username'])) {
 			unset($this->options['order_by']);
 		}
 
 		if (isset($this->options['direction']) &&
-				! in_array($this->options['direction'], ['asc', 'desc'])) {
+				!in_array($this->options['direction'], ['asc', 'desc'])) {
 			unset($this->options['direction']);
 		}
+
+		$users = new UserSQL();
+
+		$results = $users->getAll($this->options) ?? [];
 
 		if (isset($results['user'])) {
 			foreach ($results['user'] as $id => &$user) {
 				if (isset($user['images'])) {
-					$user['images'] = json_decode($user['images'], 1);
+					$user['images'] = json_decode($user['images'], true);
 
 					foreach ($user['images'] as &$image) {
 						$image = Images::image('user', $image);
@@ -71,7 +78,7 @@ class Users extends ComponentBase {
 			}
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event::trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

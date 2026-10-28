@@ -29,34 +29,36 @@ use Vvveb\System\Event;
 use Vvveb\System\Images;
 
 class Products extends ComponentBase {
-	public static $defaultOptions = [
-		'start'          => 0,
-		'limit'          => 4,
-		'language_id'    => 1,
-		'site_id'        => 1,
-		'manufacturer_id'=> NULL,
-		'vendor_id'      => NULL,
-		'related'        => NULL,
-		'order'          => ['url', 'price asc'],
-		//'taxonomy_item_id'=> null,
-		'product_image'  => true,
+	/** @var array<string, mixed> Default options for product listing. */
+	public static array $defaultOptions = [
+		'start'           => 0,
+		'limit'           => 4,
+		'language_id'     => 1,
+		'site_id'         => 1,
+		'manufacturer_id' => null,
+		'vendor_id'       => null,
+		'related'         => null,
+		'order'           => ['url', 'price asc'],
+		'product_image'   => true,
 	];
 
-	public $options = [];
+	/** @var array<string, mixed> Resolved options for this component. */
+	public array $options = [];
 
-	function __construct($class = __CLASS__) {
-		parent::__construct($class);
-	}
-
-	function results() {
+	/**
+	 * Get products with pricing, tax, and image data.
+	 *
+	 * @return array<string, mixed> Products with formatted prices and images.
+	 */
+	public function results(): array {
 		$products = new \Vvveb\Sql\ProductSQL();
 
-		$results = $products->getAll($this->options);
+		$results = $products->getAll($this->options) ?? [];
 
-		$results['product'] = $results['product'] ?? [];
+		$results['product'] ??= [];
 
 		if ($results['product']) {
-			$tax      = Tax::getInstance($this->options);
+			$tax      = Tax::getInstance();
 			$currency = Currency::getInstance($this->options);
 
 			foreach ($results['product'] as $id => &$product) {
@@ -69,7 +71,7 @@ class Products extends ComponentBase {
 				}
 
 				if (isset($product['image']) && $product['image']) {
-					$product['image'] =Images::image($product['image'], 'product');
+					$product['image'] = Images::image($product['image'], 'product');
 				}
 
 				$product['price_tax']           = $tax->addTaxes($product['price'], $product['tax_type_id']);
@@ -78,7 +80,7 @@ class Products extends ComponentBase {
 			}
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event::trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

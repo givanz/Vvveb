@@ -21,6 +21,8 @@ foreach ($this->product['product_option'] as $product_option_id => $poption) {
 	
 	@product-option [data-v-poption-option_id]|before = <?php $selected = $poption['option_id'] ?? false;?>
 	@product-option [data-v-poption-required]|addNewAttribute = <?php if ($poption['required'] == '1') echo 'checked';?>
+	@product-option input[data-v-poption-required]|value = <?php echo '0';?>
+	@product-option input[role="switch"]|value = '1'
 	
 	@product-option a[data-v-poption-product_option_id]|href    = <?php echo '#option-' . $poption['product_option_id'];?>
 	@product-option a[data-v-poption-product_option_id]|data-id = $poption['product_option_id']

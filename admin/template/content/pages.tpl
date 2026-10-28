@@ -29,8 +29,7 @@ if(isset($this->posts) && is_array($this->posts))
 
 	[data-v-posts] [data-v-post] [data-v-img]|src = 
 	<?php 
-		echo 'http://anne2.givan.ro/image/' .$post['image'];
-		//echo htmlspecialchars(str_replace('large', '@@__class:image_([a-zA-Z_]+)__@@', $post['images'][$post['main_image']]['url']));
+		echo '/image/' . htmlspecialchars($post['image'] ?? '');
 	?>
 
 	

@@ -25,11 +25,6 @@ foreach ($this->product['images'] as $product_image_id => $image)  {
 	@image-gallery .product_image_input|data-target-input = $gallery_input_hash
 	@image-gallery .product_image_input|id = $gallery_input
 	
-	/*
-	@image-gallery [name="product_image[]"] = $image['image']
-	@image-gallery [name="product_image[]"]|data-target-input = $gallery_input_hash
-	@image-gallery [name="product_image[]"]|id = $gallery_input
-	*/
 @image-gallery|after = <?php 
 }
 ?>

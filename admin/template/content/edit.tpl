@@ -39,7 +39,7 @@
 @templates-select-option|before = <?php
 if ($optgroup != $option['folder']) {
 	$optgroup = $option['folder'];
-	echo '<optgroup label="' . ucfirst($optgroup ?? '') . '">';
+	echo '<optgroup label="' . htmlspecialchars(ucfirst($optgroup ?? '')) . '">';
 }
 ?>
 
@@ -52,7 +52,7 @@ if ($optgroup != $option['folder']) {
 
 @templates-select-option|value = <?php echo $option['file'];?>
 @templates-select-option|addNewAttribute = <?php if (isset($this->{{type}}['template']) && ($option['file'] == $this->{{type}}['template'])) echo 'selected';?>
-@templates-select-option = <?php echo ucfirst($option['title']);?>
+@templates-select-option = <?php echo htmlspecialchars(ucfirst($option['title'] ?? ''));?>
 
 
 
@@ -68,12 +68,14 @@ if ($optgroup != $option['folder']) {
 foreach ($this->languagesList as $language) {
 	$content = $this->{{type}}['{{type}}_content'][$language['language_id']] ?? [];
 ?>
-	[data-v-languages] [data-v-language-id]|id       = <?php echo 'lang-' . $language['code'] . '-' . $_lang_instance;?>
-	[data-v-languages] [data-v-language-id]|addClass = <?php if ($_i == 0) echo 'show active';?>
+	[data-v-languages] [data-v-language-id]|id            = <?php echo 'lang-' . $language['code'] . '-' . $_lang_instance;?>
+	[data-v-languages] [data-v-language-id]|addClass      = <?php if ($_i == 0) echo 'show active';?>
+	[data-v-languages] [data-v-language-id]|data-language = $language['code']
+	[data-v-languages] [data-v-language-id]|data-default  = <?php if ($language['default']) echo 'true'; else echo 'false';?>
 
 	@language [data-v-language-name] = $language['name']
 	@language [data-v-language-img]|title = $language['name']
-	@language [data-v-language-img]|src = <?php echo 'language/' . $language['code'] . '/' . $language['code'] . '.png';?>
+	@language [data-v-language-img]|src = <?php echo 'language/' . htmlspecialchars($language['code']) . '/' . htmlspecialchars($language['code']) . '.png';?>
 	@language [data-v-language-link]|href = <?php echo '#lang-' . $language['code'] . '-' . $_lang_instance?>
 	@language [data-v-language-link]|addClass = <?php if ($_i == 0) echo 'active';?>
 

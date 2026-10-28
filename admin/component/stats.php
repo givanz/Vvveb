@@ -27,7 +27,8 @@ use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 
 class Stats extends ComponentBase {
-	public static $defaultOptions = [
+	/** @var array<string, mixed> Default options for statistics query. */
+	public static array $defaultOptions = [
 		'start'       => 0,
 		'limit'       => 10,
 		'language_id' => null,
@@ -38,27 +39,33 @@ class Stats extends ComponentBase {
 		'range'       => 'day', //day, week, month, year
 	];
 
-	public $options = [];
+	/** @var array<string, mixed> Resolved options for this component. */
+	public array $options = [];
 
-	function results() {
+	/**
+	 * Get chart data with labels, user counts, and order counts.
+	 *
+	 * @return array{labels: array<int, string>, users: array<int, int>, orders: array<int, int>}
+	 */
+	public function results(): array {
 		$stats = new StatSQL();
 
-		if ($this->options['end_date'] == 'NOW()') {
+		if (($this->options['end_date'] ?? '') === 'NOW()') {
 			$this->options['end_date'] = date('Y-m-d');
 		}
 
-		if ($this->options['start_date'] == 'NOW()') {
+		if (($this->options['start_date'] ?? '') === 'NOW()') {
 			$this->options['start_date'] = date('Y-m-d');
 		}
 
-		$results = $stats->getStats($this->options);
+		$results = $stats->getStats($this->options) ?? [];
 		$data    = [];
 
-		foreach ($results['orders'] as $order) {
+		foreach ($results['orders'] ?? [] as $order) {
 			$data[$order['date']]['orders'] = $order['orders'];
 		}
 
-		foreach ($results['users'] as $order) {
+		foreach ($results['users'] ?? [] as $order) {
 			$data[$order['date']]['users'] = $order['users'];
 		}
 
@@ -73,10 +80,8 @@ class Stats extends ComponentBase {
 			$orders[] = $stat['orders'] ?? 0;
 		}
 
-		list($labels, $users, $orders) = Event :: trigger(__CLASS__,__FUNCTION__, $labels, $users, $orders);
+		[$labels, $users, $orders] = Event::trigger(__CLASS__, __FUNCTION__, $labels, $users, $orders);
 
 		return ['labels' => $labels, 'users' => $users, 'orders' => $orders];
-
-		return $results;
 	}
 }

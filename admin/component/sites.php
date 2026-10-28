@@ -28,22 +28,35 @@ use Vvveb\System\Sites as SitesList;
 use Vvveb\System\User\Admin;
 
 class Sites extends ComponentBase {
-	public static $defaultOptions = [
+	/** @var array{limit: int, page: int, site_access: int} Default options for site listing. */
+	public static array $defaultOptions = [
 		'limit'       => 1000,
 		'page'        => 1,
 		'site_access' => 1,
 	];
 
-	protected $options = [];
+	/** @var array<string, mixed> Resolved options for this component. */
+	protected array $options = [];
 
-	public $cacheExpire = 0; //seconds
+	/** @var int Cache expiry time in seconds (0 = disabled). */
+	public int $cacheExpire = 0;
 
-	function cacheKey() {
+	/**
+	 * Disable caching for this component.
+	 *
+	 * @return string|null Always returns false to disable caching.
+	 */
+	public function cacheKey(): ?string {
 		//disable caching
-		return false;
+		return null;
 	}
 
-	function results() {
+	/**
+	 * Get all sites filtered by admin site access, with active site and states.
+	 *
+	 * @return array{sites: array<int, mixed>, states: array<string, mixed>, site_id: mixed, active: array<string, mixed>, count: int}
+	 */
+	public function results(): array {
 		$results = [];
 
 		$results['sites']    = SitesList::getSites();
@@ -57,14 +70,14 @@ class Sites extends ComponentBase {
 
 			if ($site_access) {
 				foreach ($results['sites'] as $key => $site) {
-					if (! in_array($site['site_id'], $site_access)) {
+					if (!in_array($site['site_id'], $site_access)) {
 						unset($results['sites'][$key]);
 					}
 				}
 			}
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event::trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

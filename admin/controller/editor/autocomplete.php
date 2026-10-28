@@ -23,18 +23,21 @@
 namespace Vvveb\Controller\Editor;
 
 use Vvveb\Controller\Base;
-use Vvveb\Sql\categorySQL;
+use Vvveb\Sql\CategorySQL;
 
 class Autocomplete extends Base {
-	private $themeConfig = [];
-
-	function products() {
+	/**
+	 * Returns product autocomplete suggestions as JSON.
+	 *
+	 * @return void
+	 */
+	public function products(): void {
 		$text             = $this->request->get['text'];
 
 		$options = [
-			'start'  => 0,
-			'limit'  => 10,
-			'like'   => $text,
+			'start' => 0,
+			'limit' => 10,
+			'like'  => $text,
 		] + $this->global;
 
 		unset($options['admin_id']);
@@ -51,7 +54,12 @@ class Autocomplete extends Base {
 		$this->response->output($search);
 	}
 
-	function categories() {
+	/**
+	 * Returns category autocomplete suggestions as JSON.
+	 *
+	 * @return void
+	 */
+	public function categories(): void {
 		$text             = $this->request->get['text'];
 
 		$options = [
@@ -74,7 +82,12 @@ class Autocomplete extends Base {
 		$this->response->output($search);
 	}
 
-	function manufacturers() {
+	/**
+	 * Returns manufacturer autocomplete suggestions as JSON.
+	 *
+	 * @return void
+	 */
+	public function manufacturers(): void {
 		$text             = $this->request->get['text'];
 
 		$options = [
@@ -97,15 +110,20 @@ class Autocomplete extends Base {
 		$this->response->output($search);
 	}
 
-	function posts() {
+	/**
+	 * Returns post autocomplete suggestions as JSON.
+	 *
+	 * @return void
+	 */
+	public function posts(): void {
 		$text = $this->request->get['text'];
 		$type = $this->request->get['type'] ?? 'post';
 
 		$options = [
-			'start'  => 0,
-			'limit'  => 10,
-			'type'   => $type,
-			'like'   => $text,
+			'start' => 0,
+			'limit' => 10,
+			'type'  => $type,
+			'like'  => $text,
 			//'like' => '%' . $text . '%',
 		] + $this->global;
 
@@ -117,7 +135,7 @@ class Autocomplete extends Base {
 
 		if (isset($results['post'])) {
 			foreach ($results['post'] as $post) {
-				$search[$post['post_id']] = substr($post['name'],0, 50);
+				$search[$post['post_id']] = substr($post['name'], 0, 50);
 			}
 		}
 
@@ -125,12 +143,18 @@ class Autocomplete extends Base {
 		$this->response->output($search);
 	}
 
-	function tags() {
+	/**
+	 * Returns tag autocomplete suggestions as JSON.
+	 *
+	 * @return void
+	 */
+	public function tags(): void {
+		$post_id          = $this->request->get['post_id'] ?? false;
 		$taxonomy_id      = $this->request->get['taxonomy_id'];
 		$taxonomy         = $this->request->get['taxonomy'];
 		$text             = $this->request->get['text'];
 
-		$taxonomy_itemSql = new categorySQL();
+		$taxonomy_itemSQL = new CategorySQL();
 
 		$options = [
 			'post_id'     => $post_id,
@@ -142,11 +166,11 @@ class Autocomplete extends Base {
 			'search'      => '%' . $text . '%',
 		] + $this->global;
 
-		$results = $taxonomy_itemSql->getCategories($options + ['taxonomy_id' => $taxonomy_id]);
+		$results = $taxonomy_itemSQL->getCategories($options + ['taxonomy_id' => $taxonomy_id]);
 
 		$search = [];
 
-		foreach ($results['categories'] as $id => &$taxonomy_item) {
+		foreach ($results['categories'] as $taxonomy_item) {
 			$search[$taxonomy_item['taxonomy_item_id']] = $taxonomy_item['name'];
 		}
 

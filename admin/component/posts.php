@@ -28,25 +28,32 @@ use Vvveb\System\Event;
 use Vvveb\System\Images;
 
 class Posts extends ComponentBase {
-	public static $defaultOptions = [
+	/** @var array<string, mixed> Default options for post listing. */
+	public static array $defaultOptions = [
 		'start'           => 0,
 		'language_id'     => 1,
 		'site_id'         => 1,
 		'post_id'         => 'url',
 		'limit'           => ['url', 4],
-		'id_manufacturer' => NULL,
+		'id_manufacturer' => null,
 		'order'           => ['url', 'price asc'],
 		'id_category'     => 'url',
 	];
 
-	public $options = [];
+	/** @var array<string, mixed> Resolved options for this component. */
+	public array $options = [];
 
-	function results() {
+	/**
+	 * Get posts with image data resolved.
+	 *
+	 * @return array<string, mixed> Posts with resolved images.
+	 */
+	public function results(): array {
 		$posts = new PostSQL();
 
-		$results = $posts->getAll($this->options);
+		$results = $posts->getAll($this->options) ?? [];
 
-		foreach ($results['post'] as $id => &$post) {
+		foreach ($results['post'] ?? [] as $id => &$post) {
 			if (isset($post['images'])) {
 				$post['images'] = json_decode($post['images'], true);
 
@@ -60,7 +67,7 @@ class Posts extends ComponentBase {
 			}
 		}
 
-		list($results) = Event::trigger(__CLASS__, __FUNCTION__, $results);
+		[$results] = Event::trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

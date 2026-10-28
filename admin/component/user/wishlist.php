@@ -22,28 +22,39 @@
 
 namespace Vvveb\Component\User;
 
-use Vvveb\Sql\User_WishlistSQL;
+use Vvveb\Sql\User_wishlistSQL;
 use Vvveb\System\Component\ComponentBase;
 use Vvveb\System\Event;
 use function Vvveb\url;
 
 class Wishlist extends ComponentBase {
-	public static $defaultOptions = [
-		'start'         => 0,
-		'limit'         => 10,
+	/** @var array{start: int, limit: int} Default options for wishlist listing. */
+	public static array $defaultOptions = [
+		'start' => 0,
+		'limit' => 10,
 	];
 
-	//don't cache
-	function cacheKey() {
-		return false;
+	/**
+	 * Disable caching for this component.
+	 *
+	 * @return string|null Always returns false to disable caching.
+	 */
+	public function cacheKey(): ?string {
+		//don't cache
+		return null;
 	}
 
-	function results() {
+	/**
+	 * Get wishlist items for the current user with edit/delete URLs.
+	 *
+	 * @return array<string, mixed> Wishlist data with item URLs.
+	 */
+	public function results(): array {
 		$results  = [];
 
 		if ($this->options['user_id']) {
-			$wishlist  = new User_WishlistSQL();
-			$results   = $wishlist->getAll($this->options);
+			$wishlist  = new User_wishlistSQL();
+			$results   = $wishlist->getAll($this->options) ?? [];
 
 			if ($results && isset($results['wishlist'])) {
 				foreach ($results['wishlist'] as $id => &$wishlist) {
@@ -53,12 +64,8 @@ class Wishlist extends ComponentBase {
 			}
 		}
 
-		list($results) = Event :: trigger(__CLASS__,__FUNCTION__, $results);
+		[$results] = Event::trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
-	}
-
-	//called on each request
-	function request($results, $index = 0) {
 	}
 }

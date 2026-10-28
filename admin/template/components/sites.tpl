@@ -20,7 +20,8 @@ if(isset($this->_component['sites']) && $this->_component['sites'][$_sites_idx])
 		@site .dropdown-item|addClass = <?php if (isset($site['site_id']) && ($site['site_id'] == $sites['site_id'])) echo 'active'?>
 		
 		@site [data-v-site-name] = $site['name']
-		@site [data-v-site-icon]|addClass = <?php echo $sites['states'][$state]['icon'];?>
+		@site [data-v-site-icon]|if_exists = $sites['states'][$state]['icon']
+		@site [data-v-site-icon-use]|href = <?php echo '/admin/default/img/icons.svg#' . htmlspecialchars($sites['states'][$state]['icon']); ?>
 		@site a[data-v-site-url]|href = <?php echo '//' . $site['url'];?>
 		
 		@site button[data-v-site-site_id]|value = $site['site_id']

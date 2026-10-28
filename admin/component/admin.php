@@ -28,30 +28,43 @@ use Vvveb\System\Images;
 use Vvveb\System\User\Admin as AdminUser;
 
 class Admin extends ComponentBase {
-	public static $defaultOptions = [
+	/** @var array{limit: int, page: int} Default options for admin user listing. */
+	public static array $defaultOptions = [
 		'limit' => 1000,
 		'page'  => 1,
 	];
 
-	protected $options = [];
+	/** @var array<string, mixed> Resolved options for this component. */
+	protected array $options = [];
 
-	public $cacheExpire = 0; //seconds
+	/** @var int Cache expiry time in seconds (0 = disabled). */
+	public int $cacheExpire = 0;
 
-	function cacheKey() {
+	/**
+	 * Disable caching for this component.
+	 *
+	 * @return string|null Always returns false to disable caching.
+	 */
+	public function cacheKey(): ?string {
 		// disable caching
-		return false;
+		return null;
 	}
 
-	function results() {
+	/**
+	 * Get current admin user data with resolved avatar and cover images.
+	 *
+	 * @return array<string, mixed> Current admin user data with resolved images.
+	 */
+	public function results(): array {
 		$results       = AdminUser::current();
 
 		foreach (['avatar', 'cover'] as $image) {
 			if (isset($results[$image])) {
-				$results[$image]= Images::image($results[$image], 'admin');
+				$results[$image] = Images::image($results[$image], 'admin');
 			}
 		}
 
-		list($results) = Event::trigger(__CLASS__, __FUNCTION__, $results);
+		[$results] = Event::trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

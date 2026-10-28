@@ -7,7 +7,10 @@
 [data-pagination]|before = <?php $maxpages = 5; $visible_pages = 3; if(isset($this->count)) {
 
 if (isset($this->limit)) $limit = $this->limit; else $limit = 10;
-$pagecount = ceil($this->count / $limit);
+$pagecount = 0;
+if ($this->count) {
+	$pagecount = ceil($this->count / $limit);
+}
 
 $page = 1;
 $page_stop = $pagecount;

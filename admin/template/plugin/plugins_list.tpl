@@ -11,7 +11,7 @@ if(isset($this->plugins) && is_array($this->plugins)) {
 		if (isset($plugin['system'])) continue;//don't display system plugins
 	?>
 	
-	@plugin|id = <?php echo 'plugin-' . $plugin['slug'];?>
+	@plugin|id = <?php echo 'plugin-' . htmlspecialchars($plugin['slug']);?>
 	@plugin img[data-v-plugin-screenshot]|src = $plugin['screenshot']
 	@plugin input[data-v-vvveb-action]|value = $plugin['slug']
 	

@@ -30,35 +30,53 @@ use function Vvveb\slugify;
 use Vvveb\System\Sites;
 
 class Reusable extends Base {
-	private $sectionTemplate = <<<TPL
+	/**
+	 * @var string Heredoc template for reusable sections.
+	 */
+	private string $sectionTemplate = <<<'TPL'
 
-Vvveb.Sections.add("reusable/{name}", {
-    name: "{title}",
-    //image: Vvveb.themeBaseUrl + "/../../media/img/logo-small.png",
-	image: "img/logo-small.png",
-    html: `{content}`
-});
-Vvveb.SectionsGroup['Reusable'].push("reusable/{name}");
+		Vvveb.Sections.add("reusable/{name}", {
+		    name: "{title}",
+		    //image: Vvveb.themeBaseUrl + "/../../media/img/logo-small.png",
+			image: "img/logo-small.png",
+		    html: `{content}`
+		});
+		Vvveb.SectionsGroup['Reusable'].push("reusable/{name}");
 
-TPL;
+		TPL;
 
-	private $blockTemplate = <<<TPL
+	/**
+	 * @var string Heredoc template for reusable blocks.
+	 */
+	private string $blockTemplate = <<<'TPL'
 
-Vvveb.Blocks.add("reusable/{name}", {
-    name: "{title}",
-    //image: Vvveb.themeBaseUrl + "/../../media/img/logo-small.png",
-	image: "img/logo-small.png",
-    html: `{content}`
-});
-Vvveb.BlocksGroup['Reusable'].push("reusable/{name}");
+		Vvveb.Blocks.add("reusable/{name}", {
+		    name: "{title}",
+		    //image: Vvveb.themeBaseUrl + "/../../media/img/logo-small.png",
+			image: "img/logo-small.png",
+		    html: `{content}`
+		});
+		Vvveb.BlocksGroup['Reusable'].push("reusable/{name}");
 
-TPL;
+		TPL;
 
-	private function getThemeFolder() {
-		return DIR_THEMES . ($this->request->get['theme'] ?? Sites::getTheme($this->global['site_id']) ?? 'default');
+	/**
+	 * Returns the theme folder path for the current site.
+	 *
+	 * @return string Theme folder path.
+	 */
+	private function getThemeFolder(): string {
+		return DIR_THEMES . ($this->request->get['theme'] ?? Sites::getTheme($this->global['site_id']));
 	}
 
-	private function regenerate($type) {
+	/**
+	 * Regenerates the JS file for reusable sections or blocks.
+	 *
+	 * @param string $type Either 'section' or 'block'.
+	 *
+	 * @return int|false Bytes written or false on failure.
+	 */
+	private function regenerate(string $type): int|false {
 		$themeFolder = $this->getThemeFolder();
 
 		$folder      = $themeFolder . DS . $type . 's' . DS;
@@ -68,10 +86,10 @@ TPL;
 		$js = '';
 
 		foreach (scandir($htmlFolder) as $file) {
-			if (strpos($file, '.html') === false) {
+			if (!str_contains($file, '.html')) {
 				continue;
 			}
-			$name    = str_replace('.html','', $file);
+			$name    = str_replace('.html', '', $file);
 			$title   = humanReadable($name);
 			$content = file_get_contents($htmlFolder . DS . $file);
 
@@ -106,7 +124,12 @@ TPL;
 		return file_put_contents($jsFile, $jsContent);
 	}
 
-	function save() {
+	/**
+	 * Saves a reusable section or block to disk and regenerates the JS file.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$name    = slugify(sanitizeFileName($this->request->post['name']));
 		$type    = $this->request->post['type'];
 		$html    = $this->request->post['html'];

@@ -27,7 +27,12 @@ use Vvveb\Controller\Base;
 use Vvveb\System\Locale;
 
 class Translate extends Base {
-	function get() {
+	/**
+	 * Returns translations of a text string in all available languages as JSON.
+	 *
+	 * @return void
+	 */
+	public function get(): void {
 		$text         = $this->request->post['text'];
 		$languages    = Locale::availableLanguages();
 		$translations = [];
@@ -48,7 +53,12 @@ class Translate extends Base {
 		$this->response->output($translations);
 	}
 
-	function save() {
+	/**
+	 * Saves translations to PO/MO files for each language.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$translations = $this->request->post ?? [];
 		$success      = true;
 		$message      = __('Translations saved!');
@@ -58,6 +68,7 @@ class Translate extends Base {
 			unset($translations['csrf']);
 
 			$defaultLang  = key($translations); //'en_US';
+			$langCode     = is_string($defaultLang) ? $defaultLang : '';
 			$domain       = 'vvveb';
 			$text         =  $translations[$defaultLang];
 
@@ -71,7 +82,7 @@ class Translate extends Base {
 				$moFile     = $folder . $domain . '.mo';
 
 				foreach ([$poFile, $moFile] as $file) {
-					if (! is_writable($file)) {
+					if (!is_writable($file)) {
 						$message = sprintf(__('File %s not writable!'), $file);
 						$success = false;
 
@@ -108,8 +119,6 @@ class Translate extends Base {
 				}
 			}
 		}
-
-
 
 		$this->response->setType('json');
 		$this->response->output(['success' => $success, 'message' => $message]);

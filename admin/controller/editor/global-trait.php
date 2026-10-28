@@ -25,8 +25,16 @@ namespace Vvveb\Controller\Editor;
 use function Vvveb\sanitizeFileName;
 
 trait GlobalTrait {
-	private function saveGlobalElements($content, $options = []) {
-		$document                      = new \DomDocument();
+	/**
+	 * Saves global elements (header/footer) from the editor page to their source files.
+	 *
+	 * @param string               $content The HTML content to process.
+	 * @param array<string, mixed> $options Options such as 'inline-css'.
+	 *
+	 * @return string The processed HTML content.
+	 */
+	private function saveGlobalElements(string $content, array $options = []): string {
+		$document                      = new \DOMDocument();
 		$document->preserveWhiteSpace  = true;
 		$document->recover             = true;
 		$document->strictErrorChecking = false;
@@ -40,11 +48,11 @@ trait GlobalTrait {
 
 		@$document->loadHTML($content);
 
-		$xpath = new \DOMXpath($document);
+		$xpath = new \DOMXPath($document);
 
 		$themeFolder = $this->getThemeFolder();
 
-		if (! isset($options['inline-css']) || $options['inline-css'] == false) {
+		if (!isset($options['inline-css']) || $options['inline-css'] == false) {
 			//save vvvebjs css to custom.css
 			$style   = $xpath->query('//style[ @id="vvvebjs-styles" ]');
 			$cssFile = $themeFolder . DS . 'css' . DS . 'custom.css';
@@ -68,7 +76,7 @@ trait GlobalTrait {
 		$elements = $xpath->query('//*[ @data-v-save-global ]');
 
 		if ($elements && $elements->length) {
-			$toDocument                      = new \DomDocument();
+			$toDocument                      = new \DOMDocument();
 			$toDocument->preserveWhiteSpace  = false;
 			$toDocument->recover             = true;
 			$toDocument->strictErrorChecking = false;
@@ -78,14 +86,14 @@ trait GlobalTrait {
 			$toDocument->xmlStandalone       = true;
 
 			foreach ($elements as $element) {
-				if (! $element->hasChildNodes()) {
+				if (!$element->hasChildNodes()) {
 					continue;
 				}//skip empty elements
 
 				$attribute = $element->getAttribute('data-v-save-global');
 
-				if (strpos($attribute, ',') !== false) {
-					list($file, $selector) = explode(',', $attribute);
+				if (str_contains($attribute, ',')) {
+					[$file, $selector] = explode(',', $attribute);
 
 					$file     = sanitizeFileName(html_entity_decode($file));
 					$selector = html_entity_decode($selector);
@@ -93,13 +101,13 @@ trait GlobalTrait {
 
 					$toDocument->loadHTMLFile($file);
 
-					$toXpath = new \DOMXpath($toDocument);
-					$xpath = \Vvveb\cssToXpath($selector);
-					$toElements = $toXpath->query($xpath);
+					$toXpath    = new \DOMXPath($toDocument);
+					$cssQuery   = \Vvveb\cssToXpath($selector);
+					$toElements = $toXpath->query($cssQuery);
 
 					$count  = 0;
 
-					if ($elements && $elements->length) {
+					if ($toElements && $toElements->length) {
 						foreach ($toElements as $externalNode) {
 							$parent = $externalNode->parentNode;
 
@@ -112,7 +120,7 @@ trait GlobalTrait {
 								} else {
 									$parent->replaceChild($importedNode, $externalNode);
 								}*/
-								if (! $parent->replaceChild($importedNode, $externalNode)) {
+								if (!$parent->replaceChild($importedNode, $externalNode)) {
 									$externalNode->replaceWith($importedNode);
 								}
 
@@ -133,8 +141,6 @@ trait GlobalTrait {
 			}
 		}
 
-		$content= $document->saveHTML();
-
-		return $content;
+		return $document->saveHTML();
 	}
 }

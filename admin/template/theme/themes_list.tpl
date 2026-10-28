@@ -15,7 +15,7 @@ if(isset($this->themes) && is_array($this->themes)) {
 	[data-v-themes] [data-v-theme] [data-v-theme-duplicate-url]|href  = <?php echo Vvveb\url(['module' => 'theme/themes', 'action' => 'duplicate', 'theme' => $theme['folder']]);?>
 	[data-v-themes] [data-v-theme] [data-v-theme-delete-url]|href  = <?php echo Vvveb\url(['module' => 'theme/themes', 'action' => 'delete', 'theme' => $theme['folder']]);?>
 	[data-v-themes] [data-v-theme] [data-v-theme-preview-url]|href  = <?php echo Vvveb\url('index/index') . '?theme=' . $theme['folder'];?>
-	[data-v-themes] [data-v-theme] [data-v-theme-edit-url]|href  = <?php echo Vvveb\url(['module' => 'editor/editor']) . '&url=/&template=index.html&theme=' . $theme['folder'];?>
+	[data-v-themes] [data-v-theme] [data-v-theme-edit-url]|href  = <?php echo Vvveb\url(['module' => 'editor/page-builder']) . '&url=/&template=index.html&theme=' . $theme['folder'];?>
 	[data-v-themes] [data-v-theme] [data-v-theme-code-url]|href  = <?php echo Vvveb\url(['module' => 'editor/code']) . '&type=themes#%2F' . $theme['folder'];?>
 	[data-v-themes] [data-v-theme] [data-v-theme-fonts-url]|href  = <?php echo Vvveb\url(['module' => 'theme/fonts', 'theme' => $theme['folder']]);?>
 	[data-v-themes] [data-v-theme]|after = <?php 
@@ -36,7 +36,7 @@ if (!function_exists("import_generate_list")) {
 	$import_generate_list = function (&$import, $path) use ($list, &$import_generate_list) {
 		foreach ($import as $name => $value ) {
 			$hasChildren = is_array($value);
-			$uniqId = $name . rand();
+			$uniqId = $name . random_int(0, PHP_INT_MAX);
 ?>
 
 

@@ -35,7 +35,8 @@ $count = $notificationComponent['count'] ?? 0;
 
 
 	@notifications [data-v-group-notification-count]|addClass = <?php if (isset($notification['badge'])) echo $notification['badge'];?>
-	@notifications [data-v-group-icon]|class  = $notification['icon']
+	@notifications [data-v-group-icon]|if_exists = $notification['icon']
+	@notifications [data-v-group-icon-use]|href = <?php echo '/admin/default/img/icons.svg#' . htmlspecialchars($notification['icon']); ?>
 	
 	
 	@notifications [data-v-group-notification]|after = <?php 

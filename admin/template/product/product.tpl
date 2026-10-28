@@ -28,7 +28,7 @@ import(product/product/digital_asset.tpl)
 	if ($value) echo 'checked';
 ?>
 
-[data-v-template_missing]       = $this->template_missing
+[data-v-template_missing]       = <?php echo $this->template_missing ?>
 [data-v-type_name_plural]       = $this->type_name_plural
 [data-v-type-name]              = $this->type_name
 [data-v-type]                   = $this->type

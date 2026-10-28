@@ -24,7 +24,7 @@ foreach($this->menu as $key => $menu_item) {
 	
 	//icon
 	@menu_item [data-v-menu-item-icon]|if_exists = $menu_item['icon']
-	@menu_item [data-v-menu-item-icon]|class = $menu_item['icon']
+	@menu_item [data-v-menu-item-icon-use]|href = <?php echo '/admin/default/img/icons.svg#' . htmlspecialchars($menu_item['icon']); ?>
 
 	//icon img
 	@menu_item [data-v-menu-item-icon-img]|if_exists = $menu_item['icon-img']
@@ -37,6 +37,7 @@ foreach($this->menu as $key => $menu_item) {
 
 	@menu_item|addClass = <?php 
 		if (isset($menu_item['heading'])) echo 'heading';
+		if (isset($menu_item['divider'])) echo 'dropdown-divider';
 		if (isset($menu_item['class'])) echo htmlspecialchars($menu_item['class']);
 	?>
 	@menu_item [data-v-menu-item-url]|addClass = <?php if (isset($menu_item['items'])) echo 'items';?>
@@ -46,7 +47,7 @@ foreach($this->menu as $key => $menu_item) {
 	//@submenumenu_item|id = <?php echo '#menu-' . htmlspecialchars($key);?>
 	//@submenumenu_item|addClass = <?php echo 'dropdown-menu';?>
 	@submenumenu_item|addClass = <?php 
-		if (isset($menu_item['show_on_modules']) && in_array($_GET['module'], $menu_item['show_on_modules'])) echo 'show';
+		if (isset($menu_item['show_on_modules']) && isset($_GET['module']) && in_array($_GET['module'], $menu_item['show_on_modules'])) echo 'show';
 	?>
 	
 	//@submenumenu_item|if_exists = $menu_item['items']
@@ -55,9 +56,10 @@ foreach($this->menu as $key => $menu_item) {
 	if (!function_exists('_admin_menu_print')) {
 		function _admin_menu_print($items) {
 	?>
-	
+
 	@submenumenu_item [data-v-submenu-item]|addClass = <?php 
 		if (isset($submenu_item['heading'])) echo ' heading';
+		if (isset($submenu_item['divider'])) echo ' dropdown-divider';
 		if (isset($submenu_item['class'])) echo htmlspecialchars($submenu_item['class']);
 	?>	
 	
@@ -74,7 +76,7 @@ foreach($this->menu as $key => $menu_item) {
 			
 			//icon
 			@submenumenu_item [data-v-submenu-item-icon]|if_exists = $submenu_item['icon']
-			@submenumenu_item [data-v-submenu-item-icon]|class = $submenu_item['icon']
+			@submenumenu_item [data-v-submenu-item-icon-use]|href = <?php echo '/admin/default/img/icons.svg#' . htmlspecialchars($submenu_item['icon']); ?>
 			
 			//icon img
 			@submenumenu_item [data-v-submenu-item-icon-img]|if_exists = $submenu_item['icon-img']
@@ -106,4 +108,5 @@ foreach($this->menu as $key => $menu_item) {
 	if (isset($menu_item['items'])) {
 			_admin_menu_print($menu_item['items']);
 	}
-} ?>
+}
+?>

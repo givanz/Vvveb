@@ -37,7 +37,7 @@ foreach ($this->languagesList as $language) {
 
 	[data-v-languages] [data-v-language] [data-v-language-name] = $language['name']
 	[data-v-languages] [data-v-language] [data-v-language-img]|title = $language['name']
-	[data-v-languages] [data-v-language] [data-v-language-img]|src = <?php echo 'language/' . $language['code'] . '/' . $language['code'] . '.png';?>
+	[data-v-languages] [data-v-language] [data-v-language-img]|src = <?php echo 'language/' . htmlspecialchars($language['code']) . '/' . htmlspecialchars($language['code']) . '.png';?>
 	[data-v-languages] [data-v-language] [data-v-language-link]|href = <?php echo '#lang-' . $language['code'] . '-' . $_lang_instance?>
 	[data-v-languages] [data-v-language] [data-v-language-link]|addClass = <?php if ($_i == 0) echo 'active';?>
 

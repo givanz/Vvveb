@@ -170,30 +170,7 @@ select[data-v-formats]|before =
 [data-v-formats] [data-v-option]|after = <?php 
 } ?>
 
-/*
 
-select[data-v-setting]|before = 
-<?php
-	$name = '@@__data-v-setting__@@';
-
-	 $selected = '';	
-	 if (isset($this->setting[$name])) 
-	 $selected = $this->setting[$name];
-?>
-
-[data-v-setting] [data-v-option]|deleteAllButFirstChild
-[data-v-setting] [data-v-option]|before = <?php 
-	if (isset($this->$name))
-	foreach ($this->$name as $value => $text) {
-	?>
-
-	[data-v-setting] [data-v-option]|value = $value
-	[data-v-setting] [data-v-option]|addNewAttribute = <?php if ($value == $selected) echo 'selected';?>
-	[data-v-setting] [data-v-option] = $text
-
-[data-v-setting] [data-v-option]|after = <?php 
-} ?>
-*/
 
 input[type="checkbox"][data-v-setting]|addNewAttribute = <?php
 	if (isset($this->setting[$_setting])) echo 'checked';
@@ -333,3 +310,49 @@ foreach ($this->modules as $namespace => $module) {
 [name="routes-type"]|addNewAttribute = <?php if (isset($this->routesType) && $this->routesType == '@@__value__@@') echo 'checked';?>
 
 #siteRoutes|style = <?php if (isset($this->routesType) && $this->routesType == 'global') echo 'display:none';?>
+
+
+[data-v-payment]|deleteAllButFirst
+[data-v-payment]|before = <?php
+	if ($this->paymentMethods) {
+		foreach ($this->paymentMethods as $key => $payment) {
+?>		
+
+	[data-v-payment] [data-v-payment-*] = $payment['@@__data-v-payment-(*)__@@']
+	
+	[data-v-payment] input[data-v-payment-key]    = $key
+	[data-v-payment] input[data-v-payment-key]|id = <?php echo 'payment-' . htmlspecialchars($key);?>
+	[data-v-payment] [data-v-payment-title]|for   = <?php echo 'payment-' . htmlspecialchars($key);?>
+	
+	[data-v-payment] input[data-v-payment-key]|addNewAttribute = <?php 
+		if (isset($this->site['payment_method']) && ($key == $this->site['payment_method'])) echo 'checked'
+	?>
+
+[data-v-payment]|after = <?php
+		}
+	}
+?>
+
+[data-v-shipping]|deleteAllButFirst
+[data-v-shipping]|before = <?php
+	if ($this->shippingMethods) {
+		foreach ($this->shippingMethods as $key => $shipping) {
+?>		
+
+	[data-v-shipping-*] = $shipping['@@__data-v-shipping-(*)__@@']
+
+	[data-v-shipping] input[data-v-shipping-key]    = $key
+	[data-v-shipping] input[data-v-shipping-key]|id = <?php echo 'shipping-' . htmlspecialchars($key);?>
+	[data-v-shipping] [data-v-shipping-title]|for   = <?php echo 'shipping-' . htmlspecialchars($key);?>
+	
+	[data-v-shipping] input[data-v-shipping-key]|addNewAttribute = <?php 
+		if (isset($this->site['shipping_method']) && ($key == $this->site['shipping_method'])) echo 'checked'
+	?>
+
+
+[data-v-shipping]|after = <?php
+		}
+	}
+?>
+/* catalogue prices include tax toggle */
+input[data-v-setting-prices_include_tax][type=checkbox]|addNewAttribute = <?php if (! empty($this->setting['prices_include_tax'])) echo 'checked';?>

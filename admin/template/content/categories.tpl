@@ -95,7 +95,7 @@ foreach ($languages as $key => $language) {
 	[data-v-languages] [data-v-language_id]|name = <?php echo "taxonomy_item_content[$language_id][language_id]";?>
 	[data-v-languages] [data-v-language_id]|value = <?php echo $language_id;?>
 
-	@language [data-v-language-lang-name]|innerText = <?php echo ucfirst($language['name']);?>
+	@language [data-v-language-lang-name]|innerText = <?php echo htmlspecialchars(ucfirst($language['name'] ?? ''));?>
 	@language [data-v-language-*]|innerText = $taxonomy_item['languages'][$language_id]['@@__data-v-language-(*)__@@']
 	@language [data-v-language-*]|name = <?php echo "taxonomy_item_content[$language_id][@@__data-v-language-(*)__@@]";?>
 	@language input[data-v-language-*]|value = $taxonomy_item['languages'][$language_id]['@@__data-v-language-(*)__@@']

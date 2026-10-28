@@ -1,10 +1,11 @@
 import(admin.tpl)
 import(ifmacros.tpl)
 
+[data-v-message]|innerText     = $this->message
 [data-v-exception-*]|innerText = $this->@@__data-v-exception-(*)__@@
 
 [data-v-debug]|before = <?php if (defined('DEBUG') && DEBUG == true) { ?>
-[data-v-debug]|after = <?php } ?>
+[data-v-debug]|after  = <?php } ?>
 
 [data-v-exception-lines] [data-v-exception-line]|deleteAllButFirstChild
 

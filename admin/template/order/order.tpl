@@ -57,6 +57,30 @@ if(is_array($logs)) foreach ($logs as $index => $log) {
 @log|after = <?php }?>
 
 
+@shipment = [data-v-shipments] [data-v-shipment]
+@shipment|deleteAllButFirstChild
+@shipment|before = <?php
+$shipments  = $this->shipment ?? [];
+if(is_array($shipments)) foreach ($shipments as $index => $shipment) {?>
+
+	//catch all data attributes
+	@shipment [data-v-shipment-*]|innerText     = $shipment['@@__data-v-shipment-(*)__@@']
+
+@shipment|after = <?php }?>
+
+
+@transaction = [data-v-transactions] [data-v-transaction]
+@transaction|deleteAllButFirstChild
+@transaction|before = <?php
+$transactions  = $this->transactions ?? [];
+if(is_array($transactions)) foreach ($transactions as $index => $transaction) {?>
+
+	//catch all data attributes
+	@transaction [data-v-transaction-*]|innerText     = $transaction['@@__data-v-transaction-(*)__@@']
+
+@transaction|after = <?php }?>
+
+
 [data-v-order] [data-v-order-*]|innerText = 
 <?php
 	 $name = '@@__data-v-order-(*)__@@';
@@ -80,6 +104,12 @@ if(is_array($logs)) foreach ($logs as $index => $log) {
 [data-v-order-print-url]|href = $this->printUrl
 [data-v-order-print-shipping-url]|href = $this->printShippingUrl
 [data-v-order-print-invoice-url]|href = $this->printInvoiceUrl
+
+#payment-capture-form input[name="order_id"]|value = <?php echo isset($this->order['order_id']) ? $this->order['order_id'] : '';?>
+#payment-capture-form input[name="amount"]|value = <?php echo isset($this->remaining_capture) ? $this->remaining_capture : '';?>
+#payment-refund-form input[name="order_id"]|value = <?php echo isset($this->order['order_id']) ? $this->order['order_id'] : '';?>
+#payment-refund-form input[name="amount"]|value = <?php echo isset($this->remaining_refund) ? $this->remaining_refund : '';?>
+#payment-void-form input[name="order_id"]|value = <?php echo isset($this->order['order_id']) ? $this->order['order_id'] : '';?>
 
 
 @payment  = [data-v-payments] [data-v-payment]

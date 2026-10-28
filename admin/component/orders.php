@@ -28,45 +28,52 @@ use Vvveb\System\Event;
 use Vvveb\System\Images;
 
 class Orders extends ComponentBase {
-	public static $defaultOptions = [
+	/** @var array<string, mixed> Default options for order listing. */
+	public static array $defaultOptions = [
 		'start'           => 0,
 		'limit'           => 10,
-		'language_id'     => NULL,
-		'site_id'         => NULL,
-		'user_id'         => NULL,
-		'email'           => NULL,
-		'phone_number'    => NULL,
-		'search'          => NULL,
-		'id_manufacturer' => NULL,
-		'order_status'    => NULL,
-		'order_status_id' => NULL,
-		'order_by'        => NULL,
+		'language_id'     => null,
+		'site_id'         => null,
+		'user_id'         => null,
+		'email'           => null,
+		'phone_number'    => null,
+		'search'          => null,
+		'id_manufacturer' => null,
+		'order_status'    => null,
+		'order_status_id' => null,
+		'order_by'        => null,
 		'direction'       => ['url', 'asc', 'desc'],
 	];
 
-	public $options = [];
+	/** @var array<string, mixed> Resolved options for this component. */
+	public array $options = [];
 
-	function results() {
-		$orders = new \Vvveb\Sql\OrderSQL();
-
-		$results = $orders->getAll($this->options);
-
+	/**
+	 * Get orders with validated sort parameters, resolved images, and formatted totals.
+	 *
+	 * @return array<string, mixed> Orders with formatted prices and resolved images.
+	 */
+	public function results(): array {
 		if (isset($this->options['order_by']) &&
-				! in_array($this->options['order_by'], ['order_id', 'customer_order_id', 'order_status_id', 'created_at'])) {
+				!in_array($this->options['order_by'], ['order_id', 'customer_order_id', 'order_status_id', 'created_at'])) {
 			unset($this->options['order_by']);
 		}
 
 		if (isset($this->options['direction']) &&
-				! in_array($this->options['direction'], ['asc', 'desc'])) {
+				!in_array($this->options['direction'], ['asc', 'desc'])) {
 			unset($this->options['direction']);
 		}
 
-		if ($results['order']) {
+		$orders = new \Vvveb\Sql\OrderSQL();
+
+		$results = $orders->getAll($this->options) ?? [];
+
+		if (!empty($results['order'])) {
 			$currency = Currency::getInstance();
 
 			foreach ($results['order'] as $id => &$order) {
 				if (isset($order['images'])) {
-					$order['images'] = json_decode($order['images'], 1);
+					$order['images'] = json_decode($order['images'], true);
 
 					foreach ($order['images'] as &$image) {
 						$image = Images::image('order', $image);
@@ -81,7 +88,7 @@ class Orders extends ComponentBase {
 			}
 		}
 
-		list($results) = Event::trigger(__CLASS__, __FUNCTION__, $results);
+		[$results] = Event::trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

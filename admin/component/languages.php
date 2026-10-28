@@ -27,29 +27,42 @@ use Vvveb\System\Event;
 use Vvveb\System\Locale;
 
 class Languages extends ComponentBase {
-	public static $defaultOptions = [
+	/** @var array{start: int, limit: int, status: int} Default options for language listing. */
+	public static array $defaultOptions = [
 		'start'  => 1,
 		'limit'  => 1000,
 		'status' => 1,
 	];
 
-	protected $options = [];
+	/** @var array<string, mixed> Resolved options for this component. */
+	protected array $options = [];
 
-	public $cacheExpire = 0; //seconds
+	/** @var int Cache expiry time in seconds (0 = disabled). */
+	public int $cacheExpire = 0;
 
-	function cacheKey() {
+	/**
+	 * Disable caching for this component.
+	 *
+	 * @return string|null Always returns false to disable caching.
+	 */
+	public function cacheKey(): ?string {
 		// disable caching
-		return false;
+		return null;
 	}
 
-	function results() {
+	/**
+	 * Get available languages and the currently active language.
+	 *
+	 * @return array{language: array<string, mixed>, current?: string, active?: array{name: string, code: string, slug: string, id: mixed}}
+	 */
+	public function results(): array {
 		$results             = [];
 		$results['language'] = Locale::availableLanguages();
 
 		if ($results['language']) {
 			$results['current'] = $code = self :: $global['language'];
 
-			if (! isset($results['language'][$code])) {
+			if (!isset($results['language'][$code])) {
 				$results['current'] = $code = key($results['language']);
 			}
 
@@ -64,11 +77,10 @@ class Languages extends ComponentBase {
 					'slug' => $language['slug'],
 					'id'   => $language['language_id'],
 				];
-			} else {
 			}
 		}
 
-		list($results) = Event::trigger(__CLASS__, __FUNCTION__, $results);
+		[$results] = Event::trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

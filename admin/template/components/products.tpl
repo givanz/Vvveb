@@ -15,12 +15,12 @@ $_pagination_count = $count;
 $_pagination_limit = $products['limit'] ?? 5;
 ?>
 
-[data-v-component-products] [data-v-category]     = <?php $_category     = current($products['products']); echo htmlspecialchars($_category['category']);?>
-[data-v-component-products] [data-v-manufacturer] = <?php $_manufacturer = current($products['products']); echo htmlspecialchars($_manufacturer['manufacturer']);?>
+[data-v-component-products] [data-v-category]     = <?php $_product_list = $products['products'] ?? []; if ($_product_list) { $_category = current($_product_list); echo htmlspecialchars($_category['category'] ?? ''); } ?>
+[data-v-component-products] [data-v-manufacturer] = <?php if ($_product_list) { $_manufacturer = current($_product_list); echo htmlspecialchars($_manufacturer['manufacturer'] ?? ''); } ?>
 
 
 [data-v-component-products]  [data-v-product]|before = <?php
-if(is_array($products['product']))  {
+if(isset($products['product']) && is_array($products['product']))  {
 	$index = 0;
 	foreach ($products['product'] as $index => $product) { ?>
 

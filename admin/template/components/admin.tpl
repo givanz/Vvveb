@@ -2,7 +2,7 @@
 	if (isset($_admin_idx)) $_admin_idx++; else $_admin_idx = 0;
 	$previous_component = isset($component)?$component:null;
 	$admin = $component = $this->_component['admin'][$_admin_idx] ?? [];
-	$admin['edit-url'] = Vvveb\url(['module' => 'admin/user', 'admin_id' => $admin['admin_id'] ?? 1]);
+	$admin['edit-url'] = Vvveb\url(['module' => 'admin/user', 'admin_id' => $admin['admin_id'] ?? null]);
 	//$admin = \Vvveb\session('admin');
 ?>
 

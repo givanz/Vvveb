@@ -1,5 +1,4 @@
 import(common.tpl)
-import(pagination.tpl)
 
 [data-v-save-url]|href = $this->saveUrl
 [data-v-domains-url]|href = $this->domainsUrl

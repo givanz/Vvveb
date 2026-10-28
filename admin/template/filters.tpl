@@ -4,7 +4,7 @@
 #filters input[name="action"]|after  = <?php } ?>
 #filters input[name="type"]|value    = <?php echo $this->type ?? '';?>
 
-#filters|addClass = <?php if ($this->filter) echo 'show';?>
+#filters|addClass = <?php if ($this->filter ?? false) echo 'show';?>
 #filters input[type="text"],#filters input[type="search"]|value = <?php 
 	$name = str_replace(['filter[',']'], '', '@@__name__@@');
 	if (isset($this->filter[$name])) echo htmlspecialchars($this->filter[$name]);

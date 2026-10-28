@@ -33,11 +33,19 @@ import(common.tpl)
 #input-mail-driver option|after = <?php 
 } } ?>
 
-/*
-.settings select[data-v-setting] option|addNewAttribute = <?php 
-	$value   = '@@__value__@@';
-	$setting = $_POST['settings'][$_setting] ?? \Vvveb\arrayPath($this->email, $_setting) ?? '';
-	if ($setting == $value) echo 'selected';
-?>
+#input-mail-smtp-encryption option|deleteAllButFirst
 
-*/
+#input-mail-smtp-encryption option|before = <?php 
+    if (isset($this->smtp_encryption_options)) {
+	$setting = $_POST['settings'][$_setting] ?? \Vvveb\arrayPath($this->email, $_setting) ?? '';
+	foreach ($this->smtp_encryption_options as $value => $text) {
+	?>
+
+	#input-mail-smtp-encryption option|innerText       = $text
+	#input-mail-smtp-encryption option|value           = $value
+	#input-mail-smtp-encryption option|addNewAttribute = <?php if ($setting == $value) echo 'selected';?>
+
+#input-mail-smtp-encryption option|after = <?php 
+} } ?>
+
+

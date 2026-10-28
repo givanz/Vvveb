@@ -1,5 +1,5 @@
 import(common.tpl)
-
+import(pagination.tpl)
 
 @domain = [data-v-domains] [data-v-domain]
 @domain|deleteAllButFirst

@@ -63,7 +63,7 @@ if ($_categories) {
 	foreach($_categories as $id => $menu) {
 		$uniq = Vvveb\System\Functions\Str::random(5);
 
-		$menu_id    = 'menu-' . $menu['menu_item_id'];
+		$menu_id    = 'menu-' . $menu['menu_item_id'] . '-thumb';
 		$menu_input = "menu-{$menu['menu_item_id']}-input";
 		
 		$menu_hash    = "#$menu_id";
@@ -126,7 +126,7 @@ foreach ($languages as $key => $language) {
 	[data-v-languages] input[data-v-language_id]|value = <?php echo $language_id;?>
 	[data-v-languages] input[data-v-language_id]|name  = <?php echo "menu_item_content[$language_id][language_id]";?>
 	
-	@language [data-v-language-lang-name]|innerText = <?php echo ucfirst(htmlspecialchars($language['name']));?>
+	@language [data-v-language-lang-name]|innerText = <?php echo htmlspecialchars(ucfirst($language['name'] ?? ''));?>
 	@language [data-v-language-*]|innerText         = $menu['languages'][$language_id]['@@__data-v-language-(*)__@@']
 	@language [data-v-language-*]|name              = <?php echo "menu_item_content[$language_id][@@__data-v-language-(*)__@@]";?>
 	@language input[data-v-language-*]|value        = $menu['languages'][$language_id]['@@__data-v-language-(*)__@@']

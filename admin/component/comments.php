@@ -28,17 +28,24 @@ use Vvveb\System\Event;
 use Vvveb\System\Images;
 
 class Comments extends ComponentBase {
-	public static $defaultOptions = [
-		'start'           => 0,
-		'limit'           => 10,
-		'language_id'     => null,
-		'site_id'         => null,
-		'status'          => 1,
+	/** @var array<string, mixed> Default options for comment listing. */
+	public static array $defaultOptions = [
+		'start'       => 0,
+		'limit'       => 10,
+		'language_id' => null,
+		'site_id'     => null,
+		'status'      => 1,
 	];
 
-	public $options = [];
+	/** @var array<string, mixed> Resolved options for this component. */
+	public array $options = [];
 
-	function results() {
+	/**
+	 * Get comments with resolved images.
+	 *
+	 * @return array<string, mixed> Comments with resolved images.
+	 */
+	public function results(): array {
 		$comments = new CommentSQL();
 
 		$results = $comments->getAll($this->options) ?? [];
@@ -46,7 +53,7 @@ class Comments extends ComponentBase {
 		if (isset($results['comment'])) {
 			foreach ($results['comment'] as $id => &$comment) {
 				if (isset($comment['images'])) {
-					$comment['images'] = json_decode($comment['images'], 1);
+					$comment['images'] = json_decode($comment['images'], true);
 
 					foreach ($comment['images'] as &$image) {
 						$image = Images::image('comment', $image);
@@ -59,7 +66,7 @@ class Comments extends ComponentBase {
 			}
 		}
 
-		list($results) = Event::trigger(__CLASS__, __FUNCTION__, $results);
+		[$results] = Event::trigger(__CLASS__, __FUNCTION__, $results);
 
 		return $results;
 	}

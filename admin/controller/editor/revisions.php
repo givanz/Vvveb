@@ -29,23 +29,45 @@ use function Vvveb\sanitizeFileName;
 use Vvveb\System\Sites;
 
 class Revisions extends Base {
-	function getThemeFolder() {
-		$theme = $this->request->get['theme'] ?? Sites::getTheme($this->global['site_id']) ?? 'default';
+	/**
+	 * Returns the sanitized theme folder name.
+	 *
+	 * @return string Theme name.
+	 */
+	public function getThemeFolder(): string {
+		$theme = $this->request->get['theme'] ?? Sites::getTheme($this->global['site_id']);
 
 		return sanitizeFileName($theme);
 	}
 
-	private function sanitizeBackupFileName($fileName) {
+	/**
+	 * Sanitizes a backup file name by removing dots and slashes.
+	 *
+	 * @param string $fileName The raw file name.
+	 *
+	 * @return string The sanitized file name.
+	 */
+	private function sanitizeBackupFileName(string $fileName): string {
 		return str_replace(['.', '/', '\\'], '', $fileName);
 	}
 
-	private function backupFolder() {
+	/**
+	 * Returns the full backup folder path for the current theme.
+	 *
+	 * @return string Backup folder path.
+	 */
+	private function backupFolder(): string {
 		$theme = $this->getThemeFolder();
 
-		return  DIR_THEMES . $theme . DS . 'backup' . DS;
+		return DIR_THEMES . $theme . DS . 'backup' . DS;
 	}
 
-	function delete() {
+	/**
+	 * Deletes a backup revision file.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
 		$file = $this->request->post['file'] ?? false;
 
 		if ($file) {
@@ -69,7 +91,12 @@ class Revisions extends Base {
 		}
 	}
 
-	function load() {
+	/**
+	 * Loads a backup revision file and outputs its content.
+	 *
+	 * @return void
+	 */
+	public function load(): void {
 		$file  = $this->request->post['file'] ?? false;
 		$theme = $this->getThemeFolder();
 
@@ -81,7 +108,7 @@ class Revisions extends Base {
 				$html = file_get_contents($file);
 				$base = "/themes/$theme/";
 
-				if (strpos($html, '<base') !== false) {
+				if (str_contains($html, '<base')) {
 					$html = preg_replace('/<base(.*)href=["\'](.*?)["\'](.*?)>/', '<base$1href="' . $base . '"$3>', $html);
 				} else {
 					$html = str_replace('<head>', "<head>\n<base href=\"$base\">\n", $html);
@@ -90,11 +117,16 @@ class Revisions extends Base {
 				$this->response->output($html);
 			}
 		} else {
-			die(__('Invalid request!'));
+			exit(__('Invalid request!'));
 		}
 	}
 
-	function revisions() {
+	/**
+	 * Lists all backup revisions for a given template.
+	 *
+	 * @return void
+	 */
+	public function revisions(): void {
 		$theme        = $this->getThemeFolder();
 		$template     = $this->request->get['template'] ?? false;
 		$backupFolder = $this->backupFolder();
@@ -108,8 +140,8 @@ class Revisions extends Base {
 
 			foreach ($glob as &$file) {
 				$file              = basename($file, '.html');
-				$url 			           = $path . "backup/$file.html";
-				list($name, $date) = explode('@', $file);
+				$url               = $path . "backup/$file.html";
+				[$name, $date]     = explode('@', $file);
 				$date              = str_replace(['_', ';'], [' ', ':'], $date);
 				$date_friendly     = friendlyDate($date);
 				/*
@@ -126,8 +158,5 @@ class Revisions extends Base {
 
 		$this->response->setType('json');
 		$this->response->output($revisions);
-	}
-
-	function index() {
 	}
 }

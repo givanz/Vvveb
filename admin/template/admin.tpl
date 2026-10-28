@@ -9,8 +9,4 @@ form[data-v-url][data-v-url-params]|action = <?php echo Vvveb\url('@@__data-v-ur
 
 //csrf
 [data-v-csrf]|value = <?php echo \Vvveb\session('csrf');?>
-				  
-/*body|prepend = <?php var_dump($this);?>*/
-
-// head base|href = <?php echo Vvveb\themeUrlPath()?>
 

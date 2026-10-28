@@ -28,6 +28,11 @@ if (isset($this->global['rtl']) && $this->global['rtl'] && !$vvveb_is_page_edit)
 
 html|lang = $this->global['locale']
 
-#container|addClass = <?php if (isset($_COOKIE['sidebar-size']) && ($_COOKIE['sidebar-size'] == 'small-nav')) { 
-	echo 'small-nav';
-} ?>
+#container|addClass = <?php 
+	if (isset($_COOKIE['sidebar-size']) && ($_COOKIE['sidebar-size'] == 'small-nav')) { 
+		echo 'small-nav';
+	}  
+	if (isset($_COOKIE['ai-assistant']) && ($_COOKIE['ai-assistant'] == 'true')) { 
+		echo ' ai-assistant';
+	}
+?>
