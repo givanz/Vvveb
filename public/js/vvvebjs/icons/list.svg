@@ -1,7 +1,6 @@
-<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
-    <path fill="none" d="M0 0h256v256H0z"/>
-    <path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8" d="M88 64h128M88 128h128M88 192h128"/>
-    <circle cx="44" cy="128" r="8"/>
-    <circle cx="44" cy="64" r="8"/>
-    <circle cx="44" cy="192" r="8"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24" role="img" aria-label="list">
+  <!-- Tabler outline glyph @list (tabler/tabler-icons, MIT) - Vvveb builder component icon -->
+  <g fill="none" stroke="#334155" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 6l11 0" /> <path d="M9 12l11 0" /> <path d="M9 18l11 0" /> <path d="M5 6l0 .01" /> <path d="M5 12l0 .01" /> <path d="M5 18l0 .01" />
+  </g>
 </svg>

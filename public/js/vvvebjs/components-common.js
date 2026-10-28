@@ -19,10 +19,10 @@
  * https://github.com/givanz/Vvveb
  */
 
-bgcolorClasses = ["bg-primary", "bg-secondary", "bg-success", "bg-danger", "bg-warning", "bg-info", "bg-body-secondary", "bg-dark", "bg-white"]
+const bgcolorClasses = ["bg-primary", "bg-secondary", "bg-success", "bg-danger", "bg-warning", "bg-info", "bg-body-secondary", "bg-dark", "bg-white"]
 
-bgcolorSelectOptions = [{
-	value: "Default",
+const bgcolorSelectOptions = [{
+	value: "",
 	text: ""
 },{
 	value: "bg-primary",
@@ -54,11 +54,18 @@ bgcolorSelectOptions = [{
 }];
 
 function changeNodeName(node, newNodeName) {
+	if (!node || !node.attributes || !node.parentNode) return node;
+	//create in the node's own document, edited nodes live in the iframe not the builder page
+	const doc = node.ownerDocument || document;
 	let newNode;
-	newNode = document.createElement(newNodeName);
-	attributes = node.attributes;
+	try {
+		newNode = doc.createElement(newNodeName);
+	} catch (e) {
+		return node;
+	}
+	const attributes = node.attributes;
 	
-	for (i = 0, len = attributes.length; i < len; i++) {
+	for (let i = 0, len = attributes.length; i < len; i++) {
 		newNode.setAttribute(attributes[i].nodeName, attributes[i].nodeValue);
 	}
 
@@ -141,41 +148,52 @@ Vvveb.Components.extend("_base", "_base", {
 		text:'This element shares styles with other <a class="linked-elements-hover" href="javascript:void()"><b class="elements-count">4</b> elements</a>, to apply styles <b>only for this element</b> enter a <b>unique id</b> eg: <i>marketing-heading</i> in in <br/><a class="id-input" href="#content-tab" role="tab" aria-controls="components" aria-selected="false" href="#content-tab">Content > General > Id</a>.<br/><span class="text-muted small"></span>',
 		},
 		afterInit:function(node, inputElement) {
-			let selector = Vvveb.StyleManager.getSelectorForElement(node);
-			let elements = window.FrameDocument.querySelectorAll(selector);
+			if (!inputElement) return;
+			let selector = "";
+			let elements = [];
+			try {
+				selector = Vvveb.StyleManager.getSelectorForElement(node);
+				if (window.FrameDocument && selector) {
+					elements = window.FrameDocument.querySelectorAll(selector.replace(":", "\\:"));
+				}
+			} catch (e) {
+				elements = [];
+			}
 
 			if (elements.length <= 1) {
 				if (inputElement.style) {
 					inputElement.style.display = "none";
 				}
 			} else {
-				inputElement.style.display = "";
-				inputElement.querySelector(".elements-count").innerHTML = elements.length;
-				inputElement.querySelector(".text-muted").innerHTML = selector;
+				if (inputElement.style) inputElement.style.display = "";
+				let countEl = inputElement.querySelector(".elements-count");
+				if (countEl) countEl.textContent = elements.length;
+				let mutedEl = inputElement.querySelector(".text-muted");
+				if (mutedEl) mutedEl.textContent = selector;
 				
-				inputElement.querySelector(".id-input", inputElement).addEventListener("click", (event) => {
+				let idInput = inputElement.querySelector(".id-input");
+				if (idInput) idInput.addEventListener("click", (event) => {
 					document.querySelectorAll(".content-tab a").forEach(e => e.click());
 					
 					setTimeout(function () { 
 						let idInput = document.querySelectorAll("[name=id]");
-						idInput.forEach(el => {if (el.offsetParent) el.focus()});/*
-						idInput.forEach(el => el .dispatchEvent(new FocusEvent("focusin", {
-							bubbles: true,
-							cancelable: false
-						})));*/
+						idInput.forEach(el => {if (el.offsetParent) el.focus()});
 					}, 700);
 					
 					event.preventDefault();
 					return false;
 				});
 				
-				inputElement.querySelector(".linked-elements-hover").addEventListener("mouseenter", function (){
-					elements.forEach( e => e.style.outline = "2px dotted blue");
-				});
-				
-				inputElement.querySelector(".linked-elements-hover").addEventListener("mouseleave", function (){
-					elements.forEach( e => e.style.outline = "");
-				});
+				let hoverEl = inputElement.querySelector(".linked-elements-hover");
+				if (hoverEl) {
+					hoverEl.addEventListener("mouseenter", function (){
+						elements.forEach( e => { if (e.style) e.style.outline = "2px dotted blue"; });
+					});
+					
+					hoverEl.addEventListener("mouseleave", function (){
+						elements.forEach( e => { if (e.style) e.style.outline = ""; });
+					});
+				}
 			}
 		},	 
     },{
@@ -187,7 +205,7 @@ Vvveb.Components.extend("_base", "_base", {
         col:6,
 		inline:false,
         inputtype: SelectInput,
-        validValues: ["block", "inline", "inline-block", "none"],
+        validValues: ["block", "inline", "inline-block", "flex", "inline-flex", "grid", "inline-grid", "table", "table-row", "list-item", "inherit", "initial", "none"],
         data: {
             options: [{
                 value: "block",
@@ -195,9 +213,6 @@ Vvveb.Components.extend("_base", "_base", {
             },{
                 value: "inline",
                 text: "Inline"
-            },{
-                value: "inline-block",
-                text: "Inline Block"
             },{
                 value: "inline-block",
                 text: "Inline Block"
@@ -230,10 +245,145 @@ Vvveb.Components.extend("_base", "_base", {
                 text: "Initial"
             },{
                 value: "none",
-                text: "none"
+                text: "None"
             }]
-        }
+        },
     },{
+		name: "Flex direction",
+		key: "flex-direction",
+		htmlAttr: "style",
+        sort: base_sort++,
+        col:6,
+		inline:false,
+		conditions:{'display':value => (value || "").includes("flex")},
+		inputtype: SelectInput,
+		validValues: ["row", "row-reverse", "column", "column-reverse"],
+		data: {options: [
+			{value: "row", text: "Row"},
+			{value: "row-reverse", text: "Row reverse"},
+			{value: "column", text: "Column"},
+			{value: "column-reverse", text: "Column reverse"}
+		]}
+	},{
+		name: "Flex wrap",
+		key: "flex-wrap",
+		htmlAttr: "style",
+        sort: base_sort++,
+        col:6,
+		inline:false,
+		conditions:{'display':value => (value || "").includes("flex")},
+		inputtype: SelectInput,
+		validValues: ["nowrap", "wrap", "wrap-reverse"],
+		data: {options: [
+			{value: "nowrap", text: "No wrap"},
+			{value: "wrap", text: "Wrap"},
+			{value: "wrap-reverse", text: "Wrap reverse"}
+		]}
+	},{
+		name: "Justify content",
+		key: "justify-content",
+		htmlAttr: "style",
+        sort: base_sort++,
+		inline:false,
+        col:6,
+		conditions:{'display':value => /flex|grid/.test(value || "")},
+		inputtype: SelectInput,
+		validValues: ["flex-start", "flex-end", "center", "space-between", "space-around", "space-evenly"],
+		data: {options: [
+			{value: "flex-start", text: "Start"},
+			{value: "flex-end", text: "End"},
+			{value: "center", text: "Center"},
+			{value: "space-between", text: "Space between"},
+			{value: "space-around", text: "Space around"},
+			{value: "space-evenly", text: "Space evenly"}
+		]}
+	},{
+		name: "Align items",
+		key: "align-items",
+		htmlAttr: "style",
+        sort: base_sort++,
+        col:6,
+		inline:false,
+		conditions:{'display':value => /flex|grid/.test(value || "")},
+		inputtype: SelectInput,
+		validValues: ["stretch", "flex-start", "flex-end", "center", "baseline"],
+		data: {options: [
+			{value: "stretch", text: "Stretch"},
+			{value: "flex-start", text: "Start"},
+			{value: "flex-end", text: "End"},
+			{value: "center", text: "Center"},
+			{value: "baseline", text: "Baseline"}
+		]}
+	},{
+		name: "Gap",
+		key: "gap",
+		htmlAttr: "style",
+        sort: base_sort++,
+        col:6,
+		inline:false,
+		conditions:{'display':value => /flex|grid/.test(value || "")},
+		inputtype: CssUnitInput
+	},{
+		name: "Grid template columns",
+		key: "grid-template-columns",
+		htmlAttr: "style",
+        sort: base_sort++,
+        col:6,
+		inline:false,
+		conditions:{'display':value => (value || "").includes("grid")},
+		inputtype: TextInput
+	},{
+		name: "Grid template rows",
+		key: "grid-template-rows",
+		htmlAttr: "style",
+        sort: base_sort++,
+        col:6,
+		inline:false,
+		conditions:{'display':value => (value || "").includes("grid")},
+		inputtype: TextInput
+	},{
+		name: "Grid auto flow",
+		key: "grid-auto-flow",
+		htmlAttr: "style",
+		inline:false,
+        sort: base_sort++,
+        col:6,
+		conditions:{'display':value => (value || "").includes("grid")},
+		inputtype: SelectInput,
+		validValues: ["row", "column", "dense", "row dense", "column dense"],
+		data: {options: [
+			{value: "row", text: "Row"},
+			{value: "column", text: "Column"},
+			{value: "dense", text: "Dense"},
+			{value: "row dense", text: "Row dense"},
+			{value: "column dense", text: "Column dense"}
+		]}
+	},{
+		name: "Justify items",
+		key: "justify-items",
+		htmlAttr: "style",
+		inline:false,
+        sort: base_sort++,
+        col:6,
+		conditions:{'display':value => (value || "").includes("grid")},
+		inputtype: SelectInput,
+		validValues: ["stretch", "start", "end", "center"],
+		data: {options: [
+			{value: "stretch", text: "Stretch"},
+			{value: "start", text: "Start"},
+			{value: "end", text: "End"},
+			{value: "center", text: "Center"}
+		]}
+	},{
+		name: "Grid auto rows",
+		key: "grid-auto-rows",
+		htmlAttr: "style",
+        sort: base_sort++,
+        col:6,
+		inline:false,
+		conditions:{'display':value => (value || "").includes("grid")},
+		inputtype: TextInput
+	}, {
         name: "Position",
         key: "position",
         htmlAttr: "style",
@@ -311,7 +461,7 @@ Vvveb.Components.extend("_base", "_base", {
 			extraclass:"btn-group-sm btn-group-fullwidth",
             options: [{
                 value: "none",
-                icon:"la la-times",
+                icon:"x",
                 //text: "None",
                 title: "None",
                 checked:true,
@@ -319,13 +469,13 @@ Vvveb.Components.extend("_base", "_base", {
                 value: "left",
                 //text: "Left",
                 title: "Left",
-                icon:"la la-align-left",
+                icon:"align-left",
                 checked:false,
             },{
                 value: "right",
                 //text: "Right",
                 title: "Right",
-                icon:"la la-align-right",
+                icon:"align-right",
                 checked:false,
             }],
          }
@@ -451,7 +601,7 @@ let ComponentBaseTypography = {
 			extraclass:"btn-group-sm btn-group-fullwidth",
             options: [{
                 value: "",
-                icon:"la la-times",
+                icon:"x",
                 //text: "None",
                 title: "None",
                 checked:true,
@@ -459,25 +609,25 @@ let ComponentBaseTypography = {
                 value: "left",
                 //text: "Left",
                 title: "Left",
-                icon:"la la-align-left",
+                icon:"align-left",
                 checked:false,
             },{
                 value: "center",
                 //text: "Center",
                 title: "Center",
-                icon:"la la-align-center",
+                icon:"align-center",
                 checked:false,
             },{
                 value: "right",
                 //text: "Right",
                 title: "Right",
-                icon:"la la-align-right",
+                icon:"align-right",
                 checked:false,
             },{
                 value: "justify",
                 //text: "justify",
                 title: "Justify",
-                icon:"la la-align-justify",
+                icon:"align-justified",
                 checked:false,
             }],
         },
@@ -512,7 +662,7 @@ let ComponentBaseTypography = {
 			extraclass:"btn-group-sm btn-group-fullwidth",
             options: [{
                 value: "none",
-                icon:"la la-times",
+                icon:"x",
                 //text: "None",
                 title: "None",
                 checked:true,
@@ -520,25 +670,25 @@ let ComponentBaseTypography = {
                 value: "underline",
                 //text: "Left",
                 title: "underline",
-                icon:"la la-long-arrow-alt-down",
+                icon:"arrow-down",
                 checked:false,
             },{
                 value: "overline",
                 //text: "Right",
                 title: "overline",
-                icon:"la la-long-arrow-alt-up",
+                icon:"arrow-up",
                 checked:false,
             },{
                 value: "line-through",
                 //text: "Right",
                 title: "Line Through",
-                icon:"la la-strikethrough",
+                icon:"strikethrough",
                 checked:false,
             },{
                 value: "underline overline",
                 //text: "justify",
                 title: "Underline Overline",
-                icon:"la la-arrows-alt-v",
+                icon:"arrows-vertical",
                 checked:false,
             }],
         },
@@ -878,13 +1028,14 @@ Vvveb.Components.extend("_base", "_base", {
         inputtype: ImageInput,
         
         init: function(node) {
-			let image = node.style.backgroundImage.replace(/url\(['"]?([^"\)$]+?)['"]?\).*/, '$1');
-			return image;
+			let bg = (node && node.style && node.style.backgroundImage) || "";
+			let match = /url\(['"]?([^"')]+)['"]?\)/.exec(bg);
+			return match ? match[1] : "";
         },
 
 		onChange: function(node, value) {
 			
-			Vvveb.StyleManager.setStyle(node, "background-image", 'url(' + value + ')');
+			Vvveb.StyleManager.setStyle(node, "background-image", value ? 'url("' + value + '")' : '');
 			
 			return node;
 		}        
@@ -1084,13 +1235,17 @@ Vvveb.Components.extend("_base", "_base", ComponentDeviceVisibility);
 Vvveb.Components.add("config/bootstrap", {
     name: "Bootstrap Variables",
 	beforeInit: function (node) {
-		properties = [];
+		let properties = [];
 		let i = 0;
-		let j = 0;
 
-		let cssVars = Vvveb.ColorPaletteManager.getAllCSSVariableNames(window.FrameDocument.styleSheets/*, ":root"*/);
+		let cssVars = {};
+		try {
+			if (window.FrameDocument) cssVars = Vvveb.ColorPaletteManager.getAllCSSVariableNames(window.FrameDocument.styleSheets/*, ":root"*/) || {};
+		} catch (e) {
+			cssVars = {};
+		}
 		
-		for (type in cssVars) {
+		for (const type in cssVars) {
 			properties.push({
 				key: "cssVars" + type,
 				inputtype: SectionInput,
@@ -1099,15 +1254,15 @@ Vvveb.Components.add("config/bootstrap", {
 				data: {header:type[0].toUpperCase() + type.slice(1)},
 			});
 			
-			for (selector in cssVars[type]) {
+			for (const selector in cssVars[type]) {
 				
 				let friendlyName = selector.replaceAll(/--bs-/g,"").replaceAll("-", " ").trim();  
-				friendlyName = friendlyName[0].toUpperCase() + friendlyName.slice(1);
+				friendlyName = (friendlyName[0] ? friendlyName[0].toUpperCase() : "") + friendlyName.slice(1);
 
 				let value = cssVars[type][selector];
 				let input;
 				
-				data = {selector, type:value.type, step:"any"};
+				let data = {selector, type:value.type, step:"any"};
 				
 				if (value.type == "color") {
 					input = ColorInput;
@@ -1116,6 +1271,8 @@ Vvveb.Components.add("config/bootstrap", {
 					data.options = fontList;
 				} else if (value.type == "dimensions") {
 					input = CssUnitInput;
+				} else {
+					input = TextInput;
 				}
 
 				i++;
@@ -1126,15 +1283,15 @@ Vvveb.Components.add("config/bootstrap", {
 					//index: i - 1,
 					columnNode: this,
 					col:(value.type == "font" || value.type == "dimensions") ? 12 : 6,
-					inline:(value.type == "font" || value.type == "dimensions") ? false : false,
+					inline:false,
 					section: advanced_section,
 					inputtype: input,
 					data: data,
 					onChange: function(node, value, input) {
 						
 						if (this.data.type == "font") {
-							let option = input.options[input.selectedIndex];
-							Vvveb.FontsManager.addFont(option.dataset.provider, value, node[0]);
+							let option = input && input.options ? input.options[input.selectedIndex] : null;
+							if (option && option.dataset) Vvveb.FontsManager.addFont(option.dataset.provider, value, node[0]);
 						}
 
 						Vvveb.StyleManager.setStyle(":root", this.data.selector, value);

@@ -422,7 +422,7 @@ Vvveb.Components.add("components/slider", {
 		let j = 0;
 		
 		$(node).find('[data-slide]').each(function() {
-			_class = $(this).getAttribute("class");
+			_class = this.getAttribute("class");
 			
 			let reg = /col-([^-\$ ]*)?-?(\d+)/g; 
 			let match;
@@ -445,7 +445,7 @@ Vvveb.Components.add("components/slider", {
 				onChange: function(node, value, input) {
 
 					//column = $('[class*="col-"]:eq(' + this.index + ')', node);
-					let column = $(this.columnNode);
+					let column = this.columnNode;
 					
 					//if remove button is clicked remove column and render row properties
 					if (input.nodeName == 'BUTTON') {
@@ -461,7 +461,7 @@ Vvveb.Components.add("components/slider", {
 					_class = _class.replace(new RegExp(input.name + '-\\d+?'), '');
 					//add new column size
 					if (value) _class +=  ' ' + input.name + '-' + value;
-					column.setAttribute"class", _class);
+					column.setAttribute("class", _class);
 					
 					return node;
 				},	

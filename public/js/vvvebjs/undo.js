@@ -128,4 +128,3 @@ Vvveb.Undo = {
 		this.undoIndex = -1;
 	}
 };
-

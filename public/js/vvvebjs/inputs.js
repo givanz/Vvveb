@@ -18,18 +18,16 @@
  *
  * https://github.com/givanz/Vvveb
  */
- 
+
 let Input = {
-	
+
 	init: function(name) {
 	},
-
 
 	onChange: function(event, node, input) {
 		if (event && event.target) {
 			const e = new CustomEvent('propertyChange', { detail: {value : input.value ?? this.value, input: this, origEvent:event} });
 			event.currentTarget.dispatchEvent(e);
-			//event.data.element.trigger('propertyChange', [this.value, this, event]);
 		}
 	},
 
@@ -38,33 +36,31 @@ let Input = {
 	},
 
 	setValue: function(value) {
-		if (this.element[0] && value) {
+		if (this.element?.[0] && value) {
 			let input = this.element[0].querySelector('input');
-		
-			if (input) { 
+
+			if (input) {
 				input.value = value;
 			}
 		}
 	},
-	
-	render: function(name, data) {
+
+	render: function(name, data, events) {
 		let html = this.renderTemplate(name, data);
 		this.element = generateElements(html);
-		
-		//bind events
-		if (this.events)
-		for (let i in this.events) {
-			ev = this.events[i][0];
-			fun = this[ this.events[i][1] ];
-			el = this.events[i][2];
-		
-			//this.element[0].querySelector(el).addEventListener(ev, function (ev, el, fun, target, event) {
-			this.element[0].addEventListener(ev, function (ev, el, fun, target, event) {
-			  if (event.target.closest(el)) {
-				  //target, event, element, input
-				return fun.call(event.target, event, target, this);
-			  }
-			}.bind(this, ev, el, fun, this.element[0]));		
+		events = events ?? this.events;
+
+		if (events && this.element[0]) {
+			for (const [ev, handler, selector] of events) {
+				const fun = this[handler];
+
+				this.element[0].addEventListener(ev, function (ev, selector, fun, target, event) {
+					if (event.target.closest(selector)) {
+						//target, event, element, input
+						return fun.call(event.target, event, target, this);
+					}
+				}.bind(this, ev, selector, fun, this.element[0]));
+			}
 		}
 
 		return this.element[0];
@@ -73,11 +69,11 @@ let Input = {
 
 let TextInput = { ...Input, ...{
 
-    events: [
-	//event, listener, child element
-        ["focusout", "onChange", "input"],
-	 ],
-	
+	events: [
+		//event, listener, child element
+		["focusout", "onChange", "input"],
+	],
+
 	init: function(data) {
 		return this.render("textinput", data);
 	},
@@ -86,51 +82,44 @@ let TextInput = { ...Input, ...{
 
 let TextareaInput = { ...Input, ...{
 
-    events: [
-        ["keyup", "onChange", "textarea"],
-	 ],
-	
+	events: [
+		["input", "onChange", "textarea"],
+	],
+
 	setValue: function(value) {
-		if (this.element[0] && value) {
+		if (this.element?.[0] && value) {
 			let input = this.element[0].querySelector('textarea');
-		
-			if (input) { 
+
+			if (input) {
 				input.value = value;
 			}
 		}
 	},
-	
+
 	init: function(data) {
 		return this.render("textareainput", data);
 	},
-  }	
+  }
 }
 
 let CheckboxInput = { ...Input, ...{
 
-    events: [
-        ["change", "onCheck", "input"],
-	 ],
-	
+	events: [
+		["change", "onCheck", "input"],
+	],
+
 	onCheck: function(event, node, input) {
 		input.value = this.checked;
 		return input.onChange.call(this, event, node, input);
 	},
 
 	setValue: function(value) {
-		if (this.element[0]) {
-			let input = this.element[0].querySelector('input');
-
-			if (input) { 
-				if (value) {
-					input.checked = true;
-				} else {
-					input.checked = false;
-				}
-			}
+		const input = this.element?.[0]?.querySelector('input');
+		if (input) {
+			input.checked = Boolean(value);
 		}
 	},
-	
+
 	init: function(data) {
 		return this.render("checkboxinput", data);
 	},
@@ -138,45 +127,29 @@ let CheckboxInput = { ...Input, ...{
 }
 
 let SelectInput = { ...Input, ...{
-	
-    events: [
-        ["change", "onChange", "select"],
-	 ],
-	
+
+	events: [
+		["change", "onChange", "select"],
+	],
 
 	setValue: function(value) {
-		if (this.element[0] && value) {
+		if (this.element?.[0] && value) {
 			let input = this.element[0].querySelector('select');
-		
-			if (input) { 
+
+			if (input) {
 				input.value = value;
 			}
 		}
 	},
-	
+
 	init: function(data) {
 		return this.render("select", data);
 	},
   }
 }
 
-let IconSelectInput = { ...Input, ...{
-	
-    events: [
-        ["change", "onChange", "select"],
-	 ],
-	
+let IconSelectInput = { ...SelectInput, ...{
 
-	setValue: function(value) {
-		if (this.element[0] && value) {
-			let input = this.element[0].querySelector('select');
-		
-			if (input) { 
-				input.value = value;
-			}
-		}
-	},
-	
 	init: function(data) {
 		return this.render("icon-select", data);
 	},
@@ -184,96 +157,94 @@ let IconSelectInput = { ...Input, ...{
 }
 
 let HtmlListSelectInput = { ...Input, ...{
-	
+
 	data:{},
 	cache:{},
-	
-    events: [
-        //["click", "onChange", "li"],
-        ["change", "onListChange", "select"],
-        ["keyup", "searchElement", "input.search"],
-        ["click", "clearSearch", "button.clear-backspace"],
-	 ],
-	
+
+	events: [
+		//["click", "onChange", "li"],
+		["change", "onListChange", "select"],
+		["input", "searchElement", "input.search"],
+		["click", "clearSearch", "button.clear-backspace"],
+	],
+
 	clearSearch : function(event, element, input) {
-		let search = element.querySelector("input.search");
-		if (search) {
-			search.value = "";
-			input.searchElement(event, element, input);
-		}
-		
+		const search = element.querySelector("input.search");
+		if (!search) return;
+
+		search.value = "";
+		input.searchElement(event, element, input);
 		search.dispatchEvent(new KeyboardEvent("keyup", {
 			bubbles: true,
 			cancelable: true,
 		}));
 	},
 
-
 	searchElement : function(event, element, input) {
-		searchText = this.value;
-		
+		const searchText = this.value;
+
 		delay(() => {
-			element.querySelectorAll("li").forEach((el, i) => {
-				
-				if (!searchText || el.title.indexOf(searchText) > -1) { 
-					el.style.display = '';
-				} else {
-					el.style.display = 'none';
-				}
+			element.querySelectorAll("li").forEach((el) => {
+				el.style.display = (!searchText || el.title.indexOf(searchText) > -1) ? "" : "none";
 			});
-			
 		}, 500);
-	},	
+	},
 
 	onElementClick: function(event, element, input) {
 		let data = input.data;
 		let svg = this.closest(data.insertElement);
 		let value = svg.outerHTML ?? "<svg></svg>";
 		input.value = value;
-		let ret = input.onChange.call(this, event, element, input);
-		
-		return element;
+		return input.onChange.call(this, event, element, input);
 	},
-	
+
 	onListChange: function(event, element, input) {
-		let url = input.data.url.replace('{value}', this.value);
+		let url = input.data.url ? String(input.data.url).replace('{value}', this.value) : "";
+
+		if (!url) {
+			console.warn("Vvveb: missing list url for html-list-select input");
+			return;
+		}
+
 		let elements = element.querySelector(".elements");
-		
+
 		elements.innerHTML = `<div class="p-4"><div class="spinner-border spinner-border-sm" role="status">
 		  <span class="visually-hidden">Loading...</span>
 		</div> Loading...</div>`;
-		
+
 		//cache ajax requests
-		if (input.cache[url] != undefined) {
+		if (input.cache[url] !== undefined) {
 			elements.innerHTML = input.cache[url];
-		} else {
-			fetch(url)
-			.then((response) => {
-				if (!response.ok) { throw new Error(response) }
-				return response.text()
-			})
-			.then((text) => {
-					input.cache[url] = text;
-					elements.innerHTML = text;
-			})
-			.catch(error => {
-				console.log(error.statusText);
-				displayToast("danger", "Error", "Error loading list");
-			});
+			return;
 		}
+
+		fetch(url)
+		.then((response) => {
+			if (!response.ok) { throw new Error(`HTTP ${response.status} ${response.statusText}`); }
+			return response.text()
+		})
+		.then((text) => {
+				input.cache[url] = text;
+				elements.innerHTML = text;
+		})
+		.catch(error => {
+			console.error("Vvveb: error loading list", error);
+			displayToast("danger", "Error", "Error loading list");
+		});
 	},
-	
+
 	setValue: function(value) {
-		let select = this.element[0].querySelector("select");
+		let select = this.element?.[0]?.querySelector("select");
 		if (value && select) {
 			select.value = value;
 		}
 	},
-	
+
 	init: function(data) {
 		this.data = data;
-		this.events.push(["click", "onElementClick", data.clickElement]);
-		let template = this.render("html-list-select", data);
+		//pass a copy so the click binding doesn't stack up on the shared events array
+		const events = [...(this.events ?? []), ["click", "onElementClick", data.clickElement]];
+		let template = this.render("html-list-select", data, events);
 		let select = template.querySelector("select");
 		this.onListChange.call(select, new Event('change'), template, this);
 		return template;
@@ -283,15 +254,10 @@ let HtmlListSelectInput = { ...Input, ...{
 
 let LinkInput = { ...TextInput, ...{
 
-    events: [
-        ["change", "onChange", "input"],
-	 ],
-	/*
-	setValue: function(value) {
-		//value = value.replace(/(?<!\/)www\./, 'https://www.');
-		this.element.querySelector('input').value = value;
-	},
-	*/
+	events: [
+		["change", "onChange", "input"],
+	],
+
 	init: function(data) {
 		return this.render("textinput", data);
 	},
@@ -300,10 +266,10 @@ let LinkInput = { ...TextInput, ...{
 
 let DateInput = { ...TextInput, ...{
 
-    events: [
-        ["change", "onChange", "input"],
-	 ],
-	
+	events: [
+		["change", "onChange", "input"],
+	],
+
 	init: function(data) {
 		return this.render("dateinput", data);
 	},
@@ -312,21 +278,26 @@ let DateInput = { ...TextInput, ...{
 
 let RangeInput = { ...Input, ...{
 
-    events: [
-        ["change", "onRangeChange", "input"],
-	 ],
-	 
+	events: [
+		["change", "onRangeChange", "input"],
+	],
+
 	onRangeChange: function(event, node, input) {
 		this.parentNode.querySelector('input[type=number]').value = this.value;
 		this.parentNode.querySelector('input[type=range]').value = this.value;
 		return input.onChange.call(this, event, node, input);
-	},	 
+	},
 
 	setValue: function(value) {
-		this.element[0].querySelector('input[type=number]').value = value;
-		this.element[0].querySelector('input[type=range]').value = value;
+		const root = this.element?.[0];
+		if (!root) return;
+
+		const number = root.querySelector('input[type=number]');
+		const range = root.querySelector('input[type=range]');
+		if (number) number.value = value;
+		if (range) range.value = value;
 	},
-	
+
 	init: function(data) {
 		return this.render("rangeinput", data);
 	},
@@ -335,10 +306,10 @@ let RangeInput = { ...Input, ...{
 
 let NumberInput = { ...Input, ...{
 
-    events: [
-        ["change", "onChange", "input"],
-	 ],
-	
+	events: [
+		["change", "onChange", "input"],
+	],
+
 	init: function(data) {
 		return this.render("numberinput", data);
 	},
@@ -350,21 +321,21 @@ let CssUnitInput = { ...Input, ...{
 	number:0,
 	unit:"px",
 
-    events: [
-        ["change", "onInputChange", "select"],
-        ["change", "onInputChange", "input"],
-        ["keyup", "onInputChange", "input"],
-	 ],
-		
+	events: [
+		["change", "onInputChange", "select"],
+		["change", "onInputChange", "input"],
+		["input", "onInputChange", "input"],
+	],
+
 	onInputChange: function(event, node, input) {
 		if (node) {
 			let number = node.querySelector("input").value;
 			let unit = node.querySelector("select").value;
 
-			if (this.value != "") input[this.name] = this.value;// this.name = unit or number	
+			if (this.value != "") input[this.name] = this.value;// this.name = unit or number
 			if (unit == "") unit = "px";//if unit is not set use default px
-		
-			let value = "";	
+
+			let value = "";
 			if (unit == "auto")  {
 				node.classList.add("auto");
 				value = unit;
@@ -373,26 +344,29 @@ let CssUnitInput = { ...Input, ...{
 				node.classList.remove("auto");
 				value = number + (unit ? unit : "");
 			}
-			
+
 			input.value = value;
 
 			return input.onChange.call(this, event, node, input);
 		}
 	},
-	
+
 	setValue: function(value) {
-		if (value && this.element) {
+		if (value && this.element?.[0]) {
 			let element = this.element[0];
 			this.number = parseFloat(value);
-			this.unit = value.replace(this.number, '').trim();
-			
-			if (this.unit == "auto") element.classList.add("auto");
+			this.unit = isNaN(this.number) ? value.trim() : value.replace(String(this.number), '').trim();
 
-			element.querySelector("input[type=number]").value = this.number;
-			element.querySelector("select").value = this.unit;
+			element.classList.toggle("auto", this.unit == "auto");
+
+			const numberInput = element.querySelector("input[type=number]");
+			if (numberInput) numberInput.value = this.number;
+
+			const unitSelect = element.querySelector("select");
+			if (unitSelect) unitSelect.value = this.unit;
 		}
 	},
-	
+
 	init: function(data) {
 		return this.render("cssunitinput", data);
 	},
@@ -401,43 +375,39 @@ let CssUnitInput = { ...Input, ...{
 
 let ColorInput = { ...Input, ...{
 
-	 //html5 color input only supports setting values as hex colors even if the picker returns only rgb
-	 rgb2hex: function(value) {
-		 if (value) {
-			 value = value.trim();
-			 
-			 if (rgb = value.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i)) {
-				 
-				 return (rgb && rgb.length === 4) ? "#" +
-				  ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
-				  ("0" + parseInt(rgb[2],10).toString(16)).slice(-2) +
-				  ("0" + parseInt(rgb[3],10).toString(16)).slice(-2) : rgb;
-			 }
-		}
-		 
-		 return value;
+	//html5 color input only supports setting values as hex colors even if the picker returns only rgb
+	rgb2hex: function(value) {
+		if (!value) return value;
+
+		value = value.trim();
+		const rgb = value.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
+
+		if (!rgb || rgb.length !== 4) return value;
+
+		const hex = (part) => ("0" + parseInt(part, 10).toString(16)).slice(-2);
+		return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
 	},
 
-    events: [
-        ["change", "onChange", "input"],
-	 ],
+	events: [
+		["change", "onChange", "input"],
+	],
 
 	setValue: function(value) {
-		if (this.element[0] && value) {
+		if (this.element?.[0] && value) {
 			let input = this.element[0].querySelector('input');
-		
-			if (input) { 
+
+			if (input) {
 				input.value = this.rgb2hex(value);
 			}
 		}
 	},
-	
+
 	init: function(data) {
 		//if no palette provided use default
 		if (!data.palette) {
 			data.palette = Vvveb.ColorPalette.getAll();
 		}
-		
+
 		return this.render("colorinput", data);
 	},
   }
@@ -445,69 +415,79 @@ let ColorInput = { ...Input, ...{
 
 let ImageInput = { ...Input, ...{
 
-    events: [
-        ["focusout", "onChange", "input[type=text]"],
-        ["change", "onUpload", "input[type=file]"],
+	events: [
+		["focusout", "onChange", "input[type=text]"],
+		["change", "onUpload", "input[type=file]"],
 	 ],
 
 	setValue: function(value) {
-
-		//don't set blob value to avoid slowing down the page		
-		if (value.indexOf("data:image") == -1) {
-			element.querySelector('input[type="text"]').value = value;
+		//don't set blob value to avoid slowing down the page
+		if (this.element?.[0] && value && !value.startsWith("data:image")) {
+			this.element[0].querySelector('input[type="text"]').value = value;
 		}
 	},
 
-	onUpload: function(event, node) {
+	/**
+	 * Show a local preview right away, upload to the media manager endpoint
+	 * (global uploadUrl, same contract as the tinymce image uploader) and
+	 * update the value with the returned url.
+	 */
+	onUpload: async function(event, node, input) {
+		const file = this.files?.[0];
+		if (!file) return;
 
-		if (this.files && this.files[0]) {
-            let reader = new FileReader();
-            reader.onload = imageIsLoaded;
-            reader.readAsDataURL(this.files[0]);
-            //reader.readAsBinaryString(this.files[0]);
-            file = this.files[0];
-        }
+		const root = input.element?.[0] ?? node;
 
-		function imageIsLoaded(e) {
-				
-				image = e.target.result;
-				
-				event.data.element.trigger('propertyChange', [image, this]);
-				
-				//return;//remove this line to enable php upload
+		//preview/update immediately with the local data url
+		const reader = new FileReader();
+		reader.onload = () => {
+			input.value = reader.result;
+			input.onChange.call(this, event, node, input);
+		};
+		reader.readAsDataURL(file);
 
-				let formData = new FormData();
-				formData.append("file", file);
-    
-				$.ajax({
-					type: "POST",
-					url: 'upload.php',//set your server side upload script url
-					data: formData,
-					processData: false,
-					contentType: false,
-					success: function (data) {
-						console.log("File uploaded at: ", data);
-						
-						//if image is succesfully uploaded set image url
-						event.data.element.trigger('propertyChange', [data, this]);
-						
-						//update src input
-						event.data.element.querySelector('input[type="text"]').value = data;
-					},
-					error: function (data) {
-						alert(data.responseText);
-					}
-				});		
+		if (typeof uploadUrl === "undefined" || !uploadUrl) {
+			console.warn("Vvveb: no uploadUrl configured, skipping image upload");
+			return;
 		}
-	}		
+
+		try {
+			const formData = new FormData();
+			formData.append("files[]", file, file.name);
+			formData.append("mediaPath", window.mediaPath ?? "");
+			formData.append("onlyFilename", "true");
+			formData.append("csrf", document.querySelector("[name=csrf]")?.value ?? "");
+
+			const response = await fetch(uploadUrl, {method: "POST", body: formData, credentials: "same-origin"});
+			if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
+
+			const json = await response.json();
+			const result = Array.isArray(json) ? json[0] : json;
+
+			displayToast(result?.success ? "success" : "danger", "Upload", result?.message ?? "Image upload failed");
+
+			const url = result?.file ? (window.mediaPath ?? "") + "/" + result.file : null;
+			if (!url) return;
+
+			//replace preview with the uploaded url and update the src input
+			const textInput = root.querySelector('input[type="text"]');
+			if (textInput) textInput.value = url;
+
+			input.value = url;
+			input.onChange.call(this, event, node, input);
+		} catch (e) {
+			console.error("Vvveb: image upload failed", e);
+			displayToast("danger", "Error", "Error uploading image");
+		}
+	}
  }	
 }
 
 let FileUploadInput = { ...TextInput, ...{
 
-    events: [
-        ["focusout", "onChange", "input"],
-	 ],
+	events: [
+		["focusout", "onChange", "input"],
+	],
 
 	init: function(data) {
 		return this.render("textinput", data);
@@ -518,26 +498,25 @@ let FileUploadInput = { ...TextInput, ...{
 let RadioInput = { ...Input, ...{
 
 	events: [
-        ["change", "onChange", "input"],
-	 ],
+		["change", "onChange", "input"],
+	],
 
 	setValue: function(value) {
-		if (this.element[0] && value) {
+		if (this.element?.[0] && value) {
 			let input = this.element[0].querySelector('input');
-		
-			if (input) { 
-				if (value == input.value) {
-					input.setAttribute("checked", "true");
-					input.checked = true;
+
+			if (input) {
+				const selected = (value == input.value);
+				input.checked = selected;
+				if (selected) {
+					input.setAttribute("checked", "checked");
 				} else {
-					input.checked = false;
 					input.removeAttribute("checked");
 				}
-				
 			}
 		}
 	},
-	
+
 	init: function(data) {
 		return this.render("radioinput", data);
 	},
@@ -547,19 +526,22 @@ let RadioInput = { ...Input, ...{
 let RadioButtonInput = { ...RadioInput, ...{
 
 	setValue: function(value) {
-		if (this.element[0] && value) {
+		if (this.element?.[0] && value) {
 			let inputs = this.element[0].querySelectorAll('input');
-			inputs.forEach((el, i) => {
+			let selected = null;
+			inputs.forEach((el) => {
 				if (value == el.value) {
 					selected = el;
 				} else {
 					el.checked = false;
 					el.removeAttribute("checked");
-				}		
+				}
 			});
 
-			selected.checked = true;
-			selected.setAttribute("checked", "checked");
+			if (selected) {
+				selected.checked = true;
+				selected.setAttribute("checked", "checked");
+			}
 		}
 	},
 
@@ -570,9 +552,10 @@ let RadioButtonInput = { ...RadioInput, ...{
 }
 
 let ToggleInput = { ...Input, ...{
+
 	events: [
-        ["change", "onToggleChange", "input"],
-	 ],
+		["change", "onToggleChange", "input"],
+	],
 
 	onToggleChange: function(event, node, input) {
 		input.value = this.checked ? this.getAttribute("data-value-on") : this.getAttribute("data-value-off");
@@ -580,21 +563,21 @@ let ToggleInput = { ...Input, ...{
 	},
 
 	setValue: function(value) {
-		if (this.element[0]) {
+		if (this.element?.[0]) {
 			let input = this.element[0].querySelector('input');
 
-			if (input) { 
-				if (value == input.getAttribute("data-value-on")) {
-					input.checked = true;
-					input.setAttribute("checked", true);
+			if (input) {
+				const selected = (value == input.getAttribute("data-value-on"));
+				input.checked = selected;
+				if (selected) {
+					input.setAttribute("checked", "checked");
 				} else {
-					input.checked = false;
 					input.removeAttribute("checked");
 				}
 			}
 		}
 	},
-	
+
 	init: function(data) {
 		return this.render("toggle", data);
 	},
@@ -603,10 +586,10 @@ let ToggleInput = { ...Input, ...{
 
 let ValueTextInput = { ...TextInput, ...{
 
-    events: [
-        ["focusout", "onChange", "input"],
-	 ],
-	
+	events: [
+		["focusout", "onChange", "input"],
+	],
+
 	init: function(data) {
 		return this.render("textinput", data);
 	},
@@ -615,10 +598,10 @@ let ValueTextInput = { ...TextInput, ...{
 
 let GridLayoutInput = { ...TextInput, ...{
 
-    events: [
-        ["focusout", "onChange", "input"],
-	 ],
-	
+	events: [
+		["focusout", "onChange", "input"],
+	],
+
 	init: function(data) {
 		return this.render("textinput", data);
 	},
@@ -627,10 +610,10 @@ let GridLayoutInput = { ...TextInput, ...{
 
 let ProductsInput = { ...TextInput, ...{
 
-    events: [
-        ["focusout", "onChange", "input"],
-	 ],
-	
+	events: [
+		["focusout", "onChange", "input"],
+	],
+
 	init: function(data) {
 		return this.render("textinput", data);
 	},
@@ -638,25 +621,22 @@ let ProductsInput = { ...TextInput, ...{
 }
 
 let GridInput = { ...Input, ...{
-	
 
-    events: [
-        ["change", "onChange", "select" /*'select'*/],
-        ["click", "onChange", "button" /*'select'*/],
-	 ],
-	
+	events: [
+		["change", "onChange", "select" /*'select'*/],
+		["click", "onChange", "button" /*'select'*/],
+	],
 
 	setValue: function(value) {
-		if (this.element[0] && value) {
+		if (this.element?.[0] && value) {
 			let input = this.element[0].querySelector('select');
-		
-			if (input) { 
+
+			if (input) {
 				input.value = value;
-				input.querySelector("option[selected]").selected = true;
 			}
 		}
 	},
-	
+
 	init: function(data) {
 		return this.render("grid", data);
 	},
@@ -664,17 +644,16 @@ let GridInput = { ...Input, ...{
 }
 
 let TextValueInput = { ...Input, ...{
-	
 
-    events: [
-        ["focusout", "onChange", "input"],
-	    ["click", "onChange", "button" /*'select'*/],
-	 ],
-	
+	events: [
+		["focusout", "onChange", "input"],
+		["click", "onChange", "button" /*'select'*/],
+	],
+
 	setValue: function(value) {
 		return false;
 	},
-		
+
 	init: function(data) {
 		return this.render("textvalue", data);
 	},
@@ -683,21 +662,20 @@ let TextValueInput = { ...Input, ...{
 
 let ButtonInput = { ...Input, ...{
 
-    events: [
-        ["click", "onChange", "button" /*'select'*/],
-	 ],
-	
+	events: [
+		["click", "onChange", "button" /*'select'*/],
+	],
 
 	setValue: function(value) {
-		if (this.element[0] && value) {
+		if (this.element?.[0] && value) {
 			let input = this.element[0].querySelector('button');
-		
-			if (input) { 
+
+			if (input) {
 				input.value = value;
 			}
-		}		
+		}
 	},
-	
+
 	init: function(data) {
 		return this.render("button", data);
 	},
@@ -706,75 +684,82 @@ let ButtonInput = { ...Input, ...{
 
 let SectionInput = { ...Input, ...{
 
-    events: [
-        //["click", "onChange", "button" /*'select'*/],
-	 ],
-	
-
 	setValue: function(value) {
 		return false;
 	},
-	
+
 	init: function(data) {
 		return this.render("sectioninput", data);
 	},
   }
 }
 
+let PopOverInput = { ...Input, ...{
+
+	setValue: function(value) {
+		return false;
+	},
+
+	init: function(data) {
+		return this.render("popoverinput", data);
+	},
+  }
+}
+
 let ListInput = { ...Input, ...{
-	
-    events: [
-        ["change", "onChange", "select"],
-        ["click", "remove", ".delete-btn"],
-        ["click", "add", ".btn-new"],
-        ["click", "select", ".section-item"],
-	 ],
-	
+
+	events: [
+		["change", "onChange", "select"],
+		["click", "remove", ".delete-btn"],
+		["click", "add", ".btn-new"],
+		["click", "select", ".section-item"],
+	],
 
 	remove: function(event, node, input) {
-		let sectionItem = this.closest(".section-item");
-		let index = [...sectionItem.parentNode.children].indexOf(sectionItem);//sectionItem.index();
-		let data = input.data;
-		
+		const sectionItem = this.closest(".section-item");
+		if (!sectionItem) return false;
+
+		const index = [...sectionItem.parentNode.children].indexOf(sectionItem);//sectionItem.index();
+		const data = input.data;
+
 		if (data.removeElement) {
 			let container = input.node;
 			if (data.container) {
-				container.querySelector(data.container);
+				container = container.querySelector(data.container) ?? container;
 			}
-			container.querySelector(data.selector + ":nth-child(" + (index + 1) + ")").remove();
+			container.querySelector(data.selector + ":nth-child(" + (index + 1) + ")")?.remove();
 		}
 		sectionItem.remove();
-		
+
 		event.action = "remove";
 		event.index = index;
-		input.onChange(event, node, input, this);
+		input.onChange(event, node, input);
 		event.preventDefault();
 		return false;
 	},
 
 	add: function(event, node, input) {
-		let newElement = input.data.newElement ?? false;
+		const data = input.data ?? {};
+		const newElement = data.newElement ?? false;
 		if (newElement) {
 			let container = input.node;
 			if (data.container) {
-				container.querySelector(data.container);
-			}			
+				container = container.querySelector(data.container) ?? container;
+			}
 			container.append(generateElements(newElement)[0]);
 		}
-		
+
 		event.action = "add";
-		input.onChange(event, node, input, this);
+		input.onChange(event, node, input);
 		return false;
-	},	
-	
+	},
+
 	select: function(event, node, input) {
-		let sectionItem = this.closest(".section-item");
-		if (sectionItem.parentNode) {
-			let index = [...sectionItem.parentNode.children].indexOf(sectionItem);//sectionItem.index();
-			
+		const sectionItem = this.closest(".section-item");
+		if (sectionItem?.parentNode) {
 			event.action = "select";
-			event.index = index;
-			input.onChange(event, node, input, this);
+			event.index = [...sectionItem.parentNode.children].indexOf(sectionItem);//sectionItem.index();
+			input.onChange(event, node, input);
 		}
 		return false;
 	},
@@ -789,13 +774,14 @@ let ListInput = { ...Input, ...{
 
 		let elements = this.node.querySelectorAll(data.container + " " + this.selector);
 		let options = [];
-		
-		elements.forEach(function (e, i) {
+
+		elements.forEach((e, i) => {
 			let element = e;
 			if (data.nameElement) {
-				element = element.querySelector(data.nameElement);
+				element = element.querySelector(data.nameElement) ?? e;
 			}
-			let name = (data.name = "text" ? element.textContent.substr(0, 15) : element.id);
+			//"text" (or unset) labels items by their text content, otherwise by element id
+			const name = (!data.name || data.name == "text") ? element.textContent.slice(0, 15) : element.id;
 			options.push({
 				name: name,
 				type: (data.prefix ?? "") + (i + 1) + (data.suffix ?? ""),
@@ -808,8 +794,8 @@ let ListInput = { ...Input, ...{
 
 		let list = this.render("listinput", data);
 		let items = list.querySelectorAll(".section-item");
-		let i = 0;
-		for (const item of items) {
+
+		items.forEach((item, i) => {
 			const container = item.querySelector(".tree") ?? item;
 			let properties = {};
 			if (data.elementProperties) {
@@ -818,10 +804,9 @@ let ListInput = { ...Input, ...{
 					properties[prop].element = elements[i];
 				}
 			}
-			
+
 			Vvveb.Components.renderProperties(null, properties, null, container);
-			i++;
-		}
+		});
 
 		return list;
 	},
@@ -830,10 +815,10 @@ let ListInput = { ...Input, ...{
 
 let AutocompleteInput = { ...Input, ...{
 
-    events: [
-        ["autocomplete.change", "onAutocompleteChange", "input"],
-        ["input", "onAutocompleteChange", "input"],
-	 ],
+	events: [
+		["autocomplete.change", "onAutocompleteChange", "input"],
+		["input", "onAutocompleteChange", "input"],
+	],
 
 	onAutocompleteChange: function(event, node, input) {
 		input.value = event.detail.value;
@@ -842,16 +827,14 @@ let AutocompleteInput = { ...Input, ...{
 
 	setValue: function(value) {
 		if (this.element && value) {
-			let input = this.element.querySelectorAll('input').forEach(e => e.value = value);
+			this.element.querySelectorAll('input').forEach(e => e.value = value);
 		}
-	},	
+	},
 
 	init: function(data) {
-		
 		this.element = this.render("textinput", data);
-		
-		let autocomplete = new _AutocompleteInput(this.element.querySelector("input"), data);
-		
+		this.autocomplete = new _AutocompleteInput(this.element.querySelector("input"), data);
+
 		return this.element;
 	}
   }
@@ -859,9 +842,9 @@ let AutocompleteInput = { ...Input, ...{
 
 let AutocompleteList = { ...Input, ...{
 
-    events: [
-        ["autocompletelist.change", "onAutocompleteChange", "input"],
-	 ],
+	events: [
+		["autocompletelist.change", "onAutocompleteChange", "input"],
+	],
 
 	onAutocompleteChange: function(event, node, input) {
 		input.value = event.detail;
@@ -870,16 +853,14 @@ let AutocompleteList = { ...Input, ...{
 
 	setValue: function(value) {
 		if (this.element && value) {
-			let input = this.element.querySelectorAll('input').forEach(e => e.value = value);
-		}	
+			this.element.querySelectorAll('input').forEach(e => e.value = value);
+		}
 	},
 
 	init: function(data) {
-		
 		this.element = this.render("textinput", data);
-		
-		let autocomplete = new _AutocompleteList(this.element.querySelector("input"), data);
-		
+		this.autocomplete = new _AutocompleteList(this.element.querySelector("input"), data);
+
 		return this.element;
 	}
   }
@@ -887,42 +868,43 @@ let AutocompleteList = { ...Input, ...{
 
 let TagsInput = { ...Input, ...{
 
-    events: [
-        ["tagsinput.change", "onTagsInputChange", "input"],
-	 ],
+	separator: " ",
+
+	events: [
+		["tagsinput.change", "onTagsInputChange", "input"],
+	],
 
 	onTagsInputChange: function(event, node, input) {
 		let tags = "";
 		for (const tag in event.detail[0]) {
-			if (tags) tags += " ";
-			tags += tag;
+			if (tag) {
+				if (tags) tags += input.separator;
+				tags += tag;
+			}			
 		}
+
 		input.value = tags;
 		return input.onChange.call(this, event, node, input);
 	},
 
 	setValue: function(value) {
 		if (this.autocomplete && value) {
-			this.autocomplete.tagsInput.setValue(value.split(" "));
+			this.autocomplete.tagsInput.setValue(value.trim().split(this.separator));
 		}
 	},
 
 	init: function(data) {
-		
+		this.separator = data.separator ?? " ";
 		this.element = this.render("tagsinput", data);
 		this.autocomplete = new _TagsInput(this.element.querySelector("input"), data);
-		
+
 		return this.element;
 	}
   }
 }
 
-
 let NoticeInput = { ...Input, ...{
 
-    events: [
-	 ],
-	
 	init: function(data) {
 		return this.render("noticeinput", data);
 	},

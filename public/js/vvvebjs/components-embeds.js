@@ -19,6 +19,42 @@
  * https://github.com/givanz/Vvveb
  */
 
+/**
+ * Placeholder shown until an url is embedded.
+ */
+function embedPlaceholder(label = "Enter url to embed") {
+	return `<div data-component-oembed data-url="">
+			<div class="alert alert-light m-5" role="alert">
+				<img width="64" src="${Vvveb.baseUrl}icons/code.svg">
+				<h6>${label}</h6>
+			</div></div>`;
+}
+
+//recreate scripts so they execute inside the frame document
+//(scripts inserted via innerHTML never run)
+function recreateScripts(node) {
+	if (!node || typeof node.querySelectorAll !== "function") return;
+	const frameDoc = Vvveb.Builder.frameDoc;
+	if (!frameDoc || typeof frameDoc.createElement !== "function") return;
+
+	node.querySelectorAll('script').forEach(script => {
+		try {
+			const newScript = frameDoc.createElement("script");
+			//keep src/async/defer/type and provider data attributes
+			for (const attr of script.attributes) {
+				newScript.setAttribute(attr.name, attr.value);
+			}
+			if (!script.src) {
+				//inline scripts (player init code etc.) would stay dead otherwise
+				newScript.textContent = script.textContent;
+			}
+			script.replaceWith(newScript);
+		} catch (e) {
+			//best effort - don't fail the whole embed for one script
+			console.warn("Vvveb: could not re-create script", script.src, e);
+		}
+	});
+}
 
 Vvveb.ComponentsGroup['Embeds'] = ["embeds/embed"];
 
@@ -26,13 +62,7 @@ Vvveb.Components.extend("_base", "embeds/embed", {
     name: "Embed",
     attributes: ["data-component-oembed"],
     image: "icons/code.svg",
-    //dragHtml: '<img src="' + Vvveb.baseUrl + 'icons/maps.png">',
-	html: `<div data-component-oembed data-url="">
-			<div class="alert alert-light  m-5" role="alert">
-				<img width="64" src="${Vvveb.baseUrl}icons/code.svg">
-				<h6>Enter url to embed</h6>
-			</div></div>`,
-
+	html: embedPlaceholder("Enter url to embed"),
 
     properties: [{
         name: "Url",
@@ -40,32 +70,60 @@ Vvveb.Components.extend("_base", "embeds/embed", {
 		htmlAttr: "data-url",
         inputtype: TextInput,
         onChange: function(node, value) {
+			if (!node) return node;
+			value = String(value ?? "").trim();
+
+			//clearing the url restores the placeholder instead of requesting an embed for ""
+			if (!value) {
+				node.innerHTML = embedPlaceholder();
+				return node;
+			}
+
+			if (typeof getOembed !== "function") {
+				console.error("Vvveb: embed failed, oembed.js is not loaded");
+				return node;
+			}
+
 			node.innerHTML = `<div class="alert alert-light d-flex justify-content-center">
 				  <div class="spinner-border m-5" role="status">
 					<span class="visually-hidden">Loading...</span>
 				  </div>
 				</div>`;
-			
-			getOembed(value).then(response => {
-				  node.innerHTML = response.html;
-				  let containerW = node.offsetWidth;
-				  let iframe = node.querySelector("iframe");
-				  if (iframe) {
-					  let ratio = containerW / iframe.offsetWidth;
-					  iframe.setAttribute("width", (width * ratio));
-					  iframe.setAttribute("height", (height * ratio));
-				  }
 
-				  let arr = node.querySelectorAll('script').forEach(script => {
-						let newScript = Vvveb.Builder.frameDoc.createElement("script");
-						newScript.src = script.src;
-						script.replaceWith(newScript);
-				  });				  
-				  
-			}).catch(error => console.log(error));
+			//ignore stale responses when the url is edited again before load finishes
+			const requestId = (node._oembedRequest = (node._oembedRequest || 0) + 1);
+
+			getOembed(value).then(response => {
+				if (requestId !== node._oembedRequest) return;
+				if (!response || !response.html) {
+					throw new Error("Empty embed response");
+				}
+
+				node.innerHTML = response.html;
+
+				//scale the iframe up from its intrinsic size to the container width
+				const containerW = node.offsetWidth;
+				const iframe = node.querySelector("iframe");
+
+				if (iframe && containerW > 0 && iframe.offsetWidth > 0) {
+					const ratio = containerW / iframe.offsetWidth;
+					iframe.setAttribute("width", Math.round(containerW));
+					iframe.setAttribute("height", Math.round(iframe.offsetHeight * ratio));
+				}
+
+				recreateScripts(node);
+			}).catch(error => {
+				if (requestId !== node._oembedRequest) return;
+				console.error("Vvveb: embed failed", error);
+				//don't leave the spinner spinning forever
+				node.innerHTML = `<div class="alert alert-danger m-5" role="alert">
+					<h6>Error embedding url</h6>
+					<p class="mb-0">The url could not be embedded, please check it and try again.</p>
+				</div>`;
+			});
 
 			return node;
-		},	
+		},
     },{
         name: "Width",
         key: "width",
@@ -83,13 +141,11 @@ Vvveb.Components.extend("_base", "embeds/embed", {
 
 for (const provider of ["youtube", "vimeo", "dailymotion", "flickr", "smugmug", "scribd", "twitter", "soundcloud", "slideshare", "spotify", "imgur", "issuu", "mixcloud", "ted", "animoto", "tumblr", "kickstarter", "reverbnation", "reddit", "speakerdeck", "screencast", "amazon", "someecards", "tiktok","pinterest", "wolfram", "anghami"])  {
 	Vvveb.Components.add("embeds/" + provider, {
-		name: provider,
+		name: provider[0].toUpperCase() + provider.slice(1),
 		image: "icons/code.svg",
-		html: `<div data-component-oembed data-url="">
-				<div class="alert alert-light  m-5" role="alert">
-					<img width="64" src="${Vvveb.baseUrl}icons/code.svg">
-					<h6>Enter ${provider} url to embed</h6>
-				</div></div>`,
+		html: embedPlaceholder(`Enter ${provider} url to embed`),
 	});
-	Vvveb.ComponentsGroup['Embeds'].push("embeds/" + provider);
+	if (!Vvveb.ComponentsGroup['Embeds'].includes("embeds/" + provider)) {
+		Vvveb.ComponentsGroup['Embeds'].push("embeds/" + provider);
+	}
 }

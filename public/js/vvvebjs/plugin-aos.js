@@ -32,12 +32,12 @@ The edited page should include the aos library https://github.com/michalsnik/aos
   </script>
 */ 
 //clean aos classes on save
-window.addEventListener("vvveb.getHtml.before", function(event) {
+window.addEventListener("Vvveb.getHtml.before", function(event) {
 	let doc = event.detail;
 	doc.querySelectorAll("[data-aos]").forEach(e => e.classList.remove("aos-animate", "aos-init"));
 });
 
-window.addEventListener("vvveb.getHtml.after", function(event) {
+window.addEventListener("Vvveb.getHtml.after", function(event) {
 	let doc = event.detail;
 	doc.querySelectorAll("[data-aos]").forEach(e => e.classList.add("aos-animate", "aos-init"));
 });
@@ -275,7 +275,7 @@ let ComponentBaseAnimateScroll = {
         sort: base_sort++,
 		section: advanced_section,
 		inputtype: ButtonInput,
-		data: {text:"Play animation", icon:"la-play"},		
+		data: {text:"Play animation", icon:"player-play"},		
 		onChange: function(node, value) {
 			node.classList.remove("aos-init","aos-animate");
 			delay(() => node.classList.add("aos-init","aos-animate"), 

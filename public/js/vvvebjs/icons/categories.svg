@@ -1,1 +1,6 @@
-<?xml version="1.0" ?><svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><rect fill="none" height="256" width="256"/><line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8" x1="96" x2="216" y1="64" y2="64"/><line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8" x1="96" x2="216" y1="128" y2="128"/><line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8" x1="96" x2="216" y1="192" y2="192"/><line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8" x1="40" x2="56" y1="64" y2="64"/><line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8" x1="40" x2="56" y1="128" y2="128"/><line fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8" x1="40" x2="56" y1="192" y2="192"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24" role="img" aria-label="categories">
+  <!-- Tabler outline glyph @category (tabler/tabler-icons, MIT) - Vvveb builder component icon -->
+  <g fill="none" stroke="#334155" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 4h6v6h-6l0 -6" /> <path d="M14 4h6v6h-6l0 -6" /> <path d="M4 14h6v6h-6l0 -6" /> <path d="M14 17a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+  </g>
+</svg>

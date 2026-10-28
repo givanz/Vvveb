@@ -39,6 +39,7 @@ Vvveb.Components.extend("_base", "html/heading", {
 		},	
 			
         init: function(node) {
+            if (!node || !node.nodeName) return 1;
             let regex;
             regex = /H(\d)/.exec(node.nodeName);
             if (regex && regex[1]) {
@@ -94,7 +95,7 @@ let linkComponentProperties = [
 		htmlAttr: "href",
 		inputtype: AutocompleteInput,
 		data: {
-			url: linkUrl,
+			url: (typeof linkUrl !== "undefined" ? linkUrl : ""),
 			validSelection: false,
 			allowFreeText: true,
 			useKeyAsValue: true,
@@ -189,7 +190,7 @@ Vvveb.Components.extend("_base", "html/image", {
 			extraclass:"btn-group-sm btn-group-fullwidth",
             options: [{
                 value: "",
-                icon:"la la-times",
+                icon:"x",
                 //text: "None",
                 title: "None",
                 checked:true,
@@ -197,19 +198,19 @@ Vvveb.Components.extend("_base", "html/image", {
                 value: "align-left",
                 //text: "Left",
                 title: "text-start",
-                icon:"la la-align-left",
+                icon:"align-left",
                 checked:false,
             }, {
                 value: "align-center",
                 //text: "Center",
                 title: "Center",
-                icon:"la la-align-center",
+                icon:"align-center",
                 checked:false,
             }, {
                 value: "align-right",
                 //text: "Right",
                 title: "Right",
-                icon:"la la-align-right",
+                icon:"align-right",
                 checked:false,
             }],
         },
@@ -238,21 +239,25 @@ Vvveb.Components.extend("_base", "html/image", {
 			}
 		}, 		
 		onChange : function(node, value, input)  {
-			this.setGroup(value);
+			if (!node) return node;
+			if (typeof this.setGroup === "function") this.setGroup(value);
 			if (value) {
-				const wrappingElement = document.createElement('a');
+				const wrappingElement = (node.ownerDocument || document).createElement('a');
 				node.replaceWith(wrappingElement);
 				wrappingElement.appendChild(node);
 			} else {
-				if (node.parentNode.tagName.toLowerCase() == "a"){
-					node.parentNode.replaceWith(node);
+				let parent = node.parentNode;
+				if (parent && parent.tagName && parent.tagName.toLowerCase() == "a" && parent.parentNode) {
+					//unwrap keeping siblings in place instead of dropping them
+					parent.parentNode.insertBefore(node, parent);
+					if (!parent.hasChildNodes()) parent.remove();
 				}
 			}
 			return node;
 		}, 
 		init: function (node) {
-			let value = node.parentNode.tagName.toLowerCase() == "a";
-			this.setGroup(value);
+			let value = !!(node && node.parentNode && node.parentNode.tagName && node.parentNode.tagName.toLowerCase() == "a");
+			if (typeof this.setGroup === "function") this.setGroup(value);
 			return value;
 		}
 	}].concat(
@@ -262,7 +267,9 @@ Vvveb.Components.extend("_base", "html/image", {
 	)),
 	
     init(node) {
+		if (!node) return node;
 		let group = document.querySelectorAll('.mb-2[data-group="link"]');
+		let value = !!(node.parentNode && node.parentNode.tagName && node.parentNode.tagName.toLowerCase() == "a");
 		if (group.length) {
 			group.forEach(el => {
 				if (value) {	
@@ -290,7 +297,7 @@ Vvveb.Components.extend("_base", "html/hr", {
         inputtype: SelectInput,
         data: {
             options: [{
-				value: "Default",
+				value: "",
 				text: ""
 			}, {
 				value: "border-primary",
@@ -329,7 +336,7 @@ Vvveb.Components.extend("_base", "html/hr", {
         inputtype: SelectInput,
         data: {
             options: [{
-				value: "Default",
+				value: "",
 				text: ""
 			}, {
 				value: "border-1",
@@ -356,7 +363,7 @@ Vvveb.Components.extend("_base", "html/hr", {
         inputtype: SelectInput,
         data: {
             options: [{
-				value: "Default",
+				value: "",
 				text: ""
 			}, {
 				value: "opacity-25",
@@ -510,11 +517,12 @@ Vvveb.Components.extend("_base", "html/selectinput", {
     html: '<select class="form-control"><option value="value1">Text 1</option><option value="value2">Text 2</option><option value="value3">Text 3</option></select>',
 
 	beforeInit: function (node) {
-		properties = [];
+		if (!node || typeof node.querySelectorAll !== "function") return node;
+		let properties = [];
 		let i = 0;
 		
 		node.querySelectorAll('option').forEach(el => {
-			data = {"value": el.value, "text": el.text};
+			let data = {"value": el.value, "text": el.text};
 			i++;
 			properties.push({
 				name: "Option " + i,
@@ -525,8 +533,9 @@ Vvveb.Components.extend("_base", "html/selectinput", {
 				inputtype: TextValueInput,
 				data: data,
 				onChange: function(node, value, input) {
-					
-					option = this.optionNode;
+					if (!node || !input) return node;
+					const option = this.optionNode;
+					if (!option) return node;
 					
 					//if remove button is clicked remove option and render row properties
 					if (input.nodeName == 'BUTTON') {
@@ -584,9 +593,10 @@ Vvveb.Components.extend("_base", "html/selectinput", {
         name: "",
         key: "addChild",
         inputtype: ButtonInput,
-        data: {text:"Add option", icon:"la-plus"},
+        data: {text:"Add option", icon:"plus"},
         onChange: function(node)
         {
+			 if (!node || typeof node.append !== "function") return node;
 			 node.append(generateElements('<option value="value">Text</option>')[0]);
 			 
 			 //render component properties again to include the new column inputs
@@ -679,7 +689,7 @@ Vvveb.Components.extend("_base", "html/radiobutton", {
     },{
 		name: "Checked",
         key: "checked",
-        htmlAttr: "Checked",
+        htmlAttr: "checked",
         inputtype: CheckboxInput,
         //inline:true,
         //col:6
@@ -726,7 +736,7 @@ Vvveb.Components.extend("_base", "html/checkbox", {
     },{
 		name: "Checked",
         key: "checked",
-        htmlAttr: "Checked",
+        htmlAttr: "checked",
         inputtype: CheckboxInput,
         //inline:true,
         //col:6
@@ -759,7 +769,7 @@ Vvveb.Components.extend("_base", "html/fileinput", {
 Vvveb.Components.extend("_base", "html/video", {
     nodes: ["video"],
     name: "Video",
-    html: '<video width="320" height="240" playsinline loop autoplay muted src="../../media/demo/sample.webm" poster="../../media/demo/sample.webp"><video>',
+    html: '<video width="320" height="240" playsinline loop autoplay muted src="../../media/demo/sample.webm" poster="../../media/demo/sample.webp"></video>',
     dragHtml: '<img  width="320" height="240" src="' + Vvveb.baseUrl + 'icons/video.svg">',
 	image: "icons/video.svg",
     resizable:true,//show select box resize handlers
@@ -778,12 +788,12 @@ Vvveb.Components.extend("_base", "html/video", {
         name: "Width",
         key: "width",
         htmlAttr: "width",
-        inputtype: TextInput
+        inputtype: NumberInput
     }, {
         name: "Height",
         key: "height",
         htmlAttr: "height",
-        inputtype: TextInput
+        inputtype: NumberInput
     },{
         name: "Muted",
         key: "muted",
@@ -889,7 +899,7 @@ Vvveb.Components.extend("_base", "html/paragraph", {
             extraclass:"btn-group-sm btn-group-fullwidth",
             options: [{
                 value: "",
-                icon:"la la-times",
+                icon:"x",
                 //text: "None",
                 title: "None",
                 checked:true,
@@ -897,19 +907,19 @@ Vvveb.Components.extend("_base", "html/paragraph", {
                 value: "text-start",
                 //text: "Left",
                 title: "text-start",
-                icon:"la la-align-left",
+                icon:"align-left",
                 checked:false,
             }, {
                 value: "text-center",
                 //text: "Center",
                 title: "Center",
-                icon:"la la-align-center",
+                icon:"align-center",
                 checked:false,
             }, {
                 value: "text-end",
                 //text: "Right",
                 title: "Right",
-                icon:"la la-align-right",
+                icon:"align-right",
                 checked:false,
             }],
         },
@@ -944,7 +954,7 @@ Vvveb.Components.extend("_base", "html/blockquote", {
             extraclass:"btn-group-sm btn-group-fullwidth",
             options: [{
                 value: "",
-                icon:"la la-times",
+                icon:"x",
                 //text: "None",
                 title: "None",
                 checked:true,
@@ -952,19 +962,19 @@ Vvveb.Components.extend("_base", "html/blockquote", {
                 value: "align-left",
                 //text: "Left",
                 title: "text-start",
-                icon:"la la-align-left",
+                icon:"align-left",
                 checked:false,
             }, {
                 value: "align-center",
                 //text: "Center",
                 title: "Center",
-                icon:"la la-align-center",
+                icon:"align-center",
                 checked:false,
             }, {
                 value: "align-right",
                 //text: "Right",
                 title: "Right",
-                icon:"la la-align-right",
+                icon:"align-right",
                 checked:false,
             }],
         },
@@ -1005,6 +1015,7 @@ Vvveb.Components.extend("_base", "html/list", {
 		},	
 			
         init: function(node) {
+            if (!node || !node.nodeName) return "ul";
             return node.nodeName.toLowerCase()
         },
         
@@ -1021,7 +1032,6 @@ Vvveb.Components.extend("_base", "html/list", {
 		name: "Items",
         key: "items",
         inputtype: ListInput,
-		htmlAttr:"data-slides-per-view",
 		inline:true,
 		data: {
 			selector:"li",
@@ -1032,8 +1042,9 @@ Vvveb.Components.extend("_base", "html/list", {
 		},
 		onChange: function(node, value, input, component, event) {
 			let element = node;
+			if (!element) return element;
 
-			if (event.action) {
+			if (event && event.action) {
 				if (event.action == "add") {
 					//node.append(generateElements(`<li>List item</li>`)[0]);
 					
@@ -1172,7 +1183,7 @@ Vvveb.Components.extend("_base", "html/tablerow", {
                 value: "success",
                 text: "Success"
             }, {
-                value: "error",
+                value: "danger",
                 text: "Error"
             }, {
                 value: "warning",
@@ -1206,10 +1217,10 @@ Vvveb.Components.extend("_base", "html/tablebody", {
 });
 
 Vvveb.Components.extend("_base", "html/tablefooter", {
-    nodes: ["tfooter"],
+    nodes: ["tfoot"],
     image: "icons/table.svg",
     name: "Table Footer",
-    html: "<tfooter>Table footer</tfooter>"
+    html: "<tfoot>Table footer</tfoot>"
 });
 
 Vvveb.Components.extend("_base", "html/tablehead", {
@@ -1231,7 +1242,7 @@ Vvveb.Components.extend("_base", "html/tablehead", {
                 value: "success",
                 text: "Success"
             }, {
-                value: "anger",
+                value: "danger",
                 text: "Error"
             }, {
                 value: "warning",
@@ -1286,7 +1297,7 @@ Vvveb.Components.extend("_base", "html/table", {
         inputtype: SelectInput,
         data: {
             options: [{
-				value: "Default",
+				value: "",
 				text: ""
 			}, {
 				value: "table-primary",
@@ -1390,11 +1401,11 @@ Vvveb.Components.extend("_base", "html/table", {
                 value: "",
                 text: "None"
             }, {
-                value: "thead-default",
-                text: "Default"
+                value: "thead-dark",
+                text: "Dark"
             }, {
-                value: "thead-inverse",
-                text: "Inverse"
+                value: "thead-light",
+                text: "Light"
             }]
         }
     }]
@@ -1462,11 +1473,11 @@ Vvveb.Components.extend("_base", "html/embed", {
     attributes: ["data-component-embed"],
     image: "icons/embed.svg",
     name: "Embed",
-    html: `<object data="" type="application/pdf" data-component-pdf></object>`,
+    html: `<embed data-component-embed src="" type="">`,
     properties: [{
-        name: "Data",
-        key: "data",
-        htmlAttr: "data",
+        name: "Source",
+        key: "src",
+        htmlAttr: "src",
         inputtype: TextInput
     }]
 });

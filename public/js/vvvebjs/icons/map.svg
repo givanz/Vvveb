@@ -1,1 +1,6 @@
-<?xml version="1.0" ?><svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><rect fill="none" height="256" width="256"/><polyline fill="none" points="96 184 32 200 32 56 96 40" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/><polygon fill="none" points="160 216 96 184 96 40 160 72 160 216" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/><polyline fill="none" points="160 72 224 56 224 200 160 216" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24" role="img" aria-label="map">
+  <!-- Tabler outline glyph @map (tabler/tabler-icons, MIT) - Vvveb builder component icon -->
+  <g fill="none" stroke="#334155" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 7l6 -3l6 3l6 -3v13l-6 3l-6 -3l-6 3v-13" /> <path d="M9 4v13" /> <path d="M15 7v13" />
+  </g>
+</svg>

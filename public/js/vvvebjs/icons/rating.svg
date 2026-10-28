@@ -1,3 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="48mm" height="48mm" viewBox="0 0 48 48">
-    <path style="fill:none;fill-opacity:1;stroke:#000009;stroke-width:1.04241371;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m12.004 279.169-4.046-2.561-4.115 2.45 1.185-4.64-3.6-3.156 4.778-.307 1.889-4.4 1.768 4.45 4.768.437-3.686 3.057zM27.967 279.323l-4.046-2.56-4.114 2.449 1.185-4.64-3.601-3.156 4.779-.306 1.889-4.4 1.768 4.45 4.768.436-3.686 3.057zM43.947 279.478l-4.046-2.561-4.114 2.45 1.185-4.64-3.601-3.156 4.779-.306 1.889-4.4 1.768 4.45 4.768.436-3.686 3.057z" transform="translate(0 -249)"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24" role="img" aria-label="rating">
+  <!-- Tabler outline glyph @star (tabler/tabler-icons, MIT) - Vvveb builder component icon -->
+  <g fill="none" stroke="#334155" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873l-6.158 -3.245" />
+  </g>
 </svg>

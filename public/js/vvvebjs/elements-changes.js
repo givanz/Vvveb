@@ -20,216 +20,219 @@
  */
 
 function ucFirst(str) {
-  if (!str) return str;
+	if (typeof str !== "string" || !str) return str;
 
-  return str[0].toUpperCase() + str.slice(1);
+	return str[0].toUpperCase() + str.slice(1);
 }
 
-const snakeCaseToCamelCase = str => str.replace(/(_|^|-)\w/g, letter => `${letter.toUpperCase().replace(/[-_]/, '')}`);
+const snakeCaseToCamelCase = str => typeof str === "string" ? str.replace(/(_|^|-)\w/g, letter => `${letter.toUpperCase().replace(/[-_]/, '')}`) : str;
 
 function getElementByXpath(path, element = window.FrameDocument) {
-	let elements = window.FrameDocument.evaluate(path, element, null, XPathResult.ANY_TYPE, null);
-  
-    components = [];
-	let currentComponent = elements.iterateNext();
-	while (currentComponent) {
-	  components.push(currentComponent);
-	  currentComponent = elements.iterateNext();
-	}  
-	
-	return components;
+	if (!window.FrameDocument || !element) return [];
+
+	let elements;
+	try {
+		elements = window.FrameDocument.evaluate(path, element, null, XPathResult.ANY_TYPE, null);
+	} catch (e) {
+		return [];
+	}
+
+	const nodes = [];
+	try {
+		let current = elements.iterateNext();
+		while (current) {
+			nodes.push(current);
+			current = elements.iterateNext();
+		}
+	} catch (e) {
+		return [];
+	}
+
+	return nodes;
 }
 
 function getComponents() {
-
-	let elements = getElementByXpath(".//*[ @*[starts-with(name(), 'data-v-component-')] ]",  window.FrameDocument);
-	return elements;
+	return getElementByXpath(".//*[ @*[starts-with(name(), 'data-v-component-')] ]", window.FrameDocument);
 }
 
 function getElements() {
-
-	let nodes = window.FrameDocument.querySelectorAll("[data-v-id]");
-	let component = false;
+	if (!window.FrameDocument || typeof window.FrameDocument.querySelectorAll !== "function") return [];
+	const nodes = window.FrameDocument.querySelectorAll("[data-v-id]");
 	let components = [];
-	
-	for (let i = 0; i < nodes.length; i++) {
-	  let node = nodes[i];
-	  let componentName = node.dataset.vComponent ?? node.dataset.vType;
-	  if (!componentName) {
-		  for (attribute of node.attributes) {
-			  if (attribute.name.startsWith("data-v-component-")) {
-				  componentName = attribute.name.replace("data-v-component-","");
-				  break;
-			  }
-		  }
-	  }
 
-	  let type = "data-v-" + componentName + "-";
-	  let name = "";
-
-	  let fields = []; 
-	  let fieldsNodes = getElementByXpath(".//*[ @*[starts-with(name(), 'data-v-')] ]",  node);
-	  let duplicateFiels = [];
-
-	  for (let j = 0; j < fieldsNodes.length; j++) {
-		  let fieldNode = fieldsNodes[j];
-		  let field = false;
-		  let content = "";
-		  let preview = "";
-
-		  for (attribute of fieldNode.attributes) {
-				let attr = attribute.name;
-				let value = attribute.value;
-				
-				if (attr.indexOf(type) == 0) {
-					attr = attr.replace(type, "").toLowerCase();
-
-					let nodeType = "text";
-
-					if (attr == "image" || fieldNode.nodeName == "IMG") {
-						preview = content = fieldNode.getAttribute("src");//fieldNode.src
-						nodeType = "img";
-					} else if (attr == "url" || fieldNode.nodeName == "A") {
-						preview = content = fieldNode.getAttribute("href");//fieldNode.href
-						nodeType = "url";
-					} else {
-						//content = fieldNode.textContent.trim();
-						content = fieldNode.innerHTML.trim();
-						preview = fieldNode.textContent.substr(0, 100);
-					}
-					
-					field = {"name":attr, "node":fieldNode, "value": content, "preview": preview, nodeType};
-					
-                    if (attr == "name") {
-                        name = content;
-                    }
+	for (const node of nodes) {
+		let componentName = node.dataset.vComponent ?? node.dataset.vType;
+		if (!componentName) {
+			for (const attribute of node.attributes) {
+				if (attribute.name.startsWith("data-v-component-")) {
+					componentName = attribute.name.replace("data-v-component-", "");
+					break;
 				}
-				
-		  }
-		  
-		  
-		  if (field) {
-			  if (!duplicateFiels.includes(field.name)) {//don't add duplicate or children fields
-				fields.push(field);
-				duplicateFiels.push(field.name);
-			  }
-		  }
-	  }
-	  
-	  component = {"id": node.dataset.vId, name, "type":node.dataset.vType, component:componentName, node, fields};
-	  components.push(component);
+			}
+		}
+
+		//nodes without a component type carry no editable fields, skip them
+		if (!componentName) continue;
+
+		const type = "data-v-" + componentName + "-";
+		let name = "";
+
+		const fields = [];
+		const fieldsNodes = getElementByXpath(".//*[ @*[starts-with(name(), 'data-v-')] ]", node);
+		const seenFields = [];//don't add duplicate or children fields
+
+		for (const fieldNode of fieldsNodes) {
+			for (const attribute of fieldNode.attributes) {
+				let attr = attribute.name;
+
+				if (attr.indexOf(type) !== 0) continue;
+
+				attr = attr.replace(type, "").toLowerCase();
+				if (seenFields.includes(attr)) continue;
+
+				let content = "";
+				let preview = "";
+				let nodeType = "text";
+
+				if (attr == "image" || fieldNode.nodeName == "IMG") {
+					preview = content = fieldNode.getAttribute("src") ?? "";
+					nodeType = "img";
+				} else if (attr == "url" || fieldNode.nodeName == "A") {
+					preview = content = fieldNode.getAttribute("href") ?? "";
+					nodeType = "url";
+				} else {
+					content = String(fieldNode.innerHTML ?? "").trim();
+					preview = String(fieldNode.textContent ?? "").slice(0, 100);
+				}
+
+				if (attr == "name") {
+					name = content;
+				}
+
+				fields.push({"name": attr, "node": fieldNode, "value": content, "preview": preview, nodeType});
+				seenFields.push(attr);
+			}
+		}
+
+		components.push({"id": node.dataset.vId, name, "type": node.dataset.vType, component: componentName, node, fields});
 	}
 
-	return components;	
+	return components;
 }
 
 function getComponentFields() {
-
-	return getElementByXpath(".//*[ @*[starts-with(name(), 'data-v-component-')] ]//*[ @*[starts-with(name(), 'data-v-')] ]",  window.FrameDocument);
+	return getElementByXpath(".//*[ @*[starts-with(name(), 'data-v-component-')] ]//*[ @*[starts-with(name(), 'data-v-')] ]", window.FrameDocument);
 }
 
 
-
 class ChangeManager {
-	
-	styles = {};
-	cssContainer = false;
+
 	originalContent = {};
-	
-	constructor() {
-	}
 
 	setOriginalContent() {
 		this.originalContent = getElements();
 	}
-	
-	diff(original, changed, includeNode = true, includePreview = true) {
-		
-		let changes = {};
-		let _new = {};
-		
-		//todo match by component type and id
-		for (i in changed) {
-			let component = {...changed[i]};//copy by value
-			let origComponent = original[i];
 
-			if ((origComponent === undefined)  || (origComponent.id != component.id)) {
-				console.warn("id mismatch", component, origComponent);
+	diff(original, changed, includeNode = true, includePreview = true) {
+
+		const changes = {};
+
+		const originalById = {};
+		for (const i in original) {
+			const orig = original[i];
+			if (orig && orig.id != null) originalById[orig.id] = orig;
+		}
+
+		for (const i in changed) {
+			const component = {...changed[i]};//copy by value
+			const origComponent = original[i];
+
+			//new components can't be matched against the original snapshot yet
+			if (origComponent === undefined) {
+				console.warn("new component skipped", component);
 				continue;
 			}
-							
-			if (origComponent) {
-                if (!includeNode) {
-                    delete component['node'];
-                }
-                
-				if (component["fields"]) {
-					let fields = [];	
-				
-					for (j in component["fields"]) {
-						
-						let field = component["fields"][j];
-						let origField = origComponent["fields"][j];
 
-						if (field && origField && (field.value != origField.value)) {
-							
-								if (!changes[i]) {
-									changes[i] = component;
-									//changes[i]["fields"] = [];
-									field["oldValue"] = origField.value;
-								}
-								
-								if (!includeNode) {
-									delete field['node'];
-								}
+			if (!component["fields"]) continue;
 
-								if (!includePreview) {
-									delete field['preview'];
-								}
-								
-								fields.push(field);
-						}
+			if (!includeNode) {
+				delete component['node'];
+			}
+
+			const origFieldsByName = {};
+			for (const j in origComponent["fields"]) {
+				const origField = origComponent["fields"][j];
+				if (origField) origFieldsByName[origField.name] = origField;
+			}
+
+			const fields = [];
+
+			for (const j in component["fields"]) {
+				const field = component["fields"][j];
+				if (!field) continue;
+				const origField = origFieldsByName[field.name];
+
+				if (origField && (field.value != origField.value)) {
+					field["oldValue"] = origField.value;
+
+					if (!changes[i]) {
+						changes[i] = component;
 					}
-					if (changes[i]) {
-						changes[i]["fields"] = fields;
+
+					if (!includeNode) {
+						delete field['node'];
 					}
+
+					if (!includePreview) {
+						delete field['preview'];
+					}
+
+					fields.push(field);
 				}
-			} else {
-				//new
-				changes[i] = component;
+			}
+
+			if (changes[i]) {
+				changes[i]["fields"] = fields;
 			}
 		}
-		
+
 		return changes;
 	}
 
 	getChangedElements(includeNode = false, includePreview = false) {
-		
-		return this.diff(this.originalContent, getElements(), includeNode);
+		return this.diff(this.originalContent, getElements(), includeNode, includePreview);
 	}
-	
+
 	render() {
-        let selector = "#save-offcanvas .components";
-		let changes = this.getChangedElements(false, true);
-        let result = "";
-        
-        for (i in changes) {
-            let component = changes[i];
-            let fields = "";
-            
-            for (j in component["fields"]) {
-                let field = component["fields"][j];
-                fields += tmpl("vvveb-save-component-field", field);
-            }
-            
-            component["fields"] = fields;
-            component["id"] = i;
-            result += tmpl("vvveb-save-component", component);
-        }
-        
-        let element = document.querySelector(selector);
-        element.innerHTML = result;
-        //
+		const selector = "#save-offcanvas .components";
+		const changes = this.getChangedElements(false, true);
+		let result = "";
+
+		for (const i in changes) {
+			const component = changes[i];
+			let fields = "";
+
+			for (const j in component["fields"]) {
+				try {
+					fields += tmpl("vvveb-save-component-field", component["fields"][j]);
+				} catch (e) {
+					console.error(e);
+				}
+			}
+
+			component["fields"] = fields;
+			component["id"] = i;
+			try {
+				result += tmpl("vvveb-save-component", component);
+			} catch (e) {
+				console.error(e);
+			}
+		}
+
+		const element = document.querySelector(selector);
+		if (element) {
+			element.innerHTML = result;
+		}
 	}
 }
 

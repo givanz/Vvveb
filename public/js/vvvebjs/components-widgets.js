@@ -38,29 +38,43 @@ Vvveb.Components.extend("_base", "widgets/googlemaps", {
     key: '',
     
 	init: function (node) {
-		let iframe = node.querySelector('iframe');
-		let url = new URL(iframe.getAttribute("src"));
-		let params = new URLSearchParams(url.search);
+		if (!node || typeof node.querySelector !== "function") return node;
+		const iframe = node.querySelector('iframe');
+		if (!iframe) return node;
+		let params;
+		try {
+			const url = new URL(iframe.getAttribute("src"));
+			params = new URLSearchParams(url.search);
+		} catch (e) {
+			return node;
+		}
+		const panel = document.querySelector(".component-properties");
 		
-		this.z = params.get("z");
-		this.q = params.get("q");
-		this.t = params.get("t");
-		this.key = params.get("key");
+		this.z = params.get("z") ?? "";
+		this.q = params.get("q") ?? "";
+		this.t = params.get("t") ?? "";
+		this.key = params.get("key") ?? "";
 
-		document.querySelector(".component-properties input[name=z]").value = this.z;
-		document.querySelector(".component-properties input[name=q]").value = this.q;
-		document.querySelector(".component-properties select[name=t]").value = this.t;
-		document.querySelector(".component-properties input[name=key]").value = this.key;
+		if (panel) {
+			const set = (selector, value) => { const el = panel.querySelector(selector); if (el) el.value = value ?? ""; };
+			set('input[name=z]', this.z);
+			set('input[name=q]', this.q);
+			set('select[name=t]', this.t);
+			set('input[name=key]', this.key);
+		}
 	},
 	    
     onChange: function (node, property, value) {
-		map_iframe = node.querySelector('iframe');
+		if (!node || !property) return node;
+		const map_iframe = typeof node.querySelector === "function" ? node.querySelector('iframe') : null;
+		if (!map_iframe) return node;
 		
 		this[property.key] = value;
 		
-		mapurl = 'https://maps.google.com/maps?q=' + this.q + '&z=' + this.z + '&t=' + this.t + '&output=embed';
+		let mapurl = 'https://maps.google.com/maps?q=' + encodeURIComponent(this.q ?? "") + '&z=' + (this.z ?? "") + '&t=' + (this.t ?? "") + '&output=embed';
+		if (this.key) mapurl += '&key=' + encodeURIComponent(this.key);
 		
-		map_iframe.setAttribute("src",mapurl);
+		map_iframe.setAttribute("src", mapurl);
 		
 		return node;
 	},
@@ -113,23 +127,36 @@ Vvveb.Components.extend("_base", "widgets/openstreetmap", {
     layer: 'mapnik', //map type
     
 	init: function (node) {
-		let iframe = node.querySelector('iframe');
-		let url = new URL(iframe.getAttribute("src"));
-		let params = new URLSearchParams(url.search);
+		if (!node || typeof node.querySelector !== "function") return node;
+		const iframe = node.querySelector('iframe');
+		if (!iframe) return node;
+		let params;
+		try {
+			const url = new URL(iframe.getAttribute("src"));
+			params = new URLSearchParams(url.search);
+		} catch (e) {
+			return node;
+		}
+		const panel = document.querySelector(".component-properties");
 		
-		this.bbox = params.get("bbox");
-		this.layer = params.get("layer");
+		this.bbox = params.get("bbox") ?? "";
+		this.layer = params.get("layer") ?? "";
 
-		document.querySelector(".component-properties input[name=bbox]").value = this.bbox;
-		document.querySelector(".component-properties input[name=layer]").value = this.layer;
+		if (panel) {
+			const set = (selector, value) => { const el = panel.querySelector(selector); if (el) el.value = value ?? ""; };
+			set('input[name=bbox]', this.bbox);
+			set('select[name=layer]', this.layer);
+		}
 	},
 	    
     onChange: function (node, property, value) {
-		map_iframe = node.querySelector('iframe');
+		if (!node || !property) return node;
+		let map_iframe = typeof node.querySelector === "function" ? node.querySelector('iframe') : null;
+		if (!map_iframe) return node;
 		
 		this[property.key] = value;
 		
-		mapurl = 'https://www.openstreetmap.org/export/embed.html?bbox=' + this.bbox + '&layer=' + this.layer;
+		let mapurl = 'https://www.openstreetmap.org/export/embed.html?bbox=' + (this.bbox ?? "") + '&layer=' + (this.layer ?? "");
 		
 		map_iframe.setAttribute("src",mapurl);
 		
@@ -140,25 +167,22 @@ Vvveb.Components.extend("_base", "widgets/openstreetmap", {
         name: "Map",
         key: "bbox",
         inputtype: TextInput
-/*    },{
+    },{
         name: "Layer",
         key: "layer",
         inputtype: SelectInput,
         data:{
 			options: [{
-                value: "",
+                value: "mapnik",
                 text: "Default"
             },{
-                value: "Y",
-                text: "CyclOSM"
-            },{
-                value: "C",
+                value: "cyclemap",
                 text: "Cycle Map"
             },{
-                value: "T",
+                value: "transportmap",
                 text: "Transport Map"
             }]
-       }*/
+       }
 	}]
 });
 
@@ -185,23 +209,27 @@ Vvveb.Components.extend("_base", "widgets/embed-video", {
 	vimeoRegex : /(?:vimeo\.com(?:[^\d]+))(\d+)/i,
 
 	init: function (node) {
-		iframe = node.querySelector('iframe');
-		video = node.querySelector('video');
+		if (!node || typeof node.querySelector !== "function") return node;
+		const iframe = node.querySelector('iframe');
+		const video = node.querySelector('video');
+		const panel = document.querySelector(".component-properties");
+		const show = (key, display) => { const el = panel && panel.querySelector(`[data-key=${key}]`); if (el) el.style.display = display; };
 		
-		document.querySelector(".component-properties [data-key=url]").style.display = "none";
-		document.querySelector(".component-properties [data-key=poster]").style.display = "none";
+		show("url", "none");
+		show("poster", "none");
 		
 		//check if html5
 		if (video) {
 			this.url = video.src;
+			this.t = "h";
 		} else if (iframe) {//vimeo or youtube
-			let src = iframe.getAttribute("src");
+			const src = iframe.getAttribute("src");
 			let match;
 
-			if (src && src.indexOf("youtube") && (match = src.match(this.youtubeRegex))) {//youtube
+			if (src && src.indexOf("youtube") > -1 && (match = src.match(this.youtubeRegex))) {//youtube
 				this.video_id = match[1];
 				this.t = "y";
-			} else if (src && src.indexOf("vimeo") && (match = src.match(this.vimeoRegex))) { //vimeo
+			} else if (src && src.indexOf("vimeo") > -1 && (match = src.match(this.vimeoRegex))) { //vimeo
 				this.video_id = match[1];
 				this.t = "v";
 			} else {
@@ -209,47 +237,58 @@ Vvveb.Components.extend("_base", "widgets/embed-video", {
 			}
 		}
 		
-		document.querySelector(".component-properties input[name=video_id]").value = this.video_id;
-		document.querySelector(".component-properties input[name=url]").value = this.url;
-		document.querySelector(".component-properties select[name=t]").value = this.t;
+		if (panel) {
+			const set = (selector, value) => { const el = panel.querySelector(selector); if (el) el.value = value; };
+			set('input[name=video_id]', this.video_id);
+			set('input[name=url]', this.url);
+			set('select[name=t]', this.t);
+		}
 	},
 	
 	onChange: function (node, property, value) {
+		if (!node || !property) return node;
 		this[property.key] = value;
-		//if (property.key == "t")
-		{
-			switch (this.t) {
-				case 'y':
-					document.querySelector(".component-properties [data-key=video_id]").style.display = "";
-					document.querySelector(".component-properties [data-key=url]").style.display = "none";
-					document.querySelector(".component-properties [data-key=poster]").style.display = "none";
-				
-					newnode = generateElements(`<iframe width="100%" height="100%" allowfullscreen="true" frameborder="0" allow="autoplay" 
-										src="https://www.youtube.com/embed/${this.video_id}?autoplay=${this.autoplay}&controls=${this.controls}&loop=${this.loop}&playsinline=${this.playsinline}&mute=${this.mute}">
-								</iframe>`)[0];
-				break;
-				case 'v':
-					document.querySelector(".component-properties [data-key=video_id]").style.display = "";
-					document.querySelector(".component-properties [data-key=url]").style.display = "none";
-					document.querySelector(".component-properties [data-key=poster]").style.display = "none";
-					newnode = generateElements(`<iframe width="100%" height="100%" allowfullscreen="true" frameborder="0" allow="autoplay" 
-										src="https://player.vimeo.com/video/${this.video_id}?autoplay=${this.autoplay}&controls=${this.controls}&loop=${this.loop}&playsinline=${this.playsinline}&mute=${this.mute}">
-								</iframe>`)[0];
-				break;
-				case 'h':
-					document.querySelector(".component-properties [data-key=video_id]").style.display = "none";
-					document.querySelector(".component-properties [data-key=url]").style.display = "";
-					document.querySelector(".component-properties [data-key=poster]").style.display = "";
-					newnode = generateElements('<video poster="' + this.poster + '" src="' + this.url + '" ' + (this.autoplay?' autoplay ':'') + (this.controls?' controls ':'') + (this.loop?' loop ':'') + (this.playsinline?' playsinline ':'') + (this.mute?' mute ':'') + ' style="height: 100%; width: 100%;"></video>')[0];
-				break;
-			}
-			
-			node.querySelector(":scope > iframe,:scope  > video").replaceWith(newnode);
-			return node;
+		this.video_id = this.video_id ?? "";
+		this.url = this.url ?? "";
+		this.poster = this.poster ?? "";
+
+		const panel = document.querySelector(".component-properties");
+		const show = (key, display) => { const el = panel && panel.querySelector(`[data-key=${key}]`); if (el) el.style.display = display; };
+		let newnode;
+
+		switch (this.t) {
+			case 'y':
+				show("video_id", "");
+				show("url", "none");
+				show("poster", "none");
+		
+				newnode = generateElements(`<iframe width="100%" height="100%" allowfullscreen="true" frameborder="0" allow="autoplay" 
+									src="https://www.youtube.com/embed/${this.video_id}?autoplay=${this.autoplay}&controls=${this.controls}&loop=${this.loop}&playsinline=${this.playsinline}&mute=${this.mute}">
+							</iframe>`)[0];
+			break;
+			case 'v':
+				show("video_id", "");
+				show("url", "none");
+				show("poster", "none");
+				newnode = generateElements(`<iframe width="100%" height="100%" allowfullscreen="true" frameborder="0" allow="autoplay" 
+									src="https://player.vimeo.com/video/${this.video_id}?autoplay=${this.autoplay}&controls=${this.controls}&loop=${this.loop}&playsinline=${this.playsinline}&mute=${this.mute}">
+							</iframe>`)[0];
+			break;
+			case 'h':
+				show("video_id", "none");
+				show("url", "");
+				show("poster", "");
+				newnode = generateElements('<video poster="' + this.poster + '" src="' + this.url + '" ' + (this.autoplay?' autoplay ':'') + (this.controls?' controls ':'') + (this.loop?' loop ':'') + (this.playsinline?' playsinline ':'') + (this.mute?' mute ':'') + ' style="height: 100%; width: 100%;"></video>')[0];
+			break;
+		}
+		
+		if (newnode) {
+			const current = node.querySelector(":scope > iframe, :scope > video");
+			if (current) current.replaceWith(newnode);
 		}
 		
 		return node;
-	},	
+	},
 	
     properties: [{
         name: "Provider",
@@ -273,15 +312,16 @@ Vvveb.Components.extend("_base", "widgets/embed-video", {
         inputtype: TextInput,
    		onChange: function(node, value, input, component) {
 			
-			let youtube = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]+)/i;
-			let vimeo = /(?:vimeo\.com(?:[^\d]+))(\d+)/i;
 			let id = false;
 			let t = false;
-console.log(value);
-			if (((id = value.match(youtube)) && (t = "y")) || ((id = value.match(vimeo)) && (t = "v"))) {
-				document.querySelector(".component-properties select[name=t]").value = t;
-				document.querySelector(".component-properties input[name=video_id]").value = id[1];
-console.log(id);
+			value = String(value ?? "");
+
+			if (component && (((id = value.match(component.youtubeRegex)) && (t = "y")) || ((id = value.match(component.vimeoRegex)) && (t = "v")))) {
+				let typeSelect = document.querySelector(".component-properties select[name=t]");
+				if (typeSelect) typeSelect.value = t;
+				let idInput = document.querySelector(".component-properties input[name=video_id]");
+				if (idInput) idInput.value = id[1];
+
 				component.t = t;
 				component.video_id = id[1];
 
@@ -389,13 +429,13 @@ Vvveb.Components.extend("_base", "widgets/facebookcomments", {
 			></div></div>',
     properties: [{
         name: "Href",
-        key: "business",
+        key: "href",
         htmlAttr: "data-href",
         child:".fb-comments",
         inputtype: TextInput
     },{		
-        name: "Item name",
-        key: "item_name",
+        name: "Number of posts",
+        key: "numposts",
         htmlAttr: "data-numposts",
         child:".fb-comments",
         inputtype: TextInput
@@ -412,7 +452,7 @@ Vvveb.Components.extend("_base", "widgets/facebookcomments", {
         child:".fb-comments",
         inputtype: TextInput
     },{		
-        name: "Currency code",
+        name: "Width",
         key: "width",
         htmlAttr: "data-width",
         child:".fb-comments",
@@ -450,30 +490,40 @@ Vvveb.Components.extend("_base", "widgets/twitter", {
 
     tweet:'',//location
 	init: function (node) {
+		if (!node || typeof node.querySelector !== "function") return node;
 		let iframe = node.querySelector('iframe');
-		let src = iframe.getAttribute("src");
-		let url = new URL(src);
-		let params = new URLSearchParams(url.search);
+		if (!iframe) return node;
+		let src = iframe.getAttribute("src") || "";
+		let params;
+		try {
+			params = new URLSearchParams(new URL(src).search);
+		} catch (e) {
+			//relative urls have no origin for URL()
+			params = new URLSearchParams((src.split("?")[1] || ""));
+		}
 		
 		this.tweet = params.get("id");
 		
 		if (!this.tweet) {
-			if (match = src.match(this.twitterRegex)) {
+			const match = src.match(this.twitterRegex);
+			if (match) {
 				this.tweet = match[1];
 			}
-			
 		}
 
-		document.querySelector(".component-properties input[name=tweet]").value = this.tweet;
+		const tweetInput = document.querySelector(".component-properties input[name=tweet]");
+		if (tweetInput) tweetInput.value = this.tweet;
 	},
 	    
     onChange: function (node, property, value) {
-		tweet_iframe = node.querySelector('iframe');
+		if (!node || !property) return node;
+		let tweet_iframe = typeof node.querySelector === "function" ? node.querySelector('iframe') : null;
+		if (!tweet_iframe) return node;
 
 		if (property.key == "tweet") {
 			this[property.key] = value;
 			
-			tweeturl = 'https://platform.twitter.com/embed/Tweet.html?embedId=twitter-widget-0&frame=false&hideCard=false&hideThread=false&id=' + this.tweet;
+			let tweeturl = 'https://platform.twitter.com/embed/Tweet.html?embedId=twitter-widget-0&frame=false&hideCard=false&hideThread=false&id=' + this.tweet;
 			
 			tweet_iframe.setAttribute("src",tweeturl);
 		}
@@ -487,11 +537,12 @@ Vvveb.Components.extend("_base", "widgets/twitter", {
         inputtype: TextInput,
    		onChange: function(node, value, input, component) {
 			
-			let twitterRegex = /(?:twitter\.com(?:[^\d]+))(\d+)/i;
 			let id = false;
+			value = String(value ?? "");
 
-			if (id = value.match(twitterRegex)) {
-				document.querySelector(".component-properties input[name=tweet]").value = id[1];
+			if (component && component.twitterRegex && (id = value.match(component.twitterRegex))) {
+				let tweetInput = document.querySelector(".component-properties input[name=tweet]");
+				if (tweetInput) tweetInput.value = id[1];
 
 				component.tweet = id[1];
 				return id[1];
@@ -611,18 +662,19 @@ Vvveb.Components.extend("_base", "widgets/facebookpage", {
         child:".fb-page",
         inputtype: TextInput
 	}],
-   onChange: function(node, input, value, component) {
-	   
-	   let newElement = generateElements(this.html)[0];
-	   newElement.find(".fb-page").setAttribute(input.htmlAttr, value);
+   /**
+	 * Re-apply the changed attribute on the .fb-page element.
+	 * (the facebook sdk re-parses data-* attributes on page load)
+	 */
+   onChange: function(node, property, value) {
+	   if (!node || !property) return node;
+	   const fbPage = (typeof node.querySelector === "function" ? node.querySelector(".fb-page") : null) ?? node;
 
-	   frameHead.querySelector("[data-fbcssmodules]").remove();
-	   frameBody.querySelector("[data-fbcssmodules]").remove();
-	   frameHead.querySelector("script[src^='https://connect.facebook.net']").remove();
+	   if (property.htmlAttr) {
+		   fbPage.setAttribute(property.htmlAttr, value ?? "");
+	   }
 
-
-	   node.parent().html(newElement.html());
-	   return newElement;
+	   return node;
 	}	
 });
     
@@ -668,19 +720,22 @@ Vvveb.Components.extend("_base", "widgets/chartjs", {
 	},		
 
 	dragStart: function (node) {
+		if (!node) return node;
 		//check if chartjs is included and if not add it when drag starts to allow the script to load
-		body = Vvveb.Builder.frameBody;
+		let body = Vvveb.Builder.frameBody;
+		if (!body) return node;
 		
 		if (!body.querySelector("#chartjs-script")) {
 			body.append(generateElements('<script id="chartjs-script" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>')[0]);
 			body.append(generateElements('<script>\
-				$(document).ready(function() {\
-					$(".chartjs").each(function () {\
-						ctx = $("canvas", this).get(0).getContext("2d");\
-						config = JSON.parse(this.dataset.chart);\
+				document.addEventListener("DOMContentLoaded", function() {\
+					let ctx, config, chartjs;\
+					document.querySelectorAll(".chartjs").forEach(function (el) {\
+						ctx = el.querySelector("canvas").getContext("2d");\
+						config = JSON.parse(el.dataset.chart);\
 						chartjs = new Chart(ctx, config);\
 					});\
-				\});\
+				});\
 			  </script>')[0]);
 		}
 		
@@ -689,17 +744,29 @@ Vvveb.Components.extend("_base", "widgets/chartjs", {
 	
 
 	drawChart: function () {
-		if (this.chartjs != null) this.chartjs.destroy();
+		//Chart lives in the iframe where the library is injected, not in the builder window
+		let frameWindow = Vvveb.Builder.iframe && Vvveb.Builder.iframe.contentWindow;
+		let ChartLib = (frameWindow && frameWindow.Chart) || (typeof Chart !== "undefined" ? Chart : null);
+		if (!ChartLib || !this.node || !this.config || !this.ctx) return;
+		if (this.chartjs != null && typeof this.chartjs.destroy === "function") this.chartjs.destroy();
 		this.node.dataset.chart = JSON.stringify(this.config);
 		
-		config = Object.assign({}, this.config);//avoid passing by reference to avoid chartjs to fill the object
-		this.chartjs = new Chart(this.ctx, config);
+		let config = Object.assign({}, this.config);//avoid passing by reference to avoid chartjs to fill the object
+		this.chartjs = new ChartLib(this.ctx, config);
 	},
 	
 	init: function (node) {
+		if (!node) return node;
 		this.node = node;
-		this.ctx = node.querySelector("canvas").getContext("2d");
-		this.config = JSON.parse(node.dataset.chart);
+		let canvas = typeof node.querySelector === "function" ? node.querySelector("canvas") : null;
+		if (!canvas || typeof canvas.getContext !== "function") return node;
+		this.ctx = canvas.getContext("2d");
+		try {
+			this.config = JSON.parse(node.dataset.chart);
+		} catch (e) {
+			return node;
+		}
+		if (!this.config) return node;
 		this.drawChart();
 
 		return node;
@@ -742,11 +809,17 @@ Vvveb.Components.extend("_base", "widgets/chartjs", {
             }]
        },
 		init: function(node) {
-			return JSON.parse(node.dataset.chart).type;
+			try {
+				return (node && node.dataset && node.dataset.chart ? JSON.parse(node.dataset.chart).type : "") ?? "";
+			} catch (e) {
+				return "";
+			}
 		},
        onChange: function(node, value, input, component) {
+		   if (!component) return node;
+		   if (!component.config) component.config = {};
 		   component.config.type = value;
-		   component.drawChart();
+		   if (typeof component.drawChart === "function") component.drawChart();
 		   
 		   return node;
 		}
@@ -754,12 +827,15 @@ Vvveb.Components.extend("_base", "widgets/chartjs", {
 });
 
 function lottieAfterDrop(node) {
+	if (!node) return node;
 	//check if lottie js is included and if not add it when drag starts to allow the script to load
-	body = Vvveb.Builder.frameBody;
+	let body = Vvveb.Builder.frameBody;
+	if (!body) return node;
 
 	if (!body.querySelector("#lottie-js")) {
-		let lib = document.createElement('script');
-		let code = document.createElement('script');
+		const doc = body.ownerDocument || document;
+		let lib = doc.createElement('script');
+		let code = doc.createElement('script');
 		lib.id = 'lottie-js';
 		lib.type = 'text/javascript';
 		lib.src = 'https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js';
@@ -794,10 +870,12 @@ function lottieAfterDrop(node) {
 		body.appendChild(code);
 		
 		lib.addEventListener('load', function() {		
-			Vvveb.Builder.iframe.contentWindow.initLottie();
+			let frameWindow = Vvveb.Builder.iframe && Vvveb.Builder.iframe.contentWindow;
+			if (frameWindow && typeof frameWindow.initLottie === "function") frameWindow.initLottie();
 		});
 	} else {
-		Vvveb.Builder.iframe.contentWindow.initLottie(true);
+		let frameWindow = Vvveb.Builder.iframe && Vvveb.Builder.iframe.contentWindow;
+		if (frameWindow && typeof frameWindow.initLottie === "function") frameWindow.initLottie(true);
 	}
 	
 	return node;
@@ -814,7 +892,9 @@ Vvveb.Components.add("widgets/lottie", {
 	afterDrop: lottieAfterDrop,
 	
     onChange: function (node, property, value) {
-		Vvveb.Builder.iframe.contentWindow.initLottie();
+		if (!node) return node;
+		let frameWindow = Vvveb.Builder.iframe && Vvveb.Builder.iframe.contentWindow;
+		if (frameWindow && typeof frameWindow.initLottie === "function") frameWindow.initLottie();
 		Vvveb.Builder.selectNode(node);
 		return node;
 	},	

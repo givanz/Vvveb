@@ -20,7 +20,7 @@
  */
 
 Vvveb.ComponentsGroup['Bootstrap 5'] =
-["html/container", "html/gridrow", "html/btn", "html/btn-link", "html/buttongroup", "html/buttontoolbar", "html/alert", "html/card", "html/listgroup", "html/badge", "html/progress", "html/navbar", "html/breadcrumbs", "html/pagination"];
+["html/container", "html/gridrow", "html/btn", "html/buttongroup", "html/buttontoolbar", "html/alert", "html/card", "html/listgroup", "html/badge", "html/progress", "html/navbar", "html/breadcrumbs", "html/pagination"];
 
 
 Vvveb.Components.extend("_base", "html/container", {
@@ -85,9 +85,6 @@ Vvveb.Components.extend("html/link", "html/btn", {
             },{
                 value: "btn-primary",
                 text: "Primary"
-            },{
-                value: "btn btn-info",
-                text: "Info"
             },{
                 value: "btn-success",
                 text: "Success"
@@ -452,7 +449,7 @@ Vvveb.Components.extend("_base", "html/breadcrumbs", {
     html: `<ol class="breadcrumb">
 			<li class="breadcrumb-item"><a href="#">Home</a></li>
 			<li class="breadcrumb-item"><a href="#">Library</a></li>
-			s<li class="breadcrumb-item active" aria-current="page"><a href="#">Book</a></li>
+			<li class="breadcrumb-item active" aria-current="page"><a href="#">Book</a></li>
 		  </ol>`,
 	properties: [{
 		name: "Divider",
@@ -738,10 +735,16 @@ Vvveb.Components.extend("_base", "html/gridcolumn", {
         data: {hide_remove:true},
 
 		beforeInit: function(node) {
-			_class = node.getAttribute("class");
+			if (!node) return node;
+			let _class = (typeof node.getAttribute === "function" ? node.getAttribute("class") : null) || "";
 			
 			let reg = /col(-[^-\$ ]*)?-?(\d+)?/g; 
 			let match;
+
+			//clear previous values, beforeInit runs on every selection
+			for (const key in this.data) {
+				if (key.indexOf("col") === 0) delete this.data[key];
+			}
 
 			while ((match = reg.exec(_class)) != null) {
 				let key = "col" + ((match[1] != undefined) ? "_" + match[1].replace('-','') : "");
@@ -750,12 +753,13 @@ Vvveb.Components.extend("_base", "html/gridcolumn", {
 		},
 		
 		onChange: function(node, value, input) {
-			let _class = node.getAttribute("class");
+			if (!node || !input || !input.name) return node;
+			let _class = (typeof node.getAttribute === "function" ? node.getAttribute("class") : null) || "";
 			
 			//remove previous breakpoint column size
 			_class = _class.replace(new RegExp(input.name + '-\\d+?'), '');
 			//add new column size
-			if (value) _class +=  ' ' + input.name + '-' + value;
+			if (value) _class = (_class +  ' ' + input.name + '-' + value).trim();
 			node.setAttribute("class", _class);
 			
 			return node;
@@ -773,12 +777,12 @@ Vvveb.Components.extend("_base", "html/gridrow", {
 		classesRegex: ["col-"],
 	}],
 	beforeInit: function (node) {
-		properties = [];
+		if (!node || typeof node.querySelectorAll !== "function") return node;
+		let properties = [];
 		let i = 0;
-		let j = 0;
 		
 		node.querySelectorAll('[class*="col-"],.col').forEach(el => {
-			_class = el.getAttribute("class");
+			let _class = el.getAttribute("class");
 			
 			let reg = /col(-[^-\$ ]*)?-?(\d+)?/g; 
 			let match;
@@ -802,6 +806,7 @@ Vvveb.Components.extend("_base", "html/gridrow", {
 				onChange: function(node, value, input) {
 
 					let column = this.columnNode;
+					if (!column || !node || !input) return node;
 					
 					//if remove button is clicked remove column and render row properties
 					if (input.nodeName == 'BUTTON') {
@@ -811,12 +816,12 @@ Vvveb.Components.extend("_base", "html/gridrow", {
 					}
 
 					//if select input then change column class
-					_class = column.getAttribute("class");
+					let _class = (typeof column.getAttribute === "function" ? column.getAttribute("class") : null) || "";
 					
 					//remove previous breakpoint column size
 					_class = _class.replace(new RegExp(input.name + '-\\d+?'), '');
 					//add new column size
-					if (value) _class +=  ' ' + input.name + '-' + value;
+					if (value) _class = (_class +  ' ' + input.name + '-' + value).trim();
 					column.setAttribute("class", _class);
 					
 					return node;
@@ -846,7 +851,7 @@ Vvveb.Components.extend("_base", "html/gridrow", {
 			extraclass:"btn-group-sm btn-group-fullwidth",
             options: [{
                 value: "",
-                icon:"la la-times",
+                icon:"x",
                 //text: "None",
                 title: "Default",
                 checked:true,
@@ -854,25 +859,25 @@ Vvveb.Components.extend("_base", "html/gridrow", {
                 value: "flex-row",
                 //text: "Left",
                 title: "Row - horizontal",
-                icon:"la la-arrow-right",
+                icon:"arrow-right",
                 checked:false,
             },{
                 value: "flex-column",
                 //text: "Center",
                 title: "Column - vertical",
-                icon:"la la-arrow-down",
+                icon:"arrow-down",
                 checked:false,
             },{
                 value: "flex-row-reverse",
                 //text: "Right",
                 title: "Row - reversed",
-                icon:"la la-arrow-left",
+                icon:"arrow-left",
                 checked:false,
             },{
                 value: "flex-column-reverse",
                 //text: "Center",
                 title: "Column - reversed",
-                icon:"la la-arrow-up",
+                icon:"arrow-up",
                 checked:false,
             }],
         },
@@ -887,7 +892,7 @@ Vvveb.Components.extend("_base", "html/gridrow", {
             extraclass:"btn-group-sm btn-group-fullwidth",
             options: [{
                 value: "",
-                icon:"la la-times",
+                icon:"x",
                 //text: "None",
                 title: "None",
                 checked:true,
@@ -895,29 +900,29 @@ Vvveb.Components.extend("_base", "html/gridrow", {
                 value: "align-items-start",
                 //text: "Left",
                 title: "Start",
-                icon:"la la-align-left",
+                icon:"align-left",
                 checked:false,
             },{
                 value: "align-items-center",
                 //text: "Center",
                 title: "Center",
-                icon:"la la-align-center",
+                icon:"align-center",
                 checked:false,
             },{
                 value: "align-items-end",
                 //text: "Right",
                 title: "End",
-                icon:"la la-align-right",
+                icon:"align-right",
                 checked:false,
             },{
                 value: "align-items-baseline",
                 title: "Baseline",
-                icon:"la la-indent",
+                icon:"indent-increase",
                 checked:false,
             },{
                 value: "align-items-stretch",
                 title: "Stretch",
-                icon:"la la-align-justify",
+                icon:"align-justified",
                 checked:false,
             }],
         },
@@ -932,7 +937,7 @@ Vvveb.Components.extend("_base", "html/gridrow", {
 			extraclass:"btn-group-sm btn-group-fullwidth",
             options: [{
                 value: "",
-                icon:"la la-times",
+                icon:"x",
                 //text: "None",
                 title: "None",
                 checked:true,
@@ -940,37 +945,37 @@ Vvveb.Components.extend("_base", "html/gridrow", {
                 value: "justify-content-start",
                 //text: "Left",
                 title: "Start",
-                icon:"la la-align-left",
+                icon:"align-left",
                 checked:false,
             },{
                 value: "justify-content-center",
                 //text: "Center",
                 title: "Center",
-                icon:"la la-align-center",
+                icon:"align-center",
                 checked:false,
             },{
                 value: "justify-content-end",
                 //text: "Right",
                 title: "End",
-                icon:"la la-align-right",
+                icon:"align-right",
                 checked:false
 			},{
                 value: "justify-content-around",
                 //text: "Left",
                 title: "Around",
-                icon:"la la-indent",
+                icon:"indent-increase",
                 checked:false,
             },{
                 value: "justify-content-between",
                 //text: "Center",
                 title: "Between",
-                icon:"la la-outdent",
+                icon:"indent-decrease",
                 checked:false,
             },{
                 value: "justify-content-evenly",
                 //text: "Right",
                 title: "Evenly",
-                icon:"la la-align-justify",
+                icon:"align-justified",
                 checked:false,
             }],
         },
@@ -985,7 +990,7 @@ Vvveb.Components.extend("_base", "html/gridrow", {
             extraclass:"btn-group-sm btn-group-fullwidth",
             options: [{
                 value: "",
-                icon:"la la-times",
+                icon:"x",
                 //text: "None",
                 title: "None",
                 checked:true,
@@ -993,13 +998,13 @@ Vvveb.Components.extend("_base", "html/gridrow", {
                 value: "flex-wrap",
                 //text: "Left",
                 title: "Wrap",
-                icon:"la la-undo",
+                icon:"arrow-back-up",
                 checked:false,
             },{
                 value: "flex-nowrap",
                 //text: "Center",
                 title: "No wrap",
-                icon:"la la-arrow-right",
+                icon:"arrow-right",
                 checked:false,
             }],
         },
@@ -1018,9 +1023,10 @@ Vvveb.Components.extend("_base", "html/gridrow", {
 		key: "addChild",
 		inline:true,
 		inputtype: ButtonInput,
-		data: {text:"Add column", icon:"la la-plus", className:"btn-secondary"},
+		data: {text:"Add column", icon:"plus", className:"btn-secondary"},
 		onChange: function(node)
 		{
+			 if (!node || typeof node.append !== "function") return node;
 			 node.append(generateElements('<div class="col-3"><h3>Col-3</h3></div>')[0]);
 			 
 			 //render component properties again to include the new column inputs

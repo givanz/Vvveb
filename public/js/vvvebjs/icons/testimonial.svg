@@ -1,4 +1,6 @@
-<?xml version="1.0" ?>
-<svg height="32" width="32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
-    <path d="M3.55 17.707c-.232 0-.417-.293-.419-.656l-.022-5.874c-.002-.363.187-.659.42-.656l3.966.044c.346-.263-.138-1.966-1.404-2.621-1.075-.557-.049-1.667-.101-1.856 1.766.433 2.426 1.117 2.882 1.447.726.592 1.856 2.14 2.138 3.29v0c.042.103.03.222.03.352l.023 5.874c.002.363-.187.656-.419.656zM13.49 17.707c-.231 0-.417-.293-.418-.656l-.022-5.874c-.002-.363.187-.659.419-.656l3.967.044c.346-.263-.138-1.966-1.404-2.621-1.075-.557-.05-1.667-.102-1.856 1.767.433 2.426 1.117 2.883 1.447.725.592 1.855 2.14 2.138 3.29v0c.041.103.03.222.03.352l.022 5.874c.002.363-.186.656-.419.656z" style="opacity:1;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#333;stroke-width:.83120376;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers fill stroke" transform="matrix(1.33333 0 0 -1.33333 0 32)"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24" role="img" aria-label="testimonial">
+  <!-- Tabler outline glyph @user-heart (tabler/tabler-icons, MIT) - Vvveb builder component icon -->
+  <g fill="none" stroke="#334155" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" /> <path d="M6 21v-2a4 4 0 0 1 4 -4h.5" /> <path d="M18 22l3.35 -3.284a2.143 2.143 0 0 0 .005 -3.071a2.242 2.242 0 0 0 -3.129 -.006l-.224 .22l-.223 -.22a2.242 2.242 0 0 0 -3.128 -.006a2.143 2.143 0 0 0 -.006 3.071l3.355 3.296" />
+  </g>
 </svg>

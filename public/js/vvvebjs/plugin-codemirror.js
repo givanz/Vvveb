@@ -55,7 +55,7 @@ Vvveb.CodeEditor = {
 			
 			//load code when a new url is loaded
 			Vvveb.Builder.documentFrame.addEventListener("load", () => Vvveb.CodeEditor.setValue());
-			window.addEventListener("vvveb.Builder.selectNode", (e) => Vvveb.CodeEditor.setSelection(e));
+			window.addEventListener("Vvveb.Builder.selectNode", (e) => Vvveb.CodeEditor.setSelection(e));
 		}
 		
 		this.isActive = true;
@@ -124,7 +124,7 @@ Vvveb.ModalCodeEditor.init = function (modal = false, editor = false) {
 	
 	let self = this;
 	this.modal.querySelector('.save-btn').addEventListener("click",  function(event) {
-		window.dispatchEvent(new CustomEvent("vvveb.ModalCodeEditor.save", {detail: self.getValue()}));
+		window.dispatchEvent(new CustomEvent("Vvveb.ModalCodeEditor.save", {detail: self.getValue()}));
 		self.hide();
 		return false;
 	});
@@ -169,8 +169,8 @@ Vvveb.CssEditor = {
 				delay(() => Vvveb.StyleManager.setCss(e.getValue()), 1000);
 			});
 			
-			window.addEventListener("vvveb.Builder.selectNode", (e) => Vvveb.CssEditor.setSelection(e));
-			window.addEventListener("vvveb.StyleManager.setStyle", Vvveb.CssEditor.setStyle);
+			window.addEventListener("Vvveb.Builder.selectNode", (e) => Vvveb.CssEditor.setSelection(e));
+			window.addEventListener("Vvveb.StyleManager.setStyle", Vvveb.CssEditor.setStyle);
 		}
 				
 		this.setValue(Vvveb.StyleManager.getCss());

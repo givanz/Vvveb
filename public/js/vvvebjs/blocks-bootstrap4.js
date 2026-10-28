@@ -1001,8 +1001,6 @@ Vvveb.Blocks.add("bootstrap4/pricing-1", {
 		</div>
 	</div>
 <style>
-@import url("http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css");
-
 .panel-pricing {
   -moz-transition: all .3s ease;
   -o-transition: all .3s ease;

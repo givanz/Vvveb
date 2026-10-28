@@ -61,7 +61,7 @@ Vvveb.Components.extend("_base","elements/figure", {
 		  <figcaption>Fig.1 - Trulli, Puglia, Italy.</figcaption>
 		  <div class="border"></div>
 		</figure>`,
-		
+
 	stylesheets:[{
 			//the css is added in head when the element is added to page
 			'src': Vvveb.baseUrl + 'css/figure.css',
@@ -127,15 +127,17 @@ Vvveb.Components.extend("_base","elements/font-icon", {
 		inline:true,
 		inputtype: HtmlListSelectInput,
 		onChange:function(element, value, input, component) {
+			if (!element || !element.classList) return element;
 			element.classList.remove("la", "lab", "lar");
-			let className = element.getAttribute('class');
-			element.classList.forEach((value, key, listObj) => {
-				if (value.startsWith("la-") && value != "la-lg") {
-					element.classList.remove(value);
+			//snapshot first, removing while iterating the live list skips entries
+			for (const cls of [...element.classList]) {
+				if (cls.startsWith("la-") && cls != "la-lg" && cls != "la-2x") {
+					element.classList.remove(cls);
 				}
-			});
+			}
 
-			element.classList.add(...input.className.split(" "));
+			let classes = (input && input.className ? input.className.split(" ") : []).filter(c => c);
+			if (classes.length) element.classList.add(...classes);
 			return element;
 		},
 		data: {
@@ -200,7 +202,9 @@ Vvveb.Components.extend("_base","elements/svg-image", {
 	inline:true,
 	inputtype: HtmlListSelectInput,
 	onChange:function(element, value, input, component) {
-		let newElement = generateElements(value)[0];
+		if (!element || !element.attributes || typeof element.replaceWith !== "function") return element;
+		let newElement = generateElements(value || "")[0];
+		if (!newElement) return element;
 		let attributes = element.attributes;
 		
 		//keep old svg size and colors
@@ -232,9 +236,6 @@ Vvveb.Components.extend("_base","elements/svg-image", {
 			value: "remix-icon",
 			text: "RemixIcon"
 		},{
-			value: "unicons",
-			text: "Unicons"
-		},{
 			value: "clarity-icons",
 			text: "Clarity icons"
 		},{
@@ -247,9 +248,6 @@ Vvveb.Components.extend("_base","elements/svg-image", {
 			value: "themify",
 			text: "Themify"
 		},{
-			value: "css.gg",
-			text: "Css.gg"
-		},{
 			value: "olicons",
 			text: "Olicons"
 		},{
@@ -261,9 +259,6 @@ Vvveb.Components.extend("_base","elements/svg-image", {
 		},{
 			value: "elegant-font",
 			text: "Elegant font"
-		},{
-			value: "dripicons",
-			text: "Dripicons"
 		},{
 			value: "feather",
 			text: "Feather"
@@ -286,14 +281,29 @@ Vvveb.Components.extend("_base","elements/svg-image", {
 			value: "tabler-icons",
 			text: "Tabler icons"
 		},{
+			value: "phosphor-icons",
+			text: "Phosphor icons"
+		},{
+			value: "lucide",
+			text: "Lucide"
+		},{
+			value: "hugeicons-a-f",
+			text: "Hugeicons A–F"
+		},{
+			value: "hugeicons-g-m",
+			text: "Hugeicons G–M"
+		},{
+			value: "hugeicons-n-s",
+			text: "Hugeicons N–S"
+		},{
+			value: "hugeicons-t-z",
+			text: "Hugeicons T–Z"
+		},{
 			value: "octicons",
 			text: "Octicons"
 		},{
 			value: "system-uicons",
 			text: "System-uicons"
-		},{
-			value: "font-awesome",
-			text: "FontAwesome"
 		},{
 			value: "pe-icon-7-stroke",
 			text: "Pixeden icon 7 stroke"
@@ -371,7 +381,7 @@ Vvveb.Components.extend("_base","elements/svg-image", {
         inputtype: ColorInput,
    },{
         name: "Stroke",
-        key: "Stroke",
+        key: "stroke",
         //sort: base_sort++,
         col:4,
         inline:true,
@@ -407,7 +417,7 @@ Vvveb.Components.add("elements/svg-element", {
         inputtype: ColorInput,
    },{
         name: "Stroke",
-        key: "Stroke",
+        key: "stroke",
         //sort: base_sort++,
         col:4,
         inline:true,
@@ -506,7 +516,7 @@ Vvveb.Components.add("elements/gallery", {
 				extraclass:"btn-group-fullwidth btn-group-sm",
 				options: [{
 					value: "masonry",
-					//icon:"la la-cog",
+					//icon:"settings",
 					text: "Masonry",
 					title: "Masonry",
 					checked:true,
@@ -514,12 +524,12 @@ Vvveb.Components.add("elements/gallery", {
 					value: "flex",
 					text: "Flex",
 					title: "Flex",
-					//icon:"la la-search",
+					//icon:"search",
 				},{
 					value: "grid",
 					text: "Grid",
 					title: "Grid",
-					//icon:"la la-search",
+					//icon:"search",
 				}],
 			},
 			
@@ -528,11 +538,11 @@ Vvveb.Components.add("elements/gallery", {
 				document.querySelectorAll('.mb-2[data-group="'+ group + '"]').forEach(el => el.style.display = "");
 			}, 		
 			onChange : function(node, value, input)  {
-				this.setGroup(value);
+				if (typeof this.setGroup === "function") this.setGroup(value);
 				return node;
 			}, 
 			init: function (node) {
-				if (node.classList.contains("masonry")) {
+				if (node && node.classList && node.classList.contains("masonry")) {
 					return "masonry";
 				} else {
 					return "flex";
@@ -623,12 +633,12 @@ Vvveb.Components.add("elements/gallery", {
 				step:1
 			},
 			onChange: function(node, value, input, component, inputElement) {
-				if (value) {
-					value = 100 / value;
-					value += "%";
-				} 
+				let num = parseFloat(value);
+				if (!isFinite(num) || !num) {
+					return "";
+				}
 				
-				return value;
+				return (100 / num) + "%";
 			}  			
 	   },{		
 			name: "Images per row grid",
@@ -643,7 +653,11 @@ Vvveb.Components.add("elements/gallery", {
 				step:1
 			},
 			onChange: function(node, value, input, component, inputElement) {
-				return 'repeat(' + value + ', minmax(0, 1fr))';
+				let num = parseInt(value);
+				if (isNaN(num) || num <= 0) {
+					return "";
+				}
+				return 'repeat(' + num + ', minmax(0, 1fr))';
 			}  			
 		},{		
 			name: "Images",
@@ -707,30 +721,22 @@ Vvveb.Components.add("elements/gallery", {
 			}]
 		},
         onChange: function(node, value, input, component, event) {
-			if (event.action) {
-				if (event.action == "add") {
-					//temporary solution to better update list
-					Vvveb.Components.render("elements/gallery");
-				}
-				if (event.action == "remove") {
-				} else if (event.action == "select") {
-				}
+			//temporary solution to better update list after adding an item
+			if (event && event.action == "add") {
+				Vvveb.Components.render("elements/gallery");
 			}
 			return node;
 		},		
 	}],
     init(node)	{
+		if (!node || !node.classList) return node;
 
 		document.querySelectorAll(".mb-2[data-group]").forEach(el => el.style.display = "none");
 		
-		let source = "flex";
-		if (node.classList.contains("masonry")) {
-			source = "masonry";
-		} else {
-			source = "flex";
-		}
+		const source = node.classList.contains("masonry") ? "masonry" : (node.classList.contains("grid") ? "grid" : "flex");
 		
-		document.querySelector('.mb-2[data-group="'+ source + '"]').style.display = "";
+		const group = document.querySelector('.mb-2[data-group="' + source + '"]');
+		if (group) group.style.display = "";
 	}	
 });  
 
@@ -796,8 +802,8 @@ Vvveb.Components.add("elements/tabs", {
 			</div>
 	</div>`,
 	afterDrop: function(node) {
-		//set unique accordion parent id, this is a bootstrap accordion limitation
-		let parentId = Math.ceil(Math.random() * 1000);
+		//set unique tabs parent id so tab targets don't clash between tabs components
+		let parentId = Math.floor(Math.random() * 100000);
 		node.id = 'tabs-' + parentId;
 		node.innerHTML = node.innerHTML.replaceAll('parentId', parentId);
 
@@ -823,11 +829,13 @@ Vvveb.Components.add("elements/tabs", {
 				//"newElement": ``
 			},
 			onChange: function(node, value, input, component, event) {
+				if (!node || !event || !event.action) return node;
 				let element = node;
-				let tabsId = element.id.replace('tabs-','');
+				let tabsId = (element.id || "").replace('tabs-','');
 				
 				let nav = node.querySelector("nav .nav-tabs");
 				let content = node.querySelector(".tab-content");
+				if (!nav || !content) return node;
 
 				if (event.action) {
 					if (event.action == "add") {
@@ -844,11 +852,16 @@ Vvveb.Components.add("elements/tabs", {
 					
 					let index = event.index + 1;
 					if (event.action == "remove") {
-						nav.querySelector("button:nth-child(" + index + ")").remove();
-						content.querySelector(".tab-pane:nth-child(" + index + ")").remove();
+						let navBtn = nav.querySelector("button:nth-child(" + index + ")");
+						if (navBtn) navBtn.remove();
+						let pane = content.querySelector(".tab-pane:nth-child(" + index + ")");
+						if (pane) pane.remove();
 					} else if (event.action == "select") {
 						let tab = nav.querySelector("button:nth-child(" + index + ")");
-						Vvveb.Builder.iframe.contentWindow.bootstrap.Tab.getOrCreateInstance(tab).show();
+						let frameWindow = Vvveb.Builder.iframe && Vvveb.Builder.iframe.contentWindow;
+						if (tab && frameWindow && frameWindow.bootstrap && frameWindow.bootstrap.Tab) {
+							frameWindow.bootstrap.Tab.getOrCreateInstance(tab).show();
+						}
 					}
 				}
 				
@@ -862,7 +875,7 @@ Vvveb.Components.add("elements/tabs", {
 //Accordion
 Vvveb.Components.add("elements/accordion", {
     classes: ["accordion"],
-    name: "Accordeon",
+    name: "Accordion",
     image: "icons/accordion.svg",
     html: `<div class="accordion" id="accordion-parentId">
 		  <div class="accordion-item">
@@ -904,7 +917,7 @@ Vvveb.Components.add("elements/accordion", {
 		</div>`,
 	afterDrop: function(node) {
 		//set unique accordion id
-		let parentId = Math.ceil(Math.random() * 1000);
+		let parentId = Math.floor(Math.random() * 100000);
 		//node.outerHTML = node.outerHTML.replaceAll('parentId', parentId);
 		node.id = 'accordion-' + parentId;
 		node.innerHTML = node.innerHTML.replaceAll('parentId', parentId);
@@ -927,17 +940,17 @@ Vvveb.Components.add("elements/accordion", {
 				//"newElement": ``
 			},
 			onChange: function(node, value, input, component, event) {
-				let element = node;
-				let accordionId = element.id.replace('accordion-','');
+				if (!node) return node;
+				const accordionId = (node.id || "").replace('accordion-','');
 				
-				if (event.action) {
+				if (event && event.action) {
 					if (event.action == "add") {
 						let random = Math.floor(Math.random() * 100) + 1;
-						let index = element.childElementCount + 1;
+						let index = node.childElementCount + 1;
 						
 						node.append(generateElements(`<div class="accordion-item">
 							<h2 class="accordion-header" id="heading-${index}-${random}">
-							  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${index}-${random}" aria-expanded="false" aria-controls="collapseTwo">Accordion Item #${index}</button>
+							  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${index}-${random}" aria-expanded="false" aria-controls="collapse-${index}-${random}">Accordion Item #${index}</button>
 							</h2>
 							<div id="collapse-${index}-${random}" class="accordion-collapse collapse" aria-labelledby="heading-${index}-${random}" data-bs-parent="#accordion-${accordionId}">
 							  <div class="accordion-body">
@@ -952,18 +965,18 @@ Vvveb.Components.add("elements/accordion", {
 					
 					let index = (event.index + 1);
 					if (event.action == "remove") {
-						node.querySelector(":scope > .accordion-item:nth-child(" + index + ")").remove();
+						let item = node.querySelector(":scope > .accordion-item:nth-child(" + index + ")");
+						if (item) item.remove();
 					} else if (event.action == "select") {
-						let el = node.querySelector(":scope > .accordion-item:nth-child(" + index + ")");
-						let btn= el.querySelector(".accordion-button");
-						let collapse = el.querySelector(" .collapse");
+						const el = node.querySelector(":scope > .accordion-item:nth-child(" + index + ")");
+						if (!el) return node;
+						const btn = el.querySelector(".accordion-button");
+						const collapse = el.querySelector(".collapse");
 
 						node.querySelectorAll(":scope > .accordion-item .collapse").forEach(e => e.classList.remove("show"));
-						node.querySelectorAll(":scope > .accordion-item .accordion-button").forEach(btn => btn.classList.add("collapsed"));
-						collapse.classList.add("show");
-						btn.classList.remove("collapsed");
-						//el[0].click();
-						//Vvveb.Builder.iframe.contentWindow.bootstrap.Collapse.getOrCreateInstance(el[0]).toggle();
+						node.querySelectorAll(":scope > .accordion-item .accordion-button").forEach(b => b.classList.add("collapsed"));
+						if (collapse) collapse.classList.add("show");
+						if (btn) btn.classList.remove("collapsed");
 					}
 				}
 				
@@ -1131,9 +1144,8 @@ Vvveb.Components.add("elements/social-icons", {
 				//"newElement": ``
 			},
 			onChange: function(node, value, input, component, event) {
-				let element = node;
-
-				if (event.action) {
+				if (!node) return node;
+				if (event && event.action) {
 					if (event.action == "add") {
 						node.append(generateElements(`<li>
 							<a href="https://twitter.com">
@@ -1145,11 +1157,8 @@ Vvveb.Components.add("elements/social-icons", {
 						Vvveb.Components.render("elements/social-icons");
 					}
 					if (event.action == "remove") {
-						node.querySelector(":scope > li:nth-child(" + event.index + ")").remove();
-					} else if (event.action == "select") {
-						let el = node.querySelector(":scope > li:nth-child(" + event.index + ")");
-						//el[0].click();
-						//Vvveb.Builder.iframe.contentWindow.bootstrap.Collapse.getOrCreateInstance(el[0]).toggle();
+						let item = node.querySelector(":scope > li:nth-child(" + event.index + ")");
+						if (item) item.remove();
 					}
 				}
 				
@@ -1179,13 +1188,16 @@ Vvveb.Components.add("elements/social-icons", {
 }); 
 
 function carouselAfterDrop(node) {
+	if (!node) return node;
 	//check if swiper js is included and if not add it when drag starts to allow the script to load
-	body = Vvveb.Builder.frameBody;
+	let body = Vvveb.Builder.frameBody;
+	if (!body) return node;
 
 	if (!body.querySelector("#swiper-js")) {
-		let link = document.createElement('link');
-		let lib = document.createElement('script');
-		let code = document.createElement('script');
+		const doc = body.ownerDocument || document;
+		let link = doc.createElement('link');
+		let lib = doc.createElement('script');
+		let code = doc.createElement('script');
 		link.href = '../../js/libs/swiper/swiper-bundle.min.css';
 		link.id = 'swiper-css';
 		link.rel = 'stylesheet';
@@ -1208,7 +1220,7 @@ function carouselAfterDrop(node) {
 						el: ".swiper-pagination",
 				  },
 				};
-				for (i in el.dataset) {
+				for (let i in el.dataset) {
 					let param = el.dataset[i];
 					if (param == 'true') param = true;
 					if (param == 'false') param = false;
@@ -1234,10 +1246,12 @@ function carouselAfterDrop(node) {
 		body.appendChild(code);
 		
 		lib.addEventListener('load', function() {		
-			Vvveb.Builder.iframe.contentWindow.initSwiper();
+			let frameWindow = Vvveb.Builder.iframe && Vvveb.Builder.iframe.contentWindow;
+			if (frameWindow && typeof frameWindow.initSwiper === "function") frameWindow.initSwiper();
 		});
 	} else {
-		Vvveb.Builder.iframe.contentWindow.initSwiper(true);
+		let frameWindow = Vvveb.Builder.iframe && Vvveb.Builder.iframe.contentWindow;
+		if (frameWindow && typeof frameWindow.initSwiper === "function") frameWindow.initSwiper(true);
 	}
 	
 	return node;
@@ -1267,8 +1281,14 @@ Vvveb.Components.add("elements/carousel", {
 	`,
 	
 	beforeInit(node) {
-		if (node.dataset.breakpoints) {
-			breakpoints = JSON.parse(node.dataset.breakpoints);
+		if (!node) return node;
+		if (node.dataset && node.dataset.breakpoints) {
+			let breakpoints = {};
+			try {
+				breakpoints = JSON.parse(node.dataset.breakpoints) || {};
+			} catch (e) {
+				breakpoints = {};
+			}
 			
 			for (let prop of this.properties) {
 				if (prop.breakpoint && breakpoints[prop.breakpoint] && breakpoints[prop.breakpoint][prop.breakname]) {
@@ -1283,9 +1303,11 @@ Vvveb.Components.add("elements/carousel", {
 	afterDrop: carouselAfterDrop,
 	
     onChange: function (node, property, value) {
-		let element = node;
+		if (!node || !property) return node;
+		const element = node;
+
 		if (property.key == "autoplay" && value == true) {
-			value = {"waitForTransition":true,"enabled":value,"delay":element.dataset.delay};
+			value = {"waitForTransition":true,"enabled":value,"delay":element.dataset ? element.dataset.delay : undefined};
 		}
 
 		if (value == 'true') value= true;
@@ -1305,28 +1327,28 @@ Vvveb.Components.add("elements/carousel", {
 		*/
 		
 		if (property.group == "breakpoints") {
-				let breakpoints;
-				if (node.dataset.breakpoints) {
-					breakpoints = JSON.parse(node.dataset.breakpoints);
-				} else {
-					breakpoints = {};
-				}
-				
-				property.breakpoint = parseInt(property.breakpoint);
-				
-				if (!breakpoints[property.breakpoint]) {
-					breakpoints[property.breakpoint] = {};
-				}
-				
-				breakpoints[property.breakpoint][property.breakname] = parseInt(value);
-				
+			let breakpoints = {};
+			try {
+				breakpoints = node.dataset && node.dataset.breakpoints ? JSON.parse(node.dataset.breakpoints) : {};
+			} catch (e) {
+				breakpoints = {};
+			}
+			property.breakpoint = parseInt(property.breakpoint);
+
+			if (!breakpoints[property.breakpoint]) {
+				breakpoints[property.breakpoint] = {};
+			}
+
+			let num = parseInt(value);
+			if (!isNaN(num)) {
+				breakpoints[property.breakpoint][property.breakname] = num;
 				node.dataset.breakpoints = JSON.stringify(breakpoints);
-			
-			
+			}
 		}
 		
-		element.swiper.destroy();
-		Vvveb.Builder.iframe.contentWindow.initSwiper(true);
+		if (element.swiper && typeof element.swiper.destroy === "function") element.swiper.destroy();
+		let frameWindow = Vvveb.Builder.iframe && Vvveb.Builder.iframe.contentWindow;
+		if (frameWindow && typeof frameWindow.initSwiper === "function") frameWindow.initSwiper(true);
 
 		return node;
 	},
@@ -1346,12 +1368,16 @@ Vvveb.Components.add("elements/carousel", {
 		},
         onChange: function(node, value, input, component, event) {
 			let element = node;
+			if (!element || !event || !event.action) return node;
 			let dataset = {};
-			for (i in element.dataset) {
-				dataset[i] = element.dataset[i];
-			}; 
+			if (element.dataset) {
+				for (let i in element.dataset) {
+					dataset[i] = element.dataset[i];
+				}; 
+			}
 
 			if (event.action) {
+				if (!element.swiper) return node;
 				if (event.action == "add") {
 					let random = Math.floor(Math.random() * 6) + 1;
 					let index = element.swiper.slides.length + 1;
@@ -1368,7 +1394,8 @@ Vvveb.Components.add("elements/carousel", {
 			}
 			
 			setTimeout(function () {
-				for (i in dataset) {
+				if (!element.swiper) return;
+				for (let i in dataset) {
 					element.swiper.params[i] = dataset[i];
 					element.dataset[i] = dataset[i];
 				}; 
@@ -1508,13 +1535,13 @@ Vvveb.Components.add("elements/carousel", {
             extraclass:"btn-group-sm btn-group-fullwidth",
             options: [{
                 value: "horizontal",
-                icon:"la la-arrow-down",
+                icon:"arrow-down",
                 title: "Horizontal",
                 checked:true,
             },{
                 value: "vertical",
                 title: "Vertical",
-                icon:"la la-arrow-right",
+                icon:"arrow-right",
                 checked:false,
             }],
 	}
@@ -1658,7 +1685,7 @@ Vvveb.Components.add("elements/Image box", {
 
 Vvveb.Components.add("elements/Icon box", {
     nodes: [".counter"],
-    name: "Image Box",
+    name: "Icon Box",
     image: "icons/stopwatch.svg",
     html: `<i class="font-icon la la-star"></i>`,
     properties: [

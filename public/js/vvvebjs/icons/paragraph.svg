@@ -1,1 +1,6 @@
-<svg width="201.635" height="201.635" viewBox="0 0 53.349 53.349" xmlns="http://www.w3.org/2000/svg"><path style="fill:#000;stroke-width:.28;stroke-miterlimit:4;stroke-dasharray:none;stroke:#000;stroke-opacity:1;stroke-linejoin:round;stroke-linecap:round" d="M114.696 164.875c-.513-.288-.488.19-.488-9.308v-8.683h-5.101c-5.504 0-5.844-.022-7.368-.466-3.773-1.099-6.991-4.087-8.389-7.79-1.24-3.286-1.016-6.848.63-10.034 1.776-3.434 4.91-5.809 8.84-6.698l.847-.192 10.306-.028c11.379-.031 10.66-.064 10.951.498.187.36.098.768-.227 1.041-.255.215-.27.217-1.775.217h-1.518v40.966l-.216.257c-.273.325-.681.414-1.042.227-.563-.29-.52 1.449-.52-21.041v-20.41h-3.64V164.409l-.233.258c-.281.312-.719.399-1.057.209zm-.488-30.57V123.42l-5.27.034c-4.946.032-5.318.045-6.033.208-2.114.483-3.744 1.33-5.206 2.705-1.642 1.545-2.735 3.549-3.192 5.855-.2 1.013-.195 3.266.01 4.204.876 4.008 3.494 6.99 7.16 8.154 1.741.552 2.15.583 7.98.599l4.55.012z" transform="translate(-82.938 -115.355)"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 24 24" role="img" aria-label="paragraph">
+  <!-- Tabler outline glyph @pilcrow (tabler/tabler-icons, MIT) - Vvveb builder component icon -->
+  <g fill="none" stroke="#334155" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 4v16" /> <path d="M17 4v16" /> <path d="M19 4h-9.5a4.5 4.5 0 0 0 0 9h3.5" />
+  </g>
+</svg>

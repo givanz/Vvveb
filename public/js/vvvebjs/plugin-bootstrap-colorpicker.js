@@ -1,12 +1,11 @@
-let ColorInput = { ...ColorInput, ...{
+ColorInput = { ...ColorInput, ...{
 
     events: [
         ["change", "onChange", "input"],
 	 ],
 
 	setValue: function(value) {
-		let color = this.rgb2hex(value);
-		$('input', this.element).val();
+		$('input', this.element).val(value);
 		$('i', this.element).css('background-color', value);
 	},
 	
@@ -16,5 +15,5 @@ let ColorInput = { ...ColorInput, ...{
 		return colorinput;
 	},
   }
-);
+};
 
