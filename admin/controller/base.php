@@ -25,11 +25,12 @@ namespace Vvveb\Controller;
 use function Vvveb\__;
 use function Vvveb\arrayInsertArrayAfter;
 use function Vvveb\filter;
-use Vvveb\Sql\taxonomySQL;
+use Vvveb\Sql\TaxonomySQL;
 use Vvveb\System\Cache;
 use Vvveb\System\CacheManager;
 use Vvveb\System\Core\FrontController;
 use Vvveb\System\Core\Request;
+use Vvveb\System\Core\Response;
 use Vvveb\System\Core\View;
 use Vvveb\System\Event;
 use Vvveb\System\Extensions\Plugins;
@@ -46,28 +47,44 @@ use Vvveb\System\User\Admin;
 class Base {
 	use Permission;
 
-	public $view;
+	/** @var View View instance injected by FrontController DI. */
+	public View $view;
 
-	public $request;
+	/** @var Request Request instance injected by FrontController DI. */
+	public Request $request;
 
-	public $sesssion;
+	/** @var Response Response instance injected by FrontController DI. */
+	public Response $response;
 
-	protected $global;
+	/** @var Session Session instance injected by FrontController DI. */
+	public Session $session;
 
-	protected function setSite($site_id = false) {
+	/** @var array<string, mixed> Global template variables */
+	protected array $global = [];
+
+	/** @var array<int, array<string, mixed>> Taxonomy records for current site */
+	protected array $taxonomies = [];
+
+	/**
+	 * Set the current site and store its details in the session.
+	 *
+	 * @param int|false $site_id Site ID to set, or false for default
+	 *
+	 * @return int The site_id that was set
+	 */
+	protected function setSite(int|false $site_id = false): int {
 		//if no id set default
 		if ($site_id) {
 			$site  = Sites::getSiteById($site_id);
 		}
 
-		if (! $site_id || ! $site) {
+		if (!$site_id || !$site) {
 			$site = Sites::getDefault();
 		}
 
 		$this->session->set('site', $site);
-		$this->session->set('site_id', $site_id);
+		$this->session->set('site_id', $site['site_id']);
 		$this->session->set('site_url', $site['url']);
-		$this->session->set('site', $site['site_id']);
 		$this->session->set('host', $site['host']);
 		$this->session->set('path', $site['path'] ?? '');
 		$this->session->set('state', $site['state'] ?? 'live');
@@ -75,40 +92,50 @@ class Base {
 		return $site['site_id'];
 	}
 
-	protected function getTaxonomies() {
-		$categories  = new taxonomySQL();
+	/**
+	 * Get all taxonomies for the current global context.
+	 *
+	 * @return array<int, array<string, mixed>> Array of taxonomy records
+	 */
+	protected function getTaxonomies(): array {
+		$categories  = new TaxonomySQL();
 		$taxonomies  = $categories->getAll($this->global);
 
 		return $taxonomies['taxonomy'] ?? [];
 	}
 
-	protected function customPost() {
+	/**
+	 * Build the custom post types menu structure.
+	 *
+	 * @return array<string, array<string, mixed>> Associative array of post type menu items
+	 */
+	protected function customPost(): array {
 		//custom posts -- add to menu
 		$default_custom_posts =
 		[
 			'post' => [
-				'type'    => 'post',
-				'plural'  => 'posts',
-				'icon'    => 'icon-document-text-outline',
-				'comments'=> true,
+				'type'     => 'post',
+				'plural'   => 'posts',
+				'icon'     => 'file-text',
+				'comments' => true,
 			],
 			'page' => [
-				'type'    => 'page',
-				'plural'  => 'pages',
-				'icon'    => 'icon-document-outline',
-				'comments'=> false,
+				'type'     => 'page',
+				'plural'   => 'pages',
+				'icon'     => 'file',
+				'comments' => false,
 			],
 		];
 
 		$custom_posts_types        = \Vvveb\getSetting('post', 'types', []);
 		$custom_posts_types += $default_custom_posts;
-		list($custom_posts_types) = Event::trigger('Vvveb\postTypes', __FUNCTION__, $custom_posts_types);
+		[$custom_posts_types] = Event::trigger('Vvveb\postTypes', __FUNCTION__, $custom_posts_types);
 
 		$custom_post_menu = \Vvveb\config('custom-post-menu', []);
 		$posts_menu       = [];
 
 		foreach ($custom_posts_types as $type => $settings) {
-			if ($type == 'page') {
+			if ($type === 'page') {
 				continue;
 			}
 			$posts_menu[$type] = $custom_post_menu;
@@ -121,7 +148,7 @@ class Base {
 			$posts_menu[$type]['icon-img'] = (isset($settings['icon-img']) && $settings['icon-img']) ? Images::image($settings['icon-img'], $type) : '';
 			$posts_menu[$type]['url'] .= "&type=$type";
 
-			if (isset($settings['comments']) && ! $settings['comments']) {
+			if (isset($settings['comments']) && !$settings['comments']) {
 				unset($posts_menu[$type]['items']['comments']);
 			}
 
@@ -134,12 +161,12 @@ class Base {
 			$admin_path         = \Vvveb\adminPath();
 			//add taxonomies for post type
 			foreach ($this->taxonomies as $taxonomy) {
-				if ($taxonomy['post_type'] != $type) {
+				if ($taxonomy['post_type'] !== $type) {
 					continue;
 				}
 				$key    = $taxonomy['post_type'] . '_' . $taxonomy['type'] . $taxonomy['taxonomy_id'];
 				$module = "content/{$taxonomy['type']}";
-				$icon   = $taxonomy['type'] == 'tags' ? 'la la-tags' : 'la la-boxes';
+				$icon   = $taxonomy['type'] === 'tags' ? 'tags' : 'package';
 				$tax    = [$key => [
 					'name' => __($taxonomy['name']),
 					//'subtitle' => __('(Flat)'),
@@ -156,26 +183,31 @@ class Base {
 		return $posts_menu;
 	}
 
-	protected function customProduct() {
+	/**
+	 * Build the custom product types menu structure.
+	 *
+	 * @return array<string, array<string, mixed>> Associative array of product type menu items
+	 */
+	protected function customProduct(): array {
 		//custom products -- add to menu
 		$default_custom_products =
 		[
 			'product' => [
 				'type'   => 'product',
 				'plural' => 'products',
-				'icon'   => 'icon-cube-outline',
+				'icon'   => 'box',
 			],
 		];
 
 		$custom_products_types       = \Vvveb\getSetting('product', 'types', []);
 		$custom_products_types += $default_custom_products;
-		list($custom_products_types) = Event::trigger('Vvveb\postTypes', __FUNCTION__, $custom_products_types);
+		[$custom_products_types] = Event::trigger('Vvveb\postTypes', __FUNCTION__, $custom_products_types);
 
 		$custom_product_menu = \Vvveb\config('custom-product-menu', []);
 		$products_menu       = [];
 
 		foreach ($custom_products_types as $type => $settings) {
-			if ($type == 'page') {
+			if ($type === 'page') {
 				continue;
 			}
 			$products_menu[$type] = $custom_product_menu;
@@ -197,13 +229,13 @@ class Base {
 			$admin_path         = \Vvveb\adminPath();
 			//add taxonomies for post type
 			foreach ($this->taxonomies as $taxonomy) {
-				if ($taxonomy['post_type'] != $type) {
+				if ($taxonomy['post_type'] !== $type) {
 					continue;
 				}
 				$key = $taxonomy['post_type'] . '_' . $taxonomy['type'] . $taxonomy['taxonomy_id'];
 
 				$module = "content/{$taxonomy['type']}";
-				$icon   = $taxonomy['type'] == 'tags' ? 'la la-tags' : 'la la-boxes';
+				$icon   = $taxonomy['type'] === 'tags' ? 'tags' : 'package';
 				$tax    = [$key => [
 					'name' => __($taxonomy['name']),
 					//'subtitle' => __('(Flat)'),
@@ -220,8 +252,17 @@ class Base {
 		return $products_menu;
 	}
 
-	protected function language($defaultLanguage = false, $defaultLanguageId = false, $defaultLocale = false,  $defaultCode = false, $languages = null) {
-		$languages = $languages ?? Locale::availableLanguages();
+	/**
+	 * Set the current language and locale for the session.
+	 *
+	 * @param string|false                             $defaultLanguage   Default language code
+	 * @param string|false                             $defaultLanguageId Default language ID
+	 * @param string|false                             $defaultLocale     Default locale string
+	 * @param string|false                             $defaultCode       Default locale code (e.g. en_US)
+	 * @param array<string, array<string, mixed>>|null $languages         Available languages array
+	 */
+	protected function language(string|false $defaultLanguage = false, string|false $defaultLanguageId = false, string|false $defaultLocale = false, string|false $defaultCode = false, ?array $languages = null): void {
+		$languages ??= Locale::availableLanguages();
 
 		$default_language    = $this->session->get('default_language');
 		$default_language_id = $this->session->get('default_language_id');
@@ -229,8 +270,11 @@ class Base {
 		$default_code        = $this->session->get('default_code');
 		$default_rtl         = false;
 		$site_language       = false;
+		$site_language_id    = false;
+		$site_locale         = false;
+		$site_code           = false;
 
-		if (($lang = ($this->request->post['language'] ?? false)) && ! is_array($lang)) {
+		if (($lang = ($this->request->post['language'] ?? false)) && !is_array($lang)) {
 			$language  = filter('/[A-Za-z_-]+/', $lang, 10);
 
 			if (isset($languages[$language])) {
@@ -244,7 +288,7 @@ class Base {
 			}
 		}
 
-		if (! $default_language) {
+		if (!$default_language) {
 			foreach ($languages as $code => $lang) {
 				//set site language
 				if ($defaultLanguageId && ($defaultLanguageId == $lang['language_id'])) {
@@ -274,12 +318,12 @@ class Base {
 			}
 
 			//no valid default site or global language? set english as default
-			if (! $default_language) {
+			if (!$default_language) {
 				$default_language    = 'en';
 				$default_language_id = 1;
 				$default_locale      = 'en-us';
-				$default_code       = 'en_US';
-				$default_rtl        = false;
+				$default_code        = 'en_US';
+				$default_rtl         = false;
 			}
 
 			$this->session->set('default_language', $default_language);
@@ -296,8 +340,8 @@ class Base {
 		$rtl         = $this->session->get('rtl') ?? false;
 
 		//if no default language configured then set first language as current language
-		if (! isset($languages[$language])) {
-			$language = null;
+		if (!isset($languages[$language])) {
+			$language            = null;
 			$default_language    = key($languages);
 			$lang                = $languages[$default_language] ?? [];
 
@@ -310,7 +354,7 @@ class Base {
 		}
 
 		//if no language configured then set default language as current language
-		if (! $language) {
+		if (!$language) {
 			$language    = $default_language;
 			$language_id = $default_language_id;
 			$locale      = $default_locale;
@@ -333,7 +377,7 @@ class Base {
 		$this->global['default_locale']      = $default_locale;
 		$this->global['default_language_id'] = $default_language_id;
 
-		if (! $sessLang) {
+		if (!$sessLang) {
 			$this->session->set('language', $language);
 			$this->session->set('language_id', $language_id);
 			$this->session->set('locale', $locale);
@@ -343,14 +387,20 @@ class Base {
 
 		Locale::setLanguage($code);
 
-		if (! defined('CLI')) {
+		if (!defined('CLI')) {
 			$view                = $this->view;
 			$view->languagesList = $languages;
 		}
 	}
 
-	protected function currency($defaultCurrency = false, $defaultCurrencyId = false) {
-		if (($currency = ($this->request->post['currency'] ?? false)) && ! is_array($currency)) {
+	/**
+	 * Set the current currency for the session.
+	 *
+	 * @param string|false $defaultCurrency   Default currency code
+	 * @param string|false $defaultCurrencyId Default currency ID
+	 */
+	protected function currency(string|false $defaultCurrency = false, string|false $defaultCurrencyId = false): void {
+		if (($currency = ($this->request->post['currency'] ?? false)) && !is_array($currency)) {
 			$currency   = filter('/[A-Za-z_-]+/', $currency, 50);
 			$currencies = Locale::availableCurrencies();
 
@@ -365,13 +415,13 @@ class Base {
 		$currency    = $this->session->get('currency');
 		$currency_id = $this->session->get('currency_id');
 
-		if (! $currency || ! $currency_id) {
+		if (!$currency || !$currency_id) {
 			$currencies = Locale::availableCurrencies();
 
 			if ($currencies) {
 				foreach ($currencies as $code => $c) {
-					if ($defaultCurrency && ($defaultCurrency == $c['code']) ||
-					   ($defaultCurrencyId && ($defaultCurrencyId == $c['currency_id']))) {
+					if (($defaultCurrency && $defaultCurrency === $c['code']) ||
+					   ($defaultCurrencyId && $defaultCurrencyId == $c['currency_id'])) {
 						$currency    = $c['code'];
 						$currency_id = $c['currency_id'];
 
@@ -380,7 +430,7 @@ class Base {
 				}
 
 				//if no site currency configured set first available currency
-				if (! $currency) {
+				if (!$currency) {
 					$c           = reset($currencies);
 					$currency    = $c['code'];
 					$currency_id = $c['currency_id'];
@@ -395,11 +445,11 @@ class Base {
 		$this->global['currency_id']         = $currency_id;
 	}
 
-	function init() {
-		//$this->session->delete('csrf');
-		//$this->session = Session::getInstance();
-		//$this->request = Request::getInstance();
-		$view = View :: getInstance();
+	/**
+	 * Initialize the controller: session, CSRF, language, currency, permissions, menu, and view.
+	 */
+	public function init(): ?string {
+		$view = View::getInstance();
 		$view->removeVattrs(false);
 
 		if (isset($this->request->get['errors']) && $this->request->get['errors']) {
@@ -414,7 +464,7 @@ class Base {
 		$this->response->addHeader('X-Frame-Options', 'SAMEORIGIN');
 		$this->response->addHeader('X-Content-Type-Options', 'nosniff');
 
-		if (! $this->session->get('csrf')) {
+		if (!$this->session->get('csrf')) {
 			$this->session->set('csrf', Str::random());
 		}
 
@@ -423,15 +473,15 @@ class Base {
 
 		$admin = Admin::current();
 
-		if (! $admin) {
-			return $this->requireLogin();
+		if (!$admin) {
+			$this->requireLogin();
 		}
 
 		//$className = get_class($this);
 		//$errorController = (strncmp($className, 'Vvveb\Controller\Error', 22) === 0);
 
-		if (/*!$errorController && */! $this->checkCsrf()) {
-			return;
+		if (/*!$errorController && */ !$this->checkCsrf()) {
+			return null;
 		}
 
 		if (($site_id = ($this->request->post['site'] ?? false)) && is_numeric($site_id)) {
@@ -440,7 +490,7 @@ class Base {
 
 		$site_id = $this->session->get('site_id');
 
-		if (! $site_id) {
+		if (!$site_id) {
 			$site_id = $this->setSite(SITE_ID);
 		}
 
@@ -481,8 +531,8 @@ class Base {
 		//}
 
 		//load plugins for active site if safe mode is not selected
-		if (! isset($admin['safemode']) || ! $admin['safemode']) {
-			Plugins :: loadPlugins($site_id);
+		if (!isset($admin['safemode']) || !$admin['safemode']) {
+			Plugins::loadPlugins($site_id);
 		}
 
 		if ($errors = $this->session->get('errors')) {
@@ -505,14 +555,15 @@ class Base {
 
 		//don't initialize menu items for CLI
 		if (defined('CLI')) {
-			return;
+			return null;
 		}
 
-		$cacheDriver = Cache :: getInstance();
+		$cacheDriver = Cache::getInstance();
 		$cacheKey    = $this->global['admin_id'] . '.' . $this->global['site_id'] . '.' . $this->global['language_id'];
 
-		if ($menu = $cacheDriver->get('admin-menu', $cacheKey)) {
-		} else {
+		$menu = $cacheDriver->get('admin-menu', $cacheKey);
+
+		if (!$menu) {
 			$menu             = \Vvveb\config('admin-menu', []);
 
 			//custom posts -- add to menu
@@ -524,13 +575,13 @@ class Base {
 			$products_menu = $this->customProduct();
 			$menu          = arrayInsertArrayAfter('sales', $menu, $products_menu);
 
-			list($menu)       = Event::trigger(__CLASS__, __FUNCTION__ . '-menu', $menu);
+			[$menu]       = Event::trigger(__CLASS__, __FUNCTION__ . '-menu', $menu);
 
 			$urls = [];
 			$this->getPermissionsFromUrl($menu, $urls);
 			$permissions = Admin::hasPermission($urls);
 			//$urls        = array_map(fn ($value) => $value ? ($permissions[$value] ?? false) : false, $urls);
-			$urls        = array_map(function ($value) use ($permissions) { return $value ? ($permissions[$value] ?? false) : false; }, $urls);
+			$urls        = array_map(fn ($value) => $value ? ($permissions[$value] ?? false) : false, $urls);
 			$this->setPermissionsFromUrl($menu, $urls);
 
 			$cacheDriver->set('admin-menu', $cacheKey, $menu);
@@ -539,18 +590,29 @@ class Base {
 		$view->menu         = $menu;
 		$view->global       = $this->global;
 
-		//send to view for button visibillity check
-		$this->view->actionPermissions = $this->actionPermissions ?? [];
-		$this->view->modulePermissions = $this->modulePermissions ?? [];
+		//send to view for button visibility check
+		$this->view->actionPermissions = $this->actionPermissions;
+		$this->view->modulePermissions = $this->modulePermissions;
 
 		$view->adminPath  = $adminPath;
 		$view->publicPath = PUBLIC_PATH;
 		$view->mediaPath  = PUBLIC_PATH . 'media';
 
 		Event::trigger(__CLASS__, __FUNCTION__);
+
+		return null;
 	}
 
-	protected function redirect($url = '/', $parameters = [], $stop = true) {
+	/**
+	 * Redirect to a URL with optional parameters.
+	 *
+	 * @param array<string, mixed>|string $url        The URL to redirect to
+	 * @param array<string, mixed>        $parameters Query parameters to append
+	 * @param bool                        $stop       Whether to stop execution after redirect
+	 *
+	 * @return void
+	 */
+	protected function redirect(array|string $url = '/', array $parameters = [], bool $stop = true): void {
 		$redirect = \Vvveb\url($url, $parameters);
 
 		if ($redirect) {
@@ -564,15 +626,16 @@ class Base {
 			FrontController::closeConnections();
 			PageCache::getInstance()->cleanUp();
 
-			die(0);
+			exit();
 		}
 	}
 
 	/**
 	 * Call this method if the action requires login, if the user is not logged in, a login form will be shown.
 	 *
+	 * @return never
 	 */
-	protected function requireLogin() {
+	protected function requireLogin(): never {
 		//return \Vvveb\System\Core\FrontController::redirect('user/login');
 		//$view = view :: getInstance();
 		$admin_path            = \Vvveb\adminPath();
@@ -583,19 +646,19 @@ class Base {
 
 		$this->view->render();
 
-		die(0);
+		exit();
 	}
 
 	/**
 	 * Call this method on form posts to protect against csrf attacks.
 	 *
+	 * @return bool True if CSRF is valid, false otherwise (will call notFound)
 	 */
-	protected function checkCsrf() {
-		if (! defined('CLI') &&
+	protected function checkCsrf(): bool {
+		if (!defined('CLI') &&
 			(($method = $this->request->getMethod()) == 'post') &&
-			(! ($csrf = $this->session->get('csrf')) || ! ($postCsrf = ($this->request->post['csrf'] ?? false)) || ($csrf != $postCsrf))) {
+			(!($csrf = $this->session->get('csrf')) || !($postCsrf = ($this->request->post['csrf'] ?? false)) || ($csrf != $postCsrf))) {
 			$this->notFound('Invalid csrf!', 403);
-			return false;
 		}
 
 		return true;
@@ -604,39 +667,41 @@ class Base {
 	/**
 	 * Shows a "Not found", "Internal server error" or "Permission denied" page.
 	 *
-	 * @param unknown_type $code
-	 * @param mixed $statusCode
-	 * @param mixed $service
-	 * @param mixed $message
+	 * @param array<string, mixed>|string|false $message    Error message to display
+	 * @param int                               $statusCode HTTP status code (404, 500, 403, etc.)
+	 * @param mixed                             $service    Service or controller to handle the error
+	 *
+	 * @return never
 	 */
-	protected function notFound($message = false, $statusCode = 404, $service = false) {
-		return FrontController::notFound($service, $message, $statusCode);
+	protected function notFound(string|array|false $message = false, int $statusCode = 404, mixed $service = false): never {
+		FrontController::notFound($service, $message, $statusCode);
 	}
 
 	/**
 	 * Generates the documentation link for current page.
 	 *
-	 * @param unknown_type $code
-	 * @param null|mixed $module
-	 * @param null|mixed $action
+	 * @param string|null $module Module name, or null to use request value
+	 * @param string|null $action Action name, or null to use request value
+	 *
+	 * @return string The documentation URL
 	 */
-	protected function getDocUrlForPage($module = null, $action = null) {
-		$module = $module ?? $this->request->get['module'] ?? '';
-		$action = $action ?? $this->request->get['origaction'] ?? '';
-		$type   = $type ?? $this->request->get['type'] ?? '';
+	protected function getDocUrlForPage(?string $module = null, ?string $action = null): string {
+		$module ??= $this->request->get['module'] ?? '';
+		$action ??= $this->request->get['origaction'] ?? '';
+		$type   = $this->request->get['type'] ?? '';
 		$action = $action ? '/' . $action : '';
-		$url    = 'https://docs.vvveb.com/';
+		$url    = 'https://www.vvveb.com/docs/';
 
-		if ($type == 'post' || $type == 'page'/* || $type == 'product'*/) {
-			$type   = $type ? '/' . $type : '';
+		if ($type === 'post' || $type === 'page'/* || $type == 'product'*/) {
+			$type   = '/' . $type;
 		} else {
 			$type = '';
 		}
 
-		$documentionList             = include DIR_SYSTEM . 'data/documentation-map.php';
+		$documentationList             = include DIR_SYSTEM . 'data/documentation-map.php';
 
-		if (isset($documentionList[$module . $action . $type])) {
-			$url .= $documentionList[$module . $action . $type];
+		if (isset($documentationList[$module . $action . $type])) {
+			$url .= $documentationList[$module . $action . $type];
 		} else {
 			$url .= str_replace('/', '-', $module . $action . $type);
 		}
@@ -644,9 +709,12 @@ class Base {
 		return $url;
 	}
 
-	function goToHelp() {
+	/**
+	 * Redirect to the documentation page for the current admin page.
+	 */
+	public function goToHelp(): void {
 		$url = $this->getDocUrlForPage();
 
-		return header("Location: $url");
+		header("Location: $url");
 	}
 }

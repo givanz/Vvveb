@@ -25,8 +25,9 @@ let Router = {
 			}
 		};
 		
-		document.addEventListener("click", handleEvent);
-		document.querySelectorAll("[data-v-vvveb-action][data-v-vvveb-on]").forEach(e => document.addEventListener(e.dataset.vVvvebOn, handleEvent));
+		//document.addEventListener("click", handleEvent);
+		//document.querySelectorAll("[data-v-vvveb-action][data-v-vvveb-on]").forEach(e => document.addEventListener(e.dataset.vVvvebOn, handleEvent));
+		document.querySelectorAll("[data-v-vvveb-action]").forEach(e => document.addEventListener(e.dataset.vVvvebOn ?? "click", handleEvent));
 	},
 	
 }	

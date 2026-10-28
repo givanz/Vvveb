@@ -28,13 +28,28 @@ use function Vvveb\model;
 use Vvveb\System\Images;
 
 class Users extends Base {
-	protected $type = 'user';
+	/**
+	 * User type identifier (user or admin).
+	 *
+	 * @var string
+	 */
+	protected string $type = 'user';
 
-	protected $module = 'user/users';
+	/**
+	 * Module path for this controller.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'user/users';
 
-	function delete() {
+	/**
+	 * Delete one or more users by their IDs.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
 		$type       = $this->type;
-		$user_id    = $this->request->post["{$type}_id"] ?? $this->request->get["{$type}_id"] ?? false;
+		$user_id    = $this->request->post["{$type}_id"] ?? false;
 
 		if ($user_id) {
 			if (is_numeric($user_id)) {
@@ -52,25 +67,34 @@ class Users extends Base {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index($options = []) {
+	/**
+	 * Display the list of users with filtering and pagination.
+	 *
+	 * @param array<string, mixed> $options Additional query options.
+	 *
+	 * @return void
+	 */
+	public function index(array $options = []): void {
 		$type         = $this->type;
 		$view         = $this->view;
 		$users        = model($type);
 		$this->filter = $this->request->get['filter'] ?? [];
 
-		$options     += [
-			'type'         => $this->type,
+		$options += [
+			'type' => $this->type,
 		] + $this->global + $this->filter;
 
 		$results = $users->getAll($options);
 
 		if ($results[$type]) {
 			foreach ($results[$type] as $id => &$user) {
+				unset($user['password']);
+
 				if (isset($user['avatar'])) {
-					$user['avatar']= Images::image($user['avatar'], 'admin');
+					$user['avatar'] = Images::image($user['avatar'], 'admin');
 				}
 
 				$user['status_text']      = $user['status'] == '3' ? __('delete request') : ($user['status'] == '1' ? __('active') : __('inactive'));

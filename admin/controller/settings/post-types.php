@@ -26,16 +26,22 @@ use Vvveb\Controller\Listing;
 use function Vvveb\postTypes;
 
 class PostTypes extends Listing {
-	protected $type = 'post';
+	/** @var string The entity type identifier */
+	protected string $type = 'post';
 
-	function delete() {
-		$userType = $this->request->get['type'] ?? false;
+	/**
+	 * Delete one or more post type entries.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
+		$userType = $this->request->post['type'] ?? false;
 
 		if ($userType) {
 			$userPostTypes = \Vvveb\getSetting($this->type, 'types', []);
 
 			if ($userPostTypes) {
-				if (! is_array($userType)) {
+				if (!is_array($userType)) {
 					$userType = [$userType];
 				}
 
@@ -48,10 +54,15 @@ class PostTypes extends Listing {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display the list of post types.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$types = postTypes($this->type);
 
 		$this->view->type  = $types;

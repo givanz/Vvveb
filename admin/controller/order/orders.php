@@ -32,11 +32,16 @@ use Vvveb\System\Cart\Currency;
 use Vvveb\System\Core\View;
 
 class Orders extends Base {
-	//check for order save permission
-	protected $additionalPermissionCheck = ['order/order/save'];
+	/** @var list<string> Check for order save permission */
+	protected ?array $additionalPermissionCheck = ['order/order/save'];
 
-	function delete() {
-		$order_id    = $this->request->post['order_id'] ?? $this->request->get['order_id'] ?? false;
+	/**
+	 * Delete one or more orders.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
+		$order_id    = $this->request->post['order_id'] ?? false;
 
 		if ($order_id) {
 			if (is_numeric($order_id)) {
@@ -54,11 +59,16 @@ class Orders extends Base {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
-		$view         = View :: getInstance();
+	/**
+	 * Display the orders listing page.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$view         = View::getInstance();
 		$orders       = new OrderSQL();
 		$currency     = Currency::getInstance();
 		$this->filter = $this->request->get['filter'] ?? [];

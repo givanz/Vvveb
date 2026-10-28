@@ -26,22 +26,27 @@ use function Vvveb\__;
 use Vvveb\Controller\Listing;
 use function Vvveb\humanReadable;
 use function Vvveb\model;
-use Vvveb\Sql\commentSQL;
+use Vvveb\Sql\CommentSQL;
 use Vvveb\System\CacheManager;
 use Vvveb\System\Core\View;
 use Vvveb\System\Images;
 use Vvveb\System\User\Admin;
 
 class Comments extends Listing {
-	protected $type = 'comment';
+	protected string $type = 'comment';
 
-	protected $list = 'comment';
+	protected string $list = 'comment';
 
-	protected $module = 'content';
+	protected string $module = 'content';
 
-	protected $listController = 'comments';
+	protected string $listController = 'comments';
 
-	function delete() {
+	/**
+	 * Deletes comments, checking user capabilities first.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
 		$editCapability = 'edit_other_posts';
 
 		if ($this->module == 'product') {
@@ -50,19 +55,23 @@ class Comments extends Listing {
 
 		if (Admin::hasCapability($editCapability)) {
 			$this->userFilter = false;
-		} else {
 		}
 
 		parent::delete();
 	}
 
-	function save() {
+	/**
+	 * Changes the status of a comment (approve, spam, trash, etc.).
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$type       = $this->type;
-		$comment_id = $this->request->get[$type . '_id'] ?? $this->request->post[$type . '_id'] ?? false;
-		$status     = $this->request->get['newstatus'] ?? $this->request->post['newstatus'] ?? false;
+		$comment_id = $this->request->post[$type . '_id'] ?? false;
+		$status     = $this->request->post['newstatus'] ?? false;
 
 		if ($comment_id) {
-			$data = [$type => ['status' => (int) $status], $type . '_id' => $comment_id];
+			$data = [$type => ['status' => (int)$status], $type . '_id' => $comment_id];
 
 			$editCapability = 'edit_other_posts';
 
@@ -85,16 +94,21 @@ class Comments extends Listing {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
-		$view           = View :: getInstance();
+	/**
+	 * Lists all comments with filtering by status and capability checks.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$view           = View::getInstance();
 		$type           = $this->type;
-		$controller     = $this->controller ?? $type;
-		$listController = $this->listController ?? $controller;
+		$controller     = $this->controller ?: $type;
+		$listController = $this->listController ?: $controller;
 		$module         = $this->module;
-		$list           = $this->list ?? $type . 's';
+		$list           = $this->list ?: $type . 's';
 		$status         = $this->request->get['status'] ?? '';
 
 		$comment_status = [
@@ -106,11 +120,11 @@ class Comments extends Listing {
 		];
 
 		$status   = $this->request->get['status'] ?? -1;
-		//$comments = new commentSQL();
+		//$comments = new CommentSQL();
 		$comments = model($type);
 
 		$options = [
-			'type'         => $type,
+			'type' => $type,
 		] + $this->global;
 		unset($options['user_id']);
 
@@ -130,11 +144,11 @@ class Comments extends Listing {
 		}
 
 		$results        = $comments->getAll($options);
-		$results[$type] = $results[$type] ?? [];
+		$results[$type] ??= [];
 
 		foreach ($results[$type] as $id => &$comment) {
 			if (isset($comment['image'])) {
-				$comment['image'] = Images::image($type, $comment['image']);
+				$comment['image'] = Images::image($comment['image'], $type);
 			}
 
 			if (isset($comment['avatar'])) {

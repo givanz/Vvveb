@@ -30,16 +30,36 @@ use Vvveb\System\Sites as SitesList;
 use Vvveb\System\User\Admin;
 
 class Sites extends Base {
-	//check for other modules permission like post and editor to enable links like save/delete etc
-	protected $additionalPermissionCheck = ['settings/site/add'];
+	/** @var array<int, string> Additional permission URLs required for access */
+	protected ?array $additionalPermissionCheck = ['settings/site/add'];
 
-	function add() {
-	}
+	/**
+	 * Add a new site (empty action, redirects to site form).
+	 *
+	 * @return void
+	 */
+	public function add(): void {}
 
-	function delete() {
-		$site_id    = $this->request->post['site_id'] ?? $this->request->get['site_id'] ?? false;
+	/**
+	 * Delete one or more sites.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
+		$site_id    = $this->request->post['site_id'] ?? false;
 
 		if ($site_id) {
+			$edit_other_sites = Admin::hasCapability('edit_other_sites');
+
+			if (!$edit_other_sites) {
+				$access = Admin::siteAccess();
+				if (!in_array($site['site_id'], $access)) {
+					$this->view->errors[] = sprintf(__('Error deleting %s!'), __(' site'));
+
+					return;
+				}
+			}
+
 			$active_deleted = false;
 			$active_site_id = $this->session->get('site_id');
 
@@ -73,14 +93,19 @@ class Sites extends Base {
 					$this->setSite();
 				}
 			} else {
-				$this->view->errors[] = sprintf(__('Error deleting %s!'),  __(' site'));
+				$this->view->errors[] = sprintf(__('Error deleting %s!'), __(' site'));
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display the list of all sites with pagination.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$view  = $this->view;
 		$sites = new SiteSQL();
 
@@ -97,8 +122,8 @@ class Sites extends Base {
 
 		$results = $sites->getAll(
 			$options + [
-				'start'        => ($page - 1) * $limit,
-				'limit'        => $limit,
+				'start' => ($page - 1) * $limit,
+				'limit' => $limit,
 			]
 		);
 

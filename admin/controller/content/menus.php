@@ -24,7 +24,7 @@ namespace Vvveb\Controller\Content;
 
 use function Vvveb\__;
 use function Vvveb\sanitizeHTML;
-use Vvveb\Sql\menuSQL;
+use Vvveb\Sql\MenuSQL;
 use Vvveb\System\Images;
 use Vvveb\System\Sites;
 use function Vvveb\url;
@@ -32,19 +32,26 @@ use function Vvveb\url;
 class Menus extends Categories {
 	use SitesTrait;
 
-	function duplicate() {
+	/**
+	 * Duplicates an existing menu and all its items.
+	 *
+	 * @return void
+	 */
+	public function duplicate(): void {
 		$menu_id    = $this->request->post['menu_id'] ?? false;
 
 		if ($menu_id) {
-			$this->menus  = new menuSQL();
+			$this->menus  = new MenuSQL();
 			$data         = $this->menus->get(['menu_id' => $menu_id]);
 			$old_id       = $data['menu_id'];
 
 			unset($data['menu_id']);
-			$id = rand(1, 1000);
+			$id = random_int(1, 1000000);
 
 			$data['name'] .= ' [' . __('duplicate') . ']';
 			//$data['slug'] .= '-' . __('duplicate') . "-$old_id-$id";
+
+			$site_id = [];
 
 			if (isset($data['menu_to_site'])) {
 				foreach ($data['menu_to_site'] as &$item) {
@@ -54,29 +61,30 @@ class Menus extends Categories {
 
 			if ($data) {
 				$result = $this->menus->addMenu([
-					'menu'             => $data,
-					'site_id'          => $site_id,
+					'menu'    => $data,
+					'site_id' => $site_id,
 				]);
 
+				$type = __('menu');
+
 				if ($result && isset($result['menu'])) {
-					$menu_id = $result['menu'];
+					$menu_id       = $result['menu'];
 					$items         = $this->menus->getMenuAllLanguages(['menu_id' => $old_id])['categories'] ?? [];
 
 					$parentId = [];
 					foreach ($items as &$item) {
-						$old_menu_item_id = $item['menu_item_id'];
-						$item['menu_id'] = $menu_id;
-						$item['parent_id'] = $parentId[$item['parent_id']] ?? 0;
+						$old_menu_item_id          = $item['menu_item_id'];
+						$item['menu_id']           = $menu_id;
+						$item['parent_id']         = $parentId[$item['parent_id']] ?? 0;
 						$item['menu_item_content'] = json_decode($item['languages'], true);
 						unset($item['menu_item_id']);
-						$res = $this->menus->addMenuItem(['menu_item' => $item]);
-						$menu_item_id = $res['menu_item'];
+						$res                         = $this->menus->addMenuItem(['menu_item' => $item]);
+						$menu_item_id                = $res['menu_item'];
 						$parentId[$old_menu_item_id] = $menu_item_id;
 					}
 
 					$url     = url(['module' => 'content/menus', 'action' => 'menu', 'menu_id' => $menu_id]);
 
-					$type = __('menu');
 					$success = ucfirst($type) . ' ' . __('duplicated') . '!';
 					$success .= sprintf(' <a href="%s">%s</a>', $url, __('Edit') . ' ' . $type);
 					$this->view->success['get'] = $success;
@@ -86,13 +94,18 @@ class Menus extends Categories {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function deleteMenu() {
+	/**
+	 * Deletes an entire menu by ID.
+	 *
+	 * @return void
+	 */
+	public function deleteMenu(): void {
 		$view         = $this->view;
-		$menu_id      = $this->request->post['menu_id'] ?? $this->request->get['menu_id'] ?? false;
-		$menu         = new menuSQL();
+		$menu_id      = $this->request->post['menu_id'] ?? false;
+		$menu         = new MenuSQL();
 
 		if (is_numeric($menu_id)) {
 			$menu_id = [$menu_id];
@@ -113,13 +126,18 @@ class Menus extends Categories {
 			return;
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function delete() {
+	/**
+	 * Deletes a single menu item by ID, including recursive deletion.
+	 *
+	 * @return never
+	 */
+	public function delete(): never {
 		$menu_item_id = $this->request->post['menu_item_id'] ?? false;
 		$view         = $this->view;
-		$menus        = new menuSQL();
+		$menus        = new MenuSQL();
 
 		if ($menu_item_id) {
 			if (is_numeric($menu_item_id)) {
@@ -127,10 +145,10 @@ class Menus extends Categories {
 			}
 
 			try {
-				//will fail on mysql 5
+				//will fail on mySQL 5
 				$result = $menus->deleteMenuItemRecursive(['menu_item_id' => $menu_item_id]);
 			} catch (\Exception $ex) {
-				//older mysql versions don't have recursive CTE
+				//older mySQL versions don't have recursive CTE
 				$result = $menus->deleteMenuItem(['menu_item_id' => $menu_item_id]);
 			}
 
@@ -145,29 +163,37 @@ class Menus extends Categories {
 			echo __('No id!');
 		}
 
-		die(0);
-
-		return $this->index();
+		exit();
 	}
 
-	function reorder() {
+	/**
+	 * Reorders menu items based on submitted data.
+	 *
+	 * @return never
+	 */
+	public function reorder(): never {
 		$data       = $this->request->post;
-		$menus      = new menuSQL();
+		$menus      = new MenuSQL();
 
 		//['menu_items' => $data]
 		if ($menus->updateMenuItems($data)) {
 			echo __('Items reordered!');
 		}
 
-		die(0);
+		exit();
 	}
 
-	function save() {
+	/**
+	 * Saves a new or existing menu item.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$data = $this->request->post;
 
-		$menus  = new menuSQL();
+		$menus  = new MenuSQL();
 
-		if (isset($data['item_id']) && ! is_numeric($data['item_id'])) {
+		if (isset($data['item_id']) && !is_numeric($data['item_id'])) {
 			unset($data['item_id']);
 		}
 
@@ -184,13 +210,13 @@ class Menus extends Categories {
 
 		if (isset($data['options'])) {
 			foreach ($data['options'] as $name => $value) {
-				if (! $value) {
+				if ($value === '') {
 					unset($data['options'][$name]);
 				}
 			}
 
 			if ($data['options']) {
-				$data['options'] = json_encode($data['options'], true);
+				$data['options'] = json_encode($data['options'], JSON_UNESCAPED_SLASHES);
 			} else {
 				$data['options'] = '';
 			}
@@ -228,12 +254,17 @@ class Menus extends Categories {
 		$this->response->output($response);
 	}
 
-	function menu() {
+	/**
+	 * Displays and saves a single menu's items with multilingual support.
+	 *
+	 * @return void
+	 */
+	public function menu(): void {
 		$menuId      = $this->request->get['menu_id'] ?? false;
 		$menu_data   = 	$this->request->post['menu_data'] ?? false;
 		$site_id     = $this->request->post['site'] ?? []; //[$this->global['site_id']];
 		$view        = $this->view;
-		$menus       = new menuSQL();
+		$menus       = new MenuSQL();
 
 		$page    = $this->request->get['page'] ?? 1;
 		$results = [];
@@ -244,7 +275,7 @@ class Menus extends Categories {
 				'limit'   => 100000,
 			] + $this->global;
 
-			$results = $menus->getMenuAllLanguages($options);
+			$results     = $menus->getMenuAllLanguages($options);
 			$placeholder = Images::image('placeholder.svg', 'menu_item');
 
 			foreach ($results['categories'] as &$menu) {
@@ -263,7 +294,7 @@ class Menus extends Categories {
 						if (isset($menu['options']['img'])) {
 							$menu['options']['img_url'] = Images::image($menu['options']['img'], 'menu_item');
 						} else {
-							$menu['options']['img_url'] = $menu['options']['img_url'] ?? $placeholder;
+							$menu['options']['img_url'] ??= $placeholder;
 						}
 					} else {
 						$menu['options'] = ['img_url' => $placeholder];
@@ -278,7 +309,7 @@ class Menus extends Categories {
 				$id        = $return['menu'];
 				$menu_site = $return['menu_to_site'];
 
-				if (! $id && ! $menu_site) {
+				if (!$id && !$menu_site) {
 					$view->errors = ['No changes!'];
 				} else {
 					$view->success[] = __('Menu saved!');
@@ -289,17 +320,17 @@ class Menus extends Categories {
 			$results['menu_data'] = $menus->get($options);
 		} else {
 			if ($menu_data) {
-				$menu_data = $menu_data + $this->global;
+				$menu_data += $this->global;
 				$return    = $menus->addMenu(['menu' => $menu_data, 'site_id' => $site_id]);
 
 				$id     = $return['menu'];
 
-				if (! $id) {
-					$view->errors = [$menu->error];
+				if (!$id) {
+					$view->errors = [$menus->error];
 				} else {
 					$success         = __('Menu saved!');
 					$view->success[] = $success;
-					$this->redirect(['module'=>'content/menus', 'action' => 'menu', 'menu_id' => $id, 'success' => $success]);
+					$this->redirect(['module' => 'content/menus', 'action' => 'menu', 'menu_id' => $id, 'success' => $success]);
 					$menu_data['menu_id'] = $id;
 				}
 			}
@@ -314,7 +345,7 @@ class Menus extends Categories {
 		if ($sites) {
 			$sites = array_keys($sites);
 		} else {
-			if (! $menuId) {
+			if (!$menuId) {
 				$sites[] = $this->global['site_id'];
 			}
 		}
@@ -325,13 +356,18 @@ class Menus extends Categories {
 		$view->scanUrl   = "$controllerPath&action=scan";
 		$view->uploadUrl = "$controllerPath&action=upload";
 		$view->linkUrl   = $admin_path . 'index.php?module=content/post&action=urlAutocomplete';
-		$theme           = Sites::getTheme($this->global['site_id']) ?? 'default';
+		$theme           = Sites::getTheme($this->global['site_id']);
 		$view->themeCss  = PUBLIC_PATH . "themes/$theme/css/admin-post-editor.css";
 	}
 
-	function index() {
+	/**
+	 * Lists all menus with edit/delete URLs and multilingual names.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$view        = $this->view;
-		$menus       = new menuSQL();
+		$menus       = new MenuSQL();
 
 		$options = [
 			'limit' => 10000,

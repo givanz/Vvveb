@@ -26,12 +26,12 @@ use function Vvveb\__;
 use Vvveb\Controller\Base;
 use Vvveb\Controller\Content\AutocompleteTrait;
 use function Vvveb\email;
+use function Vvveb\humanReadable;
 use function Vvveb\orderStatusBadgeClass;
 use function Vvveb\paymentStatusBadgeClass;
-use function Vvveb\prefixArrayKeys;
 use function Vvveb\shippingStatusBadgeClass;
 use function Vvveb\siteSettings;
-use Vvveb\Sql\Order_LogSQL;
+use Vvveb\Sql\Order_logSQL;
 use Vvveb\Sql\OrderSQL;
 use Vvveb\System\Cart\Cart;
 use Vvveb\System\Cart\Currency;
@@ -48,20 +48,25 @@ use function Vvveb\url;
 class Order extends Base {
 	use AutocompleteTrait;
 
-	protected $type = 'order';
+	protected string $type = 'order';
 
-	function index() {
-		$site = siteSettings($this->global['site_id']);
-		$options = array_intersect_key($site,
-		array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id']));
+	/**
+	 * Display the order edit form or order details.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$site    = siteSettings($this->global['site_id']);
+		$options = array_intersect_key(
+			$site,
+			array_flip(['weight_type_id', 'length_type_id', 'currency_id', 'country_id'])
+		);
 
 		$cart     = Cart::getInstance($options);
 		$payment  = Payment::getInstance();
 		$shipping = Shipping::getInstance();
 		$view     = $this->view;
-
-		$this->view->order_payment  = $payment->getMethods([]);
-		$this->view->order_shipping = $shipping->getMethods([]);
+		$order    = [];
 
 		if (isset($this->request->get['order_id'])) {
 			$options = ['order_id' => (int)$this->request->get['order_id'], 'type' => $this->type] + $this->global;
@@ -95,8 +100,7 @@ class Order extends Base {
 						}
 
 						if (isset($product['image']) && $product['image']) {
-							$product['image'] =Images::image($product['image'], 'product');
-							//$product['images'][] = ['image' => Images::image($product['image'], 'product')];
+							$product['image'] = Images::image($product['image'], 'product');
 						}
 
 						$product['price_formatted'] = $currency->format($product['price']);
@@ -111,14 +115,33 @@ class Order extends Base {
 				$order                    = &$results['order'];
 				$order['user_url']        = \Vvveb\url(['module' => 'user/user', 'user_id' => $order['user_id']]);
 				$order['total_formatted'] = $currency->format($order['total']);
-				$order['shipping_data']   = json_decode($order['shipping_data'] ?? '', true);
-				$order['payment_data']    = json_decode($order['payment_data'] ?? '', true);
+				$shippingData             = json_decode($order['shipping_data'] ?? '', true);
+				$paymentData              = json_decode($order['payment_data'] ?? '', true);
+
+				if (!is_array($shippingData)) {
+					$shippingData = [];
+				}
+
+				if (!is_array($paymentData)) {
+					$paymentData = [];
+				}
+
+				$order['shipping_data'] = $shippingData;
+				$order['payment_data']  = $paymentData;
+
+				//human readable method titles, falling back to the stored method
+				//key (minus the -index suffix) when the gateway did not record one
+				$shippingMethod                = preg_replace('/-\d+$/', '', (string)($order['shipping_method'] ?? ''));
+				$paymentMethod                 = preg_replace('/-\d+$/', '', (string)($order['payment_method'] ?? ''));
+				$order['shipping_title']       = $shippingData['title'] ?? $shippingData['gateway'] ?? ($shippingMethod ? humanReadable($shippingMethod) : '');
+				$order['payment_title']        = $paymentData['title'] ?? $paymentData['gateway'] ?? ($paymentMethod ? humanReadable($paymentMethod) : '');
+				$order['shipping_description'] = $shippingData['description'] ?? $shippingData['text'] ?? '';
+				$order['payment_description']  = $paymentData['description'] ?? $paymentData['text'] ?? '';
+				//legacy alias, the customer note column is `notes`
+				$order['comment']         = $order['notes'] ?? '';
 				$order['class']           = orderStatusBadgeClass($order['order_status_id']);
 				$order['payment_class']   = paymentStatusBadgeClass($order['payment_status_id']);
 				$order['shipping_class']  = shippingStatusBadgeClass($order['shipping_status_id']);
-
-				$order += prefixArrayKeys('shipping_', $order['shipping_data']) ?? [];
-				$order += prefixArrayKeys('payment_', $order['payment_data']) ?? [];
 
 				$data = $orders->getData($order);
 
@@ -131,8 +154,6 @@ class Order extends Base {
 				$view->printInvoiceUrl  = \Vvveb\url(['action' => 'printInvoice'] + $url);
 			} else {
 				$this->notFound(__('Order not found!'));
-
-				exit();
 			}
 		} else {
 			//new order
@@ -141,23 +162,232 @@ class Order extends Base {
 			$view->set($data);
 		}
 
-		$this->view->order_payment  = $payment->getMethods($order);
-		$this->view->order_shipping = $shipping->getMethods($order);
+		$this->view->order_payment     = $payment->getMethods($order);
+		$this->view->order_shipping    = $shipping->getMethods($order);
+		$this->view->transactions      = \Vvveb\System\PaymentLedger::forOrder($order['order_id'] ?? 0);
+		$this->view->remaining_capture = $this->remainingAmount((int)($order['order_id'] ?? 0), 'capture', (float)($order['total'] ?? 0));
+		$this->view->remaining_refund  = $this->remainingAmount((int)($order['order_id'] ?? 0), 'refund', (float)($order['total'] ?? 0));
+
+		$paymentMethod = $order['payment_method'] ?? false;
+		$instance      = $paymentMethod ? $payment->getMethodInstance($paymentMethod) : null;
+		//if payment method configuration has been deleted use payment plugin directly
+		if (!$instance && isset($order['payment_data']['class'])) {
+			$class    = $order['payment_data']['class'];
+			$instance = new $class($cart);
+		}
+
+		$this->view->can_capture = (bool)($instance && $instance->supports('capture'));
+		$this->view->can_refund  = (bool)($instance && $instance->supports('refund'));
+		$this->view->can_void    = (bool)($instance && $instance->supports('void'));
 	}
 
-	function print() {
-		return $this->index();
+	/**
+	 * Execute a capture, refund or void action on the order's payment method.
+	 *
+	 * @param string $action     Payment method action to invoke (capture/refund/void).
+	 * @param string $successMsg Success message shown to the admin.
+	 * @param string $errorMsg   Error message shown to the admin.
+	 *
+	 * @return void
+	 */
+	private function paymentAction(string $action, string $successMsg, string $errorMsg): void {
+		$order_id = $this->request->post['order_id'] ?? false;
+
+		if (!$order_id) {
+			$this->view->errors[] = __('Order id missing!');
+
+			$this->index();
+
+			return;
+		}
+
+		$orders  = new OrderSQL();
+		$results = $orders->get(['order_id' => (int)$order_id, 'type' => $this->type] + $this->global);
+
+		if (!isset($results['order']) || !$results['order']) {
+			$this->view->errors[] = __('Order not found!');
+
+			$this->index();
+
+			return;
+		}
+
+		$order       = $results['order'];
+		$method      = $order['payment_method'] ?? false;
+		$paymentData = json_decode($order['payment_data'] ?? '', true) ?: [];
+		$payment     = Payment::getInstance();
+		$instance    = $method ? $payment->getMethodInstance($method) : null;
+
+		if (!$instance || !$instance->supports($action)) {
+			$this->view->errors[] = __('Payment method does not support this action!');
+
+			$this->index();
+
+			return;
+		}
+
+		//optional partial amount, empty means the full remaining total
+		$amount    = null;
+		$rawAmount = $this->request->post['amount'] ?? null;
+
+		if ($rawAmount !== null && $rawAmount !== '') {
+			if (!is_numeric($rawAmount) || (float)$rawAmount <= 0) {
+				$this->view->errors[] = __('Amount must be a positive number!');
+
+				$this->index();
+
+				return;
+			}
+
+			$amount = round((float)$rawAmount, 2);
+		}
+
+		if (in_array($action, ['capture', 'refund'], true)) {
+			$remaining = $this->remainingAmount((int)$order_id, $action, (float)($order['total'] ?? 0));
+
+			if ($amount !== null && $amount - $remaining > 0.005) {
+				$this->view->errors[] = sprintf(__('Amount exceeds the remaining %s!'), $remaining);
+
+				$this->index();
+
+				return;
+			}
+		}
+
+		$checkoutInfo = [
+			'order_id' => (int)$order_id,
+			'total'    => $order['total'] ?? 0,
+			'currency' => $order['currency'] ?? '',
+		] + $paymentData;
+
+		if ($amount !== null) {
+			$checkoutInfo['amount'] = $amount;
+		}
+
+		if ($instance->$action($checkoutInfo)) {
+			$this->view->success[] = $successMsg;
+		} else {
+			$this->view->errors[] = $instance->getError() ?: $errorMsg;
+		}
+
+		$this->index();
 	}
 
-	function printShipping() {
-		return $this->index();
+	/**
+	 * Remaining capturable/refundable total from the money ledger.
+	 *
+	 * Capture draws on authorized (minus voided and captured) rows, refund on
+	 * captured plus purchased (minus refunded) rows. Falls back to the order
+	 * total when the ledger has no usable rows yet.
+	 *
+	 * @param int    $orderId Order id.
+	 * @param string $action  `capture` or `refund`.
+	 * @param float  $total   Order total fallback.
+	 *
+	 * @return float Remaining amount, never negative.
+	 */
+	private function remainingAmount(int $orderId, string $action, float $total): float {
+		try {
+			$rows = \Vvveb\System\PaymentLedger::forOrder($orderId);
+		} catch (\Throwable $e) {
+			return $total;
+		}
+
+		if (!$rows) {
+			return $total;
+		}
+
+		$sum = function(array $kinds) use ($rows): float {
+			$sum = 0.0;
+
+			foreach ($rows as $row) {
+				if (($row['status'] ?? '') === 'succeeded' && in_array($row['kind'] ?? '', $kinds, true)) {
+					$sum += (float)($row['amount'] ?? 0);
+				}
+			}
+
+			return $sum;
+		};
+
+		if ($action === 'capture') {
+			$authorized = $sum(['authorize']) - $sum(['void']);
+
+			if ($authorized <= 0) {
+				return $total;
+			}
+
+			return max(0.0, round($authorized - $sum(['capture']), 2));
+		}
+
+		$captured = $sum(['capture']) + $sum(['purchase']);
+
+		if ($captured <= 0) {
+			return $total;
+		}
+
+		return max(0.0, round($captured - $sum(['refund']), 2));
 	}
 
-	function printInvoice() {
-		return $this->index();
+	/**
+	 * Capture a previously authorized order payment through the payment method.
+	 *
+	 * @return void
+	 */
+	public function capture(): void {
+		$this->paymentAction('capture', __('Payment captured!'), __('Payment capture failed!'));
 	}
 
-	function cart() {
+	/**
+	 * Refund the order payment through the payment method.
+	 *
+	 * @return void
+	 */
+	public function refund(): void {
+		$this->paymentAction('refund', __('Payment refunded!'), __('Payment refund failed!'));
+	}
+
+	/**
+	 * Void/cancel the order payment through the payment method.
+	 *
+	 * @return void
+	 */
+	public function void(): void {
+		$this->paymentAction('void', __('Payment canceled!'), __('Payment cancel failed!'));
+	}
+
+	/**
+	 * Print the order.
+	 *
+	 * @return void
+	 */
+	public function print(): void {
+		$this->index();
+	}
+
+	/**
+	 * Print the shipping details.
+	 *
+	 * @return void
+	 */
+	public function printShipping(): void {
+		$this->index();
+	}
+
+	/**
+	 * Print the invoice.
+	 *
+	 * @return void
+	 */
+	public function printInvoice(): void {
+		$this->index();
+	}
+
+	/**
+	 * Add a product to the order cart.
+	 *
+	 * @return void
+	 */
+	public function cart(): void {
 		$order_id   = $this->request->get['order_id'] ?? false;
 		$product_id = $this->request->post['product_id'] ?? false;
 		$quantity   = $this->request->post['quantity'] ?? 1;
@@ -166,7 +396,7 @@ class Order extends Base {
 		$price      = $this->request->post['price'] ?? 1;
 
 		if ($order_id && $product_id) {
-			$product  = compact('product_id','quantity', 'name', 'price', 'model');
+			$product  = compact('product_id', 'quantity', 'name', 'price', 'model');
 
 			$site    = siteSettings($this->global['site_id']);
 			$options = $this->global + $site;
@@ -181,9 +411,20 @@ class Order extends Base {
 		$this->index();
 	}
 
-	private function sendNotification($order_id, $customer_order_id, $email, $message) {
+	/**
+	 * Send an email notification about an order update.
+	 *
+	 * @param int|string $order_id          The internal order ID.
+	 * @param string     $customer_order_id The customer-facing order ID.
+	 * @param string     $email             The recipient email address.
+	 * @param string     $message           The notification message.
+	 *
+	 * @return void
+	 */
+	private function sendNotification(int|string $order_id, string $customer_order_id, string $email, string $message): void {
+		$error = __('Error sending order confirmation mail!');
+
 		try {
-			$error =  __('Error sending order confirmation mail!');
 			$title = sprintf(__('Order update #%s'), $customer_order_id);
 
 			$options = ['order_id' => $order_id] + $this->global;
@@ -191,10 +432,16 @@ class Order extends Base {
 			$orders   = new OrderSQL();
 			$results  = $orders->get($options);
 
-			if (! email([$email], $title, 'order/update', ['message' => $message, 'title' => $title] + $results + $this->global, [], 'app')) {
-				$this->session->set('errors', $error);
-				$this->view->errors[] = $error;
-			}
+			\Vvveb\System\Notifications::trigger('order.status_change', ['message' => $message, 'title' => $title] + ($results ?? []) + $this->global + [
+				'subject' => $title,
+			]);
+
+			/*
+						if (! email([$email], $title, 'order/update', ['message' => $message, 'title' => $title] + $results + $this->global, [], 'app')) {
+							$this->session->set('errors', $error);
+							$this->view->errors[] = $error;
+						}
+			*/
 		} catch (\Exception $e) {
 			if (DEBUG) {
 				$error .= "\n" . $e->getMessage();
@@ -204,7 +451,12 @@ class Order extends Base {
 		}
 	}
 
-	function saveLog() {
+	/**
+	 * Save an order log entry and optionally send a notification.
+	 *
+	 * @return void
+	 */
+	public function saveLog(): void {
 		$order_id          = $this->request->get['order_id'] ?? false;
 		$customer_order_id = $this->request->post['customer_order_id'] ?? false;
 		$log               = $this->request->post['log'] ?? [];
@@ -220,7 +472,7 @@ class Order extends Base {
 			$result = $order->edit(['order_id' => $order_id, 'order' => ['order_status_id' => $log['order_status_id']]]);
 
 			if (isset($result['order'])/* && $result['order']*/) {
-				$orderLog = new Order_LogSQL();
+				$orderLog = new Order_logSQL();
 				$result   = $orderLog->add(['order_id' => $order_id, 'order_log' => $log]);
 
 				if (isset($result['order_log']) && $result['order_log']) {
@@ -247,13 +499,18 @@ class Order extends Base {
 		}
 	}
 
-	function save() {
-		$validator = new Validator(['order']);
-		$view      = view :: getInstance();
+	/**
+	 * Save the order from the request data.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
+		$validator = new Validator(['checkout', 'order', 'checkout_shipping', 'checkout_billing']);
+		$view      = View::getInstance();
 		$order_id  = $this->request->get['order_id'] ?? false;
 		$order     = $this->request->post ?? [];
 
-		$site = Sites :: getSiteData($this->global['site_id']);
+		$site = Sites::getSiteData($this->global['site_id']);
 
 		$order_url = url('user/orders', [
 			'host'   => $site['host'] ?? false,
