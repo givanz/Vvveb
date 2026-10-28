@@ -2,7 +2,7 @@
 
 	-- get one product
 
-	PROCEDURE get(
+	CREATE PROCEDURE get(
 		IN product_id INT,
 		IN admin_id INT,
 		IN slug CHAR,
@@ -10,7 +10,6 @@
 		IN language_id INT,
 		IN promotion INT,     -- include promotional price
 		IN user_group_id INT, -- user_group_id for group promotional price
-		IN variant INT,       -- include variants
 		IN variant_price INT, -- include variants min max prices
 		IN points INT,        -- include points
 		IN stock_status INT,  -- include stock_status
@@ -78,7 +77,7 @@
 			   FROM product_points pp
 			   WHERE pp.product_id = _.product_id
 				 AND pp.user_group_id = :user_group_id
-			   AS points
+			   ) AS points
 			   
 			END @IF
 			
@@ -304,8 +303,7 @@
 	END
 	
 
-	PROCEDURE getData(
-		IN product_id INT,
+	CREATE PROCEDURE getData(
 		IN manufacturer_id INT,
 		IN vendor_id INT,
 		
@@ -316,9 +314,8 @@
 		OUT fetch_all, 
 		OUT fetch_all, 
 		OUT fetch_all, 
-		
 		OUT fetch_one, 
-		OUT fetch_one, 
+		OUT fetch_one 
 	)
 	BEGIN
 	
@@ -401,68 +398,91 @@
 	
 	-- Delete product
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN  product_id ARRAY,
 		IN  admin_id INT,
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows,
+		OUT affected_rows,
 		OUT affected_rows
 	)
 	BEGIN
 
-		DELETE product_to_taxonomy_item FROM product_to_taxonomy_item 
-			@IF isset(:admin_id)
-			THEN
-				INNER JOIN product ON (product.product_id = product_to_taxonomy_item.product_id AND product.admin_id = :admin_id)
-			END @IF
-		WHERE product_to_taxonomy_item.product_id IN (:product_id);
+		DELETE FROM product_to_taxonomy_item 
+				
+		WHERE product_to_taxonomy_item.product_id IN (:product_id) 
+		@IF isset(:admin_id)
+		THEN
+			AND product_to_taxonomy_item.product_id IN (SELECT product_id FROM product WHERE (product.product_id = product_to_taxonomy_item.product_id AND product.admin_id = :admin_id))
+		END @IF;
 		
-		DELETE product_to_site FROM product_to_site 
-			@IF isset(:admin_id)
-			THEN
-				INNER JOIN product ON (product.product_id = product_to_site.product_id AND product.admin_id = :admin_id)
-			END @IF
-		WHERE product_to_site.product_id IN (:product_id);		
+		DELETE FROM product_to_site 
+		WHERE product_to_site.product_id IN (:product_id)
+		@IF isset(:admin_id)
+		THEN
+			AND product_to_site.product_id IN (SELECT product_id FROM product WHERE (product.product_id = product_to_site.product_id AND product.admin_id = :admin_id))
+		END @IF;
 		
-		DELETE product_option_value FROM product_option_value 
-			@IF isset(:admin_id)
-			THEN
-				INNER JOIN product ON (product.product_id = product_option_value.product_id AND product.admin_id = :admin_id)
-			END @IF
-		WHERE product_option_value.product_id IN (:product_id);		
+		DELETE FROM product_option_value 
+		WHERE product_option_value.product_id IN (:product_id)
+		@IF isset(:admin_id)
+		THEN
+			AND product_option_value.product_id IN (SELECT product_id FROM product WHERE (product.product_id = product_option_value.product_id AND product.admin_id = :admin_id))
+		END @IF;
 		
-		DELETE product_option FROM product_option 
-			@IF isset(:admin_id)
-			THEN
-				INNER JOIN product ON (product.product_id = product_option.product_id AND product.admin_id = :admin_id)
-			END @IF
-		WHERE product_option.product_id IN (:product_id);
+		DELETE FROM product_option 
+		WHERE product_option.product_id IN (:product_id)
+		@IF isset(:admin_id)
+		THEN
+			AND product_option.product_id IN (SELECT product_id FROM product WHERE (product.product_id = product_option.product_id AND product.admin_id = :admin_id))
+		END @IF;
 		
-		DELETE product_content FROM product_content 
-			@IF isset(:admin_id)
-			THEN
-				INNER JOIN product ON (product.product_id = product_content.product_id AND product.admin_id = :admin_id)
-			END @IF
-		WHERE product_content.product_id IN (:product_id);
+		DELETE FROM product_content 
+		WHERE product_content.product_id IN (:product_id)
+		@IF isset(:admin_id)
+		THEN
+			AND product_content.product_id IN (SELECT product_id FROM product WHERE (product.product_id = product_content.product_id AND product.admin_id = :admin_id))
+		END @IF;
 		
-		DELETE product_image FROM product_image 
-			@IF isset(:admin_id)
-			THEN
-				INNER JOIN product ON (product.product_id = product_image.product_id AND product.admin_id = :admin_id)
-			END @IF
-		WHERE product_image.product_id IN (:product_id);
+		DELETE FROM product_image 
+		WHERE product_image.product_id IN (:product_id)
+		@IF isset(:admin_id)
+		THEN
+			AND product_image.product_id IN (SELECT product_id FROM product WHERE (product.product_id = product_image.product_id AND product.admin_id = :admin_id))
+		END @IF;
+			
+		DELETE FROM product_question 
+		WHERE product_question.product_id IN (:product_id)
+		@IF isset(:admin_id)
+		THEN
+			AND product_question.product_id IN (SELECT product_id FROM product WHERE (product.product_id = product_question.product_id AND product.admin_id = :admin_id))
+		END @IF;		
 		
-		DELETE product FROM product WHERE product_id IN (:product_id)
-			@IF isset(:admin_id)
-			THEN
-				AND admin_id = :admin_id
-			END @IF;
+		DELETE FROM product_review 
+		WHERE product_review.product_id IN (:product_id)
+		@IF isset(:admin_id)
+		THEN
+			AND product_review.product_id IN (SELECT product_id FROM product WHERE (product.product_id = product_review.product_id AND product.admin_id = :admin_id))
+		END @IF;
+		
+		DELETE FROM product WHERE product_id IN (:product_id)
+		@IF isset(:admin_id)
+		THEN
+			AND admin_id = :admin_id
+		END @IF;
 
 	END	
 	
 	-- Edit product
 
-	PROCEDURE edit(
-		IN product ARRAY,
-		IN product_content ARRAY,
+	CREATE PROCEDURE edit(
+		IN product ROW,
+		IN product_content ROWS,
 		IN taxonomy_item_id ARRAY,
 		IN product_id INT,
 		IN site_id ARRAY,
@@ -542,7 +562,7 @@
 	-- Edit post content
 
 	CREATE PROCEDURE editContent(
-		IN product_content ARRAY,
+		IN product_content ROW,
 		IN product_id INT,
 		IN language_id INT,
 		OUT affected_rows
@@ -562,14 +582,14 @@
 -- Add new product
 
 	CREATE PROCEDURE add(
-		IN product ARRAY,
-		IN product_content ARRAY,
+		IN product ROW,
+		IN product_content ROWS,
 		IN taxonomy_item_id ARRAY,
 		IN site_id ARRAY,
-		OUT insert_id,
-		OUT insert_id,
-		OUT insert_id,
-		OUT insert_id
+		OUT insert_id,     -- product
+		OUT affected_rows, -- product_content
+		OUT affected_rows, -- taxonomy_item_id
+		OUT affected_rows  -- product_to_site
 	)
 	BEGIN
 		
@@ -616,7 +636,7 @@
 
 	-- Edit product
 
-	PROCEDURE productImage(
+	CREATE PROCEDURE productImage(
 		IN product_image ARRAY,
 		IN product_id INT,
 		OUT affected_rows,
@@ -639,7 +659,7 @@
 
 	-- Edit product related
 
-	PROCEDURE productRelated(
+	CREATE PROCEDURE productRelated(
 		IN product_related ARRAY,
 		IN product_id INT,
 		OUT affected_rows,
@@ -662,8 +682,8 @@
 
 	-- Edit product variant
 
-	PROCEDURE productVariant(
-		IN product_variant ARRAY,
+	CREATE PROCEDURE productVariant(
+		IN product_variant ROWS,
 		IN product_id INT,
 		OUT affected_rows,
 		OUT affected_rows
@@ -675,7 +695,7 @@
 		@EACH(:product_variant) 
 			INSERT INTO product_variant 
 		
-				( product_variant_id, product_id)
+				( @KEYS(:each), product_id)
 			
 			VALUES ( :each, :product_id );
 
@@ -683,8 +703,8 @@
 
 	-- Edit product subscription
 
-	PROCEDURE productSubscription(
-		IN product_subscription ARRAY,
+	CREATE PROCEDURE productSubscription(
+		IN product_subscription ROWS,
 		IN product_id INT,
 		OUT affected_rows,
 		OUT affected_rows
@@ -704,8 +724,8 @@
 	
 	-- Edit product discount
 
-	PROCEDURE productDiscount(
-		IN product_discount ARRAY,
+	CREATE PROCEDURE productDiscount(
+		IN product_discount ROWS,
 		IN product_id INT,
 		OUT affected_rows,
 		OUT affected_rows
@@ -725,8 +745,8 @@
 	
 	-- Edit product promotion
 
-	PROCEDURE productPromotion(
-		IN product_promotion ARRAY,
+	CREATE PROCEDURE productPromotion(
+		IN product_promotion ROWS,
 		IN product_id INT,
 		OUT affected_rows,
 		OUT affected_rows
@@ -746,8 +766,8 @@
 	
 	-- Edit product points
 
-	PROCEDURE productPoints(
-		IN product_points ARRAY,
+	CREATE PROCEDURE productPoints(
+		IN product_points ROWS,
 		IN product_id INT,
 		OUT affected_rows,
 		OUT affected_rows
@@ -767,10 +787,9 @@
 	
 	-- Edit product attribute
 
-	PROCEDURE productAttribute(
-		IN product_attribute ARRAY,
+	CREATE PROCEDURE productAttribute(
+		IN product_attribute ROWS,
 		IN product_id INT,
-		IN language_id INT,
 		OUT affected_rows,
 		OUT affected_rows
 	)
@@ -791,7 +810,7 @@
 	
 	-- Edit product digital asset
 
-	PROCEDURE productDigitalAsset(
+	CREATE PROCEDURE productDigitalAsset(
 		IN product_digital_asset ARRAY,
 		IN product_id INT,
 		OUT affected_rows,
@@ -814,7 +833,7 @@
 	
 	-- get all products 
 
-	PROCEDURE getAll(
+	CREATE PROCEDURE getAll(
 
 		-- variables
 		IN language_id INT,
@@ -842,6 +861,7 @@
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (product_id) for cursor pagination
 		IN type CHAR,
 		IN order_by CHAR,
 		IN direction CHAR,
@@ -864,8 +884,7 @@
 			
 		-- return array of products for products query
 		OUT fetch_all,
-		-- return products count for count query
-		OUT fetch_one,
+		OUT fetch_one
 	)
 	BEGIN
 
@@ -906,6 +925,11 @@
 						   OR pd2.from_date < date('now'))
 						  AND (pd2.to_date = NULL
 							   OR pd2.to_date > date('now')))
+				   -- cursor pagination
+				   @IF isset(:cursor)
+				   THEN
+				   	AND product.product_id > :cursor
+				   END @IF
 				   ORDER BY pd2.priority ASC, pd2.price ASC
 				   LIMIT 1) AS discount
 				   
@@ -947,7 +971,7 @@
 			   FROM product_points pp
 			   WHERE pp.product_id = product.product_id
 				 AND pp.user_group_id = :user_group_id
-			   AS points
+			   ) AS points
 			   
 			END @IF
 			
@@ -996,7 +1020,7 @@
 			THEN 
 			
 			  ,(SELECT AVG(rating) AS total
-			   FROM review r1
+			   FROM product_review r1
 			   WHERE r1.product_id = product.product_id
 				 AND r1.status = '1'
 			   GROUP BY r1.product_id) 
@@ -1010,7 +1034,7 @@
 			THEN 
 
 			  ,(SELECT COUNT(*) AS total
-			   FROM review r2
+			   FROM product_review r2
 			   WHERE r2.product_id = product.product_id
 				 AND r2.status = '1'
 			   GROUP BY r2.product_id) AS reviews
@@ -1128,7 +1152,7 @@
 			
 			@IF isset(:quantity) && :quantity !== ""
 			THEN 
-				AND product.quantity = :quantity
+				AND product.stock_quantity = :quantity
 			END @IF				
 			
 			@IF isset(:model) && :model !== ""
@@ -1192,7 +1216,7 @@
 			@IF !empty(:taxonomy_item_id) 
 			THEN 
 			
-				AND pt.taxonomy_item_id = :taxonomy_item_id
+				AND pt.taxonomy_item_id IN(:taxonomy_item_id)
 				
 			END @IF		
 			
@@ -1212,13 +1236,13 @@
 
 			@IF !empty(:product_attribute_id) 
 			THEN 
-				pa.product_attribute_id IN (:product_attribute_id)
+				pa.attribute_id IN (:product_attribute_id)
 			END @IF		
 
 
 			@IF !empty(:product_attribute)
 			THEN 
-				pa.text IN (:product_attribute)
+				pa.value IN (:product_attribute)
 			END @IF			
 
 		
@@ -1237,10 +1261,17 @@
 		END @IF	
 		
 		
-		@IF isset(:limit)
-		THEN
-			@SQL_LIMIT(:start, :limit)
-		END @IF;		
+			-- limit
+			@IF isset(:limit)
+			THEN
+				LIMIT :limit
+
+				@IF isset(:start)
+				THEN
+					OFFSET :start
+				END @IF				
+				
+			END @IF;	
 		
 		-- SELECT FOUND_ROWS() as count;
 		

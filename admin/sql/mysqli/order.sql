@@ -6,7 +6,7 @@
 		-- variables
 		IN language_id INT,
 		IN site_id INT,
-		IN user_id INT
+		IN user_id INT,
 		
 		IN order_status CHAR,
 		IN order_status_id INT,
@@ -24,6 +24,7 @@
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (order_id) for cursor pagination
 		IN order_by CHAR,
 		IN direction CHAR,
 		
@@ -38,7 +39,7 @@
 		
 			LEFT JOIN order_status AS os ON (`order`.order_status_id = os.order_status_id AND os.language_id = :language_id) 
 			LEFT JOIN shipping_status AS oss ON (`order`.shipping_status_id = oss.shipping_status_id AND oss.language_id = :language_id) 
-			LEFT JOIN payment_status AS ops ON (`order`.order_status_id = ops.payment_status_id AND os.language_id = :language_id) 
+			LEFT JOIN payment_status AS ops ON (`order`.payment_status_id = ops.payment_status_id AND ops.language_id = :language_id) 
 			
 		WHERE 1 = 1 
 		
@@ -93,9 +94,19 @@
             @IF isset(:search) AND !empty(:search)
 			THEN 
 				AND
-				`order`.first_name LIKE CONCAT('%',:search,'%') OR
-				`order`.last_name LIKE CONCAT('%',:search,'%')
+				(`order`.first_name LIKE CONCAT('%',:search,'%') OR
+				`order`.last_name LIKE CONCAT('%',:search,'%'))
         	END @IF	  
+
+			-- cursor pagination
+
+			@IF isset(:cursor)
+
+			THEN
+
+			    AND `order`.order_id > :cursor
+
+			END @IF
 
 			-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
 			@IF isset(:order_by)
@@ -106,7 +117,7 @@
 				ORDER BY order_id DESC
 			END @IF
 		
-		@SQL_LIMIT(:start, :limit);
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -130,7 +141,7 @@
 		OUT fetch_all,
 		OUT fetch_all,
 		OUT fetch_all,
-		OUT fetch_all,
+		OUT fetch_all
 	)
 	BEGIN
         
@@ -147,7 +158,7 @@
 		FROM `order`
 	
 			LEFT JOIN order_status AS os ON (`order`.order_status_id = os.order_status_id AND os.language_id = :language_id) 
-			LEFT JOIN payment_status AS ops ON (`order`.payment_status_id = ops.payment_status_id AND os.language_id = :language_id) 
+			LEFT JOIN payment_status AS ops ON (`order`.payment_status_id = ops.payment_status_id AND ops.language_id = :language_id) 
 			LEFT JOIN shipping_status AS oss ON (`order`.shipping_status_id = oss.shipping_status_id AND os.language_id = :language_id) 
 			-- country
 			LEFT JOIN country AS bc ON (`order`.billing_country_id = bc.country_id) 
@@ -227,8 +238,7 @@
     END    
     
 
-	PROCEDURE getData(
-		IN order_id INT,
+	CREATE PROCEDURE getData(
 		IN language_id INT,
 		IN billing_country_id INT,
 		IN shipping_country_id INT,
@@ -237,7 +247,9 @@
 		OUT fetch_all, 
 		OUT fetch_all, 
 		OUT fetch_all, 
-		OUT fetch_all, 
+		OUT fetch_all,
+		OUT fetch_all,
+		OUT fetch_all
 	)
 	BEGIN
 	
@@ -305,7 +317,7 @@
 
 	-- delete order
 	
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN  order_id ARRAY,
 		OUT affected_rows,
 		OUT affected_rows,
@@ -380,7 +392,7 @@
 
 	CREATE PROCEDURE edit(
         IN order_id INT,
-		IN order ARRAY,
+		IN order ROW,
 		OUT affected_rows
 	)
 	BEGIN
@@ -398,8 +410,8 @@
 	-- products
 	
 	CREATE PROCEDURE addProduct(
-		IN product ARRAY,
-		IN product_options ARRAY,
+		IN product ROW,
+		IN product_options ROWS,
 		IN order_id INT,
 		OUT insert_id,
 		OUT insert_id
@@ -421,8 +433,8 @@
 	
 	CREATE PROCEDURE editProduct(
 		IN order_product_id INT,
-		IN product ARRAY,
-		IN product_options ARRAY,
+		IN product ROW,
+		IN product_options ROWS,
 		IN order_id INT,
 		OUT affected_rows,
 		OUT affected_rows
@@ -446,9 +458,9 @@
 			ON DUPLICATE KEY UPDATE @LIST(:each);
     END
 	
-	PROCEDURE deleteProduct(
+	CREATE PROCEDURE deleteProduct(
 		IN  order_product_id ARRAY,
-		OUT affected_rows,
+		OUT affected_rows
 	)
 	BEGIN
 
@@ -459,7 +471,7 @@
 	-- totals
 	
 	CREATE PROCEDURE addTotal(
-		IN total ARRAY,
+		IN total ROW,
 		IN order_id INT,
 		OUT insert_id
 	)
@@ -475,7 +487,7 @@
 	
 	CREATE PROCEDURE editTotal(
 		IN order_total_id INT,
-		IN total ARRAY,
+		IN total ROW,
 		OUT affected_rows
 	)
 	BEGIN
@@ -490,9 +502,9 @@
 
     END
 	
-	PROCEDURE deleteTotal(
+	CREATE PROCEDURE deleteTotal(
 		IN  order_total_id ARRAY,
-		OUT affected_rows,
+		OUT affected_rows
 	)
 	BEGIN
 

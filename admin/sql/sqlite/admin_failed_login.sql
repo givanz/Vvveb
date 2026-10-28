@@ -5,13 +5,13 @@
 	CREATE PROCEDURE getAll(
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (admin_id) for cursor pagination
 		IN admin_id INT,
 		IN count INT,
 		IN updated_at CHAR,
 		
 		-- return array of admin_failed_login 
 		OUT fetch_all,
-		-- return admin_failed_login count for count query
 		OUT fetch_one
 	)
 	BEGIN
@@ -33,12 +33,22 @@
 				AND admin_failed_login.updated_at = :updated_at
         	END @IF	
 
+			-- cursor pagination
+
+			@IF isset(:cursor)
+
+			THEN
+
+			    AND admin_failed_login.admin_id > :cursor
+
+			END @IF
+
 			ORDER BY admin_failed_login.admin_id, admin_failed_login.updated_at
 			
 			-- limit
 			@IF isset(:limit)
 			THEN
-				@SQL_LIMIT(:start, :limit)
+				LIMIT :limit OFFSET :start
 			END @IF;		
 
 		-- SELECT FOUND_ROWS() as count;
@@ -119,6 +129,7 @@
 		IN username CHAR,
 		IN updated_at CHAR,
 		IN last_ip INT,
+		IN email CHAR,
 		OUT fetch_one,
 		OUT insert_id
 	)
@@ -165,7 +176,7 @@
 	-- Add new admin_failed_login
 
 	CREATE PROCEDURE add(
-		IN admin_failed_login ARRAY,
+		IN admin_failed_login ROW,
 		OUT insert_id
 	)
 	BEGIN
@@ -185,54 +196,39 @@
 	
 	CREATE PROCEDURE edit(
 		IN admin_id INT,
-		IN admin_failed_login ARRAY,
+		IN admin_failed_login ROW,
 		OUT affected_rows
 	)
 	BEGIN
 		-- allow only table fields and set defaults for missing values
 		@FILTER(:admin_failed_login, admin_failed_login)
 
+		@IF !empty(:admin_failed_login)
+		THEN
 		UPDATE admin_failed_login 
 			
 			SET @LIST(:admin_failed_login) 
 			
-		WHERE admin_id = :admin_id;
+		WHERE admin_id = :admin_id
+		END @IF;
 
 	END
 
 	-- delete admin_failed_login
 
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN admin_id ARRAY,
-		IN updated_at CHAR,
-		IN count INT,
 
 		OUT affected_rows
 	)
 	BEGIN
 
-		DELETE admin_failed_login FROM admin_failed_login 
-			INNER JOIN admin.admin_id	ON admin = admin_failed_login.admin_id
-		WHERE 
+		DELETE FROM admin_failed_login
+		WHERE 1 = 1
 
 		@IF isset(:admin_id) AND !empty(:admin_id)
-		THEN 
-			AND admin_failed_login.admin_id = :admin_id 
-		END @IF	
+		THEN
+			AND admin_failed_login.admin_id IN (:admin_id)
+		END @IF
 
-		@IF isset(:username)
-		THEN 
-			AND admin.username = :username 
-		END @IF	
-
-		@IF isset(:email)
-		THEN 
-			AND admin.email = :email 
-		END @IF			
-
-		@IF isset(:admin_id)
-		THEN 
-			AND admin.admin_id IN (:admin_id)
-		END @IF	
-		
-	END	
+	END

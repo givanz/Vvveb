@@ -26,19 +26,19 @@ return
 
 	'functionRegex' => '/(CREATE\s+)?PROCEDURE\s+(?<name>\w+)\((?<params>.*?)\)\s+BEGIN\s+(?<statement>.*?)END(?!\s*@)/ms',
 
-	'paramRegex'    => '/(IN|OUT|INOUT|LOCAL)\s+([\.@\w]+)\s*(\w+)?(\(\d+\))?[,$\n\s]?/ms',
+	'paramRegex' => '/(IN|OUT|INOUT|LOCAL)\s+([\.@\w]+)\s*(\w+)?(\(\d+\))?,?(\s*--[^$\n]+)?[$\n]?/ms',
 
-	'valuesRegex'   => '/\s*@VALUES\s*\(\s*:(?<list>[\w\[\]]+)\s*\)\s*/ms',
+	'valuesRegex' => '/\s*@VALUES\s*\(\s*:(?<list>[\w\[\]]+)\s*\)\s*/ms',
 
-	'eachRegex'     => '/\s*@EACH\s*\(\s*(\w+)\s*\,\s*([\w\.]+)\s*\)\s*/ms',
+	'eachRegex' => '/\s*@EACH\s*\(\s*(\w+)\s*\,\s*([\w\.]+)\s*\)\s*/ms',
 
-	'eachVarRegex'  => '/\s*@EACH\s*\(\s*:(.+?)\s*\)\s*/ms',
+	'eachVarRegex' => '/\s*@EACH\s*\(\s*:(.+?)\s*\)\s*/ms',
 
-	'filterRegex'   => '/\s*:?(?<return>[\w_\.]+)?\s*=?\s*@FILTER\s*\(\s*:(?<data>[\w\._]+)\s*\,\s*(?<columns>[\w_]+),?\s*(?<addmissing>true|false)?,?\s*(?<array>true|false)?\s*\)\s*/ms',
+	'filterRegex' => '/\s*:?(?<return>[\w_\.]+)?\s*=?\s*@FILTER\s*\(\s*:(?<data>[\w\._]+)\s*\,\s*(?<columns>[\w_]+),?\s*(?<addmissing>true|false)?,?\s*(?<array>true|false)?\s*\)\s*/ms',
 
-	'varRegex'      => '/:([\w+\.])/ms',
+	'varRegex' => '/:([\w\.]+)/ms',
 
-	'importRegex'   => '/import\(([\w\-\_\.\/]+?)\);?/',
+	'importRegex' => '/import\(([\w\-\_\.\/]+?)\);?/',
 
 	//Generated model templates
 
@@ -46,15 +46,14 @@ return
 
 	//Lexer
 	'tokenMap' => [
-		'@IF\s+.+?\s*THEN'  => 'T_IF_START',
-		'@ELSE'             => 'T_ELSE',
-		'END @IF'           => 'T_IF_END',
-		'@KEYS\(.+?\)'      => 'T_KEYS',
-		'@LIST\(.+?\)'      => 'T_LIST',
+		'@IF\s+.+?\s*THEN' => 'T_IF_START',
+		'@ELSE'            => 'T_ELSE',
+		'END @IF'          => 'T_IF_END',
+		'@KEYS\(.+?\)'     => 'T_KEYS',
+		'@LIST\(.+?\)'     => 'T_LIST',
 		//'@EACH\(.+?\)'      => 'T_EACH_START',
 		//'END @EACH'         => 'T_EACH_END',
 		'@SQL_COUNT\(.+?\)' => 'T_SQL_COUNT',
-		'@SQL_LIMIT\(.+?\)' => 'T_SQL_LIMIT',
 		'@ESC\(.+?\)'       => 'T_ESC',
 		'.+?'               => 'T_SQL',
 	],
@@ -64,74 +63,64 @@ return
 		'T_IF_START' => [
 			'/\s*@IF\s*(?<cond>.+?)\s*THEN\s*/', //regex
 			<<<'PHP'
-		';
-		if ($%cond) {
-			$sql .= '
-PHP
+						';
+						if ($%cond) {
+							$sql .= '
+				PHP
 			,
 		],
 
 		'T_ELSE' => <<<'PHP'
-				';
-			} else {
-				$sql .= ' 		
-PHP
+							';
+						} else {
+							$sql .= '
+			PHP
 		,
 		'T_IF_END' => '\';
 			} //end if
-			
+
 			$sql .= \'',
 		//end if
-		'T_KEYS'      => [
+		'T_KEYS' => [
 			'/\s*@KEYS\s*\(\s*:(?<keys>[\w_\.]+)\s*\)\s*/ms',
 			<<<'PHP'
-		';
-		$q = $this->db->quote;
-		$sql .= $q . implode("$q,$q", array_keys($params['%keys'])); 
-		$sql .= $q . ' 
-PHP
+						';
+						$q = $this->db->quote;
+						$sql .= $q . implode("$q,$q", $this->db->escapeKeys(array_keys($params['%keys'])));
+						$sql .= $q . '
+				PHP
 		],
 
-		'T_LIST'      => [
+		'T_LIST' => [
 			'/\s*@LIST\s*\(\s*:(?<list>[\w_\.]+)\s*\)\s*/ms',
 			<<<'PHP'
-		';
-		
-			list($_sql, $_params) = $this->db->expandList($params['%list'], '%list');
+						';
 
-			$sql .= ' ' . $_sql;
+							list($_sql, $_params) = $this->db->expandList($params['%list'], '%list');
 
-			if (is_array($_params)) $paramTypes = array_merge($paramTypes, $_params);
+							$sql .= ' ' . $_sql;
 
-			$sql .= ' ' . '
-PHP
+							if (is_array($_params)) $paramTypes = array_merge($paramTypes, $_params);
+
+							$sql .= ' ' . '
+				PHP
 		],
 
-		'T_SQL_COUNT'      => [
+		'T_SQL_COUNT' => [
 			'/\s*@SQL_COUNT\s*\(\s*(?<column>.+?),\s*(?<table>.+?)\s*\)\s*/ms',
 			<<<'PHP'
-		'; 
-		$sql .= $this->db->sqlCount($prevSql, '%column', $this->db->prefix . '%table'); 
-		$sql .= '
-PHP
+						';
+						$sql .= $this->db->sqlCount($prevSql, '%column', $this->db->prefix . '%table');
+						$sql .= '
+				PHP
 		],
-
-		'T_SQL_LIMIT'      => [
-			'/\s*@SQL_LIMIT\s*\(\s*(?<start>.+?),\s*(?<limit>.+?)\s*\)\s*/ms',
-			<<<'PHP'
-		'; 
-		$sql .= $this->db->sqlLimit('%start', '%limit'); 
-		$sql .= '
-PHP
-		],
-
-		'T_ESC'      => [
+		'T_ESC' => [
 			'/@ESC\s*\(\s*:?(?<column>.+?)\s*\)/ms',
 			<<<'PHP'
-		'; 
-		$sql .= preg_replace('/\W+/', '', $params['%column'] ?? '');
-		$sql .= '
-PHP
+						';
+						$sql .= preg_replace('/\W+/', '', $params['%column'] ?? '');
+						$sql .= '
+				PHP
 		],
 
 		//'T_EACH_START'      => 'EACH()',

@@ -24,6 +24,7 @@
 		-- pagination
 		IN start INT,
 		IN limit INT,
+		IN cursor INT, -- current cursor (order_id) for cursor pagination
 		IN order_by CHAR,
 		IN direction CHAR,
 		
@@ -97,6 +98,16 @@
 				`order`.last_name LIKE '%' || :search || '%'
 			END @IF		
 
+			-- cursor pagination
+
+			@IF isset(:cursor)
+
+			THEN
+
+			    AND `order`.order_id > :cursor
+
+			END @IF
+
 			-- ORDER BY parameters can't be binded, because they are added to the query directly they must be properly sanitized by only allowing a predefined set of values
 			@IF isset(:order_by)
 			THEN
@@ -106,7 +117,7 @@
 				ORDER BY `order`.order_id DESC
 			END @IF
 
-		@SQL_LIMIT(:start, :limit);
+		LIMIT :limit OFFSET :start;
 		
 		SELECT count(*) FROM (
 			
@@ -130,7 +141,7 @@
 		OUT fetch_all,
 		OUT fetch_all,
 		OUT fetch_all,
-		OUT fetch_all,
+		OUT fetch_all
 	)
 	BEGIN
         
@@ -226,8 +237,7 @@
     END    
     
 
-	PROCEDURE getData(
-		IN order_id INT,
+	CREATE PROCEDURE getData(
 		IN language_id INT,
 		IN billing_country_id INT,
 		IN shipping_country_id INT,
@@ -237,6 +247,8 @@
 		OUT fetch_all, 
 		OUT fetch_all, 
 		OUT fetch_all, 
+		OUT fetch_all,
+		OUT fetch_all
 	)
 	BEGIN
 	
@@ -304,7 +316,7 @@
     
 	-- delete order
 	
-	PROCEDURE delete(
+	CREATE PROCEDURE delete(
 		IN  order_id ARRAY,
 		OUT affected_rows,
 		OUT affected_rows,
@@ -379,7 +391,7 @@
         
 	CREATE PROCEDURE edit(
         IN order_id INT,
-		IN order ARRAY,
+		IN order ROW,
 		OUT affected_rows
 	)
 	BEGIN
@@ -397,8 +409,8 @@
 	-- products
 	
 	CREATE PROCEDURE addProduct(
-		IN product ARRAY,
-		IN product_options ARRAY,
+		IN product ROW,
+		IN product_options ROWS,
 		IN order_id INT,
 		OUT insert_id,
 		OUT insert_id
@@ -420,8 +432,8 @@
 			
 	CREATE PROCEDURE editProduct(
 		IN order_product_id INT,
-		IN product ARRAY,
-		IN product_options ARRAY,
+		IN product ROW,
+		IN product_options ROWS,
 		IN order_id INT,
 		OUT affected_rows,
 		OUT affected_rows
@@ -445,9 +457,9 @@
 			ON CONFLICT(`order_id`,`order_product_id`) DO UPDATE SET @LIST(:each);
     END
 	
-	PROCEDURE deleteProduct(
+	CREATE PROCEDURE deleteProduct(
 		IN  order_product_id ARRAY,
-		OUT affected_rows,
+		OUT affected_rows
 	)
 	BEGIN
 
@@ -458,7 +470,7 @@
 	-- totals
 	
 	CREATE PROCEDURE addTotal(
-		IN total ARRAY,
+		IN total ROW,
 		IN order_id INT,
 		OUT insert_id
 	)
@@ -474,7 +486,7 @@
 	
 	CREATE PROCEDURE editTotal(
 		IN order_total_id INT,
-		IN total ARRAY,
+		IN total ROW,
 		OUT affected_rows
 	)
 	BEGIN
@@ -489,9 +501,9 @@
 
     END
 	
-	PROCEDURE deleteTotal(
+	CREATE PROCEDURE deleteTotal(
 		IN  order_total_id ARRAY,
-		OUT affected_rows,
+		OUT affected_rows
 	)
 	BEGIN
 
