@@ -23,17 +23,114 @@
 namespace Vvveb\System;
 
 abstract class ShippingMethod {
-	protected $cart;
+	/** @var object Cart instance. */
+	protected object $cart;
 
-	function __construct($cart) {
+	/** @var string|null Last failure reason, set via fail(). */
+	private ?string $error = null;
+
+	/**
+	 * @param object $cart Cart instance.
+	 */
+	public function __construct(object $cart) {
 		$this->cart = $cart;
 	}
 
-	abstract public function init();
+	/**
+	 * Check whether this method implements an operation.
+	 *
+	 * @param string $operation One of ship (tracking/label booking stay on carriers).
+	 *
+	 * @return bool True if the concrete class overrides the operation.
+	 */
+	public function supports(string $operation): bool {
+		return method_exists($this, $operation);
+	}
 
-	abstract public function getMethod(&$checkoutInfo = [], $options = []);
+	/**
+	 * Get the last failure reason.
+	 *
+	 * @return string|null Error message or null when the last operation succeeded.
+	 */
+	public function getError(): ?string {
+		return $this->error;
+	}
 
-	abstract public function setMethod();
+	/**
+	 * Record a failure reason and return false for convenience.
+	 *
+	 * @param string $message Human readable failure reason.
+	 *
+	 * @return bool Always false.
+	 */
+	protected function fail(string $message): bool {
+		$this->error = $message;
 
-	abstract public function ship();
+		return false;
+	}
+
+	/**
+	 * Record a shipment row for an order, skipping duplicates.
+	 *
+	 * @param int|string $orderId  Order id.
+	 * @param string     $method   Method identifier shown in admin.
+	 * @param string     $tracking Tracking number, if known.
+	 *
+	 * @return bool True on success (or when the row already exists).
+	 */
+	protected function recordShipment(int|string $orderId, string $method, string $tracking = ''): bool {
+		try {
+			$model = \Vvveb\model('order_shipment');
+			$rows  = $model->getByOrder(['order_id' => (int)$orderId])['order_shipment'] ?? [];
+
+			foreach ($rows as $row) {
+				if (($row['shipping_method'] ?? '') === $method && ($row['tracking_number'] ?? '') === $tracking) {
+					return true;
+				}
+			}
+
+			$model->add(['shipment' => [
+				'order_id'        => (int)$orderId,
+				'shipping_method' => $method,
+				'tracking_number' => $tracking,
+			]]);
+
+			return true;
+		} catch (\Throwable $e) {
+			return $this->fail('Shipment could not be recorded: ' . $e->getMessage());
+		}
+	}
+
+	/**
+	 * Initialize the shipping method.
+	 *
+	 * @return void
+	 */
+	abstract public function init(): void;
+
+	/**
+	 * Get shipping method details and options.
+	 *
+	 * @param array<string, mixed> &$checkoutInfo Checkout information passed by reference.
+	 * @param array<string, mixed> $options       Method-specific options.
+	 *
+	 * @return array<string, mixed>|false Method data or false if unavailable.
+	 */
+	abstract public function getMethod(array &$checkoutInfo = [], array $options = []): array|false;
+
+	/**
+	 * Set the active shipping method.
+	 *
+	 * @return void
+	 */
+	abstract public function setMethod(): void;
+
+	/**
+	 * Process the shipment.
+	 *
+	 * @param array<string, mixed> &$checkoutInfo Checkout information passed by reference.
+	 *
+	 * @return bool
+	 */
+	abstract public function ship(array &$checkoutInfo = []): bool;
 }

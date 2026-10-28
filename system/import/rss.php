@@ -24,13 +24,25 @@ namespace Vvveb\System\Import;
 
 #[\AllowDynamicProperties]
 class Rss {
-	private $dom;
+	/**
+	 * @var \DOMDocument
+	 */
+	private \DOMDocument $dom;
 
-	private $xpath;
+	/**
+	 * @var \DOMXPath
+	 */
+	private \DOMXPath $xpath;
 
-	private $rss;
+	/**
+	 * @var string
+	 */
+	private string $rss;
 
-	private $importXMLOptions = LIBXML_NOBLANKS |
+	/**
+	 * @var int
+	 */
+	private int $importXMLOptions = LIBXML_NOBLANKS |
 		LIBXML_COMPACT |
 		LIBXML_NOCDATA |
 		LIBXML_PARSEHUGE |
@@ -39,7 +51,12 @@ class Rss {
 	// |
 	//LIBXML_BIGLINES;
 
-	function __construct($rss) {
+	/**
+	 * @param string $rss
+	 *
+	 * @return void
+	 */
+	public function __construct(string $rss) {
 		$this->rss                     = $rss;
 		$this->dom                     = new \DOMDocument('1.0', 'utf-8');
 		$this->dom->formatOutput       = false;
@@ -47,10 +64,15 @@ class Rss {
 		$this->dom->loadXML($this->rss, $this->importXMLOptions);
 		$this->dom->normalize();
 
-		$this->xpath  = new \DOMXpath($this->dom);
+		$this->xpath  = new \DOMXPath($this->dom);
 	}
 
-	function buildXPath($attributes = []) {
+	/**
+	 * @param array<array-key, mixed> $attributes
+	 *
+	 * @return string
+	 */
+	public function buildXPath(array $attributes = []): string {
 		$list = '';
 
 		foreach ($attributes as $attribute) {
@@ -65,43 +87,65 @@ class Rss {
 			$list .= "[$name $operator '$value']";
 		}
 
-		$xpath = "//channel/item$list";
-
-		return $xpath;
+		return "//channel/item$list";
 	}
 
-	function value($nodeName) {
+	/**
+	 * @param string $nodeName
+	 *
+	 * @return string|false
+	 */
+	public function value(string $nodeName): string|false {
 		$xpath = "//channel/$nodeName";
 		$item  = $this->xpath->query($xpath);
 
 		if ($item && isset($item[0])) {
 			return $item[0]->nodeValue ?? false;
 		}
+
+		return false;
 	}
 
-	function count($attributes = []) {
+	/**
+	 * @param array<array-key, mixed> $attributes
+	 *
+	 * @return int
+	 */
+	public function count(array $attributes = []): int {
 		$items = $this->xpath->query($this->buildXPath($attributes));
 
-		return $items->length ?? 0;
+		return $items ? $items->length : 0;
 	}
 
-	function get($start = 1, $limit = 10, $attributes = []) {
+	/**
+	 * @param int                     $start
+	 * @param int                     $limit
+	 * @param array<array-key, mixed> $attributes
+	 *
+	 * @return array<array-key, mixed>
+	 */
+	public function get(int $start = 1, int $limit = 10, array $attributes = []): array {
 		if ($start) {
-			$attributes[] = ['position()'=> [$start, '>=']];
+			$attributes[] = ['position()' => [$start, '>=']];
 		}
 
 		if ($limit) {
-			$attributes[] = ['position()'=> [$limit, '<=']];
+			$attributes[] = ['position()' => [$limit, '<=']];
 		}
 
 		$items = $this->xpath->query($this->buildXPath($attributes));
 		$rows  = [];
 
+		if (!$items) {
+			return $rows;
+		}
+
 		foreach ($items as $item) {
 			$columns = $item->childNodes;
+			$row     = [];
 
 			foreach ($columns as $column) {
-				if ($column->nodeName == '#text') {
+				if ($column->nodeName === '#text') {
 					continue;
 				}
 				$columnName  = $column->nodeName;

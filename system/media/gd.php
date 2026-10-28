@@ -23,17 +23,27 @@
 namespace Vvveb\System\Media;
 
 class Image {
-	private $file;
+	/** @var string */
+	private string $file = '';
 
-	private $image;
+	/** @var mixed Image handle of the active driver. */
+	private mixed $image = false;
 
-	private $width;
+	/** @var int */
+	private int $width = 0;
 
-	private $height;
+	/** @var int */
+	private int $height = 0;
 
-	private $mime;
+	/** @var string */
+	private string $mime = '';
 
-	public function __construct($file) {
+	/**
+	 * Load an image file and initialize GD image resource.
+	 *
+	 * @param string $file Path to the image file.
+	 */
+	public function __construct(string $file) {
 		if (is_file($file)) {
 			$this->file = $file;
 
@@ -42,120 +52,190 @@ class Image {
 			if ($info) {
 				$this->width  = $info[0];
 				$this->height = $info[1];
-				$this->mime   = $info['mime'] ?? '';
+				$this->mime   = $info['mime'];
 
-				if ($this->mime == 'image/gif') {
-					$this->image = imagecreatefromgif($file);
-				} elseif ($this->mime == 'image/png') {
-					$this->image = imagecreatefrompng($file);
+				$this->image = match ($this->mime) {
+					'image/gif'  => imagecreatefromgif($file),
+					'image/png'  => imagecreatefrompng($file),
+					'image/jpeg' => imagecreatefromjpeg($file),
+					'image/webp' => imagecreatefromwebp($file),
+					default      => false,
+				};
 
+				if ($this->mime === 'image/png' && $this->image) {
 					imageinterlace($this->image, false);
-				} elseif ($this->mime == 'image/jpeg') {
-					$this->image = imagecreatefromjpeg($file);
-				} elseif ($this->mime == 'image/webp') {
-					$this->image = imagecreatefromwebp($file);
 				}
+
+				//preserve transparency for png/webp sources
+				if ($this->image && in_array($this->mime, ['image/png', 'image/webp'])) {
+					imagesavealpha($this->image, true);
+				}
+				/*
+				if (STRIP_EXIF) {
+					$profiles = $this->image->getImageProfiles('icc', true);
+					$this->image->stripImage();
+
+					if (! empty($profiles)) {
+						$this->image->profileImage('icc', $profiles['icc']);
+					}
+				}
+				*/
 			}
 		} else {
 			//throw new \Exception("Could not load image $file");
 		}
 	}
 
-	public function getFile() {
+	/**
+	 * Get the file path.
+	 *
+	 * @return string
+	 */
+	public function getFile(): string {
 		return $this->file;
 	}
 
-	public function getImage() {
+	/**
+	 * Get the GD image resource.
+	 *
+	 * @return \GdImage|false
+	 */
+	public function getImage(): \GdImage|false {
 		return $this->image;
 	}
 
-	public function getWidth() {
+	/**
+	 * Get the image width.
+	 *
+	 * @return int
+	 */
+	public function getWidth(): int {
 		return $this->width;
 	}
 
-	public function getHeight() {
+	/**
+	 * Get the image height.
+	 *
+	 * @return int
+	 */
+	public function getHeight(): int {
 		return $this->height;
 	}
 
-	public function getMime() {
+	/**
+	 * Get the image MIME type.
+	 *
+	 * @return string
+	 */
+	public function getMime(): string {
 		return $this->mime;
 	}
 
-	public function save($file, $quality = 80, $extension = false) {
-		if (! $this->image) {
-			return;
+	/**
+	 * Save the image to a file.
+	 *
+	 * @param string       $file      Output file path.
+	 * @param int          $quality   Compression quality (0-100).
+	 * @param string|false $extension File extension override, or false to detect from path.
+	 *
+	 * @return bool
+	 */
+	public function save(string $file, int $quality = 80, string|false $extension = false): bool {
+		if (!$this->image) {
+			return false;
 		}
 
 		$info = pathinfo($file);
 
-		$extension = $extension ?: strtolower($info['extension']);
+		$extension = $extension ?: strtolower($info['extension'] ?? '');
 
-		$result = false;
-
-		if (is_object($this->image) || is_resource($this->image)) {
-			if ($extension == 'jpeg' || $extension == 'jpg') {
-				$result = @imagejpeg($this->image, $file, $quality);
-			} elseif ($extension == 'png') {
-				$result = @imagepng($this->image, $file, 8, PNG_ALL_FILTERS);
-			} elseif ($extension == 'gif') {
-				$result = @imagegif($this->image, $file);
-			} elseif ($extension == 'webp') {
-				$result = @imagewebp($this->image, $file, $quality);
-			}
-
-			if (PHP_MAJOR_VERSION < 8) {
-				imagedestroy($this->image);
-			}
-
-			return $result;
-		}
+		return match ($extension) {
+			'jpeg', 'jpg' => @imagejpeg($this->image, $file, $quality),
+			'png'         => @imagepng($this->image, $file, 8, PNG_ALL_FILTERS),
+			'gif'         => @imagegif($this->image, $file),
+			'webp'        => @imagewebp($this->image, $file, $quality),
+			default       => false,
+		};
 	}
 
-	public function resize($width, $height = 0, $method = 's') {
+	/**
+	 * Resize the image using the specified method.
+	 *
+	 * @param int    $width  Target width.
+	 * @param int    $height Target height (0 to auto-calculate).
+	 * @param string $method Resize method: 'r' (ratio), 's' (stretch), 'c' (crop), 'cs' (cropsize).
+	 *
+	 * @return bool
+	 */
+	public function resize(int $width, int $height = 0, string $method = 's'): bool {
 		switch ($method) {
 			case 'r':
-				return $this->_resize($width, $height);
+				return $this->resizeRatio($width, $height);
 
 			case 's':
 				return $this->stretch($width, $height);
 
 			case 'c':
-				return $this->crop($width, $height);
+				$this->crop(0, 0, $width, $height);
+
+				return true;
 
 			case 'cs':
-				return $this->cropsize($width, $height);
+				$this->cropsize($width, $height);
+
+				return true;
 		}
+
+		return false;
 	}
 
-	public function stretch($width, $height = 0) {
-		if (! $this->width || ! $this->height || ! $this->image) {
-			return;
+	/**
+	 * Stretch the image to the specified dimensions.
+	 *
+	 * @param int $width  Target width.
+	 * @param int $height Target height (0 to auto-calculate from ratio).
+	 *
+	 * @return bool
+	 */
+	public function stretch(int $width, int $height = 0): bool {
+		if (!$this->width || !$this->height || !$this->image) {
+			return false;
 		}
 
-		$ratio = $newRatio =  $this->width / $this->height;
+		$newRatio = $this->width / $this->height;
 
 		if ($width && $height) {
 			$newRatio = $width / $height;
 		}
 
-		if (! $height) {
-			$height = ceil($width / $newRatio);
+		if (!$height) {
+			$height = (int)ceil($width / $newRatio);
 		}
-		
-		$this->image = imagescale($this->image, $width, $height, IMG_BICUBIC_FIXED);
+
+		$scaled = imagescale($this->image, $width, $height, IMG_BICUBIC_FIXED);
+
+		if (!$scaled) {
+			return false;
+		}
+
+		$this->image = $scaled;
+		imagesavealpha($scaled, true);
+
+		return true;
 	}
-	
-	public function _resize($width, $height = 0) {
-		if (! $this->width || ! $this->height || ! $this->image) {
-			return;
+
+	/**
+	 * Resize the image while preserving aspect ratio.
+	 *
+	 * @param int $width  Target width.
+	 * @param int $height Target height (0 to auto-calculate from ratio).
+	 *
+	 * @return bool
+	 */
+	public function resizeRatio(int $width, int $height = 0): bool {
+		if (!$this->width || !$this->height || !$this->image) {
+			return false;
 		}
-
-		$ratio = $newRatio =  $this->width / $this->height;
-
-		if ($width && $height) {
-			$newRatio = $width / $height;
-		}
-
 
 		if ($width && $height) {
 			$scaleW = $width / $this->width;
@@ -167,24 +247,43 @@ class Image {
 			$height = (int)($this->height * $scale);
 		} else {
 			if ($width) {
-				$height = ceil($this->height / ($this->width / $width));
-			} else {
-				if ($height) {
-					$width = ceil($this->width / ($this->height / $height));
-				}
+				$height = (int)ceil($this->height / ($this->width / $width));
+			} elseif ($height) {
+				$width = (int)ceil($this->width / ($this->height / $height));
 			}
 		}
 
-		$this->image = imagescale($this->image, $width, $height, IMG_BICUBIC_FIXED);
+		$scaled = imagescale($this->image, $width, $height, IMG_BICUBIC_FIXED);
 
+		if (!$scaled) {
+			return false;
+		}
+
+		$this->image  = $scaled;
 		$this->width  = $width;
 		$this->height = $height;
+		imagesavealpha($scaled, true);
+
+		return true;
 	}
 
-	public function crop($topX, $topY, $bottomX, $bottomY) {
-		if (! $this->width || ! $this->height || ! $this->image) {
+	/**
+	 * Crop the image from given coordinates.
+	 *
+	 * @param int $topX    Top-left X coordinate.
+	 * @param int $topY    Top-left Y coordinate.
+	 * @param int $bottomX Bottom-right X coordinate (0 for image width).
+	 * @param int $bottomY Bottom-right Y coordinate (0 for image height).
+	 *
+	 * @return void
+	 */
+	public function crop(int $topX, int $topY, int $bottomX = 0, int $bottomY = 0): void {
+		if (!$this->width || !$this->height || !$this->image) {
 			return;
 		}
+
+		$bottomX = $bottomX ?: $this->width;
+		$bottomY = $bottomY ?: $this->height;
 
 		$imageOld    = $this->image;
 		$this->image = imagecreatetruecolor($bottomX - $topX, $bottomY - $topY);
@@ -196,44 +295,59 @@ class Image {
 		$this->height = $bottomY - $topY;
 	}
 
-	public function cropsize($width, $height = 0) {
-		if (! $this->width || ! $this->height || ! $this->image) {
+	/**
+	 * Crop and resize the image to the specified dimensions.
+	 *
+	 * @param int $width  Target width.
+	 * @param int $height Target height (0 to auto-calculate from ratio).
+	 *
+	 * @return void
+	 */
+	public function cropsize(int $width, int $height = 0): void {
+		if (!$this->width || !$this->height || !$this->image) {
 			return;
 		}
 
-		$ratio = $newRatio =  $this->width / $this->height;
+		$newRatio = $this->width / $this->height;
 
 		if ($width && $height) {
 			$newRatio = $width / $height;
 		}
 
-		if (! $height) {
-			$height = $width / $newRatio;
+		if (!$height) {
+			$height = (int)($width / $newRatio);
 		}
 
+		$ratio = $this->width / $this->height;
+
 		if ($newRatio > $ratio) {
-			$newWidth  = $width;
-			$newHeight = floor($width / $this->width * $this->height);
+			$newWidth  = (int)$width;
+			$newHeight = (int)floor($width / $this->width * $this->height);
 			$crop_x    = 0;
-			$crop_y    = intval(($newHeight - $height) / 2);
-		} else if ($newRatio < $ratio) {
-			$newWidth  = floor($height / $this->height * $this->width);
-			$newHeight = intval($height);
-			$crop_x    = intval(($newWidth - $width) / 2);
+			$crop_y    = (int)(int)(($newHeight - $height) / 2);
+		} elseif ($newRatio < $ratio) {
+			$newWidth  = (int)floor($height / $this->height * $this->width);
+			$newHeight = (int)$height;
+			$crop_x    = (int)(int)(($newWidth - $width) / 2);
 			$crop_y    = 0;
 		} else {
-			$newWidth  = intval($width);
-			$newHeight = intval($height);
+			$newWidth  = (int)$width;
+			$newHeight = (int)$height;
 		}
 
 		$image = false;
-		if ($this->width != $newWidth && $this->height != $newHeight) {
+
+		if ($this->width !== $newWidth || $this->height !== $newHeight) {
 			$image = imagescale($this->image, $newWidth, $newHeight);
+
+			if ($image) {
+				imagesavealpha($image, true);
+			}
 		}
 
 		if ($image) {
-			if ($width != $newWidth || $newHeight != $height) {
-				$image = imagecrop($image, ['x' => 0, 'y' => 0, 'width' => $width, 'height' => $height]);
+			if ($width !== $newWidth || $newHeight !== $height) {
+				$image = imagecrop($image, ['x' => 0, 'y' => 0, 'width' => $width, 'height' => (int)$height]);
 			}
 
 			if ($image) {
@@ -242,26 +356,33 @@ class Image {
 		}
 	}
 
-	public static function formats($format = false) {
+	/**
+	 * Get supported image formats or check if a specific format is supported.
+	 *
+	 * @param string|false $format Format extension to check, or false to return all supported formats.
+	 *
+	 * @return array<array-key, mixed>|bool Array of supported format strings, or bool if a specific format was queried.
+	 */
+	public static function formats(string|false $format = false): array|bool {
 		$formats = [];
 		$info    = gd_info();
 
 		foreach ([
-			'JPEG Support' => 'jpg',
-			'PNG Support' => 'png',
-			'WebP Support' => 'webp',
-			'AVIF Support' => 'avif',
-			'WBMP Support' => 'wbmp',
+			'JPEG Support'       => 'jpg',
+			'PNG Support'        => 'png',
+			'WebP Support'       => 'webp',
+			'AVIF Support'       => 'avif',
+			'WBMP Support'       => 'wbmp',
 			'GIF Create Support' => 'gif',
-			'XBM Support"' => 'xbm',
+			'XBM Support'        => 'xbm',
 		] as $name => $extension) {
-			if (isset($info[$name]) && $info[$name]) {
+			if (!empty($info[$name])) {
 				$formats[] = $extension;
 			}
 		}
 
 		if ($format) {
-			return in_array($format, $formats);
+			return in_array($format, $formats, true);
 		}
 
 		return $formats;

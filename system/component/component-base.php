@@ -24,6 +24,7 @@ namespace Vvveb\System\Component;
 
 use function Vvveb\session as sess;
 use function Vvveb\siteSettings;
+use Vvveb\System\Cache;
 use Vvveb\System\Core\Request;
 use Vvveb\System\Core\View;
 use Vvveb\System\Event;
@@ -33,26 +34,37 @@ use Vvveb\System\User\User;
 
 #[\AllowDynamicProperties]
 class ComponentBase {
-	public $cacheKey;
+	/** @var string|null Cache key for this component instance. */
+	public ?string $cacheKey = null;
 
-	public $cacheExpire = 3600; //seconds
+	/** @var int Cache expiry time in seconds. */
+	public int $cacheExpire = 3600;
 
-	public static $global;
+	/** @var array<string, mixed> Shared global context available to all component instances. */
+	public static array $global = [];
 
-	protected $options;
+	/** @var array<array-key, mixed> Resolved options for this component instance. */
+	protected array $options = [];
 
-	protected $_hash;
+	/** @var string|null Hash used to uniquely identify this component configuration. */
+	protected ?string $_hash = null;
 
-	public static $defaultOptions = [];
+	/** @var array<array-key, mixed> Default options merged with global context; subclasses may override. */
+	public static array $defaultOptions = [];
 
-	function __construct($options = []) {
+	/**
+	 * Initialize the component, resolving options against global defaults and request data.
+	 *
+	 * @param array<array-key, mixed> $options Component-specific options (e.g. from data-v-* attributes).
+	 */
+	public function __construct(array $options = []) {
 		$request = Request :: getInstance();
 
-		if (! self :: $global) {
+		if (!self :: $global) {
 			$user                                  = User::current();
 			$site                                  = siteSettings();
 			self :: $global['start']               = 0;
-			self :: $global['site_id']             = (APP == 'admin') ? sess('site_id') ?? SITE_ID : (defined('SITE_ID') ? SITE_ID : 0);
+			self :: $global['site_id']             = (APP === 'admin') ? sess('site_id') ?? SITE_ID : (defined('SITE_ID') ? SITE_ID : 0);
 			//self :: $global['site']                = siteSettings();
 			self :: $global['user_id']             = $user['user_id'] ?? null;
 			self :: $global['user_group_id']       = $user['user_group_id'] ?? 1;
@@ -67,7 +79,7 @@ class ComponentBase {
 			self :: $global['currencies']          = $site['currencies'] ?? [];
 
 			//don't set user session language for default language homepage
-			if (! isset($request->get['module']) || $request->get['module'] != 'index/index') {
+			if (!isset($request->get['module']) || $request->get['module'] !== 'index/index') {
 				self :: $global['language']            = (sess('language') ?? self :: $global['language']);
 				self :: $global['language_id']         = (sess('language_id') ?? self :: $global['language_id']);
 			}
@@ -76,7 +88,7 @@ class ComponentBase {
 				(isset($request->get['language']) && is_string($request->get['language']) && ($lang = $request->get['language']))) {
 				$languages = Locale::availableLanguages();
 				if (isset($languages[$lang])) {
-					self :: $global['language'] = $lang;
+					self :: $global['language']    = $lang;
 					self :: $global['language_id'] = $languages[$lang]['language_id'];
 				}
 			}
@@ -89,26 +101,26 @@ class ComponentBase {
 		static :: $defaultOptions += self :: $global;
 
 		foreach (['site_id', 'language_id', 'currency_id', 'user_id', 'user_group_id'] as $key) {
-			if (! isset(static :: $defaultOptions[$key]) || empty(static :: $defaultOptions[$key])) {
+			if (!isset(static :: $defaultOptions[$key]) || empty(static :: $defaultOptions[$key])) {
 				static :: $defaultOptions[$key] = self :: $global[$key];
 			}
 		}
 
-		if (isset(static :: $defaultOptions)) {
-			$this->options = $this->filter($options);
-		}
+		$this->options = $this->filter($options);
 
 		foreach ($this->options as $key => &$value) {
 			if (is_array($value)) {
 				foreach ($value as $val) {
-					if (strpos($val, 'url') === 0) {
+					if (is_string($val) && str_starts_with($val, 'url')) {
 						//check if url parameter is specified ex: url.slug
-						if ($dot = strrpos($val,'.')) {
-							$key = substr($val, $dot + 1);
+						$lookupKey = $key;
+
+						if ($dot = strrpos($val, '.')) {
+							$lookupKey = substr($val, $dot + 1);
 						}
 
-						if (isset($request->request[$key])) {
-							$value = $request->request[$key];
+						if (isset($request->request[$lookupKey])) {
+							$value = $request->request[$lookupKey];
 
 							break;
 						} else {
@@ -122,13 +134,15 @@ class ComponentBase {
 				}
 			}
 
-			if ($value && is_string($value) && strpos($value, 'url') === 0) {
+			if ($value && is_string($value) && str_starts_with($value, 'url')) {
 				//check if url parameter is specified ex: url.slug
-				if ($dot = strrpos($value,'.')) {
-					$key = substr($value, $dot + 1);
+				$lookupKey = $key;
+
+				if ($dot = strrpos($value, '.')) {
+					$lookupKey = substr($value, $dot + 1);
 				}
 
-				$value = ($request->request[$key] ?? ($request->get[$key] ?? null));
+				$value = ($request->request[$lookupKey] ?? ($request->get[$lookupKey] ?? null));
 			}
 
 			if ($value === null) {
@@ -136,66 +150,73 @@ class ComponentBase {
 			}
 		}
 
-		list($this->options) = Event :: trigger(get_class($this), __FUNCTION__, $this->options);
+		[$this->options] = Event :: trigger(static::class, __FUNCTION__, $this->options);
 
 		$this->di($this);
 	}
 
-	static function di(&$component) {
+	/**
+	 * Inject standard service dependencies into a component instance.
+	 *
+	 * @param self &$component The component to inject dependencies into.
+	 *
+	 * @return void
+	 */
+	public static function di(self &$component): void {
 		$component->request = Request::getInstance();
 		$component->view    = View::getInstance();
 		$component->session = Session::getInstance();
 	}
 
-	function invalidateCache() {
-	}
+	/**
+	 * Invalidate cached data for this component (stub for subclasses).
+	 *
+	 * @return void
+	 */
+	public function invalidateCache(): void {}
 
-	function cacheKey() {
-		if (isset($this->cacheKey)) {
+	/**
+	 * Generate or retrieve the cache key for this component.
+	 *
+	 * @return string|null The cache key, or null if not yet generated.
+	 */
+	public function cacheKey(): ?string {
+		if ($this->cacheKey !== null) {
 			return $this->cacheKey;
 		}
 
-		$className      = strtolower(str_replace(['Vvveb\Plugins\\', 'Vvveb\Component\\', '\Component\\'], '',get_class($this)));
-		$this->cacheKey = str_replace('\\','-', $className) . '.' . md5(serialize($this->options));
+		$className      = strtolower(str_replace(['Vvveb\Plugins\\', 'Vvveb\Component\\', '\Component\\'], '', static::class));
+		$this->cacheKey = str_replace('\\', '-', $className) . '.' . md5(serialize($this->options));
 
 		return $this->cacheKey;
 	}
 
-	function filter(&$options) {
+	/**
+	 * Filter and merge component options against the declared default options.
+	 *
+	 * @param array<array-key, mixed> &$options Raw options to filter (may contain _hash).
+	 *
+	 * @return array<array-key, mixed> Filtered options merged with defaults.
+	 */
+	public function filter(array &$options): array {
 		//remove fields not declared in the class
-		if (is_array($options)) {
-			if (isset($options['_hash'])) {
-				$this->_hash = $options['_hash'];
-				unset($options['_hash']);
-			}
-
-			//$intersect = array_intersect_key($options, static :: $defaultOptions);
-			//$diff = array_diff_key(static :: $defaultOptions, $options);
-			//return $options = $intersect + $diff;
-			return $options + static :: $defaultOptions;
-		} else {
-			return static :: $defaultOptions;
+		if (isset($options['_hash'])) {
+			$this->_hash = $options['_hash'];
+			unset($options['_hash']);
 		}
 
-		return $options;
+		return $options + static :: $defaultOptions;
 	}
 
-	function results() {
+	/**
+	 * Retrieve cached results for this component.
+	 *
+	 * @return mixed Cached data or null if not cached.
+	 */
+	public function results(): mixed {
 		//check cache
 		$cache = Cache :: getInstance();
 
-		return $cache->get($this->cacheKey);
-	}
-
-	function generateCache($results) {
-		$cache  = Cache :: getInstance();
-		$expire = $_SERVER['REQUEST_TIME'] + $this->cacheExpire;
-
-		if (! $results) {
-			$results = 0;
-		}
-		$cache->set($this->cacheKey, $results, $expire + COMPONENT_CACHE_EXPIRE);
-
-		return $cache->set('expire_' . $this->cacheKey, $expire, $expire + COMPONENT_CACHE_EXPIRE);
+		return $cache->get('component', $this->cacheKey);
 	}
 }

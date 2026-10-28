@@ -20,55 +20,101 @@
  *
  */
 
-/*
- * Code adapted from Opencart 2, GPL 2 license.
- */
+// Code adapted from Opencart 2, GPL 2 license.
 
 namespace Vvveb\System\Mail;
 
 class Mail {
-	protected $option = [];
+	/** @var array<array-key, mixed> */
+	protected array $option = [];
 
-	public function __construct(&$option = []) {
+	/**
+	 * @param array<array-key, mixed> &$option
+	 *
+	 * @return void
+	 */
+	public function __construct(array &$option = []) {
 		$option                   = $this->option + $option;
 		$this->option             = &$option;
-		$this->option['boundary'] = '----=_NextPart_' . md5(time());
+		$this->option['boundary'] = '----=_NextPart_' . md5(time() . '');
 
-		if (! defined('EOL')) {
+		if (!defined('EOL')) {
 			define('EOL', "\r\n");
 		}
 	}
 
-	private function header() {
+	/**
+	 * Remove characters that allow header injection (CR, LF, NUL).
+	 *
+	 * @param mixed $value
+	 *
+	 * @return string
+	 */
+	protected function sanitizeHeaderValue($value): string {
+		return str_replace(["\r", "\n", "\0"], '', (string)$value);
+	}
+
+	/**
+	 * Apply configured address overrides (mail.sender_override,
+	 * mail.from_address, mail.reply_to), same as the smtp driver.
+	 *
+	 * @return void
+	 */
+	protected function resolveAddresses(): void {
+		if (!empty($this->option['from_address'])) {
+			$this->option['from'] = $this->option['from_address'];
+		}
+
+		if (!empty($this->option['sender_override'])) {
+			$this->option['sender'] = $this->option['sender_override'];
+		}
+
+		//guard against header injection through user supplied fields
+		foreach (['from', 'sender', 'reply_to', 'to'] as $key) {
+			if (isset($this->option[$key])) {
+				$this->option[$key] = is_array($this->option[$key])
+					? array_map([$this, 'sanitizeHeaderValue'], $this->option[$key])
+					: $this->sanitizeHeaderValue($this->option[$key]);
+			}
+		}
+	}
+
+	/**
+	 * @return string
+	 */
+	private function header(): string {
 		$date     = date('D, d M Y H:i:s O');
 		$sender   = base64_encode($this->option['sender']);
-		$reply_to = base64_encode($this->option['reply_to']);
+		$reply_to = base64_encode($this->option['reply_to'] ?? '');
 
 		$header  = 'MIME-Version: 1.0' . EOL;
 		$header .= "Date: $date" . EOL;
 		$header .= "From: =?UTF-8?B?$sender?= <{$this->option['from']}>" . EOL;
 
-		if (! $this->option['reply_to']) {
+		if (!($this->option['reply_to'] ?? '')) {
 			$header .= "Reply-To: =?UTF-8?B?$sender?= <{$this->option['from']}>" . EOL;
 		} else {
 			$header .= "Reply-To: =?UTF-8?B?$reply_to?= <{$this->option['reply_to']}>" . EOL;
 		}
 
 		$header .= 'Return-Path: ' . $this->option['from'] . EOL;
-		$header .= 'X-Mailer: Vvveb PHP/' . phpversion() . EOL;
+		$header .= 'X-Mailer: Vvveb PHP/' . PHP_VERSION . EOL;
 		$header .= 'Content-Type: multipart/mixed; boundary="' . $this->option['boundary'] . '"' . EOL . EOL;
 
 		return $this->option['header'] = $header;
 	}
 
-	private function attachments() {
+	/**
+	 * @return string
+	 */
+	private function attachments(): string {
 		$attachments = '';
 
 		if (isset($this->option['attachments'])) {
 			foreach ($this->option['attachments'] as $attachment) {
 				if (is_file($attachment)) {
-					$name    = basename($attachment);
-					$id      = urlencode(basename($attachment));
+					$name    = $this->sanitizeHeaderValue(basename($attachment));
+					$id      = urlencode($name);
 					$content = file_get_contents($attachment);
 
 					$attachments .= '--' . $this->option['boundary'] . EOL;
@@ -85,26 +131,28 @@ class Mail {
 		return $attachments;
 	}
 
-	private function message() {
-		if (! isset($this->option['html'])) {
-			$message  = '--' . $this->option['boundary'] . EOL;
+	/**
+	 * @return string
+	 */
+	private function message(): string {
+		$message  = '--' . $this->option['boundary'] . EOL;
+
+		if (!isset($this->option['html'])) {
 			$message .= 'Content-Type: text/plain; charset="utf-8"' . EOL;
 			$message .= 'Content-Transfer-Encoding: base64' . EOL . EOL;
-			$message .= chunk_split(base64_encode($this->option['text']),950) . EOL;
+			$message .= chunk_split(base64_encode($this->option['text'] ?? ''), 950) . EOL;
 		} else {
-			$message  = '--' . $this->option['boundary'] . EOL;
+			//$message  = '--' . $this->option['boundary'] . EOL;
 			$message .= 'Content-Type: multipart/alternative; boundary="' . $this->option['boundary'] . '_alt"' . EOL . EOL;
 			$message .= '--' . $this->option['boundary'] . '_alt' . EOL;
 			$message .= 'Content-Type: text/plain; charset="utf-8"' . EOL;
 			$message .= 'Content-Transfer-Encoding: base64' . EOL . EOL;
 
-			if ($this->option['text']) {
+			if ($this->option['text'] ?? false) {
 				$message .= chunk_split(base64_encode($this->option['text']), 950) . EOL;
 			} else {
-				$message .= chunk_split(base64_encode(strip_tags($this->option['html']), 950), '<a>') . EOL;
+				$message .= chunk_split(base64_encode(strip_tags($this->option['html'])), 950) . EOL;
 			}
-
-			$message .= $this->attachments();
 
 			$message .= '--' . $this->option['boundary'] . '_alt' . EOL;
 			$message .= 'Content-Type: text/html; charset="utf-8"' . EOL;
@@ -113,10 +161,18 @@ class Mail {
 			$message .= '--' . $this->option['boundary'] . '_alt--' . EOL;
 		}
 
+		//attachments are top-level parts, appended after the body
+		$message .= $this->attachments();
+
 		return $message .= '--' . $this->option['boundary'] . '--' . EOL;
 	}
 
-	public function send() {
+	/**
+	 * @return bool
+	 */
+	public function send(): bool {
+		$this->resolveAddresses();
+
 		if (is_array($this->option['to'])) {
 			$to = implode(',', $this->option['to']);
 		} else {
@@ -129,6 +185,36 @@ class Mail {
 		ini_set('sendmail_from', $this->option['from']);
 		$subject = '=?UTF-8?B?' . base64_encode($this->option['subject']) . '?=';
 
-		return \mail($to, $subject, $message, $header, $this->option['parameter'] ?? '');
+		//no sendmail binary → mail() emits "Sendmail exited with non-zero
+		//exit code" warning; fail cleanly with a logged error instead
+		$sendmail = trim((string)ini_get('sendmail_path'));
+		$binary   = $sendmail !== '' ? strtok($sendmail, ' ') : '';
+
+		if ($binary === '' || !is_executable($binary)) {
+			\Vvveb\logError("Mail driver: sendmail binary '$binary' not found or not executable, email to $to not sent. Install sendmail or switch the mail driver to smtp.");
+
+			return false;
+		}
+
+		//capture mail() warnings (e.g. sendmail exit code) into the error
+		//log instead of leaking them to the output
+		$warning = null;
+		set_error_handler(function($no, $str) use (&$warning) {
+			$warning = $str;
+
+			return true;
+		});
+
+		try {
+			$result = \mail($to, $subject, $message, $header, $this->option['parameter'] ?? '');
+		} finally {
+			restore_error_handler();
+		}
+
+		if (!$result) {
+			\Vvveb\logError('Mail driver: ' . ($warning ?? 'mail() failed') . " (to $to).");
+		}
+
+		return $result;
 	}
 }

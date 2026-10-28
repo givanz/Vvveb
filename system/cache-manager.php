@@ -25,12 +25,20 @@ namespace Vvveb\System;
 use function Vvveb\globBrace;
 
 class CacheManager {
-	private static function clearFolder($folder, $root = DIR_PUBLIC) {
+	/**
+	 * Delete all files in a cache folder.
+	 *
+	 * @param string $folder Relative folder path under the root directory.
+	 * @param string $root   Root directory path.
+	 *
+	 * @return bool Always returns true.
+	 */
+	private static function clearFolder(string $folder, string $root = DIR_PUBLIC): bool {
 		$name = $root . $folder . DS;
 
 		$glob = ['*', '*/*', '*/*/*'];
 
-		$files = globBrace($name,$glob);
+		$files = globBrace($name, $glob);
 
 		if ($files) {
 			foreach ($files as $file) {
@@ -38,7 +46,7 @@ class CacheManager {
 					continue;
 				}
 
-				if (! @unlink($file)) {
+				if (!@unlink($file)) {
 					clearstatcache(false, $file);
 				}
 			}
@@ -47,20 +55,45 @@ class CacheManager {
 		return true;
 	}
 
-	public static function clearFrontend() {
+	/**
+	 * Clear the frontend assets cache.
+	 *
+	 * @return bool Result of clearFolder.
+	 */
+	public static function clearFrontend(): bool {
 		return self :: clearFolder('assets-cache');
 	}
 
-	public static function clearModelCache() {
+	/**
+	 * Clear the model cache files.
+	 *
+	 * @return bool Result of clearFolder.
+	 */
+	public static function clearModelCache(): bool {
 		return self :: clearFolder('model' . DS . 'app', DIR_STORAGE) &&
 			   self :: clearFolder('model' . DS . 'admin', DIR_STORAGE);
 	}
 
-	public static function clearImageCache() {
+	/**
+	 * Clear the image cache.
+	 *
+	 * @return bool Result of clearFolder.
+	 */
+	public static function clearImageCache(): bool {
 		return self :: clearFolder('image-cache');
 	}
 
-	public static function clearCompiledFiles($app = false, $site_id = false, $theme = false, $module = false) {
+	/**
+	 * Clear compiled template files, optionally filtered by criteria.
+	 *
+	 * @param string|false $app     App name filter.
+	 * @param int|false    $site_id Site ID filter.
+	 * @param string|false $theme   Theme filter.
+	 * @param string|false $module  Module filter.
+	 *
+	 * @return bool Always returns true.
+	 */
+	public static function clearCompiledFiles(string|false $app = false, int|false $site_id = false, string|false $theme = false, string|false $module = false): bool {
 		$name = DIR_COMPILED_TEMPLATES;
 
 		if ($app) {
@@ -89,7 +122,7 @@ class CacheManager {
 					continue;
 				}
 
-				if (! @unlink($file)) {
+				if (!@unlink($file)) {
 					clearstatcache(false, $file);
 				}
 			}
@@ -98,24 +131,51 @@ class CacheManager {
 		return true;
 	}
 
-	public static function clearObjectCache($namespace = '', $key = null) {
+	/**
+	 * Clear the object cache for a given namespace.
+	 *
+	 * @param string       $namespace Cache namespace.
+	 * @param string|false $key       Specific key to delete, or false for entire namespace.
+	 *
+	 * @return bool Result of cache driver delete.
+	 */
+	public static function clearObjectCache(string $namespace = '', string|false $key = false): bool {
 		$cacheDriver = Cache::getInstance();
 
 		return $cacheDriver->delete($namespace, $key);
 	}
 
-	public static function clearPageCache($host = null, $path = '') {
+	/**
+	 * Clear the page cache for a given host/path.
+	 *
+	 * @param string|null $host Hostname.
+	 * @param string      $path Relative path.
+	 *
+	 * @return bool Result of page cache purge.
+	 */
+	public static function clearPageCache(?string $host = null, string $path = ''): bool {
 		$pageCache = new PageCache($host);
 
 		return $pageCache->purge($path);
 	}
 
-	public static function delete($namespace = '') {
-		self :: clearModelCache($namespace);
+	/**
+	 * Clear all caches (model, object, frontend, compiled, page, opcache).
+	 *
+	 * @param string $namespace Optional namespace to scope the clear.
+	 *
+	 * @return bool Always returns true.
+	 */
+	public static function delete(string $namespace = ''): bool {
+		self :: clearModelCache();
 		self :: clearObjectCache($namespace);
 		self :: clearFrontend();
 		self :: clearCompiledFiles($namespace);
 		self :: clearPageCache();
+
+		if (function_exists('opcache_reset')) {
+			@opcache_reset();
+		}
 
 		return true;
 	}

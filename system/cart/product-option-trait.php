@@ -22,22 +22,42 @@
 
 namespace Vvveb\System\Cart;
 
+/**
+ * Provides product option helpers for the cart.
+ *
+ * @property array<string, array{price: float|int|string, product_option_type_id: int|string}> $product_options
+ * @property array<int|string, array<array-key, mixed>>                                        $products
+ */
 trait ProductOptionTrait {
-	protected $product_options = [];
+	/** @var array<string, array{price: float|int|string, product_option_type_id: int|string}> */
+	protected array $product_options = [];
 
-	public function addProductOption($name, $price, $product_optionTypeId) {
+	/**
+	 * @param string           $name
+	 * @param float|int|string $price
+	 * @param int|string       $product_optionTypeId
+	 */
+	public function addProductOption(string $name, float|int|string $price, int|string $product_optionTypeId): void {
 		if ($price && $product_optionTypeId) {
 			$this->product_options[$name] = ['price' => $price, 'product_option_type_id' => $product_optionTypeId];
 		}
 	}
 
-	public function removeProductOption($name) {
+	/**
+	 * @param string $name
+	 */
+	public function removeProductOption(string $name): void {
 		unset($this->product_options[$name]);
 	}
 
-	public function getProductOptions() {
-		$product_options    = [];
-		$products           = $this->products;
+	/**
+	 * Get product options for all products in the cart.
+	 *
+	 * @return array<int|string, mixed>
+	 */
+	public function getProductOptions(): array {
+		$product_options = [];
+		$products        = $this->products;
 
 		foreach ($products as $key => $product) {
 			if (isset($product['option_value']) && $product['option_value']) {
@@ -48,11 +68,29 @@ trait ProductOptionTrait {
 		return $product_options;
 	}
 
-	function addProductOptionTotal() {
+	/**
+	 * Add product option totals to the cart totals.
+	 */
+	public function addProductOptionTotal(): void {
 		$product_options = $this->getProductOptions();
 
-		foreach ($product_options as $product_option) {
-			$this->addTotal('product_option', 'product_option.' . $product_option['product_option_rate_id'], $product_option['name'], $product_option['value']);
+		foreach ($product_options as $productKey => $optionValues) {
+			if (!is_array($optionValues)) {
+				continue;
+			}
+
+			foreach ($optionValues as $optionValueId => $optionValue) {
+				if (!is_array($optionValue)) {
+					continue;
+				}
+
+				$name  = $optionValue['name'] ?? '';
+				$value = $optionValue['value'] ?? '';
+
+				if ($name || $value) {
+					$this->addTotal('product_option', 'product_option.' . $productKey . '.' . $optionValueId, $name, $value);
+				}
+			}
 		}
 	}
 }

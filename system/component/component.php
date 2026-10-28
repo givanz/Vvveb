@@ -27,7 +27,7 @@ use function Vvveb\removeJsonComments;
 use Vvveb\System\Cache;
 use Vvveb\System\Core\View;
 
-if (! defined('COMPONENT_CACHE_FLAG_LOCK')) {
+if (!defined('COMPONENT_CACHE_FLAG_LOCK')) {
 	define('COMPONENT_CACHE_FLAG_LOCK', -10001);
 	define('COMPONENT_CACHE_FLAG_REGENERATE', -10002);
 
@@ -36,69 +36,96 @@ if (! defined('COMPONENT_CACHE_FLAG_LOCK')) {
 	define('COMPONENT_CACHE_WAIT', 1); //wait for cache generation
 	define('COMPONENT_CACHE_MAX_WAIT_RETRY', 3); //wait for cache generation
 	define('COMPONENT_CACHE_LOCK_EXPIRE', 20); //lock can not be set more than COMPONENT_CACHE_LOCK_EXPIRE seconds
-	define('COMPONENT_CACHE_EXPIRE', 20  * 3600);
+	define('COMPONENT_CACHE_EXPIRE', 20 * 3600);
 }
 
+/**
+ * Discovers data components declared in templates via data-v-component-* attributes,
+ * instantiates them (with a per-cache-key shared-results cache including a
+ * lock/regenerate protocol) and stores their results on the view.
+ */
 class Component {
-	static private $instance;
+	/** @var self|null Singleton instance. */
+	private static ?self $instance = null;
 
-	private $queue;
+	/** @var array<string, list<array<string, mixed>>>|null Parsed component definitions keyed by component name. */
+	private ?array $components = [];
 
-	private $components = [];
+	/** @var string|null Path to the cached component definitions file. */
+	private ?string $componentsFile = null;
 
-	private $componentsFile;
+	/** @var bool Whether component definitions have been loaded. */
+	private bool $loaded = false;
 
-	private $loaded;
+	/** @var string|false|null Raw page content to parse for components. */
+	private string|false|null $content = false;
 
-	private $content;
+	/** @var View View instance for template access. */
+	private View $view;
 
-	private $view;
+	/** @var string Application context (e.g. 'app', 'admin'). */
+	private string $app = 'app';
 
-	private $app;
+	/** @var string Document type of the template ('html', 'xml', 'json'). */
+	private string $documentType = 'html';
 
-	private $documentType = 'html';
+	/** @var bool Whether to use component caching. */
+	private bool $cache = true;
 
-	private $cache = true;
-	
-	private $copyFromElements = [];
+	/** @var array<string, array<string, \DOMXPath|\DOMNodeList<\DOMNode>>> Cached copy-from element results keyed by file and selector. */
+	private array $copyFromElements = [];
 
-	static function getInstance($view = false, $regenerate = false, $content = false, $app = null) {
-		if (self :: $instance === NULL) {
-			if (! $view) {
+	/**
+	 * Get or create the singleton Component instance.
+	 *
+	 * @param View|false|null $view       View instance to use, or false/null to obtain the default.
+	 * @param bool            $regenerate Force regeneration of component definitions.
+	 * @param string|null     $content    Raw HTML/XML content to parse instead of a template file.
+	 * @param string|null     $app        Application context override.
+	 *
+	 * @return self The singleton Component instance.
+	 */
+	public static function getInstance(View|false|null $view = false, bool $regenerate = false, ?string $content = null, ?string $app = null): self {
+		if (self::$instance === null) {
+			if (!$view) {
 				$view = View::getInstance();
 			}
-			self :: $instance =  new self($view, $regenerate, $content);
+			self::$instance = new self($view, $regenerate, $content, $app);
 		}
 
-		return self :: $instance;
+		return self::$instance;
 	}
 
-	function __construct($view, $regenerate = false, $content = false, $app = null) {
+	/**
+	 * Parse templates, discover components, and optionally cache the definitions.
+	 *
+	 * @param View|false  $view       View instance providing template paths.
+	 * @param bool        $regenerate Force regeneration of the component cache file.
+	 * @param string|null $content    Raw content to parse instead of loading a template file.
+	 * @param string|null $app        Application context override (defaults to APP constant).
+	 */
+	public function __construct(View|false $view, bool $regenerate = false, ?string $content = null, ?string $app = null) {
 		if ($this->loaded) {
-			return true;
+			return;
 		}
 
 		$this->app = $app ?? APP;
 
-		if (! $view) {
+		if (!$view) {
 			$view = View::getInstance();
 		}
 
-		$this->view         = $view;
-
+		$this->view           = $view;
 		$this->componentsFile = $view->serviceTemplate() . '.component';
 		$this->content        = $content;
 
-		if ((! file_exists($this->componentsFile)) || $regenerate) {
+		if ((!file_exists($this->componentsFile)) || $regenerate) {
 			$this->generateRequiredComponents();
 			$this->saveTemplateComponents();
 			$this->loadComponents();
 			$this->loaded = true;
-		} else {
-		}
 
-		if ($this->loaded) {
-			return true;
+			return;
 		}
 
 		$this->loadTemplateComponents();
@@ -106,216 +133,365 @@ class Component {
 		$this->loaded = true;
 	}
 
-	function isComponent($name) {
+	/**
+	 * Parse a "plugin-{plugin}-{namespace}" component name into its parts.
+	 *
+	 * @param string $name Component name.
+	 *
+	 * @return array{plugin_name: string, namespace: string, class: string, file: string}|null Null when the name is not a plugin component.
+	 */
+	public function pluginComponentDetails(string $name): ?array {
+		if (!str_starts_with($name, 'plugin')) {
+			return null;
+		}
+
+		$template   = str_replace('plugin', '', $name);
+		$p          = strrpos($template, '-');
+
+		if ($p === false) {
+			return null;
+		}
+		$pluginName = substr($template, 1, $p - 1);
+		$nameSpace  = substr($template, $p + 1);
+
+		$pluginClassName = dashesToCamelCase($pluginName);
+
+		return [
+			'plugin_name' => $pluginName,
+			'namespace'   => $nameSpace,
+			'class'       => "Vvveb\\Plugins\\$pluginClassName\\Component\\$nameSpace",
+			'file'        => DIR_PLUGINS . "$pluginName/component/" . str_replace('-', '/', $nameSpace) . '.php',
+		];
+	}
+
+	/**
+	 * Resolve the class name and definition file for a component name.
+	 *
+	 * Core components live in app/component/ (or admin/component/); plugin
+	 * components in plugins/{plugin}/component/.
+	 *
+	 * @param string $component    Component name (e.g. 'posts', 'plugin-saas-sites').
+	 * @param bool   $ucfirstClass Whether to ucfirst() the core component class segment.
+	 *
+	 * @return array{class: string, file: string}
+	 */
+	private function resolveComponentClass(string $component, bool $ucfirstClass = false): array {
+		$details = $this->pluginComponentDetails($component);
+
+		if ($details) {
+			return ['class' => $details['class'], 'file' => $details['file']];
+		}
+
+		$segments = str_replace('-', '\\', $component);
+		if ($ucfirstClass) {
+			$segments = ucfirst($segments);
+		}
+
+		return [
+			'class' => '\Vvveb\Component\\' . $segments,
+			'file'  => DIR_ROOT . $this->app . DS . 'component' . DS . str_replace('-', '/', $component) . '.php',
+		];
+	}
+
+	/**
+	 * Convert a component name to the underscore form used for view storage.
+	 *
+	 * @param string $component
+	 */
+	private function normalizeComponentName(string $component): string {
+		return str_replace('-', '_', $component);
+	}
+
+	/**
+	 * Check whether a component with the given name exists in the parsed definitions.
+	 *
+	 * @param string $name Component name (e.g. 'content-blog').
+	 *
+	 * @return bool True if the component is defined.
+	 */
+	public function isComponent(string $name): bool {
 		return isset($this->components[$name]);
 	}
 
-	function getComponent($name) {
+	/**
+	 * Retrieve the parsed definition array for a component.
+	 *
+	 * @param string $name Component name.
+	 *
+	 * @return list<array<string, mixed>> Component instances and options, or empty array if not found.
+	 */
+	public function getComponent(string $name): array {
 		return $this->components[$name] ?? [];
 	}
 
-	function loadComponents() {
-		$view = $this->view;
+	/**
+	 * Assign a component's results on the view under its normalized name.
+	 *
+	 * @param View   $view
+	 * @param string $component
+	 * @param mixed  $index
+	 * @param mixed  $results
+	 */
+	private function assignResults(View $view, string $component, $index, &$results): void {
+		$component    = $this->normalizeComponentName($component);
+		$comp         = &$view->_component[$component];
+		$comp[$index] = $results;
+	}
 
-		$cache     = [];
-		$objs      = [];
-		$namespace = 'component';
+	/**
+	 * Check whether results flagged a not-found condition.
+	 *
+	 * @param mixed $results
+	 */
+	private function isNotFound($results): bool {
+		return isset($results['404']) && $results['404'] === true;
+	}
 
+	/**
+	 * Load, cache, and instantiate all discovered components, then dispatch request callbacks.
+	 *
+	 * @return void
+	 */
+	public function loadComponents(): void {
+		$view        = $this->view;
 		$notFound404 = false;
 
 		if (is_array($this->components)) {
-			foreach ($this->components as $component => $instances) {
-				if (strpos($component, 'plugin') === 0) {
-					$template   = str_replace('plugin', '', $component);
-					$p          = strrpos($template, '-');
-					$pluginName = substr($template, 1, $p - 1);
-					$nameSpace  = substr($template, $p + 1);
-					$app        = '';
-
-					$pluginClassName = dashesToCamelCase($pluginName);
-					$class           = "Vvveb\Plugins\\$pluginClassName\Component\\$nameSpace";
-					$file            = DIR_PLUGINS . "$pluginName/component/" . str_replace('-', '/', $nameSpace) . '.php';
-				} else {
-					$class = '\Vvveb\Component\\' . str_replace('-', '\\', $component);
-					$file  = DIR_ROOT . $this->app . DS . 'component' . DS . str_replace('-', '/', $component) . '.php';
-				}
-
-				$component = str_replace('-', '_', $component);
-
-				if (file_exists($file)) {
-					include_once $file;
-
-					foreach ($instances as $instance => $options) {
-						$obj      = new $class($options);
-
-						if ($obj->cacheExpire && $this->cache && ($cacheKey = $obj->cacheKey())) {
-							$cacheExpireKey                  = $cacheKey . '_expire';
-							$cache[]                         = $cacheKey;
-							$cache[]                         = $cacheExpireKey;
-							$obj->component                  = $component;
-							$objs[$obj->cacheKey][$instance] = $obj;
-						} else {
-							$results = $obj->results();
-
-							if ($results !== false && $results !== null) {
-								$results['_instance'] = $obj;
-							}
-
-							$comp            = &$view->_component[$component];
-							$comp[$instance] = $results;
-
-							if (isset($results['404']) && $results['404'] == true) {
-								$notFound404 = true;
-							}
-						}
-					}
-				}
-			}
+			[$cache, $objs, $notFound404] = $this->instantiateComponents($notFound404);
 
 			if ($this->cache) {
-				//get cached data
-				$cacheDriver = Cache::getInstance();
-				//$cacheDriver = new Memcached();
-				$null = [];
-				$data = $cacheDriver->getMulti($namespace, $cache, SITE_ID) ?? [];
-
-				foreach ($objs as $cacheKey => $instances) {
-					foreach ($instances as $index => $instance) {
-						if (! isset($data[$cacheKey]) || ! is_array($data[$cacheKey])) {
-							$data[$cacheKey] = [];
-						}
-
-						$component                    = $instance->component;
-						$component                    = str_replace('-', '_', $component);
-						$data[$cacheKey]['_instance'] = $instance;
-						$comp                         = &$view->_component[$component];
-						$comp[$index]                 = $data[$cacheKey];
-
-						if (isset($comp[$index]['404']) && $comp[$index]['404'] == true) {
-							$notFound404 = true;
-						}
-					}
-
-					//cache hit, remove from sql regeneration queue
-					$cacheExpireKey = $cacheKey . '_expire';
-
-					//if no lock set (! -1) and cache is expiring then set lock and set for regeneration
-					if (! isset($data[$cacheExpireKey]) || ! isset($data[$cacheKey]) ||
-						($data[$cacheExpireKey] && ($data[$cacheExpireKey] > 0) &&
-						($data[$cacheExpireKey] + COMPONENT_CACHE_EXPIRE_DELAY) < $_SERVER['REQUEST_TIME'])) {
-						ignore_user_abort();
-						$cacheDriver->set($namespace, $cacheExpireKey, COMPONENT_CACHE_FLAG_LOCK, COMPONENT_CACHE_LOCK_EXPIRE); //set lock
-						$data[$cacheExpireKey] = COMPONENT_CACHE_FLAG_REGENERATE; //set regeneration flag
-					}
-
-					if ($data[$cacheExpireKey] > 0) {
-						unset($objs[$cacheKey], $cache[$cacheKey], $cache[$cacheExpireKey], $data[$cacheKey], $data[$cacheExpireKey]);
-					}
-				}
-
-				$wait  = true;
-				$retry = 0;
-				//run sql queries for uncached components
-				$saveCache = [];
-
-				while ($wait && $retry < COMPONENT_CACHE_MAX_WAIT_RETRY) {
-					$wait = false;
-					$retry++;
-
-					foreach ($objs as $key => $objects) {
-						$cacheExpireKey =  $key . '_expire';
-
-						//check lock
-						if ((! isset($data[$cacheExpireKey]) || ! ($data[$cacheExpireKey])) ||
-							! isset($data[$key]) ||
-							$data[$cacheExpireKey] == COMPONENT_CACHE_FLAG_REGENERATE) {
-							//lock set by this script, regenerate content
-							$id      = key($objects);
-
-							$results = $objects[$id]->results();
-
-							if ($results !== null) {
-								$saveCache[$key]            = $results;
-								$saveCache[$cacheExpireKey] = $objects[$id]->cacheExpire;
-							}
-
-							if (isset($results['404']) && $results['404'] == true) {
-								$notFound404 = true;
-							}
-
-							$data[$cacheExpireKey] = 0;
-
-							foreach ($objects as $index => $instance) {
-								$results['_instance'] = $instance;
-								$component            = $instance->component;
-								$component            = str_replace('-', '_', $component);
-								$comp                 = &$view->_component[$component];
-								$comp[$index]         = $results;
-							}
-						} else {
-							if ($data[$cacheExpireKey] == COMPONENT_CACHE_FLAG_LOCK) {
-								//error_log("wait for $cacheExpireKey");
-								//item is locked, some other script is generating content
-								$wait = true;
-							}
-						}
-					}
-
-					if ($wait) {
-						error_log('wait cache ' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . print_r($cache,1));
-						//get
-						@sleep(COMPONENT_CACHE_WAIT);
-						$data = $cacheDriver->getMulti($namespace, $cache, SITE_ID);
-					}
-				}
-
-				if ($retry >= COMPONENT_CACHE_MAX_WAIT_RETRY) {
-					error_log('error:CACHE max retry reached for ' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
-				}
-			}
-
-			if (! empty($saveCache)) {
-				$cacheDriver->setMulti($namespace, $saveCache, /*$_SERVER['REQUEST_TIME'] + */COMPONENT_CACHE_EXPIRE, SITE_ID);
+				$this->processComponentCache($cache, $objs, $notFound404);
 			}
 		}
 
-		//call request for each component
+		$this->dispatchComponentRequests();
 
-		foreach ($this->components as $component => $instances) {
-			foreach ($instances as $index => $options) {
-				$component = str_replace('-', '_', $component);
-
-				if (isset($view->_component[$component])) {
-					$comp      = &$view->_component[$component];
-					$results   = &$comp[$index];
-					$object    = $results['_instance'] ?? false;
-
-					if ($object && method_exists($object, 'request')) {
-						$object->request($results, $index);
-					}
-				}
-			}
-		}
-
-		unset($data, $cache);
-		$this->components = NULL;
+		$this->components = null;
 
 		if ($notFound404) {
 			\Vvveb\System\Core\FrontController::notFound(false);
 		}
 	}
 
-	/*	static  function isLoaded($component)
-	{
-	return isset($this->queue[$component]);
-	}
-	*/
-	function results() {
+	/**
+	 * Include every component class file and instantiate its objects; components
+	 * without caching get their results fetched immediately into the view.
+	 *
+	 * @param bool $notFound404 Not-found accumulator (updated by reference).
+	 *
+	 * @return array{0: array<array-key, mixed>, 1: array<array-key, mixed>, 2: bool} [$cache, $objs, $notFound404]
+	 */
+	private function instantiateComponents(bool $notFound404 = false): array {
+		$view  = $this->view;
+		$objs  = [];
+		$cache = [];
+
+		foreach ($this->components ?? [] as $component => $instances) {
+			['class' => $class, 'file' => $file] = $this->resolveComponentClass($component);
+			$component                           = $this->normalizeComponentName($component);
+
+			if (!file_exists($file)) {
+				continue;
+			}
+
+			include_once $file;
+
+			foreach ($instances as $instance => $options) {
+				$obj = new $class($options);
+
+				if ($obj->cacheExpire && $this->cache && ($cacheKey = $obj->cacheKey())) {
+					$cache[]                         = $cacheKey;
+					$cache[]                         = $cacheKey . '_expire';
+					$obj->component                  = $component;
+					$objs[$obj->cacheKey][$instance] = $obj;
+				} else {
+					$results = $obj->results();
+
+					if ($results !== false && $results !== null) {
+						$results['_instance'] = $obj;
+					}
+
+					$this->assignResults($view, $component, $instance, $results);
+
+					if ($this->isNotFound($results)) {
+						$notFound404 = true;
+					}
+				}
+			}
+		}
+
+		return [$cache, $objs, $notFound404];
 	}
 
-	function generateRequiredComponents() {
-		//get components from html page
-		$document                      = new \DomDocument();
+	/**
+	 * Read cached results for all cached component objects, hydrate the view,
+	 * mark entries that need regeneration (setting a distributed lock while
+	 * regenerating) and wait for other processes that hold a lock.
+	 *
+	 * @param array<array-key, mixed> $cache       Cache keys (keys interleaved with their "_expire" keys).
+	 * @param array<array-key, mixed> $objs        Cached component objects grouped by cache key.
+	 * @param bool                    $notFound404 Not-found accumulator (updated by reference).
+	 *
+	 * @return void
+	 */
+	private function processComponentCache(array $cache, array $objs, bool &$notFound404): void {
+		$view      = $this->view;
+		$namespace = 'component';
+
+		//get cached data
+		$cacheDriver = Cache::getInstance();
+		$data        = $cacheDriver->getMulti($namespace, $cache, SITE_ID);
+
+		foreach ($objs as $cacheKey => $instances) {
+			foreach ($instances as $index => $instance) {
+				if (!isset($data[$cacheKey]) || !is_array($data[$cacheKey])) {
+					$data[$cacheKey] = [];
+				}
+
+				$data[$cacheKey]['_instance'] = $instance;
+				$this->assignResults($view, $instance->component, $index, $data[$cacheKey]);
+
+				if (isset($data[$cacheKey]['404']) && $data[$cacheKey]['404'] === true) {
+					$notFound404 = true;
+				}
+			}
+
+			$cacheExpireKey = $cacheKey . '_expire';
+
+			//if no lock set and cache is expiring then set lock and queue regeneration
+			if (!isset($data[$cacheExpireKey]) ||
+				($data[$cacheExpireKey] && ($data[$cacheExpireKey] > 0) &&
+				($data[$cacheExpireKey] + COMPONENT_CACHE_EXPIRE_DELAY) < $_SERVER['REQUEST_TIME'])) {
+				ignore_user_abort();
+				$cacheDriver->set($namespace, $cacheExpireKey, COMPONENT_CACHE_FLAG_LOCK, COMPONENT_CACHE_LOCK_EXPIRE); //set lock
+				$data[$cacheExpireKey] = COMPONENT_CACHE_FLAG_REGENERATE; //set regeneration flag
+			}
+
+			if ($data[$cacheExpireKey] > 0) {
+				//fresh cache, remove from sql regeneration queue
+				unset($objs[$cacheKey], $cache[$cacheKey], $cache[$cacheExpireKey], $data[$cacheKey], $data[$cacheExpireKey]);
+			}
+		}
+
+		$retry = 0;
+		//run sql queries for uncached components
+		$saveCache = [];
+
+		do {
+			$retry++;
+
+			$wait = $this->regenerateUncachedComponents($objs, $data, $saveCache, $notFound404);
+
+			if ($wait) {
+				if (defined('DEBUG') && DEBUG) {
+					error_log('wait cache ' . ($_SERVER['HTTP_HOST'] ?? '') . ($_SERVER['REQUEST_URI'] ?? ''));
+				}
+
+				@sleep(COMPONENT_CACHE_WAIT);
+				$data = $cacheDriver->getMulti($namespace, $cache, SITE_ID);
+			}
+		} while ($wait && $retry < COMPONENT_CACHE_MAX_WAIT_RETRY);
+
+		if ($retry >= COMPONENT_CACHE_MAX_WAIT_RETRY) {
+			error_log('error:CACHE max retry reached for ' . ($_SERVER['HTTP_HOST'] ?? '') . ($_SERVER['REQUEST_URI'] ?? ''));
+		}
+
+		if (!empty($saveCache)) {
+			$cacheDriver->setMulti($namespace, $saveCache, COMPONENT_CACHE_EXPIRE, SITE_ID);
+		}
+	}
+
+	/**
+	 * Run results() for components queued for regeneration; components locked
+	 * by another request are left for a later retry pass.
+	 *
+	 * @param array<array-key, mixed> $objs        Cached component objects grouped by cache key (by value).
+	 * @param array<array-key, mixed> $data        Cached data (updated by reference).
+	 * @param array<array-key, mixed> $saveCache   Results to persist (updated by reference).
+	 * @param bool                    $notFound404 Not-found accumulator (updated by reference).
+	 *
+	 * @return bool True when some component was locked and another pass is needed.
+	 */
+	private function regenerateUncachedComponents(array $objs, array &$data, array &$saveCache, bool &$notFound404): bool {
+		$view = $this->view;
+		$wait = false;
+
+		foreach ($objs as $key => $objects) {
+			$cacheExpireKey = $key . '_expire';
+
+			//check lock
+			if ((!isset($data[$cacheExpireKey]) || !($data[$cacheExpireKey])) ||
+				!isset($data[$key]) ||
+				$data[$cacheExpireKey] === COMPONENT_CACHE_FLAG_REGENERATE) {
+				//lock set by this script, regenerate content
+				$id      = key($objects);
+
+				$results = $objects[$id]->results();
+
+				if ($results !== null) {
+					$saveCache[$key]            = $results;
+					$saveCache[$cacheExpireKey] = $objects[$id]->cacheExpire;
+				}
+
+				if ($this->isNotFound($results)) {
+					$notFound404 = true;
+				}
+
+				$data[$cacheExpireKey] = 0;
+
+				foreach ($objects as $index => $instance) {
+					$results['_instance'] = $instance;
+					$this->assignResults($view, $instance->component, $index, $results);
+				}
+			} elseif ($data[$cacheExpireKey] === COMPONENT_CACHE_FLAG_LOCK) {
+				//item is locked, some other script is generating content
+				$wait = true;
+			}
+		}
+
+		return $wait;
+	}
+
+	/**
+	 * Call the request() callback of every component instance that has results.
+	 */
+	private function dispatchComponentRequests(): void {
+		$view = $this->view;
+
+		foreach ($this->components ?? [] as $component => $instances) {
+			$component = $this->normalizeComponentName($component);
+
+			if (!isset($view->_component[$component])) {
+				continue;
+			}
+
+			$comp = &$view->_component[$component];
+
+			foreach ($instances as $index => $options) {
+				$results = &$comp[$index];
+				$object  = $results['_instance'] ?? false;
+
+				if ($object && method_exists($object, 'request')) {
+					$object->request($results, $index);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Get component results (stub for subclasses).
+	 *
+	 * @return mixed
+	 */
+	public function results(): mixed {
+		return null;
+	}
+
+	/**
+	 * Create a DOM document configured for lenient template parsing.
+	 */
+	private function createDomDocument(): \DOMDocument {
+		$document                      = new \DOMDocument();
 		$document->preserveWhiteSpace  = false;
 		$document->recover             = true;
 		$document->strictErrorChecking = false;
@@ -324,95 +500,123 @@ class Component {
 		$document->validateOnParse     = false;
 		$document->xmlStandalone       = true;
 
-		$view = view::getInstance();
+		return $document;
+	}
+
+	/**
+	 * Resolve the absolute file path of a relative template path; paths inside
+	 * plugins ("plugins/{plugin}/{path}") resolve to the plugin public folder.
+	 *
+	 * Absolute paths (starting with "/") are used as-is.
+	 *
+	 * @param string $template
+	 */
+	private function resolveTemplateFilePath(string $template): string {
+		//absolute path as it is
+		if ($template[0] === '/') {
+			return $template;
+		}
+
+		if (str_starts_with($template, 'plugins/')) {
+			$template   = str_replace('plugins/', '', $template);
+			$p          = strpos($template, '/');
+			$pluginName = substr($template, 0, $p);
+			$nameSpace  = substr($template, $p + 1);
+			$app        = '';
+
+			if ($this->app !== 'app') {
+				$app = $this->app . DS;
+			}
+
+			return DIR_PLUGINS . $pluginName . DS . 'public' . DS . $app . $nameSpace;
+		}
+
+		$view = $this->view;
+
+		return $view->getTemplatePath() . $template;
+	}
+
+	/**
+	 * Load the current content/template into the document, converting json
+	 * templates through an xml representation.
+	 *
+	 * @param \DOMDocument $document
+	 */
+	private function loadTemplateDocument(\DOMDocument $document): void {
+		$view = $this->view;
 		libxml_use_internal_errors(true);
 		$this->documentType = $view->getDocumentType();
 
 		if ($this->content) {
-			if ($this->documentType == 'html') {
+			if ($this->documentType === 'html') {
 				@$document->loadHTML($this->content);
 			} else {
 				@$document->loadXML($this->content);
 			}
-		} else {
-			$view               = $this->view;
-			$template           = $view->template();
-			$extension          = strtolower(trim(substr($template, -4), '.'));
-			$this->documentType = $extension;
 
-			if ($template[0] == '/') {
-			} else {
-				if (strpos($template, 'plugins/') === 0) {
-					$template   = str_replace('plugins/', '', $template);
-					$p          = strpos($template, '/');
-					$pluginName = substr($template, 0, $p);
-					$nameSpace  = substr($template, $p + 1);
-					$app        = '';
-
-					if ($this->app != 'app') {
-						$app = $this->app . DS;
-					}
-					$template = DIR_PLUGINS . $pluginName . DS . 'public' . DS . $app . $nameSpace;
-				} else {
-					$template = $view->getTemplatePath() . $template;
-				}
-			}
-
-			if ($this->documentType == 'html') {
-				@$document->loadHTMLFile($template,
-					LIBXML_NOWARNING | LIBXML_NOERROR);
-			} else {
-				$content = file_get_contents($template);
-
-				if ($this->documentType == 'json') {
-					//remove json comments from line start
-					$content = removeJsonComments($content);
-					$json    = json_decode($content, true);
-					$json    = \Vvveb\prepareJson($json);
-					$xml     = \Vvveb\array2xml($json);
-					@$document->loadXML($xml);
-				} else {
-					@$document->loadXML($content,
-						LIBXML_NOWARNING | LIBXML_NOERROR);
-				}
-			}
+			return;
 		}
 
-		$xpath = new \DOMXpath($document);
-		$i     = 0;
+		$template           = $this->view->template();
+		$extension          = strtolower(trim(substr($template, -4), '.'));
+		$this->documentType = $extension;
+		$template           = $this->resolveTemplateFilePath($template);
+
+		if ($this->documentType === 'html') {
+			@$document->loadHTMLFile($template, LIBXML_NOWARNING | LIBXML_NOERROR);
+		} else {
+			$content = file_get_contents($template);
+
+			if ($this->documentType === 'json') {
+				//remove json comments from line start
+				$content = removeJsonComments($content);
+				$json    = json_decode($content, true);
+				$json    = \Vvveb\prepareJson($json);
+				$xml     = \Vvveb\array2xml($json);
+				@$document->loadXML($xml);
+			} else {
+				@$document->loadXML($content, LIBXML_NOWARNING | LIBXML_NOERROR);
+			}
+		}
+	}
+
+	/**
+	 * Expand data-v-copy-from / data-v-save-global attributes by pulling the
+	 * referenced elements from external files into the document.
+	 *
+	 * @param \DOMXpath    $xpath
+	 * @param \DOMDocument $document
+	 */
+	private function expandCopyFromElements(\DOMXPath $xpath, \DOMDocument $document): void {
+		$view = $this->view;
+		$i    = 0;
 
 		//include froms in case any component_ is included
 		while (($elements = $xpath->query('//*[ @data-v-copy-from or @data-v-save-global ]')) && $elements->length && $i++ < 2) {
-			$fromDocument                      = new \DomDocument();
-			$fromDocument->preserveWhiteSpace  = false;
-			$fromDocument->recover             = true;
-			$fromDocument->strictErrorChecking = false;
-			$fromDocument->formatOutput        = false;
-			$fromDocument->resolveExternals    = false;
-			$fromDocument->validateOnParse     = false;
-			$fromDocument->xmlStandalone       = true;
+			$fromDocument = $this->createDomDocument();
 
 			foreach ($elements as $element) {
 				$attribute = $element->getAttribute('data-v-copy-from') ?: $element->getAttribute('data-v-save-global');
 				$element->removeAttribute('data-v-copy-from');
 				$element->removeAttribute('data-v-save-global');
 
-				if (preg_match('/([^\,]+)\,([^$,]+)/', $attribute , $from)) {
+				if (preg_match('/([^\,]+)\,([^$,]+)/', $attribute, $from)) {
 					$file     = html_entity_decode(trim($from[1]));
 					$selector = html_entity_decode(trim($from[2]));
-					
+
 					if (isset($this->copyFromElements[$file][$selector])) {
 						$fromElements = $this->copyFromElements[$file][$selector];
 					} else {
-						if ($this->documentType == 'html') {
-							$fromDocument->loadHTMLFile($view->getTemplatePath() . $file);
+						if ($this->documentType === 'html') {
+							$fromDocument->loadHTMLFile($view->getTemplatePath() . $file, LIBXML_NOWARNING | LIBXML_NOERROR);
 						} else {
-							$fromDocument->loadXML($view->getTemplatePath() . $file);
+							//load() reads from a file path, unlike loadXML() which expects the xml content
+							@$fromDocument->load($view->getTemplatePath() . $file, LIBXML_NOWARNING | LIBXML_NOERROR);
 						}
 
-						$fromXpath = new \DOMXpath($fromDocument);
+						$fromXpath = new \DOMXPath($fromDocument);
 
-						$fromElements = $fromXpath->query(\Vvveb\cssToXpath($selector));
+						$fromElements                             = $fromXpath->query(\Vvveb\cssToXpath($selector));
 						$this->copyFromElements[$file][$selector] = $fromElements;
 					}
 
@@ -429,116 +633,131 @@ class Component {
 								$parent->replaceChild($importedNode, $element);
 							}
 							$element = $importedNode;
-							//$parent = $element->parentNode;
 							$count++;
 						}
 					}
 				}
 			}
 		}
+	}
+
+	/**
+	 * Extract options from data-v-* attributes of an element, validate them
+	 * against the component class defaults and compute the instance hash.
+	 *
+	 * @param mixed $element
+	 *
+	 * @return array{component: string, options: array<array-key, mixed>}|null Null when the element must be skipped.
+	 */
+	private function parseComponentElement($element): ?array {
+		$component = '';
+		$opts      = [];
+
+		foreach ($element->attributes as $attr) {
+			$nodeName = $attr->nodeName;
+
+			if (str_starts_with($nodeName, 'data-v-component-')) {
+				$component = str_replace('data-v-component-', '', $nodeName);
+			} elseif (str_starts_with($nodeName, 'data-v-')) {
+				$option        = str_replace('data-v-', '', $nodeName);
+				$opts[$option] = $attr->nodeValue;
+			}
+		}
+
+		['class' => $componentClass, 'file' => $file] = $this->resolveComponentClass($component, true);
+
+		if (!file_exists($file)) {
+			if (defined('DEBUG') && \DEBUG) {
+				error_log("Component does not exist $componentClass => $file");
+			}
+
+			return null;
+		}
+
+		include_once $file;
+
+		//do not add design only components
+		if (isset($componentClass::$designOnly) && $componentClass::$designOnly === true) {
+			return null;
+		}
+
+		$validOptions = array_keys($componentClass::$defaultOptions);
+		$options      = [];
+
+		//save options
+		foreach ($opts as $name => $option) {
+			if (in_array($name, $validOptions) && $option !== null) {
+				if ((isset($option[0]) && ($option[0] === '{' || $option[0] === '[')) || (str_contains($option, ','))) {
+					$options[$name] = json_decode($option, true);
+				} else {
+					$options[$name] = $option;
+				}
+			}
+		}
+
+		$options['_hash'] = md5($component . serialize($options));
+
+		return ['component' => $component, 'options' => $options];
+	}
+
+	/**
+	 * Parse the template file (HTML/XML/JSON) and extract component definitions from data-v-component-* attributes.
+	 *
+	 * @return void
+	 */
+	public function generateRequiredComponents(): void {
+		$document = $this->createDomDocument();
+
+		$this->loadTemplateDocument($document);
+
+		$xpath = new \DOMXPath($document);
+
+		$this->expandCopyFromElements($xpath, $document);
 
 		//search for elements that have an attribute starting with data-v-component-
-		$elements = $xpath->query('//*[@*[starts-with(name(), "data-v-component-")]]');
+		$elements   = $xpath->query('//*[@*[starts-with(name(), "data-v-component-")]]');
+		$components = [];
 
 		foreach ($elements as $element) {
-			$component = '';
-			$opts      = [];
+			$parsed = $this->parseComponentElement($element);
 
-			foreach ($element->attributes as $attr) {
-				$nodeName = $attr->nodeName;
-
-				if (strpos($nodeName, 'data-v-component-') === 0) {
-					$component = str_replace('data-v-component-', '', $nodeName);
-					//$classes = explode(' ', trim($attr->nodeValue));
-				} else {
-					if (strpos($nodeName, 'data-v-') === 0) {
-						$option        = str_replace('data-v-', '', $nodeName);
-						$opts[$option] = $attr->nodeValue;
-					}
-				}
+			if ($parsed !== null) {
+				$components[$parsed['component']][] = $parsed['options'];
 			}
-			//get all classes
-			//search for options
-			$options = null;
-			//validate options
-			$validOptions   = [];
-
-			if (strpos($component, 'plugin') === 0) {
-				$template   = str_replace('plugin', '', $component);
-				$p          = strrpos($template, '-');
-				$pluginName = substr($template, 1, $p - 1);
-				$nameSpace  = substr($template, $p + 1);
-				$app        = '';
-
-				if ($this->app != 'app') {
-					$app = $this->app . DS;
-				}
-				$pluginClassName = dashesToCamelCase($pluginName);
-				$componentClass  = "Vvveb\Plugins\\$pluginClassName\Component\\$nameSpace";
-				$file            = DIR_PLUGINS . "$pluginName/component/" . str_replace('-', '/', $nameSpace) . '.php';
-			} else {
-				$componentClass = '\Vvveb\Component\\' . ucfirst(str_replace('-', '\\', $component));
-				$file           = DIR_ROOT . $this->app . DS . 'component/' . str_replace('-', '/', $component) . '.php';
-			}
-
-			if (file_exists($file)) {
-				include_once $file;
-				//$componentClass = new $componentClass;
-				//do not add design only components
-				if (isset($componentClass::$designOnly) && $componentClass::$designOnly == true) {
-					continue;
-				}
-				$validOptions = array_keys($componentClass::$defaultOptions);
-			} else {
-				if (defined('DEBUG') && \DEBUG) {
-					error_log("Component does not exist $componentClass => $file");
-					//die("Component does not exist $componentClass => $file");
-				}
-
-				continue;
-			}
-
-			//save options
-			foreach ($opts as $name => $option) {
-				if (in_array($name, $validOptions) && isset($option) !== false) {
-					if ((isset($option[0]) && ($option[0] == '{' || $option[0] == '[')) || (strpos($option, ',') !== false)) {
-						$options[$name] = json_decode($option, 1);
-					} else {
-						$options[$name] = $option;
-					}
-				}
-			}
-
-			$options['_hash']         = md5($component . serialize($options));
-			$components[$component][] = $options;
 		}
 
-		if (isset($components)) {
+		if ($components) {
 			$this->components = $components;
 		}
-		//get fields for component
-		//load components and feed fields
 	}
 
-	function saveTemplateComponents() {
+	/**
+	 * Persist the parsed component definitions to a PHP cache file.
+	 *
+	 * @return int|false Number of bytes written, or false on failure.
+	 */
+	public function saveTemplateComponents(): int|false {
 		$php = var_export($this->components, true);
-		$php = preg_replace('/\s+/', ' ', $php);
-		//repeating end lines
-		$php = preg_replace('/\n+/', '', $php);
 
-		return file_put_contents($this->componentsFile, '<?php $components=' . $php . ';');
+		return file_put_contents($this->componentsFile, '<?php return ' . $php . ';');
 	}
 
-	function loadTemplateComponents() {
-		include_once $this->componentsFile;
+	/**
+	 * Load previously cached component definitions from the PHP cache file.
+	 *
+	 * @return bool True when definitions were loaded.
+	 */
+	public function loadTemplateComponents(): bool {
+		if (is_file($this->componentsFile)) {
+			$components = include $this->componentsFile;
 
-		if (isset($components)) {
-			$this->components = $components;
-		}
-		//keep only requested service
-		if (isset($_GET['component_ajax'])) {
+			if (is_array($components)) {
+				$this->components = $components;
+
+				return true;
+			}
 		}
 
-		return true;
+		return false;
 	}
 }

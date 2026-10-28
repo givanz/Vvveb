@@ -10,11 +10,11 @@ use \Vvveb\System\Db;
 class %name%SQL {
 
 	private $db;
-	
+
 	protected $filters = %filters%;
 	
 	protected $paramTypes = %paramTypes%;
-
+	
 	public function __construct(){
 		$this->db = Db::getInstance();
 	}
@@ -32,7 +32,7 @@ class %name%SQL {
 		}
 		
 		return $this->db->validate($data, $params, $table, $ignoreMissing);
-	}		
+	}	
 	
 	%methods_start%
 	
@@ -78,8 +78,7 @@ class %name%SQL {
 
 			if (!empty('%array_key%')) {
 				if ($result)
-				//while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-				while ($row = $this->db->fetchArray($result)) {
+				while ($row = pg_fetch_assoc($result)) {
 					$values = $row;
 					if (!empty('%array_value%')) {
 						$values = $row['array_value'];
@@ -89,35 +88,55 @@ class %name%SQL {
 						if ($row['array_key'] === null) {
 							$results[] = $values;
 						} else {
+							if (isset($values['array_key'])) {
+								unset($values['array_key']);
+							}
 							$results[$row['array_key']] = $values;
 						}
 					} else {
 						if ($row['array_key'] === null) {
 							$results['%query_id%'][] = $values;
 						} else {
+							if (isset($values['array_key'])) {
+								unset($values['array_key']);
+							}
 							$results['%query_id%'][$row['array_key']] = $values;
 						}
 					}
 				}
 			} else {
 				if ('%query_id%' == '_') {
-					$value = %fetch%;
-					if (is_array($value)) {
-						$results = $results + $value;
+					if ($result) {
+						$value = %fetch%;
 					} else {
-						$results = $value;
+						$value = null;
+					}
+					
+					if ($value) {
+						if (is_array($value)) {
+							$results = $results + $value;
+						} else {
+							$results = $value;
+						}
 					}
 				} else  {
-					if (isset($results['%query_id%'])) {
-						//if multiple results like insert id from @EACH
-						if (!is_array($results['%query_id%'])){
-							$results['%query_id%'] = [$results['%query_id%']];
+					if ($result) {
+						if (isset($results['%query_id%'])) {
+							//if multiple results like insert id from @EACH
+							if (!is_array($results['%query_id%'])){
+								$results['%query_id%'] = [$results['%query_id%']];
+							}
+							$results['%query_id%'][] = %fetch%;
+						} else {
+							$results['%query_id%'] = %fetch%;
 						}
-						$results['%query_id%'][] = %fetch%;
 					} else {
-						$results['%query_id%'] = %fetch%;
+						$results['%query_id%'] = null;
 					}
 				}
+			}
+			if ($result) {
+				pg_free_result($result);
 			}
 		}
 		
@@ -140,14 +159,12 @@ class %name%SQL {
 	$this->db->affected_rows
 %affected_rows_end%
 
-//$result->fetchArray(SQLITE3_ASSOC)
 %fetch_row_start%
-	$this->db->fetchArray($result)
+	pg_fetch_assoc($result)
 %fetch_row_end%
 
-//$result->fetchArray(SQLITE3_NUM)[0] ?? null
 %fetch_one_start%
-	$this->db->fetchOne($result)
+	pg_num_rows($result) ? pg_fetch_result($result, 0, 0) ?? null : null;
 %fetch_one_end%
 
 %fetch_result_start%

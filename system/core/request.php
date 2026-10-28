@@ -23,31 +23,39 @@
 namespace Vvveb\System\Core;
 
 class Request {
-	public $get = [];
+	/** @var array<string, mixed> */
+	public array $get = [];
 
-	public $post = [];
+	/** @var array<string, mixed> */
+	public array $post = [];
 
-	public $request = [];
+	/** @var array<string, mixed> */
+	public array $request = [];
 
-	public $cookie = [];
+	/** @var array<string, mixed> */
+	public array $cookie = [];
 
-	public $files = [];
+	/** @var array<string, mixed> */
+	public array $files = [];
 
-	public $server = [];
+	/** @var array<string, mixed> */
+	public array $server = [];
 
-	private $method;
+	private string $method;
 
-	protected static $instance;
+	private string $contentType;
 
-	public static function getInstance() {
+	protected static ?self $instance = null;
+
+	public static function getInstance(): self {
 		if (is_null(static::$instance)) {
-			static::$instance = new static();
+			static::$instance = new self();
 		}
 
 		return static::$instance;
 	}
 
-	final private function __construct() {
+	private function __construct() {
 		$this->get     = &$_GET;
 		$this->post    = &$_POST;
 		$this->request = &$_REQUEST;
@@ -55,46 +63,60 @@ class Request {
 		$this->files   = &$_FILES;
 		$this->server  = &$_SERVER;
 
-		$this->post    = $this->filter($this->post, false);
-		$this->get     = $this->filter($this->get);
-		$this->request = $this->filter($this->request);
-		$this->cookie  = $this->filter($this->cookie);
-		$this->files   = $this->filter($this->files);
-		$this->method  = strtolower($_SERVER['REQUEST_METHOD'] ?? 'get');
+		$this->post         = $this->filter($this->post, false);
+		$this->get          = $this->filter($this->get);
+		$this->request      = $this->filter($this->request);
+		$this->cookie       = $this->filter($this->cookie);
+		$this->files        = $this->filter($this->files);
+		$this->method       = strtolower($_SERVER['REQUEST_METHOD'] ?? 'get');
+		$this->contentType  = strtolower($_SERVER['CONTENT_TYPE'] ?? 'text/html');
 
-		if ($this->method == 'put' || $this->method == 'patch') {
+		if ($this->method === 'put' || $this->method === 'patch') {
 			parse_str(file_get_contents('php://input'), $post);
 			$this->post = $this->filter($post, false);
+		}
+
+		if ($this->contentType == 'application/json') {
+			$rawInput = file_get_contents('php://input');
+			if ($rawInput) {
+				//print_r($rawInput);
+				$json = json_decode($rawInput, true);
+				//malformed json decodes to null: keep post an array
+				$this->post = is_array($json) ? $json : [];
+			}
 		}
 
 		$this->request = array_merge($this->request, $this->get, $this->post);
 	}
 
-	public function filter($data, $filterText = true) {
-		if (is_array($data)) {
-			foreach ($data as $key => $value) {
-				unset($data[$key]);
-
-				$key        = substr($this->filter($key, $filterText), 0, 255);
-				$data[$key] = $this->filter($value, $filterText);
-			}
-		} else {
-			if ($filterText) {
-				$data = \Vvveb\filterText($data);
-			} else {
-				//$data = htmlspecialchars($data, ENT_COMPAT, 'UTF-8');
-				$data = $data;
-			}
+	/**
+	 * Recursively filter array keys and values.
+	 *
+	 * @param array<array-key, mixed>|string $data       The data to filter.
+	 * @param bool                           $filterText Whether to apply text filtering via \Vvveb\filterText.
+	 *
+	 * @return array<array-key, mixed>|string Filtered data.
+	 */
+	public function filter(array|string $data, bool $filterText = true): array|string {
+		if (!is_array($data)) {
+			return $filterText ? \Vvveb\filterText($data) : $data;
 		}
 
-		return $data;
+		$filtered = [];
+
+		foreach ($data as $key => $value) {
+			$key            = substr($this->filter((string)$key, $filterText), 0, 255);
+			$filtered[$key] = $this->filter($value, $filterText);
+		}
+
+		return $filtered;
 	}
 
-	public function getMethod() {
+	public function getMethod(): string {
 		return $this->method;
 	}
 
-	public function isAjax() {
-		return isset($this->server['HTTP_X_REQUESTED_WITH']) && $this->server['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest';
+	public function isAjax(): bool {
+		return isset($this->server['HTTP_X_REQUESTED_WITH']) && $this->server['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 	}
 }

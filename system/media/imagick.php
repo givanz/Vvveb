@@ -23,119 +23,201 @@
 namespace Vvveb\System\Media;
 
 class Image {
-	private $file;
+	/** @var string */
+	private string $file = '';
 
-	private $image;
+	/** @var mixed Image handle of the active driver. */
+	private mixed $image = false;
 
-	private $width;
+	/** @var int */
+	private int $width = 0;
 
-	private $height;
+	/** @var int */
+	private int $height = 0;
 
-	private $mime;
+	/** @var string */
+	private string $mime = '';
 
-	public function __construct($file) {
-		if (file_exists($file)) {
+	/**
+	 * Load an image file using Imagick.
+	 *
+	 * @param string $file Path to the image file.
+	 */
+	public function __construct(string $file) {
+		if (!file_exists($file)) {
+			//leave the object empty like the gd driver does for missing files
+			return;
+		}
+
+		try {
 			$this->file  = $file;
 			$this->image = new \Imagick();
 			$this->image->readImage($file);
 			$this->width  = $this->image->getImageWidth();
 			$this->height = $this->image->getImageHeight();
-			$this->mime   = $this->image->getFormat();
-			//if (STRIP_EXIF) {
-			$profiles = $this->image->getImageProfiles('icc', true);
+			$this->mime   = $this->image->getImageMimeType();
+			$profiles     = $this->image->getImageProfiles('icc', true);
 			$this->image->stripImage();
 
-			if (! empty($profiles)) {
+			if (!empty($profiles)) {
 				$this->image->profileImage('icc', $profiles['icc']);
 			}
-			//}
-		} else {
-			//throw new \Exception("Could not load image $file");
+		} catch (\Throwable $e) {
+			//corrupt or unsupported files degrade to an empty image
+			//instead of failing construction, like the gd driver
+			$this->image  = false;
+			$this->width  = 0;
+			$this->height = 0;
+			$this->mime   = '';
 		}
 	}
 
-	public function getFile() {
+	/**
+	 * Get the file path.
+	 *
+	 * @return string
+	 */
+	public function getFile(): string {
 		return $this->file;
 	}
 
-	public function getImage() {
+	/**
+	 * Get the Imagick image instance.
+	 *
+	 * @return \Imagick|false
+	 */
+	public function getImage(): \Imagick|false {
 		return $this->image;
 	}
 
-	public function getWidth() {
+	/**
+	 * Get the image width.
+	 *
+	 * @return int
+	 */
+	public function getWidth(): int {
 		return $this->width;
 	}
 
-	public function getHeight() {
+	/**
+	 * Get the image height.
+	 *
+	 * @return int
+	 */
+	public function getHeight(): int {
 		return $this->height;
 	}
 
-	public function getMime() {
+	/**
+	 * Get the image MIME type.
+	 *
+	 * @return string
+	 */
+	public function getMime(): string {
 		return $this->mime;
 	}
 
-	public function save($file, $quality = 80, $extension = false) {
-		if (! $this->image) {
-			return;
+	/**
+	 * Save the image to a file.
+	 *
+	 * @param string       $file      Output file path.
+	 * @param int          $quality   Compression quality (0-100).
+	 * @param string|false $extension File extension override, or false to use current format.
+	 *
+	 * @return bool
+	 */
+	public function save(string $file, int $quality = 80, string|false $extension = false): bool {
+		if (!$this->image) {
+			return false;
 		}
 
-		$this->image->setImageFormat($extension ?: $this->mime);
+		try {
+			if ($extension) {
+				$this->image->setImageFormat($extension);
+			}
 
-		$this->image->setCompressionQuality($quality);
-		//$this->image->setImageCompressionQuality($quality);
+			$this->image->setCompressionQuality($quality);
 
-		$this->image->stripImage();
+			$this->image->stripImage();
 
-		return $this->image->writeImage($file);
+			return $this->image->writeImage($file);
+		} catch (\Throwable $e) {
+			return false;
+		}
 	}
 
-	public function resize($width, $height = 0, $method = 's') {
-		if (! $this->width || ! $this->height) {
-			return;
+	/**
+	 * Resize the image using the specified method.
+	 *
+	 * @param int    $width  Target width.
+	 * @param int    $height Target height (0 to auto-calculate).
+	 * @param string $method Resize method: 'r' (ratio), 's' (stretch), 'c' (crop), 'cs' (cropsize).
+	 *
+	 * @return bool
+	 */
+	public function resize(int $width, int $height = 0, string $method = 's'): bool {
+		if (!$this->width || !$this->height) {
+			return false;
 		}
 
 		switch ($method) {
 			case 'r':
-				return $this->_resize($width, $height);
-			
+				return $this->resizeRatio($width, $height);
+
 			case 's':
 				return $this->stretch($width, $height);
 
 			case 'c':
-				return $this->crop($width, $height);
+				$this->crop(0, 0, $width, $height);
+
+				return true;
 
 			case 'cs':
-				return $this->cropsize($width, $height);
+				$this->cropsize($width, $height);
+
+				return true;
 		}
+
+		return false;
 	}
 
-	public function stretch($width, $height = 0) {
-		$ratio = $newRatio =  $this->width / $this->height;
+	/**
+	 * Stretch the image to the specified dimensions.
+	 *
+	 * @param int $width  Target width.
+	 * @param int $height Target height (0 to auto-calculate from ratio).
+	 *
+	 * @return bool
+	 */
+	public function stretch(int $width, int $height = 0): bool {
+		if (!$this->width || !$this->height || !$this->image) {
+			return false;
+		}
+
+		$newRatio = $this->width / $this->height;
 
 		if ($width && $height) {
 			$newRatio = $width / $height;
 		}
-		
-		if (! $height) {
-			$height = ceil($width / $newRatio);
+
+		if (!$height) {
+			$height = (int)ceil($width / $newRatio);
 		}
 
-		if (method_exists($this->image, 'adaptiveResizeImage')) {
-			return $this->image->adaptiveResizeImage($width, $height);
-		} else {
-			//$this->image->thumbnailImage($width, $height, true, true);
-			return $this->image->resizeImage($width, $height, \Imagick::FILTER_LANCZOS, 1, true);
-		}
+		return $this->image->adaptiveResizeImage($width, $height);
 	}
-	
-	public function _resize($width, $height = 0) {
-		//$this->width  = $this->image->getImageWidth();
-		//$this->height = $this->image->getImageHeight();
 
-		$ratio = $newRatio =  $this->width / $this->height;
-
-		if ($width && $height) {
-			$newRatio = $width / $height;
+	/**
+	 * Resize the image while preserving aspect ratio.
+	 *
+	 * @param int $width  Target width.
+	 * @param int $height Target height (0 to auto-calculate from ratio).
+	 *
+	 * @return bool
+	 */
+	public function resizeRatio(int $width, int $height = 0): bool {
+		if (!$this->width || !$this->height || !$this->image) {
+			return false;
 		}
 
 		if ($width && $height) {
@@ -148,72 +230,105 @@ class Image {
 			$height = (int)($this->height * $scale);
 		} else {
 			if ($width) {
-				$height = ceil($this->height / ($this->width / $width));
+				$height = (int)ceil($this->height / ($this->width / $width));
 			} else {
 				if ($height) {
-					$width = ceil($this->width / ($this->height / $height));
+					$width = (int)ceil($this->width / ($this->height / $height));
 				}
 			}
 		}
 
-		if (method_exists($this->image, 'adaptiveResizeImage')) {
-			return $this->image->adaptiveResizeImage($width, $height);
-		} else {
-			//$this->image->thumbnailImage($width, $height, true, true);
-			return $this->image->resizeImage($width, $height, \Imagick::FILTER_LANCZOS, 1, true);
-		}
+		return $this->image->adaptiveResizeImage($width, $height);
 	}
 
-	public function crop($top_x, $top_y, $bottom_x, $bottom_y) {
-		$this->image->cropImage($bottom_x - $top_x, $bottom_y - $top_y, $top_x, $top_y);
+	/**
+	 * Crop the image from given coordinates.
+	 *
+	 * @param int $topX    Top-left X coordinate.
+	 * @param int $topY    Top-left Y coordinate.
+	 * @param int $bottomX Bottom-right X coordinate (0 for image width).
+	 * @param int $bottomY Bottom-right Y coordinate (0 for image height).
+	 *
+	 * @return void
+	 */
+	public function crop(int $topX, int $topY, int $bottomX = 0, int $bottomY = 0): void {
+		if (!$this->width || !$this->height || !$this->image) {
+			return;
+		}
+
+		$bottomX = $bottomX ?: $this->width;
+		$bottomY = $bottomY ?: $this->height;
+		$this->image->cropImage($bottomX - $topX, $bottomY - $topY, $topX, $topY);
 
 		$this->width  = $this->image->getImageWidth();
 		$this->height = $this->image->getImageHeight();
 	}
 
-	public function cropsize($width, $height = 0) {
-		$ratio = $newRatio =  $this->width / $this->height;
+	/**
+	 * Crop and resize the image to the specified dimensions.
+	 *
+	 * @param int $width  Target width.
+	 * @param int $height Target height (0 to auto-calculate from ratio).
+	 *
+	 * @return void
+	 */
+	public function cropsize(int $width, int $height = 0): void {
+		if (!$this->width || !$this->height || !$this->image) {
+			return;
+		}
+
+		$newRatio = $this->width / $this->height;
 
 		if ($width && $height) {
 			$newRatio = $width / $height;
 		}
 
-		if (! $height) {
-			$height = $width / $newRatio;
+		if (!$height) {
+			$height = (int)($width / $newRatio);
 		}
 
-		$ratio    =  $this->width / $this->height;
+		$ratio = $this->width / $this->height;
 
 		if ($newRatio > $ratio) {
-			$newWidth  = $width;
-			$newHeight = floor($width / $this->width * $this->height);
-			$crop_x     = 0;
-			$crop_y     = intval(($newHeight - $height) / 2);
-		} else if ($newRatio < $ratio) {
-			$newWidth  = floor($height / $this->height * $this->width);
-			$newHeight = $height;
-			$crop_x     = intval(($newWidth - $width) / 2);
-			$crop_y     = 0;
+			$newWidth  = (int)$width;
+			$newHeight = (int)floor($width / $this->width * $this->height);
+			$crop_x    = 0;
+			$crop_y    = (int)(int)(($newHeight - $height) / 2);
+		} elseif ($newRatio < $ratio) {
+			$newWidth  = (int)floor($height / $this->height * $this->width);
+			$newHeight = (int)$height;
+			$crop_x    = (int)(int)(($newWidth - $width) / 2);
+			$crop_y    = 0;
 		} else {
-			$newWidth  = intval($width);
-			$newHeight = intval($height);
-			$crop_x     = 0;
-			$crop_y     = 0;
+			$newWidth  = (int)$width;
+			$newHeight = (int)$height;
+			$crop_x    = 0;
+			$crop_y    = 0;
 		}
 
-		if ($this->width != $newWidth && $this->height != $newHeight) {
+		if ($this->width !== $newWidth || $this->height !== $newHeight) {
 			$this->image->resizeImage($newWidth, $newHeight, \Imagick::FILTER_LANCZOS, 1, true);
 		}
 
-		if ($width != $newWidth || $newHeight != $height) {
-			$this->image->cropImage($width, $height, $crop_x, $crop_y);
+		if ($width !== $newWidth || $newHeight !== $height) {
+			$this->image->cropImage($width, (int)$height, $crop_x, $crop_y);
 		}
 	}
 
-	public static function formats($format = false) {
-		$formats = \Imagick::queryformats() ?? [];
+	/**
+	 * Get supported image formats or check if a specific format is supported.
+	 *
+	 * @param string|false $format Format extension to check, or false to return all supported formats.
+	 *
+	 * @return array<array-key, mixed>|bool Array of supported format strings, or bool if a specific format was queried.
+	 */
+	public static function formats(string|false $format = false): array|bool {
+		$formats = array_map('strtolower', \Imagick::queryformats());
 
-		//return array_map(fn($value) => strtolower($value), $info);
-		return array_map('strtolower', $formats);
+		if ($format) {
+			return in_array($format, $formats, true);
+		}
+
+		return $formats;
 	}
 }

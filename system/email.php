@@ -23,26 +23,51 @@
 namespace Vvveb\System;
 
 class Email {
-	private $driver;
+	/** @var object The mail driver instance. */
+	private object $driver;
 
-	protected $option;
+	/** @var array<string, mixed> Mail configuration options. */
+	protected array $option = [];
 
-	protected $attachments = [];
+	/** @var list<string> Attached file paths. */
+	protected array $attachments = [];
 
-	public static function getInstance() {
+	/**
+	 * Get singleton instance of the Email class.
+	 *
+	 * @param array<array-key, mixed> $additionalOptions
+	 *
+	 * @return self
+	 */
+	public static function getInstance(array $additionalOptions = []): self {
 		static $inst = null;
 
 		if ($inst === null) {
 			$driver  = \Vvveb\config('mail.driver', 'mail');
 			$options = \Vvveb\config("mail.$driver", []);
+			$options += $additionalOptions;
 			$inst    = new self($driver, $options);
 		}
 
 		return $inst;
 	}
 
-	public function __construct($driver = 'mail', &$option = []) {
-		$class = '\\Vvveb\\System\\Mail\\' . $driver;
+	/**
+	 * Initialize the mail driver.
+	 *
+	 * @param string               $driver  Mail driver name or fully-qualified class name.
+	 * @param array<string, mixed> &$option Mail options passed by reference.
+	 *
+	 * @throws \Exception If the driver class does not exist.
+	 *
+	 * @return object The instantiated mail driver.
+	 */
+	public function __construct(string $driver = 'mail', array &$option = []) {
+		if (strpos($driver, '\\')) {
+			$class = $driver;
+		} else {
+			$class = '\Vvveb\System\\Mail\\' . $driver;
+		}
 
 		if (class_exists($class)) {
 			$this->option = &$option;
@@ -50,66 +75,127 @@ class Email {
 		} else {
 			throw new \Exception("Could not load mail driver '$driver'");
 		}
-
-		return $this->driver;
 	}
 
-	public function setTo($to) {
+	/**
+	 * Set the recipient email address.
+	 *
+	 * @param array<array-key, mixed>|string $to Recipient email.
+	 *
+	 * @return void
+	 */
+	public function setTo(array|string $to): void {
 		$this->option['to'] = $to;
 	}
 
-	public function setFrom($from) {
+	/**
+	 * Set the sender email address.
+	 *
+	 * @param string $from Sender email.
+	 *
+	 * @return void
+	 */
+	public function setFrom(string $from): void {
 		$this->option['from'] = $from;
 	}
 
-	public function setSender($sender) {
+	/**
+	 * Set the sender display name.
+	 *
+	 * @param string $sender Sender name.
+	 *
+	 * @return void
+	 */
+	public function setSender(string $sender): void {
 		$this->option['sender'] = $sender;
 	}
 
-	public function setReplyTo($reply_to) {
+	/**
+	 * Set the reply-to email address.
+	 *
+	 * @param string $reply_to Reply-to email.
+	 *
+	 * @return void
+	 */
+	public function setReplyTo(string $reply_to): void {
 		$this->option['reply_to'] = $reply_to;
 	}
 
-	public function setSubject($subject) {
+	/**
+	 * Set the email subject.
+	 *
+	 * @param string $subject Email subject.
+	 *
+	 * @return void
+	 */
+	public function setSubject(string $subject): void {
 		$this->option['subject'] = $subject;
 	}
 
-	public function setText($text) {
+	/**
+	 * Set the plain text body.
+	 *
+	 * @param string $text Plain text content.
+	 *
+	 * @return void
+	 */
+	public function setText(string $text): void {
 		$this->option['text'] = $text;
 	}
 
-	public function setHtml($html) {
+	/**
+	 * Set the HTML body.
+	 *
+	 * @param string $html HTML content.
+	 *
+	 * @return void
+	 */
+	public function setHtml(string $html): void {
 		$this->option['html'] = $html;
 	}
 
-	public function addAttachment($filename) {
+	/**
+	 * Add an attachment file path.
+	 *
+	 * @param string $filename Path to the file to attach.
+	 *
+	 * @return void
+	 */
+	public function addAttachment(string $filename): void {
 		$this->option['attachments'][] = $filename;
 	}
 
-	public function send() {
-		if (! $this->option['to']) {
+	/**
+	 * Validate required fields and send the email.
+	 *
+	 * @throws \Exception If a required field is missing.
+	 *
+	 * @return bool
+	 */
+	public function send(): bool {
+		if (!$this->option['to']) {
 			throw new \Exception('Email to required!');
 		}
 
-		if (! $this->option['from']) {
+		if (!$this->option['from']) {
 			throw new \Exception('Email from required!');
 		}
 
-		if (! $this->option['sender']) {
+		if (!$this->option['sender']) {
 			throw new \Exception('Email sender required!');
 		}
 
-		if (! $this->option['subject']) {
+		if (!$this->option['subject']) {
 			throw new \Exception('Email subject required!');
 		}
 
-		if (! $this->option['html']) {
+		if (!$this->option['html']) {
 			throw new \Exception('Email message required!');
 		}
 
 		$option = &$this->option;
 
-		list($option, $this->driver) = Event::trigger(__CLASS__, __FUNCTION__, $option, $this->driver);
+		[$option, $this->driver] = Event::trigger(__CLASS__, __FUNCTION__, $option, $this->driver);
 
 		return $this->driver->send();
 	}

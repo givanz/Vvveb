@@ -22,29 +22,42 @@
 
 namespace Vvveb\System\Session;
 
+use function Vvveb\isSecure;
 use Vvveb\System\Sites;
 
 class Php {
-	private $options = [
+	/** @var array<string, mixed> */
+	private array $options = [
 		'gc_maxlifetime'  => 3600 * 24 * 30, //month
-		'gc_divisor'      => 50000,
-		'gc_probability'  => 1,
-		'cookie_httponly' => 'On',
+		'cookie_httponly' => 1,
+		'cookie_samesite' => 'Lax',
+		'use_strict_mode' => 1,
+		'use_trans_sid'   => 0,
 	];
 
-	public function __construct($options) {
+	/**
+	 * @param array<string, mixed> $options
+	 */
+	public function __construct(array $options) {
 		$status = session_status();
 
 		if ($status === PHP_SESSION_ACTIVE || $status === PHP_SESSION_DISABLED || headers_sent()) {
 			return;
 		}
 
-		$this->options += $options;
+		$this->options = $options + $this->options;
 
-		@ini_set('session.gc_maxlifetime', $this->options['gc_maxlifetime']);
-		@ini_set('session.gc_divisor', $this->options['gc_divisor']);
-		@ini_set('session.gc_probability', $this->options['gc_probability']);
-		@ini_set('session.cookie_httponly', $this->options['cookie_httponly']);
+		@ini_set('session.gc_maxlifetime', (string)$this->options['gc_maxlifetime']);
+		@ini_set('session.cookie_httponly', (string)($this->options['cookie_httponly'] ?? 1));
+		@ini_set('session.use_cookies', (string)($this->options['use_cookies'] ?? 1));
+		@ini_set('session.cookie_samesite', (string)($this->options['cookie_samesite'] ?? 'Lax'));
+		@ini_set('session.use_strict_mode', (string)($this->options['use_strict_mode'] ?? 1));
+		@ini_set('session.use_trans_sid', (string)($this->options['use_trans_sid'] ?? 0));
+
+		//mark the session cookie Secure when the current request is https
+		if (isSecure()) {
+			@ini_set('session.cookie_secure', '1');
+		}
 
 		if (defined('SITE_URL') && SITE_URL) {
 			$host = SITE_URL;
@@ -52,52 +65,94 @@ class Php {
 			$host = Sites :: getHost();
 		}
 
-		if (! V_SUBDIR_INSTALL && V_SHARED_SESSION) {
+		if (!V_SUBDIR_INSTALL && V_SHARED_SESSION) {
 			//try to set cookie for all subdomains
 			$domain = preg_replace('/^[^\.]*\./', '', $host);
 			$name   = str_replace('.', '', $domain);
 			// skip if ip number
-			if ((! is_numeric($name)) && ($name != 'localhost')) {
-				@ini_set('session.cookie_domain', ".$domain");
-				session_set_cookie_params(0, '/', ".$domain");
-				$sessionName = session_name($name);
+			if ((!is_numeric($name)) && ($name != 'localhost')) {
+				$params = [
+					'lifetime' => (int)($this->options['cookie_lifetime'] ?? 0),
+					'path'     => '/',
+					'domain'   => '.' . $domain,
+					'secure'   => (bool)ini_get('session.cookie_secure'),
+					'httponly' => (bool)($this->options['cookie_httponly'] ?? 1),
+				];
+				$samesite = $this->options['cookie_samesite'] ?? 'Lax';
+				if ($samesite) {
+					$params['samesite'] = $samesite;
+				}
+				session_set_cookie_params($params);
 			}
 		}
 
-		return session_start();
+		$id = $options['id'] ?? '';
+
+		if (is_string($id) && preg_match('/\A[a-zA-Z0-9,-]{22,256}\z/', $id)) {
+			session_id($id);
+		}
+
+		session_name('vvveb');
+		session_start();
 	}
 
 	public function __destruct() {
 		//return $this->close();
 	}
 
-	public function get($key) {
-		if (isset($_SESSION[$key])) {
-			return $_SESSION[$key];
-		}
+	/**
+	 * @param string $key
+	 *
+	 * @return mixed
+	 */
+	public function get(string $key): mixed {
+		return $_SESSION[$key] ?? null;
 	}
 
-	public function set($key, $value) {
+	/**
+	 * @param string $key
+	 * @param mixed  $value
+	 */
+	public function set(string $key, mixed $value): void {
 		$_SESSION[$key] = $value;
 	}
 
-	public function delete($key) {
+	/**
+	 * @param string $key
+	 */
+	public function delete(string $key): void {
 		unset($_SESSION[$key]);
 	}
 
-	public function close() {
+	/**
+	 * @return bool
+	 */
+	public function close(): bool {
 		return session_write_close();
 	}
 
-	public function sessionId($id = null) {
+	/**
+	 * @param string|null $id
+	 *
+	 * @return string
+	 */
+	public function sessionId(?string $id = null): string {
 		return session_id($id);
 	}
 
-	public function regenerateId($deleteOldSession = false) {
+	/**
+	 * @param bool $deleteOldSession
+	 *
+	 * @return bool
+	 */
+	public function regenerateId(bool $deleteOldSession = false): bool {
 		return session_regenerate_id($deleteOldSession);
 	}
 
-	public function gc() {
+	/**
+	 * @return bool
+	 */
+	public function gc(): bool {
 		//handled by php
 		return true;
 	}

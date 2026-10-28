@@ -23,33 +23,56 @@
 namespace Vvveb\System\Traits;
 
 trait Spam {
-	//these must be empty, they are hidden in html and only bots will fill them
-	//todo: add dynamic field name
-
-	protected $spamFields =  [
+	/**
+	 * Hidden field names used as spam traps.
+	 *
+	 * These must be empty in legitimate submissions; bots typically fill them.
+	 *
+	 * @var list<string>
+	 */
+	protected array $spamFields = [
 		'firstname-empty',
 		'lastname-empty',
 		'subject-empty',
 		'contact-form',
 	];
 
-	function checkIfSpam(&$message) {
+	/**
+	 * Check if a message is spam (stub — override in subclass for real logic).
+	 *
+	 * @param array<string, mixed> $message The submitted message data.
+	 *
+	 * @return array<string, mixed> The message data, potentially filtered.
+	 */
+	public function checkIfSpam(array &$message): array {
 		return $message;
 	}
 
-	function isSpam(&$message) {
-		$spam = false;
-
+	/**
+	 * Determine whether a submitted message contains spam honeypot data.
+	 *
+	 * @param array<string, mixed> $message The submitted message data.
+	 *
+	 * @return bool True if spam is detected, false otherwise.
+	 */
+	public function isSpam(array &$message): bool {
 		foreach ($this->spamFields as $field) {
-			if (isset($message[$field]) && ! empty($message[$field])) {
-				return $spam = true;
+			if (!empty($message[$field])) {
+				return true;
 			}
 		}
 
-		return $spam;
+		return false;
 	}
 
-	function removeSpamCatchFields(&$message) {
+	/**
+	 * Remove honeypot fields from a message array.
+	 *
+	 * @param array<string, mixed> $message The submitted message data.
+	 *
+	 * @return array<string, mixed> The message data with spam trap fields removed.
+	 */
+	public function removeSpamCatchFields(array &$message): array {
 		foreach ($this->spamFields as $field) {
 			if (isset($message[$field])) {
 				unset($message[$field]);

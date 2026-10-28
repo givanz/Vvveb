@@ -20,43 +20,65 @@
  *
  */
 
-use Vvveb\System\Functions\Str;
-
-/*
- * Escape string
+/**
+ * Escape a character in a string by prepending a backslash.
+ *
  * Ex: @@macro Escape("Escape ' this","'")@@
+ *
+ * @param Vtpl    $vtpl   The Vtpl instance.
+ * @param DOMNode $node   The current DOM node.
+ * @param string  $string The string to escape.
+ * @param string  $char   The character to escape.
+ *
+ * @return string The escaped string.
  */
-function vtplEscape($vtpl, $node, $string, $char = '\'') {
+function vtplEscape(Vtpl $vtpl, DOMNode $node, string $string, string $char = '\''): string {
 	return str_replace($char, '\\' . $char, $string);
 }
 
-/*
- * Convert name[key] > ['name']['key']
+/**
+ * Convert a form field name with array notation to PHP array key notation.
+ *
  * Ex: @@macro vtplpostNameToArrayKey("name[key]")@@
+ *
+ * @param Vtpl    $vtpl         The Vtpl instance.
+ * @param DOMNode $node         The current DOM node.
+ * @param string  $keyAttribute The form field name to convert.
+ *
+ * @return string The converted array<array-key, mixed> key string.
  */
-function vtplpostNameToArrayKey($vtpl, $node, $keyAttribute) {
+function vtplpostNameToArrayKey(Vtpl $vtpl, DOMNode $node, string $keyAttribute): string {
 	return Vvveb\postNameToArrayKey($keyAttribute);
 }
 
-/*
- * Get attributes as a key => value array for elements specified by selector
+/**
+ * Get attributes as a key => value array for elements specified by a CSS selector.
+ *
  * Ex: @@macro KeyValue(".settings input","data-v-option","data-v-option")@@
+ *
+ * @param Vtpl    $vtpl           The Vtpl instance.
+ * @param DOMNode $node           The current DOM node.
+ * @param string  $selector       CSS selector to match elements.
+ * @param string  $keyAttribute   Attribute name to use as the array key.
+ * @param string  $valueAttribute Attribute name to use as the array value.
+ *
+ * @return string A var_export'd array<array-key, mixed> of key => value pairs.
  */
-function vtplKeyValue($vtpl, $node, $selector, $keyAttribute, $valueAttribute) {
+function vtplKeyValue(Vtpl $vtpl, DOMNode $node, string $selector, string $keyAttribute, string $valueAttribute): string {
 	$values = [];
 
-	$elements = $vtpl->xpath->query($vtpl->cssToXpath($selector));
+	$elements = $vtpl->query($selector);
 
 	if ($elements && $elements->length) {
 		foreach ($elements as $element) {
 			$key = $value = false;
 
 			foreach ($element->attributes as $attribute) {
-				if ($attribute->name == $keyAttribute) {
+				if ($attribute->name === $keyAttribute) {
 					$key = $attribute->value;
 				}
 
-				if ($attribute->name == $valueAttribute) {
+				if ($attribute->name === $valueAttribute) {
 					$value = $attribute->value;
 				}
 			}
@@ -67,96 +89,49 @@ function vtplKeyValue($vtpl, $node, $selector, $keyAttribute, $valueAttribute) {
 		}
 	}
 
-	return var_export($values, 1);
+	return var_export($values, true);
 }
-/*
- If macro enables elements with data-v-if="condition = true" to be visible only if condition is true also data-v-if-not="condition = true"
 
- Parameter can have the following formats
- variable = variable ex product.price = price this will result in $product['price'] == $price
- variable = 'string' ex this.stock = 'available' this will result in $this->price == $price
+/**
+ * Compile a conditional expression into a PHP if-condition string.
+ *
+ * Transforms variable dot-notation to PHP array syntax, handles operators,
+ * and wraps in isset() checks where needed.
+ *
+ * @param string $condition The conditional expression to compile.
+ *
+ * @return string The compiled PHP condition string.
  */
-/*
-function ifCondition($string = '') {
-	$logic      = ['&&', '\|\|', 'AND', 'OR'];
-	$regex      = '/\s+(' . implode(')\s+|\s+(', $logic) . ')\s+/i';
-	$conditions = preg_split($regex, $string, 0, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-
-	$return = '( ';
-
-	foreach ($conditions as $condition) {
-		if (in_array(str_replace('|', '\|', $condition),  $logic)) {
-			$return .= " ) $condition ( ";
-		} else {
-			$operators         = ['>', '<', '<=', '>=', '=', '!='];
-			$operatorsMatch    = implode('',array_unique(str_split(implode('', $operators))));
-			$condition         = html_entity_decode($condition);
-
-			$key      = $condition;
-			$compare  = $condition;
-			$operator = false;
-			$value    = false;
-
-			if ($key = strpbrk($condition, $operatorsMatch)) {
-				$operator = trim(Str::match("/^([ $operatorsMatch]+)/", $key));
-				$value    = Str::match("/[ $operatorsMatch]+(.+)$/", $key);
-				$compare  = Str::match("/(.+?)[ $operatorsMatch]/", $condition);
-			}
-
-			if (strpos($value, 'this') === 0) {
-				$value = str_replace('this.', 'this->', $value);
-			}
-
-			if (strpos($compare, 'this') === 0) {
-				$compare = str_replace('this.', 'this->', $compare);
-			}
-
-			if (($compare && $compare[0] != "'") && ! is_numeric($compare) && $compare !== 'null') {
-				$compare = '$' . $compare;
-			}
-
-			if (($value && $value[0] != "'") && ! is_numeric($value) && $value !== 'null') {
-				$value = '$' . $value;
-			}
-
-			if ($operator == '=') {
-				$operator = '==';
-			}
-
-			$value   = Vvveb\dotToArrayKey($value);
-			$compare = Vvveb\dotToArrayKey($compare);
-
-			$return .= "(isset($compare) && ($compare $operator $value))";
-		}
-	}
-	$return .= ' )';
-
-	return $return;
-}
-*/
-
-function ifCondition($condition = '') {
+function ifCondition(string $condition = ''): string {
 	//remove php functions
 	$condition = preg_replace('/[a-zA-Z_][\w\\]*\([^\)]*\)/', '', $condition);
 
 	//transform variables to php variables
 	$array_keys = '';
-	$condition  = preg_replace_callback('/[\'"]?[a-zA-Z_][\w\.-]*[\'"]?/',
-		function ($matches) use (&$array_keys) {
+	$condition  = preg_replace_callback(
+		'/[\'"]?[a-zA-Z_][\w\.-]*[\'"]?/',
+		function($matches) use (&$array_keys) {
 			$value = $matches[0];
-			$len = strlen($value) - 1;
+			$len   = strlen($value) - 1;
 
-			if ($value == 'null' || $value == 'NULL'
-				|| $value[0] == '\'' || $value[$len] == '\''
-				|| $value[0] == '"' || $value[$len] == '"') {
+			if ($value === 'null' || $value === 'NULL'
+				|| $value === 'true' || $value === 'TRUE'
+				|| $value === 'false' || $value === 'FALSE'
+				|| $value === 'and' || $value === 'or' || $value === 'xor'
+				|| $value[0] === '\'' || $value[$len] === '\''
+				|| $value[0] === '"' || $value[$len] === '"') {
 				return $value;
 			}
 
-			if (strpos($value, 'this') === 0) {
+			if ($value === 'this') {
+				return '$this';
+			}
+
+			if (str_starts_with($value, 'this')) {
 				$value = str_replace('this.', 'this->', $value);
 			}
 
-			if (strpos($value, '.') !== 0) {
+			if (str_contains($value, '.')) {
 				$value = Vvveb\dotToArrayKey($value);
 				$value = '$' . $value;
 
@@ -166,10 +141,17 @@ function ifCondition($condition = '') {
 				$array_keys .= "isset($value)";
 			} else {
 				$value = '$' . $value;
+
+				if ($array_keys) {
+					$array_keys .= ' && ';
+				}
+				$array_keys .= "isset($value)";
 			}
 
 			return $value;
-		}, $condition);
+		},
+		$condition
+	);
 
 	//double ==
 	$condition = preg_replace('/(?<![<>\!])=+/', ' == ', $condition);
@@ -181,38 +163,65 @@ function ifCondition($condition = '') {
 	return $array_keys . "($condition)";
 }
 
-function vtplIfCondition($vtpl, $node, $string = '') {
+/**
+ * Macro wrapper for ifCondition() used in Vtpl templates.
+ *
+ * @param Vtpl    $vtpl   The Vtpl instance.
+ * @param DOMNode $node   The current DOM node.
+ * @param string  $string The conditional expression.
+ *
+ * @return string The compiled PHP condition string.
+ */
+function vtplIfCondition(Vtpl $vtpl, DOMNode $node, string $string = ''): string {
 	return ifCondition($string);
 }
 
-/*
-Remove class from node, used by  data-v-class-if
+/**
+ * Remove a CSS class from a DOM node.
+ *
+ * Used by data-v-class-if to strip classes before conditional re-application.
+ *
+ * @param Vtpl    $vtpl      The Vtpl instance.
+ * @param DOMNode $node      The current DOM node.
+ * @param string  $className The class name to remove.
+ *
+ * @return void
  */
-function vtplRemoveClass($vtpl, $node, $className = '') {
-	if (! $className) {
+function vtplRemoveClass(Vtpl $vtpl, DOMNode $node, string $className = ''): void {
+	if (!$className) {
 		return;
 	}
 	$value = $node->getAttribute('class');
 
-	if (strpos($value, $className) !== false) {
+	if (str_contains($value, $className)) {
 		$node->setAttribute('class', str_replace($className, '', $value));
 	}
 }
 
-function vtplIfClass($vtpl, $node) {
+/**
+ * Process data-v-class-if-* and data-v-class-if-not-* attributes on a node.
+ *
+ * Generates PHP code that conditionally adds CSS classes based on expressions.
+ *
+ * @param Vtpl    $vtpl The Vtpl instance.
+ * @param DOMNode $node The current DOM node.
+ *
+ * @return string PHP code snippet that echoes conditional class names.
+ */
+function vtplIfClass(Vtpl $vtpl, DOMNode $node): string {
 	$if      = [];
 	$ifnot   = [];
 	$length  = $node->attributes->length;
 
-	for ($i = 0; $i < $length; ++$i) {
+	for ($i = 0; $i < $length; $i++) {
 		if ($item = $node->attributes->item($i)) {
 			$name = $item->name;
 
-			if (strpos($name, 'data-v-class-if-not-') !== false) {
+			if (str_contains($name, 'data-v-class-if-not-')) {
 				$name           = str_replace('data-v-class-if-not-', '', $name);
 				$ifnot[$name]   = $item->value;
 			} else {
-				if (strpos($name, 'data-v-class-if-') !== false) {
+				if (str_contains($name, 'data-v-class-if-')) {
 					$name           = str_replace('data-v-class-if-', '', $name);
 					$if[$name]      = $item->value;
 				}
@@ -224,14 +233,14 @@ function vtplIfClass($vtpl, $node) {
 	$value  = $node->getAttribute('class');
 
 	foreach ($ifnot as $class => $cond) {
-		$value = str_replace($class, '',$value);
+		$value = str_replace($class, '', $value);
 		//$node->removeAttribute("data-v-class-if-not-$class");
 		$condition = ifCondition($cond);
 		$return .= "if  (!($condition)) {echo ' $class';}";
 	}
 
 	foreach ($if as $class => $cond) {
-		$value = str_replace($class, '',$value);
+		$value = str_replace($class, '', $value);
 		//$node->removeAttribute("data-v-class-if-$class");
 		$condition = ifCondition($cond);
 		$return .= "if  ($condition) {echo ' $class';}";
@@ -244,20 +253,30 @@ function vtplIfClass($vtpl, $node) {
 	return $return;
 }
 
-function vtplIfAttr($vtpl, $node) {
+/**
+ * Process data-v-attr-if-* and data-v-attr-if-not-* attributes on a node.
+ *
+ * Generates PHP code that conditionally outputs HTML attributes based on expressions.
+ *
+ * @param Vtpl    $vtpl The Vtpl instance.
+ * @param DOMNode $node The current DOM node.
+ *
+ * @return void
+ */
+function vtplIfAttr(Vtpl $vtpl, DOMNode $node): void {
 	$if      = [];
 	$ifnot   = [];
 	$length  = $node->attributes->length;
 
-	for ($i = 0; $i < $length; ++$i) {
+	for ($i = 0; $i < $length; $i++) {
 		if ($item = $node->attributes->item($i)) {
 			$name = $item->name;
 
-			if (strpos($name, 'data-v-attr-if-not-') !== false) {
+			if (str_contains($name, 'data-v-attr-if-not-')) {
 				$name           = str_replace('data-v-attr-if-not-', '', $name);
 				$ifnot[$name]   = $item->value;
 			} else {
-				if (strpos($name, 'data-v-attr-if-') !== false) {
+				if (str_contains($name, 'data-v-attr-if-')) {
 					$name           = str_replace('data-v-attr-if-', '', $name);
 					$if[$name]      = $item->value;
 				}
@@ -274,8 +293,8 @@ function vtplIfAttr($vtpl, $node) {
 		$node->removeAttribute($value);
 
 		$condition = ifCondition($cond);
-		$if        = "<?php if  (!($condition)) {echo '$attr';}?>";
-		$vtpl->addNodeNewAttribute($node, $if);
+		$ifCode    = "<?php if  (!($condition)) {echo '$attr';}?>";
+		$vtpl->addNodeNewAttribute($node, $ifCode);
 	}
 
 	foreach ($if as $value => $cond) {
@@ -287,7 +306,7 @@ function vtplIfAttr($vtpl, $node) {
 		$node->removeAttribute($value);
 
 		$condition = ifCondition($cond);
-		$if        = "<?php if  ($condition) {echo '$attr';}?>";
-		$vtpl->addNodeNewAttribute($node, $if);
+		$ifCode    = "<?php if  ($condition) {echo '$attr';}?>";
+		$vtpl->addNodeNewAttribute($node, $ifCode);
 	}
 }

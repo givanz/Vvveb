@@ -25,32 +25,66 @@ namespace Vvveb\System\Cart;
 use function Vvveb\session as sess;
 use Vvveb\System\Locale;
 
+/** @phpstan-consistent-constructor */
 class Currency {
-	private $currencies;
+	/** @var array<string, array{sign_start: string, sign_end: string, decimal_place: int, value: float}> */
+	private array $currencies = [];
 
-	private $options;
+	/** @var array<string, mixed> */
+	private array $options = [];
 
-	public static function getInstance($options = []) {
-		static $inst = null;
+	/**
+	 * @param array<string, mixed> $options
+	 */
+	public static function getInstance(array $options = []): static {
+		static $inst;
 
 		if ($inst === null) {
-			$inst   = new Currency($options);
+			$inst = new static($options);
 		}
 
 		return $inst;
 	}
 
-	public function __construct($options = []) {
+	/**
+	 * @param array<string, mixed> $options
+	 */
+	public function __construct(array $options = []) {
 		$this->options    = $options;
 		$this->currencies = Locale::availableCurrencies();
 	}
 
-	public function format($number, $currency = false, $format = true, $value = 0) {
-		if (! $currency) {
+	/**
+	 * Number of decimal places for the given (or current) currency.
+	 *
+	 * @param string|false|null $currency Currency code, null/false = current.
+	 *
+	 * @return int
+	 */
+	public function getDecimalPlace(string|false|null $currency = null): int {
+		if (!$currency) {
 			$currency = $this->options['currency'] ?? sess('currency');
 		}
 
-		if (! $currency || ! isset($this->currencies[$currency])) {
+		return (int)($this->currencies[$currency]['decimal_place'] ?? 2);
+	}
+
+	/**
+	 * Format a numeric amount with the appropriate currency symbol.
+	 *
+	 * @param float|int|string $number
+	 * @param string|false     $currency
+	 * @param bool             $format
+	 * @param float|int        $value
+	 *
+	 * @return string|float
+	 */
+	public function format(float|int|string $number, string|false $currency = false, bool $format = true, float|int $value = 0): string|float {
+		if (!$currency) {
+			$currency = $this->options['currency'] ?? sess('currency');
+		}
+
+		if (!$currency || !isset($this->currencies[$currency])) {
 			return '';
 		}
 
@@ -58,7 +92,7 @@ class Currency {
 		$sign_end      = $this->currencies[$currency]['sign_end'];
 		$decimal_place = $this->currencies[$currency]['decimal_place'];
 
-		if (! $value) {
+		if (!$value) {
 			$value = $this->currencies[$currency]['value'];
 		}
 
@@ -66,7 +100,7 @@ class Currency {
 
 		$amount = round($amount, $decimal_place);
 
-		if (! $format) {
+		if (!$format) {
 			return $amount;
 		}
 
@@ -76,7 +110,7 @@ class Currency {
 			$string .= $sign_start;
 		}
 
-		$decimals            = 2;
+		$decimals            = (int)$decimal_place;
 		$decimal_separator   = '.';
 		$thousands_separator = ',';
 
@@ -89,19 +123,21 @@ class Currency {
 		return $string;
 	}
 
-	public function convert($value, $from, $to) {
-		if (isset($this->currencies[$from])) {
-			$from = $this->currencies[$from]['value'];
-		} else {
-			$from = 1;
+	/**
+	 * Convert a value between two currencies.
+	 *
+	 * @param float|int $value
+	 * @param string    $from
+	 * @param string    $to
+	 */
+	public function convert(float|int $value, string $from, string $to): float {
+		$fromRate = $this->currencies[$from]['value'] ?? 1;
+		$toRate   = $this->currencies[$to]['value'] ?? 1;
+
+		if (!$fromRate) {
+			return 0.0;
 		}
 
-		if (isset($this->currencies[$to])) {
-			$to = $this->currencies[$to]['value'];
-		} else {
-			$to = 1;
-		}
-
-		return $value * ($to / $from);
+		return $value * ($toRate / $fromRate);
 	}
 }

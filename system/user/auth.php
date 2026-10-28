@@ -21,14 +21,27 @@
  */
 
 namespace Vvveb\System\User;
-use function Vvveb\stripChars;
+
 use function Vvveb\sanitizeHTML;
+use function Vvveb\stripChars;
 
 class Auth {
-	static $options = ['cost' => 11];
+	/**
+	 * Password hashing options.
+	 *
+	 * @var array{cost: int}
+	 */
+	private static array $options = ['cost' => 11];
 
-	public static function sanitize(&$data) {
-		foreach ($data as $name => &$val) { 
+	/**
+	 * Sanitize user data by stripping unwanted characters and validating fields.
+	 *
+	 * @param array<string, mixed> $data Reference to the data array to sanitize.
+	 *
+	 * @return void
+	 */
+	public static function sanitize(array &$data): void {
+		foreach ($data as $name => &$val) {
 			if (is_string($val) && !in_array($name, ['created_at', 'updated_at', 'bio'])) {
 				$val = stripChars($val);
 			}
@@ -43,11 +56,25 @@ class Auth {
 		}
 
 		if (isset($data['email'])) {
-			$data['email']    = filter_var($data['email'], FILTER_VALIDATE_EMAIL);
+			$email = filter_var($data['email'], FILTER_VALIDATE_EMAIL);
+
+			if ($email === false) {
+				unset($data['email']);
+			} else {
+				$data['email'] = $email;
+			}
 		}
 	}
 
-	public static function checkPassword($password, $hash) {
+	/**
+	 * Verify a password against a hash, rehashing if needed.
+	 *
+	 * @param string $password The plain-text password to verify.
+	 * @param string $hash     The stored password hash.
+	 *
+	 * @return string|bool New hash string if rehash was needed, true if valid, false otherwise.
+	 */
+	public static function checkPassword(string $password, string $hash): string|bool {
 		if (password_verify($password, $hash)) {
 			// Check if a newer hashing algorithm is available
 			// or the cost has changed
@@ -62,7 +89,14 @@ class Auth {
 		return false;
 	}
 
-	public static function password($password) {
+	/**
+	 * Generate a password hash using the configured options.
+	 *
+	 * @param string $password The plain-text password to hash.
+	 *
+	 * @return string The resulting password hash.
+	 */
+	public static function password(string $password): string {
 		return password_hash($password, PASSWORD_DEFAULT, self :: $options);
 	}
 }

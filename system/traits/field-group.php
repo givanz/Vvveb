@@ -25,7 +25,14 @@ namespace Vvveb\System\Traits;
 use function Vvveb\__;
 
 trait FieldGroup {
-	function renderFields2($fields) {
+	/**
+	 * Render a fields array to HTML using the field-group template.
+	 *
+	 * @param array<array-key, mixed> $fields The fields configuration array.
+	 *
+	 * @return string The rendered HTML (body content only).
+	 */
+	public function renderFields2(array $fields): string {
 		$htmlView  = new \Vvveb\System\Core\View();
 		$htmlView->setTheme();
 		$htmlView->template('field/field-group/renderfields.html');
@@ -34,35 +41,51 @@ trait FieldGroup {
 		$html             = $htmlView->render(true, false, true);
 
 		//return only content inside <body>
-		$html = preg_replace('@<!DOCTYPE[^>]+>|</?html>|</?body>@', '', $html);
-
-		return $html;
+		return (string)preg_replace('@<!DOCTYPE[^>]+>|</?html>|</?body>@', '', $html);
 	}
 
-	function field() {
+	/**
+	 * Handle AJAX field rendering requests.
+	 *
+	 * Reads the field type and ID from the POST request, renders the field,
+	 * and returns JSON.
+	 *
+	 * @return string JSON-encoded field rendering result.
+	 */
+	public function field(): string {
 		$type     = $this->request->post['type'] ?? 'text';
-		$field_id = $this->request->post['field_id'];
+
+		$field_id = $this->request->post['field_id'] ?? '';
 
 		$json = $this->renderField($type, $field_id);
 		$this->response->setType('json');
 
-		return $json;
+		return is_string($json) ? $json : json_encode($json);
 	}
 
-	private function renderField($type, $field_id, $input = []) {
+	/**
+	 * Render a single field's settings, validation, and presentation sections.
+	 *
+	 * @param string               $type     The field type (e.g. 'text', 'image', 'select').
+	 * @param int|string           $field_id Unique field identifier.
+	 * @param array<string, mixed> $input    Optional pre-filled input values for the field sections.
+	 *
+	 * @return array<string, string>|null Rendered HTML sections keyed by section name, or null on error.
+	 */
+	private function renderField(string $type, int|string $field_id, array $input = []): ?array {
 		$fields = [];
 		$data   = [];
 		$json   = [];
 
 		foreach (['settings', 'validation', 'presentation', 'conditionals'] as $section) {
-			$input[$section] = $input[$section] ?? $this->request->post['field'][$field_id][$section] ?? [];
+			$input[$section] ??= $this->request->post['field'][$field_id][$section] ?? [];
 		}
 
 		$field      = ucfirst($type);
 		$fieldClass = "Vvveb\System\Fields\\$field";
 
-		if (! class_exists($fieldClass)) {
-			return;
+		if (!class_exists($fieldClass)) {
+			return null;
 		}
 
 		$fieldObj             = new $fieldClass();
@@ -70,34 +93,32 @@ trait FieldGroup {
 		$data['validation']   = $fieldObj->getValidation();
 		$data['presentation'] = $fieldObj->getPresentation();
 
-		foreach ($data as $section => $field) {
-			foreach ($field as $name => $value) {
-				if (! $value) {
+		foreach ($data as $section => $fieldData) {
+			foreach ($fieldData as $name => $value) {
+				if (!$value) {
 					continue;
 				}
-				/*
-				if (isset($this->request->post['field'][$field_id][$section][$name])) {
-					$data[$section][$name]['value'] = $this->request->post['field'][$field_id][$section][$name];
-				}
-				*/
+
 				if (isset($input[$section][$name])) {
 					$data[$section][$name]['value'] = $input[$section][$name];
 				}
 
 				$data[$section][$name]['id']          = $name;
 				$data[$section][$name]['name']        = "field[$field_id][$section][$name]";
-				$data[$section][$name]['class']       = ($value['type'] != 'hidden') ? 'row mb-3' : '';
+				$data[$section][$name]['class']       = ($value['type'] !== 'hidden') ? 'row mb-3' : '';
 				$data[$section][$name]['label-class'] = 'col-sm-2 col-form-label py-0';
 				$data[$section][$name]['input-class'] = 'col-sm-10 col-xl-8 col-xxl-6';
 
-				if ($value['type'] == 'checkbox' && (isset($this->request->post['field'][$field_id][$section][$name]) || isset($input[$section][$name]))) {
+				if ($value['type'] === 'checkbox' && (isset($this->request->post['field'][$field_id][$section][$name]) || isset($input[$section][$name]))) {
 					$data[$section][$name]['checked'] = true;
 				}
 			}
 		}
 
 		//check if we have a complex value (json array) or a single value
+		$value = null;
 		if ($fieldClass::valueType) {
+			$value = [];
 			foreach ($fieldClass::valueType as $name) {
 				$value[$name] = $data['settings'][$name]['value'] ?? '';
 			}
@@ -109,21 +130,14 @@ trait FieldGroup {
 			'label'        => $data['settings']['label']['value'] ?? __('Label'),
 			'instructions' => $data['presentation']['instructions']['value'] ?? __('Instructions'),
 			'name'         => 'label',
-			//'id'           => 'input-' . $field_id,
 			'type'         => $type,
 			'label-class'  => 'form-label',
 			'placeholder'  => $data['settings']['label']['value'] ?? __('Placeholder'),
 			'readonly'     => true,
 			'value'        => $value,
-			//'required'     => $data['validation']['required']['checked'] ?? '',
 		] + $input['presentation'] + $input['settings'];
 
-		foreach ($field as $name => $value) {
-			/*
-			if (isset($this->request->post['field'][$field_id]['settings'][$name])) {
-				$field[$name] = $this->request->post['field'][$field_id]['settings'][$name];
-			}*/
-
+		foreach ($field as $name => $fieldValue) {
 			if (isset($input[$section][$name])) {
 				$field[$name] = $input[$section][$name];
 			}
@@ -139,18 +153,27 @@ trait FieldGroup {
 		return $json;
 	}
 
-	function renderFields() {
+	/**
+	 * Render field configuration forms for the admin UI.
+	 *
+	 * Handles two modes:
+	 * - 'field': returns a specific field type's settings/validation/presentation sections.
+	 * - 'input': returns a generic input field definition.
+	 *
+	 * @return void
+	 */
+	public function renderFields(): void {
 		$type   = $this->request->get['type'] ?? '';
 		$fields = [];
 
-		if ($type == 'field') {
+		if ($type === 'field') {
 			$field   = $this->request->get['field'] ?? 'text';
 			$section = $this->request->get['section'] ?? 'settings';
 
 			$field      = ucfirst($field);
 			$fieldClass = "Vvveb\System\Fields\\$field";
 
-			if (! class_exists($fieldClass)) {
+			if (!class_exists($fieldClass)) {
 				return;
 			}
 
@@ -164,15 +187,16 @@ trait FieldGroup {
 
 				case 'validation':
 					$fields = $fieldObj->getValidation();
-
+					// fall through to presentation (missing break is intentional)
+					// no break
 				case 'presentation':
 					$fields = $fieldObj->getPresentation();
 
 					break;
 			}
 
-			foreach ($fields as $fieldName => $field) {
-				foreach ($field as $name => $value) {
+			foreach ($fields as $fieldName => $fieldData) {
+				foreach ($fieldData as $name => $value) {
 					if (isset($this->request->post[$fieldName][$name])) {
 						$fields[$fieldName][$name] = $this->request->post[$fieldName][$name];
 					}
@@ -180,7 +204,7 @@ trait FieldGroup {
 			}
 		}
 
-		if ($type == 'input') {
+		if ($type === 'input') {
 			$field = [
 				'label'        => __('Label'),
 				'instructions' => __('Instructions'),
@@ -188,7 +212,6 @@ trait FieldGroup {
 				'type'         => 'text',
 				'class'        => 'form-label',
 				'placeholder'  => 'placeholder',
-				//'value'        => 'value',
 			];
 
 			foreach ($field as $name => $value) {

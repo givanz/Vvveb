@@ -41,19 +41,19 @@ class User extends Auth {
 	 *
 	 * @param array<string, mixed> $data User data including username, email, password, etc.
 	 *
-	 * @return array|false Existing user info if already registered, new user record on success, or false on validation failure.
+	 * @return array<array-key, mixed>|false Existing user info if already registered, new user record on success, or false on validation failure.
 	 */
-	public static function add(array $data) : array|false {
+	public static function add(array $data): array|false {
 		$user = new UserSQL();
 
-		if (! isset($data['username']) || ! $data['username']) {
+		if (!isset($data['username']) || !$data['username']) {
 			return false;
 		}
 
 		self::sanitize($data);
 
 		//check if email or username is already registered
-		$check = ['username'=> $data['username']];
+		$check = ['username' => $data['username']];
 
 		if (isset($data['email'])) {
 			$check['email'] = $data['email'];
@@ -69,7 +69,7 @@ class User extends Auth {
 			$data['password'] = self :: password($data['password']);
 		}
 
-		$data['status'] = 1; //0
+		$data['status']  = 1; //0
 		$data['last_ip'] = $_SERVER['REMOTE_ADDR'] ?? '';
 
 		return $user->add([self :: $namespace => $data]);
@@ -83,7 +83,7 @@ class User extends Auth {
 	 *
 	 * @return mixed The result of the update operation.
 	 */
-	public static function update(array $data, array $condition) : mixed {
+	public static function update(array $data, array $condition): mixed {
 		$user = new UserSQL();
 
 		if (empty($data['password'])) {
@@ -94,7 +94,7 @@ class User extends Auth {
 		//$data['status']   = 0;
 		self::sanitize($data);
 
-		$data['updated_at'] = $data['updated_at'] ??  date('Y-m-d H:i:s', time());
+		$data['updated_at'] ??= date('Y-m-d H:i:s', time());
 
 		return $user->edit(array_merge([self :: $namespace => $data], $condition));
 	}
@@ -106,11 +106,10 @@ class User extends Auth {
 	 *
 	 * @return array<string, mixed> User info array, or empty array if not found.
 	 */
-	public static function get(array $data) : array {
+	public static function get(array $data): array {
 		$user = new UserSQL();
 		//check user email and that status is active
 		$loginInfo = []; //['status' => 1];
-		$userInfo  = false;
 
 		if (isset($data['email'])) {
 			$loginInfo['email'] = $data['email'];
@@ -138,7 +137,7 @@ class User extends Auth {
 
 		$userInfo = $user->get($loginInfo);
 
-		if (! $userInfo) {
+		if (!$userInfo) {
 			return [];
 		}
 
@@ -148,23 +147,23 @@ class User extends Auth {
 	/**
 	 * Authenticate a user using email/username and password.
 	 *
-	 * @param array<string, mixed>  $data           Login credentials (email, username, password).
-	 * @param array<string, mixed>  $additionalInfo Additional data to store in the session.
-	 * @param array<string, mixed>  &$feedback      Feedback message and code on failure.
+	 * @param array<string, mixed> $data           Login credentials (email, username, password).
+	 * @param array<string, mixed> $additionalInfo Additional data to store in the session.
+	 * @param array<string, mixed> &$feedback      Feedback message and code on failure.
 	 *
 	 * @return array<string, mixed>|false User info on success, false on failure.
 	 */
-	public static function login(array $data, array $additionalInfo = [], array &$feedback = []) : array|false {
+	public static function login(array $data, array $additionalInfo = [], array &$feedback = []): array|false {
 		$data['status']  = 1;
 		$userInfo        = self::get($data);
 		$passwordCorrect = false;
 		$userExists      = ($userInfo && isset($userInfo['password']));
 
 		if ($userExists) {
-			$passwordCorrect = self::checkPassword($data['password'], $userInfo['password']);
+			$passwordCorrect = self::checkPassword($data['password'] ?? '', $userInfo['password']);
 		}
 
-		if (! $userExists || ! $passwordCorrect) {
+		if (!$userExists || !$passwordCorrect) {
 			if ($userExists) {
 				$message = __('Password incorrect!');
 				$code    = 0;
@@ -184,7 +183,7 @@ class User extends Auth {
 		$session->set(self :: $namespace, $userInfo + $additionalInfo);
 
 		$lastIp        = $_SERVER['REMOTE_ADDR'] ?? '';
-		self::update(['last_ip' => $lastIp],  ['user_id' => $userInfo['user_id']]);
+		self::update(['last_ip' => $lastIp], ['user_id' => $userInfo['user_id']]);
 
 		PageCache::disable('user');
 
@@ -196,7 +195,7 @@ class User extends Auth {
 	 *
 	 * @return void
 	 */
-	public static function logout() : void {
+	public static function logout(): void {
 		PageCache::enable(self :: $namespace);
 
 		sess([self :: $namespace => false]);
@@ -210,7 +209,7 @@ class User extends Auth {
 	 *
 	 * @return string The HMAC-MD5 hash.
 	 */
-	public static function hash(string $data, string $salt) : string {
+	public static function hash(string $data, string $salt): string {
 		return hash_hmac('md5', $data, $salt);
 	}
 
@@ -221,8 +220,12 @@ class User extends Auth {
 	 *
 	 * @return bool True if the cookie hash is valid.
 	 */
-	public static function generateCookie(string $cookieValue) : bool {
-		list($value, $hash) = explode(':', $cookieValue, 2);
+	public static function generateCookie(string $cookieValue): bool {
+		if (!defined('SECRET_KEY')) {
+			return false;
+		}
+
+		[$value, $hash] = explode(':', $cookieValue, 2);
 
 		if (hash_equals(md5($value . '-' . SECRET_KEY), $hash)) {
 			return true;
@@ -240,17 +243,26 @@ class User extends Auth {
 	 *
 	 * @return bool True if the cookie HMAC is valid.
 	 */
-	public static function checkCookie(string $cookieValue, string $hmac, string $scheme) : bool {
-		list($username, $hash, $expiration, $token) = explode('|', $cookieValue, 4);
+	/**
+	 * Validate a signed login cookie.
+	 *
+	 * Expected format: username|expiration|token|hmac
+	 * The HMAC is computed with sha256 over username|expiration|token keyed by
+	 * a hash of the username, scheme and application secret.
+	 */
+	public static function checkCookie(string $cookieValue, string $hmac, string $scheme): bool {
+		$parts = explode('|', $cookieValue);
 
-		$key = hash($username . '|' . $hash . '|' . $expiration . '|' . $token, $scheme);
+		if (count($parts) < 3) {
+			return false;
+		}
 
-		$algo = function_exists('hash') ? 'sha256' : 'sha1';
-		$hash = hash_hmac($algo, $username . '|' . $expiration . '|' . $token, $key);
+		[$username, $expiration, $token] = $parts;
 
-		$valid = hash_equals($hash, $hmac);
+		$key = hash_hmac('md5', $username . '|' . $expiration . '|' . $token, $scheme);
+		$h   = hash_hmac('sha256', $username . '|' . $expiration . '|' . $token, $key);
 
-		return $valid;
+		return hash_equals($h, $hmac);
 	}
 
 	/**
@@ -258,7 +270,7 @@ class User extends Auth {
 	 *
 	 * @return array<string, mixed> Current user session data, or empty array if guest.
 	 */
-	public static function current() : array {
+	public static function current(): array {
 		$current = sess(self :: $namespace, []);
 
 		if ($current) {
@@ -275,15 +287,15 @@ class User extends Auth {
 	 *
 	 * @param array<string, mixed>|null $data Key-value pairs to merge into the session.
 	 *
-	 * @return array|false Merged session data on success, false if no current session or invalid data.
+	 * @return array<array-key, mixed>|false Merged session data on success, false if no current session or invalid data.
 	 */
-	public static function session(?array $data) : array|false {
+	public static function session(?array $data): array|false {
 		$current = self :: current();
 
-		if ($current && $data && is_array($data)) {
+		if ($current && $data) {
 			$current = array_merge($current, $data);
 
-			return sess([self :: $namespace => $current]);
+			return sess([self :: $namespace => $current], $current);
 		}
 
 		return false;

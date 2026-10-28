@@ -20,32 +20,30 @@
  *
  */
 
-/**
- * Manages image retrival and saving.
- *
- * @package Vvveb
- * @subpackage System
- * @since 0.0.1
- */
-
 namespace Vvveb\System;
 
 use function Vvveb\rrmdir;
 use function Vvveb\session;
 
 class Locale {
-	static private $code;
+	/** @var string|null Current language code. */
+	private static ?string $code = null;
 
-	static function availableLanguages() {
+	/**
+	 * Get all available languages from the database.
+	 *
+	 * @return array<string, array<string, mixed>> List of language records keyed by slug.
+	 */
+	public static function availableLanguages(): array {
 		static $languages = [];
 		if ($languages != []) {
 			return $languages;
 		}
 
 		$cache     = Cache::getInstance();
-		$languages = $cache->cache(APP,'languages',static function () {
+		$languages = $cache->cache(APP, 'languages', static function() {
 			$languages             = new \Vvveb\Sql\LanguageSQL();
-			$result = $languages->getAll(['status' => 1]);
+			$result                = $languages->getAll(['status' => 1]);
 
 			if ($result && isset($result['language'])) {
 				return $result['language'];
@@ -57,16 +55,21 @@ class Locale {
 		return $languages;
 	}
 
-	static function availableCurrencies() {
+	/**
+	 * Get all available currencies from the database.
+	 *
+	 * @return array<string, array<string, mixed>> List of currency records keyed by code.
+	 */
+	public static function availableCurrencies(): array {
 		static $currencies = [];
 		if ($currencies != []) {
 			return $currencies;
 		}
 
-		$cache     = Cache::getInstance();
-		$currencies = $cache->cache(APP,'currency',static function () {
+		$cache      = Cache::getInstance();
+		$currencies = $cache->cache(APP, 'currency', static function() {
 			$currency             = new \Vvveb\Sql\CurrencySQL();
-			$result = $currency->getAll(['status' => 1]);
+			$result               = $currency->getAll(['status' => 1]);
 
 			if ($result && isset($result['currency'])) {
 				return $result['currency'];
@@ -78,7 +81,12 @@ class Locale {
 		return $currencies;
 	}
 
-	static function installedLanguages() {
+	/**
+	 * Get list of installed language directories.
+	 *
+	 * @return list<string> Language folder names.
+	 */
+	public static function installedLanguages(): array {
 		$languages = glob(DIR_ROOT . 'locale/*', GLOB_ONLYDIR);
 
 		foreach ($languages as &$language) {
@@ -88,7 +96,14 @@ class Locale {
 		return $languages;
 	}
 
-	static function userPreferedLanguages() {
+	/**
+	 * Parse the user's preferred languages from the Accept-Language header.
+	 *
+	 * @return list<string> List of preferred language codes.
+	 */
+	public static function userPreferedLanguages(): array {
+		$languages = [];
+
 		if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
 			$languages = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
 
@@ -98,20 +113,25 @@ class Locale {
 			}
 		}
 
-		return $languages ?? [];
+		return $languages;
 	}
 
-	static function userPreferedLanguage() {
+	/**
+	 * Find the best matching installed language from the user's preferences.
+	 *
+	 * @return string|false The matched language code, or false if none found.
+	 */
+	public static function userPreferedLanguage(): string|false {
 		$languages = self :: userPreferedLanguages();
 		$installed = self :: installedLanguages();
 
 		foreach ($languages as $language) {
-			if (isset($installed[$language])) {
+			if (in_array($language, $installed, true)) {
 				return $language;
 			}
 
 			foreach ($installed as $lang) {
-				if (strpos($lang, $language) === 0) {
+				if (str_starts_with($lang, $language)) {
 					//return $language;
 					return $lang;
 				}
@@ -123,17 +143,13 @@ class Locale {
 
 	/**
 	 * Change locale language for gettext.
-	 * 
-	 * @param string $langCode ['en_US'] 
-	 * @param string $domain ['vvveb'] 
 	 *
-	 * @return mixed 
+	 * @param string $langCode Language code (e.g. 'en_US').
+	 * @param string $domain   Gettext domain (e.g. 'vvveb').
+	 *
+	 * @return void
 	 */
-	static function setLanguage($langCode = 'en_US', $domain = 'vvveb') {
-		//global $vvvebTranslationDomains;
-		//setlocale(LC_TIME, "");
-		//\putenv('LOCPATH=' . DIR_ROOT. "locale");
-
+	public static function setLanguage(string $langCode = 'en_US', string $domain = 'vvveb'): void {
 		//translating theme text will change theme texts and break translation
 		if (\Vvveb\isEditor()) {
 			return;
@@ -142,16 +158,11 @@ class Locale {
 		self :: $code = $langCode;
 
 		if (function_exists('bindtextdomain')) {
-			/*
-			foreach ($vvvebTranslationDomains as $tdomain) {
-				bindtextdomain($tdomain, DIR_ROOT . 'locale');
-			}
-			*/
 			bindtextdomain($domain, DIR_ROOT . 'locale');
 			textdomain($domain);
 			bind_textdomain_codeset($domain, 'UTF-8');
 
-			setlocale(LC_ALL,'C.UTF-8');
+			setlocale(LC_ALL, 'C.UTF-8');
 
 			if (function_exists('putenv')) {
 				@\putenv("LC_ALL=$langCode");
@@ -162,16 +173,24 @@ class Locale {
 
 			if (defined('LC_MESSAGES')) {
 				setlocale(LC_MESSAGES, "$langCode.UTF-8");
-				setlocale(LC_CTYPE,"$langCode.UTF-8");
+				setlocale(LC_CTYPE, "$langCode.UTF-8");
 			} else {
 				setlocale(5, "$langCode.UTF-8");
-				setlocale(6,"$langCode.UTF-8");
+				setlocale(6, "$langCode.UTF-8");
 				setlocale(LC_ALL, "$langCode.UTF-8");
 			}
 		}
 	}
 
-	static function clearLanguageCache($langCode = 'en_US', $domain = 'vvveb') {
+	/**
+	 * Clear compiled language cache files and reset opcache.
+	 *
+	 * @param string $langCode Language code to clear cache for.
+	 * @param string $domain   Gettext domain.
+	 *
+	 * @return void
+	 */
+	public static function clearLanguageCache(string $langCode = 'en_US', string $domain = 'vvveb'): void {
 		if (function_exists('bindtextdomain')) {
 			$locale  = DIR_ROOT . 'locale';
 			$nocache = DIR_CACHE . 'nocache';
@@ -195,20 +214,43 @@ class Locale {
 		}
 	}
 
-	static function getLanguage() {
+	/**
+	 * Get the current language code.
+	 *
+	 * @return string The active language code.
+	 */
+	public static function getLanguage(): string {
 		return self :: $code ?? session('code') ?? 'en_US';
 	}
 
-	static function setLanguageCode($code) {
+	/**
+	 * Set the language code in the session.
+	 *
+	 * @param string $code Language code to set.
+	 *
+	 * @return mixed Result of session set.
+	 */
+	public static function setLanguageCode(string $code): mixed {
 		self :: $code = $code;
+
 		return session(['code' => $code]);
 	}
 
-	static function getLanguageId() {
+	/**
+	 * Get the current language ID from the session.
+	 *
+	 * @return int The language ID, defaults to 1.
+	 */
+	public static function getLanguageId(): int {
 		return session('language_id') ?? 1;
 	}
 
-	static function getCurrency() {
+	/**
+	 * Get the current currency code from the session.
+	 *
+	 * @return string The currency code, defaults to 'USD'.
+	 */
+	public static function getCurrency(): string {
 		return session('currency') ?? 'USD';
 	}
 }

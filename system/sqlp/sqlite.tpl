@@ -14,11 +14,11 @@ class %name%SQL {
 	protected $filters = %filters%;
 	
 	protected $paramTypes = %paramTypes%;
-	
+
 	public function __construct(){
 		$this->db = Db::getInstance();
 	}
-	
+
 	public function validate($data, $method, $table = '', $ignoreMissing = false) {
 		$params = $this->paramTypes[$method] ?? [];
 		if (!$params) {
@@ -32,8 +32,8 @@ class %name%SQL {
 		}
 		
 		return $this->db->validate($data, $params, $table, $ignoreMissing);
-	}	
-
+	}		
+	
 	%methods_start%
 	
 	%methodMultipleTemplate_start%
@@ -65,8 +65,8 @@ class %name%SQL {
 		if ($sql) {
 			$stmt['%query_id%'] = $this->db->execute($sql, $params, $paramTypes);
 			
-			$result = false;
-
+			$result = $stmt['%query_id%'];
+			/*
 			if ($stmt['%query_id%']) {
 				if (method_exists($stmt['%query_id%'], 'get_result')) {
 					$result = $stmt['%query_id%']->get_result();
@@ -74,11 +74,12 @@ class %name%SQL {
 					$result = $this->db->get_result($stmt['%query_id%']);
 				}
 			}
-			
+			*/
 
 			if (!empty('%array_key%')) {
 				if ($result)
-				while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
+				//while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+				while ($row = $this->db->fetchArray($result)) {
 					$values = $row;
 					if (!empty('%array_value%')) {
 						$values = $row['array_value'];
@@ -88,30 +89,29 @@ class %name%SQL {
 						if ($row['array_key'] === null) {
 							$results[] = $values;
 						} else {
+							if (isset($values['array_key'])) {
+								unset($values['array_key']);
+							}
 							$results[$row['array_key']] = $values;
 						}
 					} else {
 						if ($row['array_key'] === null) {
 							$results['%query_id%'][] = $values;
 						} else {
+							if (isset($values['array_key'])) {
+								unset($values['array_key']);
+							}
 							$results['%query_id%'][$row['array_key']] = $values;
 						}
 					}
 				}
 			} else {
 				if ('%query_id%' == '_') {
-					if ($result) {
-						$value = %fetch%;
+					$value = %fetch%;
+					if (is_array($value)) {
+						$results = $results + $value;
 					} else {
-						$value = null;
-					}
-					
-					if ($value) {
-						if (is_array($value)) {
-							$results = $results + $value;
-						} else {
-							$results = $value;
-						}
+						$results = $value;
 					}
 				} else  {
 					if (isset($results['%query_id%'])) {
@@ -137,6 +137,7 @@ class %name%SQL {
 			
 %varsTemplate_end%
 
+
 %insert_id_start%
 	$this->db->insert_id
 %insert_id_end%
@@ -145,12 +146,14 @@ class %name%SQL {
 	$this->db->affected_rows
 %affected_rows_end%
 
+//$result->fetchArray(SQLITE3_ASSOC)
 %fetch_row_start%
-	$result->fetch_array(MYSQLI_ASSOC)
+	$this->db->fetchArray($result)
 %fetch_row_end%
 
+//$result->fetchArray(SQLITE3_NUM)[0] ?? null
 %fetch_one_start%
-	$result->fetch_array(MYSQLI_NUM)[0] ?? null
+	$this->db->fetchOne($result)
 %fetch_one_end%
 
 %fetch_result_start%
@@ -158,5 +161,5 @@ class %name%SQL {
 %fetch_result_end%
 
 %fetch_all_start%
-	$result->fetch_all(MYSQLI_ASSOC)
+	$this->db->fetchAll($result)
 %fetch_all_end%

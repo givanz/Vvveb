@@ -78,6 +78,19 @@ return [
 	'attribute_group',
 	'attribute_group_content',
 
+	//fields
+	'field_group_content',
+	'field_content',
+	'field_value_content',
+	'field_group',
+	'taxonomy_item_field_value',
+	'user_field_value',
+	'order_field_value',
+	'field_value',
+	'post_field_value',
+	'product_field_value',
+	'field',
+
 	//product related
 	'vendor',
 	'manufacturer',
@@ -146,7 +159,7 @@ return [
 	'return_reason',
 	'return_status',
 	'review',
-	'shipping_courier',
+	'shipping_status',
 	'stock_status',
 	'tax_type',
 	'tax_rate',

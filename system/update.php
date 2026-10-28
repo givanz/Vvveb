@@ -32,13 +32,24 @@ define('CHMOD_DIR', (0755 & ~umask()));
 define('CHMOD_FILE', (0644 & ~umask()));
 
 class Update {
-	protected $url 		= 'https://www.vvveb.com/update.json';
+	/** @var string URL to check for updates. */
+	protected string $url = 'https://www.vvveb.com/update.json';
 
-	protected $workDir	= DIR_STORAGE . 'upgrade';
+	/** @var string Working directory for upgrade extraction. */
+	protected string $workDir = DIR_STORAGE . 'upgrade';
 
-	protected $zipFile	= false;
+	/** @var string|false Path to the downloaded zip file. */
+	protected string|false $zipFile = false;
 
-	function checkUpdates($type = 'core', $force = false) {
+	/**
+	 * Check for available updates.
+	 *
+	 * @param string $type  Update type ('core').
+	 * @param bool   $force Force re-fetch, skipping cache.
+	 *
+	 * @return array<string, mixed> Update information with 'hasUpdate' and optional 'error' keys.
+	 */
+	public function checkUpdates(string $type = 'core', bool $force = false): array {
 		if ($force) {
 			//delete update cache
 			$cacheKey    = md5($this->url);
@@ -48,6 +59,7 @@ class Update {
 
 		$error  = '';
 		$result = false;
+
 		//cache results for one week
 		try {
 			$result = getUrl($this->url, true);
@@ -76,7 +88,14 @@ class Update {
 		return $info;
 	}
 
-	private function checkFolderPermissions($dir) {
+	/**
+	 * Recursively check folder permissions and attempt to fix them.
+	 *
+	 * @param string $dir Directory to check.
+	 *
+	 * @return string|true True if all permissions are fine, or the first unwritable path.
+	 */
+	private function checkFolderPermissions(string $dir): string|true {
 		$skip       = ['install', 'locale', 'vendor', 'plugins', 'config'];
 		$unwritable = [];
 
@@ -86,10 +105,10 @@ class Update {
 			$full = $dir . DS . $file;
 
 			if (($file != '.') &&
-				($file != '..') && ! in_array($file, $skip)) {
+				($file != '..') && !in_array($file, $skip)) {
 				if (is_dir($full)) {
-					if (! is_writable($full)) {
-						if (! @chmod($full, CHMOD_DIR)) {
+					if (!is_writable($full)) {
+						if (!@chmod($full, CHMOD_DIR)) {
 							return $full;
 						}
 					}
@@ -100,9 +119,8 @@ class Update {
 						return $result;
 					}
 				}
-				//if (str_ends_with($full, '.php') && ! is_writable($full)) {
-				if ((substr_compare($full,'.php', -4) === 0) && ! is_writable($full)) {
-					if (! @chmod($full, CHMOD_FILE)) {
+				if ((substr_compare($full, '.php', -4) === 0) && !is_writable($full)) {
+					if (!@chmod($full, CHMOD_FILE)) {
 						return $full;
 					}
 				}
@@ -112,32 +130,46 @@ class Update {
 		return true;
 	}
 
-	function checkPermissions() {
-		$check = $this->checkFolderPermissions(DIR_ROOT);
-
-		return $check;
+	/**
+	 * Check if all files are writable, fixing permissions where possible.
+	 *
+	 * @return string|true True if OK, or the first unwritable path.
+	 */
+	public function checkPermissions(): string|true {
+		return $this->checkFolderPermissions(DIR_ROOT);
 	}
 
-	static function backup() {
+	/**
+	 * Create a backup of the current installation.
+	 *
+	 * @return void
+	 */
+	public static function backup(): void {
 		$skipFolders  = ['plugins', 'public', 'storage', 'install'];
 		$backupFolder = DIR_BACKUP . 'update-' . V_VERSION . '-' . date('Y-m-d_H:i:s');
 
 		rcopy(DIR_ROOT, $backupFolder, $skipFolders);
 	}
 
-	static function download($url) {
-		$f    = false;
+	/**
+	 * Download a file from a URL to a temporary location.
+	 *
+	 * @param string $url URL to download.
+	 *
+	 * @return string|false Path to the downloaded file, or false on failure.
+	 */
+	public static function download(string $url): string|false {
 		$temp = @tempnam(sys_get_temp_dir(), 'vvveb_update');
 
 		if (!$temp) {
 			$temp = @tmpfile();
 		}
-		
+
 		//if temp still fails use cache dir, some shared hosting have this issue
 		if (!$temp) {
-			$temp = DIR_CACHE . APP . '.update.' . md5($url) . 'zip';
+			$temp = DIR_CACHE . APP . '.update.' . md5($url) . '.zip';
 		}
-		
+
 		if ($content = download($url)) {
 			$f  = file_put_contents($temp, $content, LOCK_EX);
 			if ($f) {
@@ -145,10 +177,15 @@ class Update {
 			}
 		}
 
-		return $f;
+		return false;
 	}
 
-	function setPermissions() {
+	/**
+	 * Set permissions on core folders and files.
+	 *
+	 * @return bool Always returns true.
+	 */
+	public function setPermissions(): bool {
 		$folders = [DIR_ROOT . 'app', DIR_ROOT . 'admin', DIR_ROOT . 'system'];
 		$files   = [DIR_ROOT . 'index.php', DIR_ROOT . 'admin' . DS . 'index.php', DIR_ROOT . 'install' . DS . 'index.php'];
 
@@ -163,67 +200,188 @@ class Update {
 		return true;
 	}
 
-	private function copyFolder($src, $dest, $skipFolders = []) {
+	/**
+	 * Copy files from one folder to another, skipping specified folders.
+	 *
+	 * @param string   $src         Source directory.
+	 * @param string   $dest        Destination directory.
+	 * @param string[] $skipFolders Folder names to skip.
+	 *
+	 * @return bool Result of rcopy.
+	 */
+	private function copyFolder(string $src, string $dest, array $skipFolders = []): bool {
 		ignore_user_abort(true);
 
-		if (! is_writable($dest)) {
+		if (!is_writable($dest)) {
 			throw new \Exception(sprintf('Folder "%s" not writable!', $dest));
 		}
 
 		return rcopy($src, $dest, $skipFolders);
 	}
 
-	function copyAdmin() {
-		//$skipFolders = ['plugins', 'public', 'storage'];
+	/**
+	 * Move folders from working dir to root folder and move existing folders to backup.
+	 *
+	 * @return bool Result of rcopy.
+	 */
+	public function moveFolders(): bool {
+		ignore_user_abort(true);
+
+		$skipFolders  = ['plugins', 'public', 'storage', 'install', 'config', 'locale'];
+		$backupFolder = DIR_BACKUP . 'update-' . V_VERSION . '-' . date('Y-m-d_H-i-s');
+
+		if (!is_dir($backupFolder) && !@mkdir($backupFolder, 0755, true)) {
+			throw new \Exception(sprintf('Could not create backup folder %s', $backupFolder));
+		}
+
+		$success = true;
+		$files   = scandir($this->workDir, SCANDIR_SORT_NONE);
+		foreach ($files as $file) {
+			if ($file[0] == '.') {
+				continue;
+			}
+			if (in_array($file, $skipFolders)) {
+				continue;
+			}
+
+			$source = $this->workDir . DS . $file;
+			$dest   = DIR_ROOT . DS . $file;
+			$backup = $backupFolder . DS . $file;
+
+			if (file_exists($dest) || is_link($dest)) {
+				if (!@rename($dest, $backup)) {
+					if (!@rename($source, $dest)) {
+						throw new \Exception(sprintf('Could not move %s to %s', $source, $dest));
+					}
+
+					continue;
+				}
+
+				//backup succeeded: copy the new entry into place
+				if (is_dir($source) && !is_link($source)) {
+					$success = rcopy($source, $dest, []);
+				} else {
+					$success = copy($source, $dest);
+				}
+
+				if (!$success) {
+					throw new \Exception(sprintf('Could not move %s to %s', $source, $dest));
+				}
+			} else {
+				//new top-level entry introduced by this update
+				if (is_dir($source) && !is_link($source)) {
+					$success = rcopy($source, $dest, []);
+				} else {
+					$success = @rename($source, $dest) || copy($source, $dest);
+				}
+
+				if (!$success) {
+					throw new \Exception(sprintf('Could not move %s to %s', $source, $dest));
+				}
+			}
+		}
+
+		return $success;
+	}
+
+	/**
+	 * Copy admin files from the update package.
+	 *
+	 * @return bool Result of copyFolder.
+	 */
+	public function copyAdmin(): bool {
 		return $this->copyFolder($this->workDir . DS . 'admin', DIR_ROOT . DS . 'admin');
 	}
 
-	function copyApp() {
-		//$skipFolders = ['plugins', 'public', 'storage'];
+	/**
+	 * Copy app files from the update package.
+	 *
+	 * @return bool Result of copyFolder.
+	 */
+	public function copyApp(): bool {
 		return $this->copyFolder($this->workDir . DS . 'app', DIR_ROOT . DS . 'app');
 	}
 
-	function copySystem() {
+	/**
+	 * Copy system files from the update package.
+	 *
+	 * @return bool Result of copyFolder.
+	 */
+	public function copySystem(): bool {
 		return $this->copyFolder($this->workDir . DS . 'system', DIR_ROOT . DS . 'system');
 	}
 
-	function copyInstall() {
-		//$skipFolders = ['plugins', 'public', 'storage'];
+	/**
+	 * Copy install files from the update package.
+	 *
+	 * @return bool Result of copyFolder.
+	 */
+	public function copyInstall(): bool {
 		return $this->copyFolder($this->workDir . DS . 'install', DIR_ROOT . DS . 'install');
 	}
 
-	function copyCore() {
+	/**
+	 * Copy core files from the update package, skipping specific folders.
+	 *
+	 * @return bool Result of copyFolder.
+	 */
+	public function copyCore(): bool {
 		$skipFolders = ['plugins', 'public', 'storage', 'system', 'app', 'admin', 'install', 'config', 'vendor', 'env.php'];
 
 		return $this->copyFolder($this->workDir, DIR_ROOT, $skipFolders);
 	}
 
-	function copyConfig() {
-		$skip = ['plugins.php', 'mail.php', 'sites.php', 'app.php', 'admin.php', 'rest.php', 'graphql.php', 'app-routes.php'];
+	/**
+	 * Copy config files from the update package, skipping specific files.
+	 *
+	 * @return bool Result of copyFolder.
+	 */
+	public function copyConfig(): bool {
+		$skip = ['plugins.php', 'mail.php', 'sites.php', 'app.php', 'admin.php', 'rest.php', 'graphql.php'];
 
 		return $this->copyFolder($this->workDir . DS . 'config', DIR_ROOT . DS . 'config', $skip);
 	}
 
-	function copyPublic() {
+	/**
+	 * Copy public files from the update package.
+	 *
+	 * @return bool Result of copyFolder.
+	 */
+	public function copyPublic(): bool {
 		$skipFolders = ['plugins', 'themes', 'admin', 'media'];
 
 		return $this->copyFolder($this->workDir . DS . 'public', DIR_PUBLIC, $skipFolders);
 	}
 
-	function copyPublicAdmin() {
+	/**
+	 * Copy public admin files from the update package.
+	 *
+	 * @return bool Result of copyFolder.
+	 */
+	public function copyPublicAdmin(): bool {
 		ignore_user_abort(true);
-		$skipFolders = ['plugins'];
+		$skipFolders = ['demo'];
 
 		return $this->copyFolder($this->workDir . DS . 'public' . DS . 'admin', DIR_PUBLIC . DS . 'admin', $skipFolders);
 	}
 
-	function copyPublicMedia() {
+	/**
+	 * Copy public media files from the update package.
+	 *
+	 * @return bool Result of copyFolder.
+	 */
+	public function copyPublicMedia(): bool {
 		$skipFolders = ['plugins', 'themes', 'admin'];
 
 		return $this->copyFolder($this->workDir . DS . 'public' . DS . 'media', DIR_PUBLIC . DS . 'media', $skipFolders);
 	}
 
-	function createNewTables() {
+	/**
+	 * Create new database tables that exist in SQL files but not in the database.
+	 *
+	 * @return bool Always returns true.
+	 */
+	public function createNewTables(): bool {
 		$db         = \Vvveb\System\Db::getInstance();
 		$tableNames = $db->getTableNames();
 
@@ -258,13 +416,19 @@ class Update {
 		return true;
 	}
 
-	function tableColumns($sql) {
+	/**
+	 * Parse CREATE TABLE SQL to extract table name and column definitions.
+	 *
+	 * @param string $sql CREATE TABLE SQL statement.
+	 *
+	 * @return array{0: string, 1: array<string, string>} Table name and column definitions.
+	 */
+	public function tableColumns(string $sql): array {
 		$cols      = [];
 		$tableName = '';
 
 		if (preg_match('/CREATE TABLE ([^\s]+?)\s*\((.+)\).*;/ms', $sql, $matches)) {
 			$tableName = trim($matches[1], ' "\'`');
-			//$columns   = explode("\n", $matches[2]);
 			$columns   = preg_split('/\r\n|\r|\n/', trim($matches[2]));
 
 			foreach ($columns as $key => &$column) {
@@ -283,9 +447,15 @@ class Update {
 		return [$tableName, $cols];
 	}
 
-	function addNewColumns() {
+	/**
+	 * Add, modify, or drop database columns based on SQL file changes.
+	 *
+	 * @return bool Always returns true.
+	 */
+	public function addNewColumns(): bool {
 		$db         = \Vvveb\System\Db::getInstance();
 		$tableNames = $db->getTableNames();
+		$q          = $db->quote;
 
 		$driver     = DB_ENGINE;
 		$sqlPath    = DIR_ROOT . "install/sql/$driver/";
@@ -306,21 +476,21 @@ class Update {
 				$tableName    = $currentTable[0];
 				$columns      = $currentTable[1];
 
-				if (! $columns) {
+				if (!$columns) {
 					continue;
 				}
 
 				$newSql       = file_get_contents($newFilename);
 				$newColumns   = $this->tableColumns($newSql)[1];
 
-				if (! $newColumns) {
+				if (!$newColumns) {
 					continue;
 				}
 
 				//newly added columns
 				$tableColumns = $db->getColumnsMeta($tableName);
 				//if table does not exist yet skip, it will be created
-				if (! $tableColumns) {
+				if (!$tableColumns) {
 					continue;
 				}
 
@@ -336,16 +506,15 @@ class Update {
 							$changedColumns[$name] = $newColumns[$name];
 						}
 					} else {
-						$deletedColumns[$name] = $column[$name];
+						$deletedColumns[$name] = $column;
 					}
 				}
 
 				//check deleted columns agains existing table
 				$deletedColumns += array_diff_key($tableColumns, $newColumns);
-				$tableColumns = [];
 				//add new columns
 				if ($addedColumns) {
-					if (! $db) {
+					if (!$db) {
 						//don't connect to db unless we need to alter table
 						$db = Db::getInstance();
 					}
@@ -357,39 +526,39 @@ class Update {
 						}
 						$definition = $newColumns[$name];
 
-						$query  = "ALTER TABLE $tableName ADD $definition";
+						$query  = "ALTER TABLE $q$tableName$q ADD $definition";
 						$result = $db->query($query);
 					}
 				}
 
 				//change columns
 				if ($changedColumns) {
-					if (! $db) {
+					if (!$db) {
 						//don't connect to db unless we need to alter table
 						$db = Db::getInstance();
 					}
 
 					foreach ($changedColumns as $name => $definition) {
-						if (! isset($tableColumns[$name])) {
+						if (!isset($tableColumns[$name])) {
 							//column does not exist skip
 							continue;
 						}
 
-						$query  = "ALTER TABLE $tableName MODIFY COLUMN $definition";
+						$query  = "ALTER TABLE $q$tableName$q MODIFY COLUMN $definition";
 						$result = $db->query($query);
 					}
 				}
 
 				//delete columns
 				//disabled to avoid deleting user added columns
-				if (false && $deletedColumns) {
-					if (! $db) {
+				if (false/*$deletedColumns*/) {
+					if (!$db) {
 						//don't connect to db unless we need to alter table
 						$db = Db::getInstance();
 					}
 
 					foreach ($deletedColumns as $name => $definition) {
-						if (! isset($tableColumns[$name])) {
+						if (!isset($tableColumns[$name])) {
 							//column does not exist skip
 							continue;
 						}
@@ -404,11 +573,21 @@ class Update {
 		return true;
 	}
 
-	function clearCache() {
+	/**
+	 * Clear all caches.
+	 *
+	 * @return bool Result of CacheManager::delete.
+	 */
+	public function clearCache(): bool {
 		return CacheManager::delete();
 	}
 
-	function cleanup() {
+	/**
+	 * Clean up temporary update files.
+	 *
+	 * @return bool Always returns true.
+	 */
+	public function cleanup(): bool {
 		rrmdir($this->workDir);
 
 		if ($this->zipFile) {
@@ -418,24 +597,47 @@ class Update {
 		return true;
 	}
 
-	function install($zipFile) {
-		$this->unzip($zipFile, $this->workDir);
+	/**
+	 * Install an update from a zip file.
+	 *
+	 * @param string $zipFile Path to the update zip file.
+	 *
+	 * @return void
+	 */
+	public function install(string $zipFile): void {
+		if (!$this->unzip($zipFile)) {
+			return;
+		}
 
-		$success     = true;
-		//$dest        = substr(DIR_ROOT,0, -1); //remove trailing slash
-		rrmdir($this->workDir);
 		//plugins and themes are updated individually
 		$skipFolders = ['plugins', 'public' . DS . 'themes', 'storage', 'vendor'];
 
 		rcopy($this->workDir, DIR_ROOT, $skipFolders);
-		rrmdir($this->workDir);
-		unlink($zipFile);
+
+		//remove the extracted package and the downloaded archive
+		$this->cleanup();
 		CacheManager::delete();
 	}
 
-	function unzip($zipFile) {
-		if (! is_dir($this->workDir)) {
-			mkdir($this->workDir);
+	/**
+	 * Extract a zip file to the work directory.
+	 *
+	 * @param string $zipFile Path to the zip file.
+	 *
+	 * @return bool True on success, false on failure.
+	 */
+	public function unzip(string $zipFile): bool {
+		if (!is_file($zipFile)) {
+			return false;
+		}
+
+		//start from a clean work dir so stale files/symlinks cannot be reused
+		if (is_dir($this->workDir) || is_link($this->workDir)) {
+			rrmdir($this->workDir);
+		}
+
+		if (!is_dir($this->workDir) && !@mkdir($this->workDir, 0755, true)) {
+			return false;
 		}
 
 		$result        = false;

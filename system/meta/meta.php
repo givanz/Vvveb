@@ -24,31 +24,79 @@ namespace Vvveb\System\Meta;
 
 use function Vvveb\model;
 
+/** @phpstan-consistent-constructor */
 class Meta {
-	private $setting = [];
+	/** @var array<array-key, mixed> */
+	private array $setting = [];
 
-	protected $settingSql;
+	/** @var mixed */
+	protected mixed $settingSql;
 
-	private static $instance;
+	/** @var array<class-string, static> Per-class instances so subclasses don't collide */
+	private static array $instances = [];
 
-	protected $modelName;
+	/** @var string */
+	protected string $modelName;
 
-	protected $item_id;
+	/** @var string */
+	protected string $item_id;
 
-	public static function getInstance() {
-		if (static::$instance) {
-			return static::$instance;
-		} else {
-			return static::$instance = new static();
-		}
+	/**
+	 * Get singleton instance of the Meta class.
+	 *
+	 * @return static
+	 */
+	public static function getInstance(): static {
+		//per-class storage: PostMeta::getInstance() and ProductMeta::getInstance()
+		//must return distinct instances even though they share this base class
+		$class = static::class;
+
+		return self::$instances[$class] ??= new static();
 	}
 
-	function __construct() {
+	/**
+	 * Constructor.
+	 */
+	public function __construct() {
 		$this->settingSql = model($this->modelName);
 	}
 
-	public function getMulti($item_id, $namespace, $key = null, $default = null, $language_id = false) {
-		if ($key && ! is_array($key)) {
+	/**
+	 * Decode a JSON-looking meta value ({...} or [...]) to PHP, if possible.
+	 *
+	 * Shared by get()/getMulti() and the setMulti() runtime-cache sync so
+	 * all three interpret stored values identically. Non-strings, short
+	 * strings and invalid JSON pass through unchanged.
+	 *
+	 * @param mixed $value Raw stored value.
+	 *
+	 * @return mixed Decoded value or the original.
+	 */
+	private function decodeValue(mixed $value): mixed {
+		if (is_string($value) && strlen($value) > 1 && ($value[0] === '{' || $value[0] === '[')) {
+			$json = json_decode($value, true);
+
+			if ($json !== null) {
+				return $json;
+			}
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Get multiple meta values.
+	 *
+	 * @param int|string                          $item_id
+	 * @param string                              $namespace
+	 * @param string|array<array-key, mixed>|null $key
+	 * @param mixed                               $default
+	 * @param int|false                           $language_id
+	 *
+	 * @return array<array-key, mixed>
+	 */
+	public function getMulti(int|string $item_id, string $namespace, string|array|null $key = null, mixed $default = [], int|false $language_id = false): array {
+		if ($key && !is_array($key)) {
 			$key = [$key];
 		}
 
@@ -58,13 +106,9 @@ class Meta {
 
 		if ($result) {
 			foreach ($result as &$value) {
-				$val = &$value['value'];
-
-				if ($val && is_string($val) && ($val[0] == '{' || $val[0] == '{')) {
-					$json = json_decode($val, true);
-					$val  =  $json ?: $val;
-				}
+				$value['value'] = $this->decodeValue($value['value'] ?? null);
 			}
+			unset($value);
 
 			$return = $result;
 		} else {
@@ -82,32 +126,49 @@ class Meta {
 		return $return;
 	}
 
-	public function get($item_id, $namespace, $key = null, $default = null, $language_id = false) {
-		if (! $namespace && ! $key) {
+	/**
+	 * Get a single meta value.
+	 *
+	 * @param int|string                          $item_id
+	 * @param string                              $namespace
+	 * @param string|array<array-key, mixed>|null $key
+	 * @param mixed                               $default
+	 * @param int|false                           $language_id
+	 *
+	 * @return mixed
+	 */
+	public function get(int|string $item_id, string $namespace, string|array|null $key = null, mixed $default = null, int|false $language_id = false): mixed {
+		if (!$namespace && !$key) {
 			return $default;
 		}
 
 		if (is_array($key) || empty($key)) {
-			$this->getMulti($item_id, $namespace, $key, $default, $language_id);
-		} else {
-			if (isset($this->setting[$namespace][$key])) {
-				return $this->setting[$namespace][$key];
-			}
-
-			$result = $this->settingSql->get([$this->item_id => $item_id, 'namespace' => $namespace, 'key' => $key, 'language_id' => $language_id]) ?? $default;
-
-			if ($result && is_string($result) && ($result[0] == '{' || $result[0] == '[')) {
-				$json    = json_decode($result, true);
-				$result  =  $json ?: $result;
-			}
-
-			return $result;
+			return $this->getMulti($item_id, $namespace, $key, $default, $language_id);
 		}
+
+		if (isset($this->setting[$namespace][$key])) {
+			return $this->setting[$namespace][$key];
+		}
+
+		$result = $this->settingSql->get([$this->item_id => $item_id, 'namespace' => $namespace, 'key' => $key, 'language_id' => $language_id]) ?? $default;
+
+		return $this->decodeValue($result);
 	}
 
-	public function set($item_id, $namespace, $key, $value, $language_id = false) {
-		if (! $namespace || ! $key) {
-			return;
+	/**
+	 * Set a single meta value.
+	 *
+	 * @param int|string $item_id
+	 * @param string     $namespace
+	 * @param string     $key
+	 * @param mixed      $value
+	 * @param int|false  $language_id
+	 *
+	 * @return mixed
+	 */
+	public function set(int|string $item_id, string $namespace, string $key, mixed $value, int|false $language_id = false): mixed {
+		if (!$namespace || !$key) {
+			return null;
 		}
 
 		$this->setting[$namespace][$key] = $value;
@@ -119,36 +180,65 @@ class Meta {
 		return $this->settingSql->set([$this->item_id => $item_id, 'namespace' => $namespace, 'key' => $key, 'value' => $value, 'language_id' => $language_id]);
 	}
 
-	public function delete($item_id, $namespace, $key, $language_id = false) {
-		if (! $namespace || ! $key) {
-			return;
+	/**
+	 * Delete a single meta value.
+	 *
+	 * @param int|string                          $item_id
+	 * @param string                              $namespace
+	 * @param array<array-key, mixed>|string|null $key
+	 * @param int|false                           $language_id
+	 *
+	 * @return mixed
+	 */
+	public function delete(int|string $item_id, string $namespace, array|string|null $key = null, int|false $language_id = false): mixed {
+		if (!$namespace || !$key) {
+			return null;
 		}
 
-		unset($this->setting[$namespace][$key]);
+		if (is_array($key)) {
+			foreach ($key as $k) {
+				unset($this->setting[$namespace][$k]);
+			}
+		} else {
+			unset($this->setting[$namespace][$key]);
+		}
 
 		return $this->settingSql->delete([$this->item_id => $item_id, 'namespace' => $namespace, 'key' => $key, 'language_id' => $language_id]);
 	}
 
-	public function setMulti($item_id, $meta) {
-		$result = false;
-
+	/**
+	 * Set multiple meta values.
+	 *
+	 * @param int|string              $item_id
+	 * @param array<array-key, mixed> $meta        List of meta rows, each with at least
+	 *                                             a `key` and a `value`. Rows may carry their
+	 *                                             own `namespace`, otherwise $namespace applies.
+	 * @param string                  $namespace   Namespace applied to rows that do not
+	 *                                             define their own (e.g. post/product meta).
+	 * @param int|false               $language_id Language applied when the meta table is
+	 *                                             language-aware, false otherwise.
+	 *
+	 * @return mixed
+	 */
+	public function setMulti(int|string $item_id, array $meta, string $namespace = '', int|false $language_id = false): mixed {
 		foreach ($meta as &$item) {
-			if (is_array($item['value'])) {
+			if (isset($item['value']) && is_array($item['value'])) {
 				$item['value'] = json_encode($item['value']);
 			}
 		}
+		unset($item);
 
-		$result = $this->settingSql->setMulti([$this->item_id => $item_id, 'meta' => $meta]);
+		$result = $this->settingSql->setMulti([$this->item_id => $item_id, 'language_id' => $language_id, 'namespace' => $namespace, 'meta' => $meta]);
 
-		if ($meta) {
-			/*
-			foreach ($meta as $key => $value) {
-				if (is_array($value)) {
-					$value = json_encode($value);
+		//keep the runtime cache consistent for values set through this call
+		foreach ($meta as $item) {
+			if (isset($item['key'])) {
+				$ns = $item['namespace'] ?? $namespace;
+
+				if ($ns !== '') {
+					$this->setting[$ns][$item['key']] = $this->decodeValue($item['value'] ?? '');
 				}
-				$this->setting[$namespace][$key] = $value;
-				$result = $this->settingSql->set([$this->item_id => $item_id, 'namespace' => $namespace, 'key' => $key, 'value' => $value, 'site_id' => $site_id, 'language_id' => $language_id]);
-			}*/
+			}
 		}
 
 		return $result;

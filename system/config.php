@@ -23,11 +23,14 @@
 namespace Vvveb\System;
 
 class Config {
-	private $config = [];
+	/** @var array<string, mixed> */
+	private array $config = [];
 
-	private static $instance;
+	/** @var ?self */
+	private static ?self $instance = null;
 
-	public static function getInstance() {
+	/** @return self */
+	public static function getInstance(): self {
 		if (self::$instance) {
 			return self::$instance;
 		} else {
@@ -35,10 +38,15 @@ class Config {
 		}
 	}
 
-	private function loadConfig($namespace) {
+	/**
+	 * @param string $namespace
+	 *
+	 * @return void
+	 */
+	private function loadConfig(string $namespace): void {
 		//avoid checking file for non existing namespace
-		if (isset($this->config[$namespace]) &&
-			$this->config[$namespace] === NULL) {
+		if (array_key_exists($namespace, $this->config) &&
+			$this->config[$namespace] === null) {
 			return;
 		}
 
@@ -50,15 +58,20 @@ class Config {
 			} catch (\Exception $e) {
 			}
 		} else {
-			$this->config[$namespace] = NULL;
+			$this->config[$namespace] = null;
 		}
 	}
 
-	private function saveConfig($namespace) {
+	/**
+	 * @param string $namespace
+	 *
+	 * @return bool
+	 */
+	private function saveConfig(string $namespace): bool {
 		$data       = $this->config[$namespace];
 		$configFile = DIR_ROOT . "config/$namespace.php";
 
-		if ($error = file_put_contents($configFile, "<?php\n return " . var_export($data, true) . ';', LOCK_EX)) {
+		if ($bytes = file_put_contents($configFile, "<?php\n return " . var_export($data, true) . ';', LOCK_EX)) {
 			clearstatcache(true, $configFile);
 
 			if (function_exists('opcache_invalidate')) {
@@ -68,18 +81,24 @@ class Config {
 			return true;
 		}
 
-		return $error;
+		return false;
 	}
 
-	public function get($path, $default = null) {
+	/**
+	 * @param string $path
+	 * @param mixed  $default
+	 *
+	 * @return mixed
+	 */
+	public function get(string $path, mixed $default = null): mixed {
 		$p         = strtok($path, '.');
 		$namespace = $p;
 
 		//load config for namespace
-		if (! isset($this->config[$namespace])) {
+		if (!isset($this->config[$namespace])) {
 			$this->loadConfig($namespace);
 
-			if (! isset($this->config[$namespace])) {
+			if (!isset($this->config[$namespace])) {
 				return null;
 			}
 		}
@@ -87,7 +106,7 @@ class Config {
 		$a = $this->config;
 
 		while ($p !== false) {
-			if (! isset($a[$p])) {
+			if (!isset($a[$p])) {
 				return $default;
 			}
 
@@ -98,22 +117,28 @@ class Config {
 		return $a;
 	}
 
-	public function set($path, $value) {
+	/**
+	 * @param string $path
+	 * @param mixed  $value
+	 *
+	 * @return bool
+	 */
+	public function set(string $path, mixed $value): bool {
 		$p         = strtok($path, '.');
 		$namespace = $p;
 
-		if (! $namespace) {
+		if (!$namespace) {
 			return false;
 		}
 
 		$a = &$this->config;
 		//make sure the namespace is loaded to avoid overriding existing data
-		if (! isset($this->config[$namespace])) {
+		if (!isset($this->config[$namespace])) {
 			$this->loadConfig($namespace);
 		}
 
 		while ($p !== false) {
-			if (! isset($a[$p])) {
+			if (!isset($a[$p])) {
 				$a[$p] = [];
 			}
 
@@ -128,7 +153,7 @@ class Config {
 			$a = $value;
 		} else {
 			//if value already set go back one level
-			if (! is_array($a)) {
+			if (!is_array($a)) {
 				$prev[$last] = $value;
 			} else {
 				if (is_array($value)) {
@@ -142,22 +167,27 @@ class Config {
 		return $this->saveConfig($namespace);
 	}
 
-	public function unset($path) {
+	/**
+	 * @param string $path
+	 *
+	 * @return bool
+	 */
+	public function unset(string $path): bool {
 		$p         = strtok($path, '.');
 		$namespace = $p;
 
-		if (! $namespace) {
+		if (!$namespace) {
 			return false;
 		}
 
 		$a = &$this->config;
 		//make sure the namespace is loaded to avoid overriding existing data
-		if (! isset($this->config[$namespace])) {
+		if (!isset($this->config[$namespace])) {
 			$this->loadConfig($namespace);
 		}
 
 		while ($p !== false) {
-			if (! isset($a[$p])) {
+			if (!isset($a[$p])) {
 				$a[$p] = [];
 			}
 

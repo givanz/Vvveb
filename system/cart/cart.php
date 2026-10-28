@@ -22,78 +22,93 @@
 
 namespace Vvveb\System\Cart;
 
-use function \Vvveb\model;
-use function \Vvveb\url;
-use Vvveb\Sql\Product_Option_ValueSQL;
-use Vvveb\Sql\Product_VariantSQL;
-use Vvveb\Sql\ProductSQL;
-use Vvveb\Sql\Subscription_PlanSQL;
+use function Vvveb\model;
+use Vvveb\Sql\Product_option_valueSQL;
+use Vvveb\Sql\Product_variantSQL;
+use Vvveb\Sql\Subscription_planSQL;
 use Vvveb\System\Images;
 use Vvveb\System\Locale;
 use Vvveb\System\Session;
+use function Vvveb\url;
 
 class Cart {
-	protected $cart = [];
+	use CouponTrait;
+	use DbTrait;
+	use ProductOptionTrait;
+	use TaxTrait;
+	use TotalTrait;
+	/** @var array<string, mixed> */
+	protected array $cart = [];
 
-	protected $session;
+	protected \Vvveb\System\Session $session;
 
-	protected $currency;
+	protected Currency $currency;
 
-	protected $tax;
+	protected Tax $tax;
 
-	protected $weight;
+	protected Weight $weight;
 
-	protected $productModel = 'product';
+	protected string $productModel = 'product';
 
-	protected $cart_id;
+	/** @var int|string|null */
+	protected int|string|null $cart_id = null;
 
-	protected $encrypted_cart_id;
+	/** @var string|null */
+	protected ?string $encrypted_cart_id = null;
 
-	protected $sessionKey = 'cart';
+	protected string $sessionKey = 'cart';
 
-	protected $persist = 'session';
+	protected string $persist = 'session';
 
-	protected $options;
+	/** @var array<string, mixed> */
+	protected array $options = [];
 
-	protected $products = [];
+	/** @var array<string, mixed> */
+	protected array $products = [];
 
-	protected $taxes = [];
+	/** @var array<string, mixed> */
+	protected array $taxes = [];
 
-	protected $totals = [];
+	/** @var array<string, mixed> */
+	protected array $totals = [];
 
-	protected $total = 0;
+	protected float|int $total = 0;
 
-	protected $total_tax = 0;
+	protected float|int $total_tax = 0;
 
-	protected $total_items = 0;
+	protected int $total_items = 0;
 
-	protected $controlCache = true;
-	
-	protected $hasChanges = false;
+	protected bool $controlCache = true;
 
-	use TaxTrait, ProductOptionTrait, CouponTrait, TotalTrait, DbTrait;
+	protected bool $hasChanges = false;
 
-	public static function getInstance($options = []) {
-		static $inst = null;
+	/**
+	 * @param array<string, mixed> $options
+	 */
+	public static function getInstance(array $options = []): static {
+		static $inst;
 
 		if ($inst === null) {
-			$inst = new Cart($options);
+			$inst = new self($options);
 		}
 
 		return $inst;
 	}
 
-	private function __construct($options = []) {
-		$this->session  = Session :: getInstance();
-		$this->currency = Currency :: getInstance($options);
-		$this->tax      = Tax :: getInstance();
-		$this->weight   = Weight :: getInstance();
+	/**
+	 * @param array<string, mixed> $options
+	 */
+	private function __construct(array $options = []) {
+		$this->session  = Session::getInstance();
+		$this->currency = Currency::getInstance($options);
+		$this->tax      = Tax::getInstance();
+		$this->weight   = Weight::getInstance();
 
 		$this->options           = $options;
 		$this->cart_id           = $options['cart_id'] ?? null;
 		$this->encrypted_cart_id = $options['encrypted_cart_id'] ?? null;
 
-		if ($this->encrypted_cart_id || ($this->cart_id && ! is_numeric($this->cart_id))) {
+		if ($this->encrypted_cart_id || ($this->cart_id && !is_numeric($this->cart_id))) {
 			$cart_id = urldecode($this->encrypted_cart_id ?? $this->cart_id);
 			$key     = \Vvveb\getConfig('app.key');
 			$cart_id = \Vvveb\decrypt($key, $cart_id);
@@ -106,18 +121,6 @@ class Cart {
 
 		$this->read();
 
-		if (! isset($this->total_items)) {
-			$this->total_items = 0;
-		}
-
-		if (! isset($this->total)) {
-			$this->total = 0;
-		}
-
-		if (! isset($this->products)) {
-			$this->products = [];
-		}
-
 		if ($this->total_items) {
 			$this->disableCache();
 		} else {
@@ -125,14 +128,26 @@ class Cart {
 		}
 	}
 
-	public function create() {
-		//call only if you need a cart id beforehand, otherwise a cart will be created automatically when adding a product if it does not exist
+	/**
+	 * Create a new cart and return its ID.
+	 *
+	 * Call only if you need a cart id beforehand, otherwise a cart will be
+	 * created automatically when adding a product if it does not exist.
+	 */
+	public function create(): int|string|null {
 		$this->write();
 
 		return $this->cart_id;
 	}
 
-	public function setEncryptedId($encrypted_cart_id) {
+	/**
+	 * Set the encrypted cart id and decrypt it to retrieve the real cart id.
+	 *
+	 * @param string $encrypted_cart_id
+	 *
+	 * @return int|string|null
+	 */
+	public function setEncryptedId(string $encrypted_cart_id): int|string|null {
 		$encrypted_cart_id = urldecode($encrypted_cart_id);
 		$key               = \Vvveb\getConfig('app.key');
 		$cart_id           = \Vvveb\decrypt($key, $encrypted_cart_id);
@@ -145,7 +160,10 @@ class Cart {
 		return $cart_id;
 	}
 
-	public function getEncryptedId() {
+	/**
+	 * Get the encrypted version of the cart id.
+	 */
+	public function getEncryptedId(): string {
 		if ($this->encrypted_cart_id) {
 			return $this->encrypted_cart_id;
 		}
@@ -156,118 +174,71 @@ class Cart {
 		return $this->encrypted_cart_id;
 	}
 
-	public function getCartUrl() {
+	/**
+	 * Build a URL for the cart view page.
+	 */
+	public function getCartUrl(): string {
 		$id  = urlencode($this->getEncryptedId());
 		$url = url('cart/cart/index', ['cart_id' => $id]);
 		//app does not have url
-		if (! $url) {
+		if (!$url) {
 			$url = "/checkout/$id";
 		}
 
 		return $url;
 	}
 
-	public function getCheckoutUrl() {
+	/**
+	 * Build a URL for the checkout page.
+	 */
+	public function getCheckoutUrl(): string {
 		$id  = urlencode($this->getEncryptedId());
 		$url = url('checkout/checkout/index', ['cart_id' => $id]);
 		//app does not have url
-		if (! $url) {
+		if (!$url) {
 			$url = "/checkout/$id";
 		}
 
 		return $url;
 	}
 
-	public function getId() {
+	/**
+	 * Get the raw cart id.
+	 */
+	public function getId(): int|string|null {
 		return $this->cart_id;
 	}
 
-	public function updateCart() {
+	/**
+	 * Recalculate all cart totals, prices, taxes and product data.
+	 *
+	 * @return array{products: array<int|string, mixed>, count: int}
+	 */
+	public function updateCart(): array {
 		$this->total       = 0;
 		$this->total_items = 0;
+
+		$this->tax->taxPrecision = $this->currency->getDecimalPlace();
 
 		$results  = ['products' => [], 'count' => 0];
 		$currency = Locale::getCurrency();
 
-		if (! empty($this->products)) {
-			$productIds           = [];
-			$productOptions       = [];
-			$productVariants      = [];
-			$productSubscriptions = [];
-
-			foreach ($this->products as $product) {
-				$productId              = $product['product_id'];
-				$productIds[$productId] = $productId;
-
-				//get all product options to make one query to get all option values
-				if (isset($product['option']) && is_array($product['option'])) {
-					foreach ($product['option'] as $value) {
-						if (is_numeric($value)) {
-							$productOptions[$value] = $value;
-						} else {
-							if (isset($value['product_option_value_id'])) {
-								$product_option_value_id                  = $value['product_option_value_id'];
-								$productOptions[$product_option_value_id] = $product_option_value_id;
-							}
-						}
-					}
-				}
-
-				if (isset($product['subscription_plan_id']) && $product['subscription_plan_id']) {
-					$productSubscriptions[$product['subscription_plan_id']] = $product['subscription_plan_id'];
-				}
-
-				if (isset($product['product_variant_id']) && $product['product_variant_id']) {
-					$productVariants[$product['product_variant_id']] = $product['product_variant_id'];
-				}
-			}
-
-			//get product data from db for products in cart
-			$options =  [
-				'product_id'            => $productIds,
-			] + $this->options;
-
-			$productSql = model($this->productModel); //new ProductSQL();
-			$results    = $productSql->getAll(
-				$options
-			);
-
-			// if products have options get all product options in one query
-			$optionResults = [];
-
-			if ($productOptions) {
-				$productOptionValueSql = new Product_Option_ValueSQL();
-				$optionResults         = $productOptionValueSql->getAll(
-					['product_option_value_id' => array_values($productOptions)] + $this->options
-				)['product_option_value'] ?? [];
-			}
-
-			// if products have subscriptions get all subscriptions in one query
-			$subscriptionResults = [];
-
-			if ($productSubscriptions) {
-				$subscriptionPlanSql = new Subscription_PlanSQL();
-				$subscriptionResults = $subscriptionPlanSql->getAll(
-					['subscription_plan_id' => array_values($productSubscriptions)] + $this->options
-				)['subscription_plan'] ?? [];
-			}
-
-			// if products have variants get all variants in one query
-			$variantsResults = [];
-
-			if ($productVariants) {
-				$productVariantSql = new Product_VariantSQL();
-				$variantsResults   = $productVariantSql->getAll(
-					['product_variant_id' => array_values($productVariants)] + $this->options
-				)['product_variant'] ?? [];
-			}
+		$refs = $this->collectProductReferences();
+		if ($refs['productIds']) {
+			$data = $this->loadCartProductData($refs);
+		} else {
+			$data = ['results' => $results, 'optionResults' => [], 'subscriptionResults' => [], 'variantsResults' => []];
 		}
 
-		$products       = $results['product'] ?? [];
+		$results              = $data['results'];
+		$optionResults        = $data['optionResults'];
+		$subscriptionResults  = $data['subscriptionResults'];
+		$variantsResults      = $data['variantsResults'];
+		$products             = $results['product'] ?? [];
 
 		if ($products) {
 			foreach ($this->products as $key => &$prod) {
-				if (! isset($products[$product['product_id']])) {
+				if (!isset($products[$prod['product_id']])) {
 					unset($this->products[$key]);
 
 					continue;
@@ -276,77 +247,20 @@ class Cart {
 				$productId = $prod['product_id'];
 				$product   = $products[$productId];
 
-				$prod['price'] = (float)$product['price'];
+				$prod['price']  = (float)$product['price'];
+				$prod['weight'] = (float)$product['weight'];
 
 				//add option value data and adjust price if necessary
-				if (isset($prod['option']) && is_array($prod['option'])) {
-					foreach ($prod['option'] as $option_id => $option) {
-						if (is_numeric($option)) {
-							$product_option_value_id = $option;
-						} else {
-							if (isset($option['product_option_value_id'])) {
-								$product_option_value_id = $option['product_option_value_id'];
-							}
-						}
-
-						$value = $optionResults[$product_option_value_id];
-
-						if ($value['price']) {
-							if ($value['price_operator'] == '-') {
-								$value['price'] -= (float)$value['price'];
-							}
-
-							$prod['price'] += (float) $value['price'];
-
-							$value['price_tax']       = $this->tax->addTaxes($value['price'], $product['tax_type_id'] ?? 0);
-							$value['price_formatted'] = $value['price_operator'] . $this->currency->format($value['price_tax']);
-						}
-
-						if ($value['weight']) {
-							if ($value['weight_operator'] == '-') {
-								$value['weight'] -= $value['weight'];
-							}
-
-							$prod['weight']            = ($prod['weight'] ?? 0) + $value['weight'];
-							$value['weight_formatted'] = $value['weight'];
-						}
-
-						if ($value['points']) {
-							if ($value['points_operator'] == '-') {
-								$value['points'] -= $value['points'];
-							}
-
-							$prod['points'] += $value['points'];
-							$value['points_formatted'] = $value['points'];
-						}
-
-						$prod['option_value'][$product_option_value_id] = $value;
-					}
-				}
+				$this->applyProductOptionValues($prod, $product, $optionResults);
 
 				//add subscription data
-				if (isset($prod['subscription_plan_id']) && $prod['subscription_plan_id']) {
+				if (!empty($prod['subscription_plan_id'])) {
 					$prod['subscription']      = $subscriptionResults[$prod['subscription_plan_id']] ?? [];
 					$prod['subscription_name'] = $prod['subscription']['name'] ?? '';
 				}
 
 				//if product variant override price and stock
-				if (isset($prod['product_variant_id']) && $prod['product_variant_id']) {
-					$variant         = $variantsResults[$prod['options']] ?? [];
-					if (! $variant) {
-						foreach ($variantsResults as $var) {
-							if ($prod['product_variant_id'] == $var['product_variant_id']) {
-								$variant = $var;
-							}
-						}
-					}
-
-					if ($variant && $variant['product_variant_id'] == $prod['product_variant_id']) {
-						$prod['variant']        = $variant;
-						$prod['price']          = $variant['price'];
-						$prod['stock_quantity'] = $variant['stock_quantity'];
-					}
-				}
+				$this->applyVariantOverrides($prod, $variantsResults);
 
 				$url                     = ['slug' => $product['slug'], 'product_id' => $product['product_id']];
 				$prod['key']             = $key;
@@ -354,11 +268,9 @@ class Cart {
 				$prod['remove-url']      = htmlspecialchars(url('cart/cart/remove', $url + ['key' => $key]));
 
 				$prod['total']           = $prod['price'] * $prod['quantity'];
-				$prod['total_formatted'] = $this->currency->format($prod['total']);
 
-				$taxValue               = $this->tax->addTaxes($prod['price'], $product['tax_type_id'], true);
-				$prod['price_tax']      = ($taxValue + $prod['price']);
-				$prod['tax']            = $prod['price_tax'] * $prod['quantity'];
+				$prod['price_tax']      = $this->tax->addTaxes($prod['price'], $product['tax_type_id']);
+				$prod['tax']            = $this->tax->lineTax($prod['price'], $product['tax_type_id'], $prod['quantity']);
 				$prod['total_tax']      = $prod['tax'];
 				$prod['price_currency'] = $currency;
 
@@ -366,10 +278,7 @@ class Cart {
 				$prod['price_formatted']     = $this->currency->format($product['price']);
 				$prod['total_formatted']     = $this->currency->format($prod['total']);
 				$prod['total_tax_formatted'] = $this->currency->format($prod['total_tax']);
-
-				if (isset($products[$productId]['subscription_plan_id'])) {
-					//$prod['subscription_plan_id'] = $products[$productId]['subscription_plan_id'];
-				}
+				$prod['total_weight']        = $prod['weight'] * $prod['quantity'];
 
 				$this->total += $prod['total'];
 				$this->total_tax += $prod['total_tax'];
@@ -382,8 +291,6 @@ class Cart {
 				}
 
 				unset($prod['content']);
-
-				// options add to price
 			}
 		}
 
@@ -401,15 +308,204 @@ class Cart {
 		return $results;
 	}
 
-	function add($productId, $quantity = 1, $option = [], $productVariantId = false, $subscriptionPlanId = false) {
-		if (! $productId) {
+	/**
+	 * Collect unique product/option/variant/subscription references from the
+	 * cart rows so each can be fetched with a single query.
+	 *
+	 * @return array{productIds: array<string, string>, options: array<string, string>, subscriptions: array<string, string>, variants: array<string, string>}
+	 */
+	protected function collectProductReferences(): array {
+		$productIds           = [];
+		$productOptions       = [];
+		$productVariants      = [];
+		$productSubscriptions = [];
+
+		foreach ($this->products as $product) {
+			$productId              = $product['product_id'];
+			$productIds[$productId] = $productId;
+
+			if (!empty($product['option']) && is_array($product['option'])) {
+				foreach ($product['option'] as $value) {
+					if (is_numeric($value)) {
+						$productOptions[(string)$value] = $value;
+					} elseif (isset($value['product_option_value_id'])) {
+						$id                          = $value['product_option_value_id'];
+						$productOptions[(string)$id] = $id;
+					}
+				}
+			}
+
+			if (!empty($product['subscription_plan_id'])) {
+				$productSubscriptions[$product['subscription_plan_id']] = $product['subscription_plan_id'];
+			}
+
+			if (!empty($product['product_variant_id'])) {
+				$productVariants[$product['product_variant_id']] = $product['product_variant_id'];
+			}
+		}
+
+		return [
+			'productIds'    => $productIds,
+			'options'       => $productOptions,
+			'subscriptions' => $productSubscriptions,
+			'variants'      => $productVariants,
+		];
+	}
+
+	/**
+	 * Load product, option value, subscription plan and variant data in bulk.
+	 *
+	 * @param array{productIds: array<array-key, mixed>, options: array<array-key, mixed>, subscriptions: array<array-key, mixed>, variants: array<array-key, mixed>} $refs
+	 *
+	 * @return array{results: array<array-key, mixed>, optionResults: array<array-key, mixed>, subscriptionResults: array<array-key, mixed>, variantsResults: array<array-key, mixed>}
+	 */
+	protected function loadCartProductData(array $refs): array {
+		$options = ['product_id' => $refs['productIds']] + $this->options;
+
+		$results = model($this->productModel)->getAll($options);
+
+		$optionResults = [];
+
+		if ($refs['options']) {
+			$optionValueSql = new Product_option_valueSQL();
+			$optionResults  = $optionValueSql->getAll(
+				['product_option_value_id' => array_values($refs['options'])] + $this->options
+			)['product_option_value'] ?? [];
+		}
+
+		$subscriptionResults = [];
+
+		if ($refs['subscriptions']) {
+			$subscriptionPlanSql = new Subscription_planSQL();
+			$subscriptionResults = $subscriptionPlanSql->getAll(
+				['subscription_plan_id' => array_values($refs['subscriptions'])] + $this->options
+			)['subscription_plan'] ?? [];
+		}
+
+		$variantsResults = [];
+
+		if ($refs['variants']) {
+			$productVariantSql = new Product_variantSQL();
+			$variantsResults   = $productVariantSql->getAll(
+				['product_variant_id' => array_values($refs['variants'])] + $this->options
+			)['product_variant'] ?? [];
+		}
+
+		return [
+			'results'             => $results,
+			'optionResults'       => $optionResults,
+			'subscriptionResults' => $subscriptionResults,
+			'variantsResults'     => $variantsResults,
+		];
+	}
+
+	/**
+	 * Apply option value price/weight/points adjustments to one cart row.
+	 *
+	 * @param array<string, mixed>                &$prod
+	 * @param array<string, mixed>                $product
+	 * @param array<string, array<string, mixed>> $optionResults
+	 */
+	protected function applyProductOptionValues(array &$prod, array $product, array $optionResults): void {
+		if (empty($prod['option']) || !is_array($prod['option'])) {
+			return;
+		}
+
+		foreach ($prod['option'] as $option_id => $option) {
+			$product_option_value_id = null;
+
+			if (is_numeric($option)) {
+				$product_option_value_id = $option;
+			} elseif (isset($option['product_option_value_id'])) {
+				$product_option_value_id = $option['product_option_value_id'];
+			}
+
+			if ($product_option_value_id === null || !isset($optionResults[$product_option_value_id])) {
+				continue;
+			}
+
+			$value = $optionResults[$product_option_value_id];
+
+			if (!empty($value['price'])) {
+				if (($value['price_operator'] ?? '+') === '-') {
+					$value['price'] = -(float)$value['price'];
+				}
+
+				$prod['price'] += (float)$value['price'];
+
+				$value['price_tax']       = $this->tax->addTaxes($value['price'], $product['tax_type_id'] ?? 0);
+				$value['price_formatted'] = $value['price_operator'] . $this->currency->format($value['price_tax']);
+			}
+
+			if (!empty($value['weight'])) {
+				if (($value['weight_operator'] ?? '+') === '-') {
+					$value['weight'] = -$value['weight'];
+				}
+
+				$prod['weight']            = ($prod['weight'] ?? 0) + $value['weight'];
+				$value['weight_formatted'] = $value['weight'];
+			}
+
+			if (!empty($value['points'])) {
+				if (($value['points_operator'] ?? '+') === '-') {
+					$value['points'] = -$value['points'];
+				}
+
+				$prod['points']            = ($prod['points'] ?? 0) + $value['points'];
+				$value['points_formatted'] = $value['points'];
+			}
+
+			$prod['option_value'][$product_option_value_id] = $value;
+		}
+	}
+
+	/**
+	 * Override price and stock from the selected product variant when present.
+	 *
+	 * @param array<string, mixed>                                                &$prod
+	 * @param array<int|string, array<string, mixed>>|array<array<string, mixed>> $variantsResults
+	 */
+	protected function applyVariantOverrides(array &$prod, array $variantsResults): void {
+		if (empty($prod['product_variant_id'])) {
+			return;
+		}
+
+		$variant         = $variantsResults[$prod['product_variant_id']] ?? [];
+		if (!$variant) {
+			foreach ($variantsResults as $var) {
+				if ($prod['product_variant_id'] == $var['product_variant_id']) {
+					$variant = $var;
+				}
+			}
+		}
+
+		if ($variant && $variant['product_variant_id'] == $prod['product_variant_id']) {
+			$prod['variant']        = $variant;
+			$prod['price']          = $variant['price'];
+			$prod['stock_quantity'] = $variant['stock_quantity'];
+		}
+	}
+
+	/**
+	 * Add a product to the cart.
+	 *
+	 * @param int|string               $productId
+	 * @param int|float                $quantity
+	 * @param array<int|string, mixed> $option
+	 * @param int|string|false         $productVariantId
+	 * @param int|string|false         $subscriptionPlanId
+	 *
+	 * @return string|false The cart item key or false on failure.
+	 */
+	public function add(int|string $productId, int|float $quantity = 1, array $option = [], int|string|false $productVariantId = false, int|string|false $subscriptionPlanId = false): string|false {
+		if (!$productId) {
 			return false;
 		}
 
 		$key       = $productId;
 		$options   = '';
 
-		if ($option && is_array($option)) {
+		if ($option) {
 			ksort($option);
 			$options = trim(str_replace('"', '', json_encode($option)), '{}');
 			$key .= '_' . $options;
@@ -429,9 +525,9 @@ class Cart {
 			$this->products[$key]['quantity'] += $quantity;
 		} else {
 			$this->products[$key] = [
-				'product_id'           => (int) $productId,
+				'product_id'           => (int)$productId,
 				'quantity'             => (int)$quantity,
-				'option'               => $option ?? [],
+				'option'               => $option,
 				'options'              => $options,
 				'subscription_plan_id' => $subscriptionPlanId,
 				'product_variant_id'   => $productVariantId,
@@ -443,7 +539,18 @@ class Cart {
 		return $key;
 	}
 
-	function update($key, $quantity = 1, $option = [], $productVariantId = false, $subscriptionPlanId = false) {
+	/**
+	 * Update a cart item by key.
+	 *
+	 * @param string                   $key
+	 * @param int|float                $quantity
+	 * @param array<int|string, mixed> $option
+	 * @param int|string|false         $productVariantId
+	 * @param int|string|false         $subscriptionPlanId
+	 *
+	 * @return string|false The cart item key or false if item not found.
+	 */
+	public function update(string $key, int|float $quantity = 1, array $option = [], int|string|false $productVariantId = false, int|string|false $subscriptionPlanId = false): string|false {
 		if (isset($this->products[$key])) {
 			$this->products[$key]['quantity'] = max(1, $quantity);
 
@@ -467,12 +574,19 @@ class Cart {
 		return false;
 	}
 
-	function getAll() {
-		return $this->products ?? [];
+	/**
+	 * Get all products in the cart.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function getAll(): array {
+		return $this->products;
 	}
 
-	function getNoProducts() {
-		//return count($this->products ?? []);
+	/**
+	 * Get the total quantity of all products in the cart.
+	 */
+	public function getNoProducts(): int {
 		$total = 0;
 
 		foreach ($this->products as $product) {
@@ -482,7 +596,14 @@ class Cart {
 		return $total;
 	}
 
-	function remove($key) {
+	/**
+	 * Remove one or more products from the cart by key(s).
+	 *
+	 * @param string|array<int, string> $key
+	 *
+	 * @return string|array<int, string>|false The key(s) removed or false.
+	 */
+	public function remove(string|array $key): string|array|false {
 		if ($key) {
 			if (is_array($key)) {
 				foreach ($key as $value) {
@@ -504,7 +625,12 @@ class Cart {
 		return false;
 	}
 
-	public function getSubscription() {
+	/**
+	 * Get products that have a subscription.
+	 *
+	 * @return array<int, mixed>
+	 */
+	public function getSubscription(): array {
 		$product_data = [];
 
 		foreach ($this->products as $value) {
@@ -516,41 +642,46 @@ class Cart {
 		return $product_data;
 	}
 
-	public function getWeight() {
+	/**
+	 * Get the total weight of all shippable products.
+	 */
+	public function getWeight(): float|int {
 		$weight = 0;
 
 		foreach ($this->products as $product) {
 			if (isset($product['requires_shipping']) && $product['requires_shipping']) {
-				$weight += $this->weight->convert($product['weight'], $product['weight_type_id'], $this->options['weight_type_id']) * $product['quantity'];
+				$weight += (float)($product['weight'] ?? 0) * $product['quantity'];
 			}
 		}
 
 		return $weight;
 	}
 
-	public function countProducts() {
-		$product_total = 0;
-
-		$products = $this->products;
-
-		foreach ($products as $product) {
-			$product_total += $product['quantity'];
-		}
-
-		return $product_total;
-	}
-
-	public function hasProducts() {
+	/**
+	 * Check whether the cart has any products.
+	 */
+	public function hasProducts(): int {
 		return count($this->products);
 	}
 
-	public function hasSubscription() {
+	/**
+	 * Check whether the cart has any subscription products.
+	 */
+	public function hasSubscription(): int {
 		return count($this->getSubscription());
 	}
 
-	public function hasStock() {
+	/**
+	 * Check whether all products in the cart are in stock.
+	 *
+	 * Products with stock tracking disabled (subtract_stock off) are always
+	 * considered in stock; otherwise the cart quantity is compared against the
+	 * available stock_quantity.
+	 */
+	public function hasStock(): bool {
 		foreach ($this->products as $product) {
-			if (! $product['stock']) {
+			if (!empty($product['subtract_stock']) &&
+				(int)($product['stock_quantity'] ?? 0) < (int)($product['quantity'] ?? 1)) {
 				return false;
 			}
 		}
@@ -558,9 +689,12 @@ class Cart {
 		return true;
 	}
 
-	public function hasShipping() {
+	/**
+	 * Check whether any product in the cart requires shipping.
+	 */
+	public function hasShipping(): bool {
 		foreach ($this->products as $product) {
-			if ($product['requires_shipping']) {
+			if (!empty($product['requires_shipping'])) {
 				return true;
 			}
 		}
@@ -568,9 +702,12 @@ class Cart {
 		return false;
 	}
 
-	public function hasDownload() {
+	/**
+	 * Check whether any product in the cart has a digital asset.
+	 */
+	public function hasDownload(): bool {
 		foreach ($this->products as $product) {
-			if ($product['digital_asset']) {
+			if (!empty($product['digital_asset'])) {
 				return true;
 			}
 		}
@@ -578,46 +715,30 @@ class Cart {
 		return false;
 	}
 
-	/*
-		protected function read() {
-			$data = $this->session->get($this->sessionKey);
-
-			if (is_array($data)) {
-				foreach ($data as $property => $value) {
-					$this->$property = $value;
-				}
-			}
-		}
-
-		protected function write() {
-			//$data = get_object_vars($this);
-			foreach (['products', 'taxes', 'totals',  'total_items', 'coupons', 'product_options'] as $property) {
-				$data[$property] = $this->$property;
-			}
-
-			$this->session->set($this->sessionKey, $data);
-		}
-
-		public function empty() {
-			$this->session->set($this->sessionKey, []);
-			$this->enableCache();
-		}
-	*/
-	public function enableCache() {
+	/**
+	 * Enable browser caching for the cart.
+	 */
+	public function enableCache(): void {
 		//enable cache back by clearing the cart cookie
 		if ($this->controlCache && isset($_COOKIE['cart'])) {
 			setcookie('cart', '', time() - 3600, '/');
 		}
 	}
 
-	public function disableCache() {
+	/**
+	 * Disable browser caching for the cart.
+	 */
+	public function disableCache(): void {
 		//disable cache back setting the cart cookie
-		if ($this->controlCache && ! isset($_COOKIE['cart'])) {
+		if ($this->controlCache && !isset($_COOKIE['cart'])) {
 			setcookie('cart', '1', 0, '/');
 		}
 	}
-	
-	public function __destruct() {	
+
+	/**
+	 * Persist cart on destruction if there are pending changes.
+	 */
+	public function __destruct() {
 		if ($this->hasChanges) {
 			$this->write();
 		}

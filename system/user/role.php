@@ -28,20 +28,28 @@ use Vvveb\System\Event;
 use Vvveb\System\Sqlp\Sqlp;
 
 class Role {
-	static private $data = null;
-
-	/*
-	 * Checks for permission
-	 * 
-	 * $permission string or array
+	/**
+	 * Cached controller list data.
+	 *
+	 * @var array<string, mixed>|null
 	 */
-	public static function has($permission, $allowRules = [], $denyRules = [], $role_id = 0) {
-		//$allowRules = ['*', 'content/posts/*', 'settings'];
-		//$denyRules  = ['*/save', '*/delete', 'product/*', 'tools/*', 'users/*', 'theme/*', 'plugin/*'];
+	private static ?array $data = null;
+
+	/**
+	 * Check if a permission (or array of permissions) is allowed by the allow/deny rules.
+	 *
+	 * @param string|array<int, string> $permission Permission string or array of permission strings.
+	 * @param array<int, string>        $allowRules Array of allow rules (supports wildcards).
+	 * @param array<int, string>        $denyRules  Array of deny rules (supports wildcards).
+	 * @param int                       $role_id    The role ID (unused in logic, reserved for context).
+	 *
+	 * @return array<string, bool>|bool Associative array<array-key, mixed> of permission=>bool when $permission is an array, or a single bool.
+	 */
+	public static function has(string|array $permission, array $allowRules = [], array $denyRules = [], int $role_id = 0): array|bool {
 		//allow
-		$allowRegex = '@^' . (str_replace('*', '.+?', implode('$|^', $allowRules))) . '$@m';
+		$allowRegex = '@^' . (str_replace('*', '.+?', implode('$|^', $allowRules))) . '$@mi';
 		//deny
-		$denyRegex = '@^' . (str_replace('*', '.+?', implode('$|^', $denyRules))) . '$@m';
+		$denyRegex = '@^' . (str_replace('*', '.+?', implode('$|^', $denyRules))) . '$@mi';
 
 		$result = [];
 
@@ -74,26 +82,36 @@ class Role {
 
 		if (preg_match_all($allowRegex, $list, $matches)) {
 			//$allowList = array_map(fn ($value) => true, array_flip($matches[0]));
-			$allowList = array_map(function ($value) { return true; }, array_flip($matches[0]));
+			$allowList = array_map(fn ($value) => true, array_flip($matches[0]));
 		}
 
 		$denyList = [];
 
 		if (preg_match_all($denyRegex, $list, $matches)) {
 			//$denyList = array_map(fn ($value) => false, array_flip($matches[0]));
-			$denyList = array_map(function ($value) {return false; }, array_flip($matches[0]));
+			$denyList = array_map(fn ($value) => false, array_flip($matches[0]));
 		}
 
 		//rules that match exactly the permission takes precedence (does not have *)
-		$exactAllow = array_intersect($allowRules, $permissions);
-		$exactDeny  = array_intersect($denyRules, $permissions);
+		//permission identifiers are generated from controller method names (camelCase)
+		//while request-time checks may lowercase the action, so compare
+		//case-insensitively but keep the original permission string as the result key
+		$permissionKeys = [];
 
-		if ($exactAllow) {
-			$exactAllow = array_map(function ($value) { return true; }, array_flip($exactAllow));
+		foreach ($permissions as $value) {
+			$permissionKeys[strtolower($value)] = $value;
 		}
 
-		if ($exactDeny) {
-			$exactDeny = array_map(function ($value) { return false; }, array_flip($exactDeny));
+		$exactAllow = [];
+
+		foreach (array_intersect(array_map('strtolower', $allowRules), array_keys($permissionKeys)) as $match) {
+			$exactAllow[$permissionKeys[$match]] = true;
+		}
+
+		$exactDeny = [];
+
+		foreach (array_intersect(array_map('strtolower', $denyRules), array_keys($permissionKeys)) as $match) {
+			$exactDeny[$permissionKeys[$match]] = false;
 		}
 
 		$result = $exactDeny + $exactAllow + $denyList + $allowList;
@@ -105,7 +123,16 @@ class Role {
 		}
 	}
 
-	public static function mkmap($dir, &$path = [], $app = 'admin') {
+	/**
+	 * Recursively build a permission map from the controller directory tree.
+	 *
+	 * @param string               $dir   The directory path to scan.
+	 * @param array<string, mixed> &$path Reference to the path tree being built.
+	 * @param string               $app   The application context (e.g. 'admin').
+	 *
+	 * @return void
+	 */
+	public static function mkmap(string $dir, array &$path = [], string $app = 'admin'): void {
 		if ($dir[0] == '.') {
 			return;
 		}
@@ -120,20 +147,22 @@ class Role {
 					$name     = basename($dir);
 					$filename = str_replace('.php', '', $file);
 
+					if (!isset($path[$name])) {
+						$path[$name] = [];
+					}
+
 					if (is_dir($dir . '/' . $file)) {
 						self::mkmap($dir . '/' . $file, $path[$name], $app);
 					} else {
-						if (! in_array($filename, ['base', 'crud', 'listing', 'error404', 'error403', 'error500'])) {
-							//$path[$name][$filename] = self::getActions2($dir . '/' . $file);
+						if (!in_array($filename, ['base', 'crud', 'listing', 'error404', 'error403', 'error500'])) {
 							$class = str_replace(DIR_ROOT . $app . DS . 'controller' . DS, '', $dir . DS . $filename);
 							$class = str_replace('/', '\\', $class);
-							//echo $class;
 							if ($app == APP) {
 								$actions = self::getActions($class, $filename, $dir . DS . $file);
 							} else {
 								$actions = self::getActions2($dir . DS . $file);
 							}
-							
+
 							if ($actions) {
 								$path[$name][$filename] = $actions;
 							}
@@ -143,22 +172,36 @@ class Role {
 				closedir($dh);
 			}
 		}
-
-		return [];
 	}
 
-	public static function controllers($app = 'admin') {
+	/**
+	 * Get the controller permission map for an application.
+	 *
+	 * @param string $app The application context (e.g. 'admin').
+	 *
+	 * @return array<string, array<string, string>> Associative array<array-key, mixed> of controller => actions.
+	 */
+	public static function controllers(string $app = 'admin'): array {
 		$tree = [];
 		self::mkmap(DIR_ROOT . $app . DS . 'controller', $tree, $app);
 
 		return $tree['controller'] ?? [];
 	}
 
-	public static function getActions($file, $filename, $path) {
+	/**
+	 * Extract permission actions from a controller class using reflection.
+	 *
+	 * @param string $file     The fully-qualified controller class name.
+	 * @param string $filename The base filename without extension.
+	 * @param string $path     The full file path to the controller.
+	 *
+	 * @return array<string, string> Associative array of method => permission path, or empty array.
+	 */
+	public static function getActions(string $file, string $filename, string $path): array {
 		//echo $file;
 
 		$permission = str_replace('\\', '/', $file);
-		$class      = '\\Vvveb\\Controller\\' . $file;
+		$class      = '\Vvveb\Controller\\' . $file;
 		//if plugin add namespace
 		if (strpos($file, 'plugins/')) {
 			$pluginName = pregMatch('@/plugins/(.+?)/@', $file, 1);
@@ -193,7 +236,14 @@ class Role {
 		return [];
 	}
 
-	public static function getActions2($file) {
+	/**
+	 * Extract permission actions from a controller file using regex parsing.
+	 *
+	 * @param string $file The full file path to the controller.
+	 *
+	 * @return array<string, string> Associative array<array-key, mixed> of method => permission path.
+	 */
+	public static function getActions2(string $file): array {
 		$permission = substr($file, strpos($file, '/controller/') + 12);
 		//remove extension
 		$permission = substr($permission, 0, strrpos($permission, '.'));
@@ -231,7 +281,14 @@ class Role {
 		return $data;
 	}
 
-	public static function getControllerList($app = 'admin') {
+	/**
+	 * Get the full controller list with all permissions for an application.
+	 *
+	 * @param string $app The application context (e.g. 'admin').
+	 *
+	 * @return array{permissions: array<int, string>} Array with a 'permissions' key containing all permission strings.
+	 */
+	public static function getControllerList(string $app = 'admin'): array {
 		if (self :: $data) {
 			return self :: $data;
 		}
@@ -242,13 +299,13 @@ class Role {
 		while (count($path) > 0) {
 			$next = array_shift($path);
 
-			foreach (glob("$next/*") as $file) {
+			foreach (glob("$next/*") ?: [] as $file) {
 				if (is_dir($file)) {
 					$path[] = $file;
 				}
 
 				if (is_file($file)) {
-					if (! in_array(basename($file, '.php'), ['base', 'crud', 'listing', 'error404', 'error403', 'error500'])) {
+					if (!in_array(basename($file, '.php'), ['base', 'crud', 'listing', 'error404', 'error403', 'error500'])) {
 						$files[] = $file;
 					}
 				}
@@ -299,15 +356,30 @@ class Role {
 		return $data;
 	}
 
-	public static function getCapabilitiesList($app = 'admin') {
+	/**
+	 * Get the list of available capabilities for an application.
+	 *
+	 * @param string $app The application context (e.g. 'admin').
+	 *
+	 * @return array<string, mixed> Capabilities configuration array<array-key, mixed>.
+	 */
+	public static function getCapabilitiesList(string $app = 'admin'): array {
 		$capabilities       =  include DIR_SYSTEM . 'data' . DS . 'capabilities.php';
-		list($capabilities) = Event :: trigger(__CLASS__,__FUNCTION__, $capabilities);
+		[$capabilities]     = Event :: trigger(__CLASS__, __FUNCTION__, $capabilities);
 
 		return $capabilities;
 	}
 
-	public static function routes($app = 'app') {
+	/**
+	 * Build a route schema tree from the application route configuration.
+	 *
+	 * @param string $app The application context (e.g. 'app').
+	 *
+	 * @return array<string, mixed> Nested array<array-key, mixed> representing the route schema tree.
+	 */
+	public static function routes(string $app = 'app'): array {
 		$routes       = \Vvveb\config("$app-routes");
+		/** @var array<string, mixed> $routeSchemas string-keyed trie accumulated below */
 		$routeSchemas = [];
 
 		foreach ($routes as $route => $options) {
@@ -316,7 +388,7 @@ class Role {
 			//$path = $options['module'];//str_replace('/rest/', '/', $route);
 			$path = str_replace('/rest/', '', $route);
 
-			if (! $path) {
+			if (!$path) {
 				$path = 'index';
 			}
 
@@ -327,15 +399,13 @@ class Role {
 			if (strpos($path, '/')) {
 				$slash = explode('/', $path);
 
-				if ($slash) {
-					$current = &$routeSchemas;
+				$current = &$routeSchemas;
 
-					foreach ($slash as $name) {
-						if (! isset($current[$name])) {
-							$current[$name] = [];
-						}
-						$current = &$current[$name];
+				foreach ($slash as $name) {
+					if (!isset($current[$name])) {
+						$current[$name] = [];
 					}
+					$current = &$current[$name];
 				}
 			} else {
 				$current = &$routeSchemas[$path];
@@ -353,13 +423,19 @@ class Role {
 		return $routeSchemas;
 	}
 
-	public static function models($app = 'admin') {
+	/**
+	 * Get the list of database models and their methods from SQL files.
+	 *
+	 * @param string $app The application context (e.g. 'admin').
+	 *
+	 * @return array<string, array<string, string>> Associative array<array-key, mixed> of model => method => permission path.
+	 */
+	public static function models(string $app = 'admin'): array {
 		$dirSQL = DIR_ROOT . 'admin' . DS . 'sql' . DS . DB_ENGINE . DS;
 		$sqlp   = new Sqlp();
 		$models = [];
 
 		$files = glob("$dirSQL*.sql");
-		//var_dump($files);
 
 		foreach ($files as $file) {
 			$sqlp->parseSqlPfile($file);

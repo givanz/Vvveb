@@ -23,7 +23,14 @@
 namespace Vvveb\System\Cache;
 
 trait CacheTrait {
-	public function stats($time = false) {
+	/**
+	 * Get cache statistics for files matching the current cache prefix.
+	 *
+	 * @param bool|int $time If numeric, used as expiry threshold in seconds.
+	 *
+	 * @return array{curr_items: int, total_items: int, bytes: int}|null Returns stats array<array-key, mixed>, or null if no files found.
+	 */
+	public function stats(bool|int $time = false): ?array {
 		$stats = [
 			'curr_items'  => 0,
 			'total_items' => 0,
@@ -33,29 +40,39 @@ trait CacheTrait {
 
 		if ($files) {
 			foreach ($files as $file) {
-				$filename = basename($file);
 				$stats['total_items']++;
-				$stats['bytes'] += filesize($file);
+				//suppress warnings for files removed between glob() and filesize()
+				$stats['bytes'] += @filesize($file) ?: 0;
 
-				$time = (int)substr(strrchr($file, '.'), 1);
+				$fileTime = filemtime($file);
 
-				if (time() - $time > $time) {
+				if ($fileTime && (time() - $fileTime > $time)) {
 					$stats['curr_items']++;
 				}
 			}
 		}
+
+		return $stats;
 	}
 
-	public function delete($namespace = false, $time_delay = 0) {
+	/**
+	 * Delete expired cache files matching the namespace.
+	 *
+	 * @param string|false $namespace  Cache namespace to filter by, or false for all.
+	 * @param int          $time_delay Minimum age in seconds before a file is considered expired.
+	 *
+	 * @return void
+	 */
+	public function delete(string|false $namespace = false, int $time_delay = 0): void {
 		$files = glob($this->cacheDir . $this->cachePrefix . '*');
 
 		if ($files) {
 			foreach ($files as $file) {
 				$filename = basename($file);
 
-				$time = (int)substr(strrchr($file, '.'), 1);
+				$fileTime = (int)substr(strrchr($file, '.'), 1);
 
-				if (time() - $time > $time) {
+				if (time() - $fileTime > $time_delay) {
 					$this->delete(substr($filename, 6, strrpos($filename, '.') - 6));
 				}
 			}

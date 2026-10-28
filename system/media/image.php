@@ -20,8 +20,15 @@
  *
  */
 
-if ((extension_loaded('imagick') && $extension = 'imagick') ||
-	(extension_loaded('gd') && $extension = 'gd') ||
-	($extension = 'mockup')) {
-	include "$extension.php";
+/**
+ * Image driver dispatcher — loads the best available Image implementation.
+ *
+ * Priority: Imagick > GD > Mockup stub.
+ */
+if (extension_loaded('imagick')) {
+	require_once __DIR__ . '/imagick.php';
+} elseif (extension_loaded('gd')) {
+	require_once __DIR__ . '/gd.php';
+} else {
+	require_once __DIR__ . '/mockup.php';
 }

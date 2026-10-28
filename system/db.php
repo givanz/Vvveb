@@ -23,21 +23,29 @@
 namespace Vvveb\System;
 
 class Db {
-	public static function getInstance($engine = DB_ENGINE) {
+	/**
+	 * Get or create a database driver instance for the given engine.
+	 *
+	 * @param string $engine The database engine identifier (e.g. 'Mysql').
+	 *
+	 * @return static|null The driver instance, or null when $engine is falsy.
+	 */
+	public static function getInstance(string $engine = DB_ENGINE): ?object {
 		static $inst = [];
 
-		if (! $engine) {
-			return;
+		if (!$engine) {
+			return null;
 		}
-		
-		if (! isset($inst[$engine]) || $inst[$engine] === null) {
+
+		if (!isset($inst[$engine])) {
 			$driverName = "\Vvveb\System\Db\\$engine";
 
-			if (class_exists($driverName)) {
-				$inst[$engine] = new $driverName();
+			//if (class_exists($driverName)) {
+			$inst[$engine] = new $driverName();
+			/*
 			} else {
 				throw new \Exception("Error loading db driver '$driverName'!");
-			}
+			}*/
 		}
 
 		return $inst[$engine];

@@ -10,7 +10,7 @@ use \Vvveb\System\Db;
 class %name%SQL {
 
 	private $db;
-
+	
 	protected $filters = %filters%;
 	
 	protected $paramTypes = %paramTypes%;
@@ -18,7 +18,7 @@ class %name%SQL {
 	public function __construct(){
 		$this->db = Db::getInstance();
 	}
-
+	
 	public function validate($data, $method, $table = '', $ignoreMissing = false) {
 		$params = $this->paramTypes[$method] ?? [];
 		if (!$params) {
@@ -33,7 +33,7 @@ class %name%SQL {
 		
 		return $this->db->validate($data, $params, $table, $ignoreMissing);
 	}	
-	
+
 	%methods_start%
 	
 	%methodMultipleTemplate_start%
@@ -65,20 +65,16 @@ class %name%SQL {
 		if ($sql) {
 			$stmt['%query_id%'] = $this->db->execute($sql, $params, $paramTypes);
 			
-			$result = $stmt['%query_id%'];
-			/*
+			$result = false;
+
 			if ($stmt['%query_id%']) {
-				if (method_exists($stmt['%query_id%'], 'get_result')) {
-					$result = $stmt['%query_id%']->get_result();
-				} else 	{
-					$result = $this->db->get_result($stmt['%query_id%']);
-				}
+				$result = $stmt['%query_id%']->get_result();
 			}
-			*/
+			
 
 			if (!empty('%array_key%')) {
 				if ($result)
-				while ($row = pg_fetch_assoc($result)) {
+				while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
 					$values = $row;
 					if (!empty('%array_value%')) {
 						$values = $row['array_value'];
@@ -88,12 +84,18 @@ class %name%SQL {
 						if ($row['array_key'] === null) {
 							$results[] = $values;
 						} else {
+							if (isset($values['array_key'])) {
+								unset($values['array_key']);
+							}
 							$results[$row['array_key']] = $values;
 						}
 					} else {
 						if ($row['array_key'] === null) {
 							$results['%query_id%'][] = $values;
 						} else {
+							if (isset($values['array_key'])) {
+								unset($values['array_key']);
+							}
 							$results['%query_id%'][$row['array_key']] = $values;
 						}
 					}
@@ -114,23 +116,16 @@ class %name%SQL {
 						}
 					}
 				} else  {
-					if ($result) {
-						if (isset($results['%query_id%'])) {
-							//if multiple results like insert id from @EACH
-							if (!is_array($results['%query_id%'])){
-								$results['%query_id%'] = [$results['%query_id%']];
-							}
-							$results['%query_id%'][] = %fetch%;
-						} else {
-							$results['%query_id%'] = %fetch%;
+					if (isset($results['%query_id%'])) {
+						//if multiple results like insert id from @EACH
+						if (!is_array($results['%query_id%'])){
+							$results['%query_id%'] = [$results['%query_id%']];
 						}
+						$results['%query_id%'][] = %fetch%;
 					} else {
-						$results['%query_id%'] = null;
+						$results['%query_id%'] = %fetch%;
 					}
 				}
-			}
-			if ($result) {
-				pg_free_result($result);
 			}
 		}
 		
@@ -144,7 +139,6 @@ class %name%SQL {
 			
 %varsTemplate_end%
 
-
 %insert_id_start%
 	$this->db->insert_id
 %insert_id_end%
@@ -154,11 +148,11 @@ class %name%SQL {
 %affected_rows_end%
 
 %fetch_row_start%
-	pg_fetch_assoc($result)
+	$result->fetch_array(MYSQLI_ASSOC)
 %fetch_row_end%
 
 %fetch_one_start%
-	pg_num_rows($result) ? pg_fetch_result($result, 0, 0) ?? null : null;
+	$result->fetch_array(MYSQLI_NUM)[0] ?? null
 %fetch_one_end%
 
 %fetch_result_start%
@@ -166,5 +160,5 @@ class %name%SQL {
 %fetch_result_end%
 
 %fetch_all_start%
-	$this->db->fetchAll($result)
+	$result->fetch_all(MYSQLI_ASSOC)
 %fetch_all_end%

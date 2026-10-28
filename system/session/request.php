@@ -27,38 +27,53 @@ namespace Vvveb\System\Session;
  * Used for apps like GraphQl where session is handled externally.
  */
 class Request {
-	private $data;
+	/** @var array<string, mixed> */
+	private array $data = [];
 
-	public function __construct($options) {
+	public function __construct() {}
+
+	/**
+	 * @param string $key
+	 *
+	 * @return mixed
+	 */
+	public function get(string $key): mixed {
+		return $this->data[$key] ?? null;
 	}
 
-	public function __destruct() {
-	}
-
-	public function get($key) {
-		if (isset($this->data[$key])) {
-			return $this->data[$key];
-		}
-	}
-
-	public function set($key, $value) {
+	/**
+	 * @param string $key
+	 * @param mixed  $value
+	 */
+	public function set(string $key, mixed $value): void {
 		$this->data[$key] = $value;
 	}
 
-	public function delete($key) {
+	/**
+	 * @param string $key
+	 */
+	public function delete(string $key): void {
 		unset($this->data[$key]);
 	}
 
-	public function close() {
+	public function close(): void {}
+
+	/**
+	 * @param string|null $id
+	 */
+	public function sessionId(?string $id = null): ?string {
+		return null;
 	}
 
-	public function sessionId($id = null) {
-	}
+	/**
+	 * @param bool $deleteOldSession
+	 */
+	public function regenerateId(bool $deleteOldSession = false): void {}
 
-	public function regenerateId($deleteOldSession = false) {
-	}
-
-	public function gc() {
+	/**
+	 * @return bool
+	 */
+	public function gc(): bool {
 		$this->data = [];
 
 		return true;

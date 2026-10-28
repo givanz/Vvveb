@@ -24,48 +24,76 @@ namespace Vvveb\System\Import;
 
 #[\AllowDynamicProperties]
 class Xml {
-	private $db;
+	/**
+	 * @var mixed Database driver object
+	 */
+	private mixed $db;
 
-	private $dom;
+	/**
+	 * @var \DOMDocument
+	 */
+	private \DOMDocument $dom;
 
-	private $xpath;
+	/**
+	 * @var \DOMXPath
+	 */
+	private \DOMXPath $xpath;
 
-	private $sqlPath;
+	/**
+	 * @var array<array-key, mixed>
+	 */
+	private array $idsMap;
 
-	private $prefix;
-
-	private $idsMap;
-
-	private $importXMLOptions = LIBXML_NOBLANKS |
+	/**
+	 * @var int
+	 */
+	private int $importXMLOptions = LIBXML_NOBLANKS |
 		LIBXML_COMPACT |
 		LIBXML_NOCDATA |
 		LIBXML_PARSEHUGE |
 		LIBXML_NOWARNING |
 		LIBXML_BIGLINES;
 
-	private $tableOrder = [];
+	/**
+	 * @var array<array-key, mixed>
+	 */
+	private array $tableOrder = [];
 
-	private $cDataColumns = ['content', 'excerpt', 'name', 'title', 'description', 'meta_title', 'meta_description', 'slug'];
+	/**
+	 * @var array<array-key, mixed>
+	 */
+	private array $cDataColumns = ['content', 'excerpt', 'name', 'title', 'description', 'meta_title', 'meta_description', 'slug'];
 
-	function __construct($driver = DB_ENGINE, $host = DB_HOST, $dbname = DB_NAME, $user = DB_USER, $pass = DB_PASS, $port = DB_PORT, $prefix = DB_PREFIX) {
-		$this->sqlPath = DIR_ROOT . "install/sql/$driver/";
+	/**
+	 * @param string $driver
+	 *
+	 * @return void
+	 */
+	public function __construct(string $driver = DB_ENGINE) {
 		$engine        = '\Vvveb\System\Db\\' . ucfirst($driver);
 
-		$this->prefix = $prefix;
-
-		$this->db = new $engine($host, $dbname, $user, $pass, $port, $prefix);
+		$this->db = new $engine();
 
 		$this->tableOrder = include 'table-order.php';
 	}
 
-	/*
-	 * Get all table names for the database
+	/**
+	 * Get all table names for the database.
+	 *
+	 * @param string $db
+	 *
+	 * @return array<array-key, mixed>
 	 */
-	function getTableNames($db = DB_NAME) {
+	public function getTableNames(string $db = DB_NAME): array {
 		return $this->db->getTableNames();
 	}
 
-	function export($tables = []) {
+	/**
+	 * @param array<array-key, mixed> $tables
+	 *
+	 * @return string
+	 */
+	public function export(array $tables = []): string {
 		$this->dom                     = new \DOMDocument('1.0', 'utf-8');
 		$this->dom->formatOutput       = true;
 		$this->dom->preserveWhiteSpace = false;
@@ -79,14 +107,9 @@ class Xml {
 
 		foreach ($tables as $tableName) {
 			$table = $this->dom->createElement($tableName);
-			$q     = '`';
-
-			if (DB_ENGINE == 'pgsql') {
-				$q = '"';
-			}
+			$q     = $this->db->quote;
 
 			$stmt   = $this->db->query("SELECT * FROM $q$tableName$q");
-			//$result = $stmt->get_result();
 
 			while ($row = $this->db->fetchArray($stmt)) {
 				$item = $this->dom->createElement('item');
@@ -94,7 +117,7 @@ class Xml {
 				foreach ($row as $key => $value) {
 					$isString = is_string($value);
 
-					if ($value === NULL) {
+					if ($value === null) {
 						$value = 'NULL';
 					}
 
@@ -102,11 +125,11 @@ class Xml {
 						$value = '0';
 					}
 
-					if (! $value) {
+					if (!$value && $value !== '0') {
 						$value = '';
 					}
 
-					if (in_array($key,$this->cDataColumns) || $isString) {
+					if (in_array($key, $this->cDataColumns) || $isString) {
 						//$element = $this->dom->createElement($key, $value);
 
 						$cdata   = $this->dom->createCDataSection($value);
@@ -132,8 +155,14 @@ class Xml {
 		return $this->dom->saveXML();
 	}
 
-	function display_xml_error($error, $xml) {
-		$return  = $xml[$error->line - 1] . "\n";
+	/**
+	 * @param \LibXMLError            $error
+	 * @param array<array-key, mixed> $xml
+	 *
+	 * @return string
+	 */
+	public function displayXmlError(\LibXMLError $error, array $xml): string {
+		$return  = ($xml[$error->line - 1] ?? '') . "\n";
 		$return .= str_repeat('-', $error->column) . "^\n";
 
 		switch ($error->level) {
@@ -164,13 +193,17 @@ class Xml {
 		return "$return\n\n--------------------------------------------\n\n";
 	}
 
-	function import($xml, $tables = []) {
+	/**
+	 * @param string                  $xml
+	 * @param array<array-key, mixed> $tables
+	 *
+	 * @return bool
+	 */
+	public function import(string $xml, array $tables = []): bool {
 		if ($tables) {
-			//sort tables by table order
+			//sort tables by table order, unknown tables go last
 			$tableOrder = array_flip($this->tableOrder);
-			usort($tables, function ($left, $right) use ($tableOrder) {
-				return  $tableOrder[$left] <=> $tableOrder[$right];
-			});
+			usort($tables, fn ($left, $right) => ($tableOrder[$left] ?? PHP_INT_MAX) <=> ($tableOrder[$right] ?? PHP_INT_MAX));
 		} else {
 			$tables = $this->tableOrder;
 		}
@@ -182,32 +215,34 @@ class Xml {
 		libxml_use_internal_errors(true);
 		$result = $this->dom->loadXML($xml, $this->importXMLOptions);
 
-		if (! $result) {
-			$error   = libxml_get_last_error();
-			$message = $this->display_xml_error($error, explode("\n", $xml));
+		if (!$result) {
+			$error = libxml_get_last_error();
+
+			if ($error === false) {
+				throw new \Exception('Unable to load XML content, check if valid XML!', 1);
+			}
+
+			$message = $this->displayXmlError($error, explode("\n", $xml));
 
 			throw new \Exception(sprintf("Unable to load XML content, check if valid XML!\n\t%s", $message), 1);
-
-			return;
 		}
 
 		$this->dom->normalize();
 
-		$this->xpath  = new \DOMXpath($this->dom);
+		$this->xpath  = new \DOMXPath($this->dom);
 
 		$domTables       = $this->xpath->query('//root/database/*');
 
 		//map ids
 		foreach ($domTables as $table) {
 			$tableName = $table->nodeName;
-			//continue;
-			$rows = $table->childNodes;
+			$rows      = $table->childNodes;
 
-			if (! is_null($rows)) {
+			if ($rows->length) {
 				foreach ($rows as $row) {
 					$columns = $row->childNodes;
 
-					if ($columns) {
+					if ($columns->length) {
 						foreach ($columns as $column) {
 							//if ($column->nodeName == '#text') continue;
 							$columnName  = $column->nodeName;
@@ -217,7 +252,6 @@ class Xml {
 							$idColumn          = $tableName . '_id';
 
 							if ($columnName == $idColumn) {
-								//$this->idsMap[$idColumn][$columnValue] = 0;
 								$this->idsMap[$idColumn][$columnValue] = $columnValue;
 							}
 						}
@@ -230,32 +264,28 @@ class Xml {
 			$stmt   = $this->db->execute('SET sql_mode = "";');
 		}
 
-		$q = '`';
-
-		if (DB_ENGINE == 'pgsql') {
-			$q = '"';
-		}
+		$q = $this->db->quote;
 
 		foreach ($tables as $tableName) {
 			$rows       = $this->xpath->query("//root/database/$tableName/item");
 
-			if (! is_null($rows)) {
+			if ($rows) {
 				foreach ($rows as $row) {
 					$columns = $row->childNodes;
 
 					$update            = '';
 					$data              = [];
 					$idColumn          = $tableName . '_id';
+					$idValue           = null;
 
 					foreach ($columns as $column) {
-						//if ($column->nodeName == '#text') continue;
 						$columnName  = $column->nodeName;
 						$columnValue = $column->nodeValue;
 
 						if ($columnName == 'parent_id' && $columnValue > 0) {
 							//self refrence table id
 							$oldId       = $columnValue;
-							$columnValue = $this->idsMap[$idColumn][$columnValue];
+							$columnValue = $this->idsMap[$idColumn][$columnValue] ?? $columnValue;
 						}
 
 						if ($columnName == $idColumn) {
@@ -281,8 +311,8 @@ class Xml {
 						}
 					}
 
-					$cols   = implode("$q, $q",array_keys($data));
-					$values = implode(', :',array_keys($data));
+					$cols   = implode("$q, $q", array_keys($data));
+					$values = implode(', :', array_keys($data));
 
 					$duplicate = "ON DUPLICATE KEY UPDATE $update\n\n";
 
@@ -296,7 +326,7 @@ class Xml {
 					$stmt   = $this->db->execute($sql, $data);
 					$lastId = $this->db->insert_id;
 
-					if ($idColumn != 'site_id' && $idColumn != 'language_id') {
+					if ($idValue !== null && $idColumn != 'site_id' && $idColumn != 'language_id') {
 						$this->idsMap[$idColumn][$idValue] = $lastId;
 					}
 

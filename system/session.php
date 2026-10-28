@@ -23,56 +23,113 @@
 namespace Vvveb\System;
 
 class Session {
-	private $driver;
+	/** @var object Session driver instance. */
+	private object $driver;
 
-	public static function getInstance() {
+	/**
+	 * Get singleton instance of the Session class.
+	 *
+	 * @param array<string, mixed> $options Additional session options.
+	 *
+	 * @return self|null The singleton instance, or null if no driver is configured.
+	 */
+	public static function getInstance(array $options = []): ?self {
 		static $inst = null;
 
 		if ($inst === null) {
 			$driver = \Vvveb\config(APP . '.session.driver', 'php');
 
 			if ($driver) {
-				$inst   = new Session($driver);
+				$inst   = new self($driver, $options);
 			}
 		}
 
 		return $inst;
 	}
 
-	public function __construct($driver, $expire = 3600) {
-		$class = '\\Vvveb\\System\\Session\\' . $driver;
+	/**
+	 * Initialize the session driver.
+	 *
+	 * @param string               $driver Session driver name.
+	 * @param array<string, mixed> $opts   Additional options merged with config.
+	 *
+	 * @return object The instantiated session driver.
+	 */
+	public function __construct(string $driver, array $opts = []) {
+		$class = '\Vvveb\System\Session\\' . $driver;
 
-		if (class_exists($class)) {
-			$options      = \Vvveb\config(APP . '.session', []);
-			$this->driver = new $class($options);
+		//if (class_exists($class)) {
+		$options  = \Vvveb\config(APP . '.session', []);
+		$options += $opts;
+		$this->driver = new $class($options);
+		/*
 		} else {
 			throw new \Exception('Error loading session driver ' . $driver);
-		}
-
-		return $this->driver;
+		}*/
 	}
 
-	public function get($key) {
-		return $this->driver ? $this->driver->get($key) : null;
+	/**
+	 * Retrieve a session value by key.
+	 *
+	 * @param string $key Session key.
+	 *
+	 * @return mixed The session value, or null if not found.
+	 */
+	public function get(string $key): mixed {
+		return $this->driver->get($key);
 	}
 
-	public function set($key, $value) {
-		return $this->driver ? $this->driver->set($key, $value) : null;
+	/**
+	 * Store a value in the session.
+	 *
+	 * @param string $key   Session key.
+	 * @param mixed  $value Value to store.
+	 *
+	 * @return mixed The result of the driver set operation.
+	 */
+	public function set(string $key, mixed $value): mixed {
+		return $this->driver->set($key, $value);
 	}
 
-	public function delete($key) {
-		return $this->driver ? $this->driver->delete($key) : null;
+	/**
+	 * Delete a session value by key.
+	 *
+	 * @param string $key Session key.
+	 *
+	 * @return mixed The result of the driver delete operation.
+	 */
+	public function delete(string $key): mixed {
+		return $this->driver->delete($key);
 	}
 
-	public function close() {
-		return $this->driver ? $this->driver->close() : null;
+	/**
+	 * Close the session.
+	 *
+	 * @return mixed The result of the driver close operation.
+	 */
+	public function close(): mixed {
+		return $this->driver->close();
 	}
 
-	public function sessionId($id = null) {
-		return $this->driver ? $this->driver->sessionId($id) : null;
+	/**
+	 * Get or set the current session ID.
+	 *
+	 * @param string|null $id Session ID to set, or null to retrieve the current one.
+	 *
+	 * @return mixed The session ID.
+	 */
+	public function sessionId(?string $id = null): mixed {
+		return $this->driver->sessionId($id);
 	}
 
-	public function regenerateId($deleteOldSession = false) {
-		return $this->driver ? $this->driver->regenerateId($deleteOldSession) : null;
+	/**
+	 * Regenerate the session ID, optionally deleting the old session.
+	 *
+	 * @param bool $deleteOldSession Whether to delete the old session file.
+	 *
+	 * @return mixed The result of the driver regenerateId operation.
+	 */
+	public function regenerateId(bool $deleteOldSession = false): mixed {
+		return $this->driver->regenerateId($deleteOldSession);
 	}
 }

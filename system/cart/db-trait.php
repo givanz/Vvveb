@@ -24,17 +24,37 @@ namespace Vvveb\System\Cart;
 
 use Vvveb\Sql\CartSQL;
 
+/**
+ * Provides database persistence for the cart.
+ *
+ * @property int|string|null       $cart_id
+ * @property string                $sessionKey
+ * @property array<string, mixed>  $products
+ * @property array<string, mixed>  $taxes
+ * @property array<string, mixed>  $totals
+ * @property int                   $total_items
+ * @property bool                  $hasChanges
+ * @property \Vvveb\System\Session $session
+ */
 trait DbTrait {
-	private $cartTable;
+	private ?CartSQL $cartTable = null;
 
-	protected function initDb() {
+	/**
+	 * Initialise the cart database table model.
+	 */
+	protected function initDb(): void {
 		$this->cartTable = new CartSQL();
 	}
 
-	protected function getDbCart() {
+	/**
+	 * Read cart data from the database.
+	 *
+	 * @return array<string, mixed>
+	 */
+	protected function getDbCart(): array {
 		$data = [];
 
-		if (! $this->cartTable) {
+		if (!$this->cartTable) {
 			$this->initDb();
 		}
 
@@ -47,7 +67,30 @@ trait DbTrait {
 		return $data;
 	}
 
-	function loadCart($cart_id) {
+	/**
+	 * Apply stored cart data to this instance.
+	 *
+	 * Only known cart properties are assigned, so unexpected keys in
+	 * session or database rows cannot create dynamic properties.
+	 *
+	 * @param array<string, mixed> $data
+	 */
+	private function applyData(array $data): void {
+		foreach (['products', 'taxes', 'totals', 'total_items', 'coupons', 'product_options', 'cart_id'] as $property) {
+			if (array_key_exists($property, $data)) {
+				$this->$property = $data[$property];
+			}
+		}
+	}
+
+	/**
+	 * Load a cart from the database by cart ID.
+	 *
+	 * @param int|string|null $cart_id
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function loadCart(int|string|null $cart_id): array {
 		$data = [];
 
 		if ($cart_id) {
@@ -55,10 +98,8 @@ trait DbTrait {
 			$data          = $this->getDbCart();
 		}
 
-		if (is_array($data) && $data) {
-			foreach ($data as $property => $value) {
-				$this->$property = $value;
-			}
+		if ($data) {
+			$this->applyData($data);
 
 			$this->updateCart();
 		}
@@ -66,27 +107,33 @@ trait DbTrait {
 		return $data;
 	}
 
-	protected function read() {
+	/**
+	 * Read cart data from session or database.
+	 *
+	 * @return array<string, mixed>
+	 */
+	protected function read(): array {
 		$data          = $this->session->get($this->sessionKey) ?? [];
-		$this->cart_id = $this->cart_id ?? $data['cart_id'] ?? null;
+		$this->cart_id ??= $data['cart_id'] ?? null;
 
-		if (! $data && $this->cart_id) {
+		if (!$data && $this->cart_id) {
 			$data = $this->getDbCart();
 		}
 
-		if (is_array($data) && $data) {
-			foreach ($data as $property => $value) {
-				$this->$property = $value;
-			}
+		if ($data) {
+			$this->applyData($data);
 		}
 
 		return $data;
 	}
 
-	protected function write() {
+	/**
+	 * Persist current cart state to database and session.
+	 */
+	protected function write(): void {
 		$data = [];
 
-		foreach (['products', 'taxes', 'totals',  'total_items', 'coupons', 'product_options'] as $property) {
+		foreach (['products', 'taxes', 'totals', 'total_items', 'coupons', 'product_options'] as $property) {
 			$data[$property] = $this->$property;
 		}
 
@@ -95,13 +142,12 @@ trait DbTrait {
 		$cart         = [];
 		$cart['data'] = $json;
 
-		if (! $this->cartTable) {
+		if (!$this->cartTable) {
 			$this->initDb();
 		}
 
 		if ($this->cart_id) {
-			if ($return = $this->cartTable->edit(['cart_id' => $this->cart_id, 'cart' => $cart])) {
-			}
+			$this->cartTable->edit(['cart_id' => $this->cart_id, 'cart' => $cart]);
 		} else {
 			if ($return = $this->cartTable->add(['cart' => $cart])) {
 				$this->cart_id = $return['cart'];
@@ -111,12 +157,15 @@ trait DbTrait {
 		$data['cart_id'] = $this->cart_id;
 
 		$this->session->set($this->sessionKey, $data);
-		
+
 		$this->hasChanges = false;
 	}
 
-	public function empty() {
-		if (! $this->cartTable) {
+	/**
+	 * Empty the cart from both session and database.
+	 */
+	public function empty(): bool {
+		if (!$this->cartTable) {
 			$this->initDb();
 		}
 
@@ -127,5 +176,7 @@ trait DbTrait {
 
 			return true;
 		}
+
+		return false;
 	}
 }

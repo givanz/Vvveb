@@ -26,23 +26,29 @@ use Vvveb\Sql\OrderSQL;
 use Vvveb\System\Session;
 
 class OrderCart extends Cart {
-	protected $order_id;
+	/** @var int|string|null */
+	protected int|string|null $order_id = null;
 
-	protected $controlCache = false;
+	protected bool $controlCache = false;
 
-	function __construct($order_id, $options = []) {
-		$this->session  = Session :: getInstance();
-		$this->currency = Currency :: getInstance($options);
-		$this->tax      = Tax :: getInstance();
-		$this->weight   = Weight :: getInstance();
+	/**
+	 * @param int|string           $order_id
+	 * @param array<string, mixed> $options
+	 */
+	public function __construct(int|string $order_id, array $options = []) {
+		$this->session               = Session::getInstance();
+		$this->currency              = Currency::getInstance($options);
+		$this->tax                   = Tax::getInstance();
+		$this->tax->pricesIncludeTax = !empty($options['prices_include_tax']);
+		$this->weight                = Weight::getInstance();
 
-		$this->tax->setRegionRules($options['country_id'], $options['region_id']);
+		$this->tax->setRegionRules($options['country_id'], $options['region_id'], $options['based'] ?? 'store', $options['user_group_id'] ?? null);
 
 		$this->order_id = $order_id;
 		$this->cart_id  = $options['cart_id'] ?? null;
 		$this->options  = $options;
 
-		if ($this->cart_id && ! is_numeric($this->cart_id)) {
+		if ($this->cart_id && !is_numeric($this->cart_id)) {
 			$cart_id = urldecode($this->cart_id);
 			$key     = \Vvveb\getConfig('app.key');
 			$cart_id = \Vvveb\decrypt($key, $cart_id);
@@ -54,23 +60,20 @@ class OrderCart extends Cart {
 		}
 
 		$this->read();
-
-		if (! isset($this->total_items)) {
-			$this->total_items = 0;
-		}
-
-		if (! isset($this->total)) {
-			$this->total = 0;
-		}
-
-		if (! isset($this->products)) {
-			$this->products = [];
-		}
 	}
 
-	function addOrderProduct($productId, $orderProductId = false, $quantity = 1, $option = [], $subscriptionPlanId = false) {
-		if (! $productId) {
-			return false;
+	/**
+	 * Add a product from an existing order into the cart.
+	 *
+	 * @param int|string                                                                            $productId
+	 * @param int|string|false                                                                      $orderProductId
+	 * @param int|float                                                                             $quantity
+	 * @param array<int, array{product_option_id: int|string, product_option_value_id: int|string}> $option
+	 * @param int|string|false                                                                      $subscriptionPlanId
+	 */
+	public function addOrderProduct(int|string $productId, int|string|false $orderProductId = false, int|float $quantity = 1, array $option = [], int|string|false $subscriptionPlanId = false): void {
+		if (!$productId) {
+			return;
 		}
 
 		$key = $productId;
@@ -101,12 +104,20 @@ class OrderCart extends Cart {
 				'subscription_plan_id' => $subscriptionPlanId,
 			];
 		}
-
-		//return $this->updateCart();
 	}
 
-	function addTotal($key, $title, $value, $text = '', $order_total_id = false) {
-		$data = ['key' => $key, 'title' => $title, 'value' => $value, 'value_formatted' => $this->currency->format($value), 'text' => $text, 'order_total_id' => $order_total_id];
+	/**
+	 * Add or update a total entry for the order cart.
+	 *
+	 * @param string           $namespace
+	 * @param string           $key
+	 * @param string           $title
+	 * @param float|int|string $value
+	 * @param string           $text
+	 * @param int|string|false $order_total_id
+	 */
+	public function addOrderTotal(string $namespace, string $key, string $title, float|int|string $value, string $text = '', int|string|false $order_total_id = false): void {
+		$data = ['namespace' => $namespace, 'key' => $key, 'title' => $title, 'value' => $value, 'value_formatted' => $this->currency->format($value), 'text' => $text, 'order_total_id' => $order_total_id];
 
 		if (isset($this->totals[$key])) {
 			$this->totals[$key]['value']           = $value;
@@ -117,46 +128,52 @@ class OrderCart extends Cart {
 		//$this->write();
 	}
 
-	protected function read() {
+	/**
+	 * Load order data from the database and populate the cart.
+	 *
+	 * @return array<string, mixed>
+	 */
+	protected function read(): array {
 		$options = ['order_id' => (int)$this->order_id] + $this->options;
 
-		$orders   = new OrderSQL();
-		$results  = $orders->get($options);
+		$orders  = new OrderSQL();
+		$results = $orders->get($options);
 
-		//$this->totals = $results['total'];
 		if (isset($results['total']) && $results['total']) {
 			foreach ($results['total'] as $total) {
-				$this->addTotal($total['key'], $total['title'], $total['value'], $total['title'], $total['order_total_id']);
+				$this->addOrderTotal($total['namespace'] ?? 'total', $total['key'], $total['title'], $total['value'], $total['title'], $total['order_total_id']);
 			}
 		}
-		//$this->products = $results['product'];
 		if (isset($results['products']) && $results['products']) {
 			foreach ($results['products'] as $product) {
 				$option_value = $product['option_value'] ? json_decode($product['option_value'], true) : [];
+
+				if (!is_array($option_value)) {
+					$option_value = [];
+				}
+
 				$this->addOrderProduct($product['product_id'], $product['order_product_id'], $product['quantity'], $option_value);
 			}
 		}
 
 		$this->updateCart();
-		/*
 
-		if (is_array($data)) {
-			foreach ($data as $property => $value) {
-				$this->$property = $value;
-			}
-		}*/
+		return $results;
 	}
 
-	public function write() {
+	/**
+	 * Persist the order cart state back to the database.
+	 */
+	public function write(): void {
 		$this->addTaxTotal();
 		$order_id = $this->order_id;
 		$orders   = new OrderSQL();
 
-		$data     = ['total' => $this->getGrandTotal()];
-		$result   = $orders->edit(['order' => $data, 'order_id' => $order_id]);
+		$data   = ['total' => $this->getGrandTotal()];
+		$result = $orders->edit(['order' => $data, 'order_id' => $order_id]);
 
 		foreach ($this->products as $key => $product) {
-			$product_options               = $product['option'];
+			$product_options = $product['option'];
 
 			if (isset($product['order_product_id']) && $product['order_product_id']) {
 				$orders->editProduct(['product' => $product, 'product_options' => $product_options, 'order_product_id' => $product['order_product_id'], 'order_id' => $order_id]);
@@ -174,17 +191,5 @@ class OrderCart extends Cart {
 				$orders->addTotal(['total' => $total, 'order_id' => $order_id]);
 			}
 		}
-		/*
-		$checkoutInfo['products']        = $cart->getAll();
-		$checkoutInfo['product_options'] = $cart->getProductOptions();
-		$checkoutInfo['totals']          = $cart->getTotals();
-		$checkoutInfo['total']           = $cart->getGrandTotal();
-		
-		foreach (['products', 'taxes', 'totals',  'total_items', 'coupons', 'product_options'] as $property) {
-			$data[$property] = $this->$property;
-		}
-
-		$this->session->set($this->sessionKey, $data);
-		*/
 	}
 }

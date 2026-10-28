@@ -21,7 +21,10 @@
  */
 
 /**
- * Vvveb.
+ * VtplDebug - Debug logging and console output for the Vtpl template engine.
+ *
+ * Provides methods to log template processing events and render them as
+ * an HTML debug console overlay.
  *
  * Copyright (C) 2022  Ziadin Givan
  *
@@ -40,174 +43,233 @@
  *
  */
 class VtplDebug {
-	private $enabled = false;
+	/**
+	 * Whether debug logging is enabled.
+	 *
+	 * @var bool
+	 */
+	private bool $enabled = false;
 
-	private $debugLog = [];
+	/**
+	 * Array of debug log entries.
+	 *
+	 * @var array<int, array{string: string}>
+	 */
+	private array $debugLog = [];
 
-	private $debugHtml;
+	/**
+	 * Accumulated HTML output for the debug console.
+	 *
+	 * @var string
+	 */
+	private string $debugHtml = '';
 
-	function enabled() {
+	/**
+	 * Check if debugging is active.
+	 *
+	 * @return bool True if debug is enabled or log entries exist.
+	 */
+	public function enabled(): bool {
 		return $this->enabled || $this->debugLog;
 	}
 
-	function enable($switch) {
+	/**
+	 * Enable or disable debug logging.
+	 *
+	 * @param bool $switch Whether to enable debugging.
+	 *
+	 * @return void
+	 */
+	public function enable(bool $switch): void {
 		$this->enabled = $switch;
 	}
 
-	function log($type,$message) {
+	/**
+	 * Log a debug message with a given type.
+	 *
+	 * @param string|int $type    Log entry type (e.g. 'LOAD', 'SAVE', 'SELECTOR').
+	 * @param string     $message The debug message.
+	 *
+	 * @return void
+	 */
+	public function log(string|int $type, string $message): void {
 		if ($this->enabled) {
-			$this->debugLog[][$type]= $message;
+			$this->debugLog[][$type] = $message;
 		}
 	}
 
-	function addDebugHtmlLine($command, $parameters, $break = '<br/>') {
+	/**
+	 * Append an HTML line to the debug console output.
+	 *
+	 * @param string $command    The command label (e.g. 'LOAD', 'SAVE').
+	 * @param string $parameters The details to display.
+	 * @param string $break      The HTML line break string.
+	 *
+	 * @return void
+	 */
+	public function addDebugHtmlLine(string $command, string $parameters, string $break = '<br/>'): void {
 		$this->debugHtml .= "<span>&nbsp;<b>$command</b> $parameters</span>$break";
 	}
 
-	function debugLogToHtml() {
+	/**
+	 * Convert the debug log entries to HTML output.
+	 *
+	 * @return void
+	 */
+	public function debugLogToHtml(): void {
 		foreach ($this->debugLog as $line) {
 			$type    = key($line);
 			$message = $line[$type];
 
 			switch ($type) {
 				case 'LOAD':
-					$this->addDebugHtmlLine('LOAD',$message);
+					$this->addDebugHtmlLine('LOAD', $message);
 
-				break;
+					break;
 
 				case 'SAVE':
-					$this->addDebugHtmlLine('SAVE',$message);
+					$this->addDebugHtmlLine('SAVE', $message);
 
-				break;
+					break;
 
 				case 'SELECTOR':
-					$this->addDebugHtmlLine('SELECTOR',
-							   /*$this->cssToXpath($message) . */"<a href='#' 
-							onclick=\"return vtpl_selector_click('$message')\" 
+					$this->addDebugHtmlLine(
+						'SELECTOR',
+						// $this->cssToXpath($message) .
+						"<a href='#'
+							onclick=\"return vtpl_selector_click('$message')\"
 							onmouseover=\"return vtpl_selector_over('$message')\"
 							onmouseout=\"return vtpl_selector_out('$message')\">
-							$message</a>", '');
+							$message</a>",
+						''
+					);
 
-				break;
+					break;
 
 				case 'SELECTOR_STRING':
-					$this->addDebugHtmlLine('INJECT STRING',$message);
+					$this->addDebugHtmlLine('INJECT STRING', $message);
 
-				break;
+					break;
 
 				case 'SELECTOR_PHP':
-					$this->addDebugHtmlLine('INJECT PHP',htmlentities($message));
+					$this->addDebugHtmlLine('INJECT PHP', htmlentities($message));
 
-				break;
+					break;
 
 				case 'SELECTOR_VARIABLE':
-					$this->addDebugHtmlLine('INJECT VARIABLE',$message);
+					$this->addDebugHtmlLine('INJECT VARIABLE', $message);
 
-				break;
+					break;
 
 				case 'SELECTOR_FROM':
-					$this->addDebugHtmlLine('EXTERNAL HTML',$message);
+					$this->addDebugHtmlLine('EXTERNAL HTML', $message);
 
-				break;
+					break;
 
 				case 'CSS_XPATH_TRANSFORM':
 					if (VTPL_DEBUG_SHOW_XPATH) {
-						$this->addDebugHtmlLine('RESULTED XPATH',
-								   "<a href='#' 
-							onclick=\"return vtpl_selector_click('$message')\" 
+						$this->addDebugHtmlLine(
+							'RESULTED XPATH',
+							"<a href='#'
+							onclick=\"return vtpl_selector_click('$message')\"
 							onmouseover=\"return vtpl_selector_over('$message')\"
 							onmouseout=\"return vtpl_selector_out('$message')\">
-							$message</a>");
+							$message</a>"
+						);
 					}
 
-				break;
+					break;
 
 				case 'CSS_SELECTOR':
-					$this->addDebugHtmlLine('INVALID CSS SELECTOR',htmlentities($message));
+					$this->addDebugHtmlLine('INVALID CSS SELECTOR', htmlentities($message));
 
-				break;
+					break;
 
 				default:
-					$this->addDebugHtmlLine('',$message);
+					$this->addDebugHtmlLine('', $message);
 
-				break;
-				}
+					break;
+			}
 		}
 	}
 
-	function printLog() {
+	/**
+	 * Print the debug console HTML output.
+	 *
+	 * @return void
+	 */
+	public function printLog(): void {
 		$this->debugLogToHtml();
-		echo
-<<<HTML
-<script>
-function vtplSelectorOver(selector)
-{
-	jQuery(selector).addClass('vtpl_selected');
-	return false;
-}
-function vtplSelectorOut(selector)
-{
-	jQuery(selector).removeClass('vtpl_selected');
-	return false;
-}
+		echo <<<HTML
+			<script>
+			function vtplSelectorOver(selector)
+			{
+				jQuery(selector).addClass('vtpl_selected');
+				return false;
+			}
+			function vtplSelectorOut(selector)
+			{
+				jQuery(selector).removeClass('vtpl_selected');
+				return false;
+			}
 
-//this needs firebug or equivalent
-function vtplSelectorClick(selector)
-{
-	console.log(jQuery(selector));
-	return false;
-}
+			//this needs firebug or equivalent
+			function vtplSelectorClick(selector)
+			{
+				console.log(jQuery(selector));
+				return false;
+			}
 
-function vtplHide(selector)
-{
-	if (jQuery(".vtpl_console_log_content").css('display') == 'none')
-	{
-		jQuery(".vtpl_console_log").css({height:"350px"});
-	} else
-	{
-		jQuery(".vtpl_console_log").css({height:"30px"});
-	}
-	jQuery(".vtpl_console_log_content").toggle("slow");
-	return false;
-}
+			function vtplHide(selector)
+			{
+				if (jQuery(".vtpl_console_log_content").css('display') == 'none')
+				{
+					jQuery(".vtpl_console_log").css({height:"350px"});
+				} else
+				{
+					jQuery(".vtpl_console_log").css({height:"30px"});
+				}
+				jQuery(".vtpl_console_log_content").toggle("slow");
+				return false;
+			}
 
-function vtplClose()
-{
-	jQuery(".vtpl_console_log").remove();
-	return false;
-}
-</script>   	
-<style>
-.vtpl_selected {
-	border:5px solid red !important;        
-}
-html {
-	padding-bottom:350px;
-}
-.vtpl_console_log  {
-	background:#fff;
-	z-index:10000;
-	position:fixed;
-	line-height: 1.6;
-	left:0;
-	bottom:0;
-	width:100%;
-	height:300px;
-	padding:1rem;
-	overflow:auto;
-	border:1px dashed #ccc;
-}
-.vtpl_console_log_content {
-	margin-top:1rem;
-}
-</style>
-<div class="vtpl_console_log">
-	<a href="#" onclick="return vtplHide()">Toggle</a>
-	<a href="#" onclick="return vtplClose()">Close</a>
-	<div class="vtpl_console_log_content">
-		$this->debugHtml;
-	</div>
-</div>
-HTML;
+			function vtplClose()
+			{
+				jQuery(".vtpl_console_log").remove();
+				return false;
+			}
+			</script>
+			<style>
+			.vtpl_selected {
+				border:5px solid red !important;
+			}
+			html {
+				padding-bottom:350px;
+			}
+			.vtpl_console_log  {
+				background:#fff;
+				z-index:10000;
+				position:fixed;
+				line-height: 1.6;
+				left:0;
+				bottom:0;
+				width:100%;
+				height:300px;
+				padding:1rem;
+				overflow:auto;
+				border:1px dashed #ccc;
+			}
+			.vtpl_console_log_content {
+				margin-top:1rem;
+			}
+			</style>
+			<div class="vtpl_console_log">
+				<a href="#" onclick="return vtplHide()">Toggle</a>
+				<a href="#" onclick="return vtplClose()">Close</a>
+				<div class="vtpl_console_log_content">
+					$this->debugHtml;
+				</div>
+			</div>
+			HTML;
 	}
 }

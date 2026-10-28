@@ -22,44 +22,78 @@
 
 namespace Vvveb\System\Cart;
 
+/**
+ * Provides cart total management.
+ *
+ * @property Currency                                                                                                                                  $currency
+ * @property array<int|string, array<array-key, mixed>>                                                                                                $products
+ * @property array<string, array{namespace: string, key: string, title: string, value: float|int|string, value_formatted: string|float, text: string}> $totals
+ */
 trait TotalTrait {
-	protected $totals = [];
+	/** @var array<string, array{namespace: string, key: string, title: string, value: float|int|string, value_formatted: string|float, text: string}> */
+	protected array $totals = [];
 
-	function addTotal($namespace, $key, $title, $value, $text = '') {
+	/**
+	 * Add a total entry.
+	 *
+	 * @param string           $namespace
+	 * @param string           $key
+	 * @param string           $title
+	 * @param float|int|string $value
+	 * @param string           $text
+	 */
+	public function addTotal(string $namespace, string $key, string $title, float|int|string $value, string $text = ''): void {
 		$data = ['namespace' => $namespace, 'key' => $key, 'title' => $title, 'value' => $value, 'value_formatted' => $this->currency->format($value), 'text' => $text];
 
 		$this->totals[$key] = $data;
 	}
 
-	function removeTotal($namespace, $key = false) {
+	/**
+	 * Remove totals by namespace and optionally by key.
+	 *
+	 * @param string       $namespace
+	 * @param string|false $key
+	 */
+	public function removeTotal(string $namespace, string|false $key = false): void {
 		if ($key) {
 			unset($this->totals[$key]);
 		} else {
 			foreach ($this->totals as $key => $total) {
-				if ($total['namespace'] == $namespace) {
+				if ($total['namespace'] === $namespace) {
 					unset($this->totals[$key]);
 				}
 			}
 		}
 	}
 
-	public function getSubTotal() {
+	/**
+	 * Calculate the sub-total from all products.
+	 */
+	public function getSubTotal(): float|int {
 		$total = 0;
 
 		foreach ($this->products as $product) {
-			$total += $product['total'];
+			$total += $product['total'] ?? 0;
 		}
 
 		return $total;
 	}
 
-	function getTotals($namespace = false, $key = false) {
+	/**
+	 * Get totals filtered by namespace and/or key.
+	 *
+	 * @param string|false $namespace
+	 * @param string|false $key
+	 *
+	 * @return array<string, mixed> Matching totals (single row when $key is given).
+	 */
+	public function getTotals(string|false $namespace = false, string|false $key = false): array {
 		if ($key) {
-			return $this->totals[$key];
-		} else if ($namespace) {
+			return $this->totals[$key] ?? [];
+		} elseif ($namespace) {
 			$totals = [];
 			foreach ($this->totals as $key => $total) {
-				if ($total['namespace'] == $namespace) {
+				if ($total['namespace'] === $namespace) {
 					$totals[$key] = $total;
 				}
 			}
@@ -70,7 +104,12 @@ trait TotalTrait {
 		return $this->totals;
 	}
 
-	function getAllTotals() {
+	/**
+	 * Calculate and return all totals including taxes and coupons.
+	 *
+	 * @return array<string, array{namespace: string, key: string, title: string, value: float|int|string, value_formatted: string|float, text: string}>
+	 */
+	public function getAllTotals(): array {
 		//include taxes
 		$this->addTaxTotal();
 		$this->addCouponTotal();
@@ -78,7 +117,10 @@ trait TotalTrait {
 		return $this->totals;
 	}
 
-	public function getGrandTotal() {
+	/**
+	 * Calculate the grand total from all totals.
+	 */
+	public function getGrandTotal(): float {
 		$sum = 0;
 
 		if ($this->totals) {
@@ -90,7 +132,10 @@ trait TotalTrait {
 		return $sum;
 	}
 
-	public function getGrandTotalFormatted() {
+	/**
+	 * Get the grand total formatted with the current currency.
+	 */
+	public function getGrandTotalFormatted(): string|float {
 		$sum = $this->getGrandTotal();
 
 		return $this->currency->format($sum);

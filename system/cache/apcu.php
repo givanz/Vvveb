@@ -23,27 +23,50 @@
 namespace Vvveb\System\Cache;
 
 class APCu {
-	private $expire = 0;
+	/** @var int Default cache lifetime in seconds. */
+	private int $expire = 0;
 
-	private $options = [];
+	/** @var array<string, mixed> Configuration options merged with defaults. */
+	private array $options = [];
 
-	private $active;
+	/** @var bool Whether APCu is available and enabled. */
+	private bool $active;
 
-	private $cachePrefix = '';
+	/** @var string Cache key prefix (CRC32 of DIR_ROOT for shared-hosting isolation). */
+	private string $cachePrefix = '';
 
-	public function __construct($options) {
+	/**
+	 * @param array<string, mixed> $options Configuration options: expire (int).
+	 */
+	public function __construct(array $options) {
 		$this->options += $options;
 
-		$this->cachePrefix = crc32(DIR_ROOT); //unique instance for shared hosting
+		$this->cachePrefix = sprintf('%d', crc32(DIR_ROOT)); //unique instance for shared hosting
 		$this->expire      = $this->options['expire'] ?? $this->expire;
 		$this->active      = function_exists('apcu_cache_info') && ini_get('apc.enabled');
 	}
 
-	private function key($namespace, $key = '') {
+	/**
+	 * Build the full APCu cache key from namespace and key.
+	 *
+	 * @param string $namespace Cache namespace.
+	 * @param string $key       Cache key.
+	 *
+	 * @return string The composite cache key with directory separators replaced by dots.
+	 */
+	private function key(string $namespace, string $key = ''): string {
 		return str_replace(['\\', '/'], '.', $this->cachePrefix . $namespace . '.' . $key);
 	}
 
-	public function get($namespace, $key) {
+	/**
+	 * Retrieve a cached value by namespace and key.
+	 *
+	 * @param string $namespace Cache namespace.
+	 * @param string $key       Cache key.
+	 *
+	 * @return mixed|null The cached value, or null if not found or APCu is inactive.
+	 */
+	public function get(string $namespace, string $key): mixed {
 		$success = false;
 		$result  = $this->active ? apcu_fetch($this->key($namespace, $key), $success) : null;
 
@@ -54,80 +77,115 @@ class APCu {
 		return null;
 	}
 
-	public function set($namespace, $key, $value, $expire = null) {
-		if (! $expire) {
+	/**
+	 * Store a value in the APCu cache.
+	 *
+	 * @param string   $namespace Cache namespace.
+	 * @param string   $key       Cache key.
+	 * @param mixed    $value     The value to cache.
+	 * @param int|null $expire    Lifetime in seconds, or null to use the default.
+	 *
+	 * @return bool True on success, false when APCu is inactive or storage failed.
+	 */
+	public function set(string $namespace, string $key, mixed $value, ?int $expire = null): bool {
+		if (!$expire) {
 			$expire = $this->expire;
 		}
 
 		if ($this->active) {
-			apcu_store($this->key($namespace, $key), $value, $expire);
+			return apcu_store($this->key($namespace, $key), $value, $expire);
 		}
+
+		return false;
 	}
 
-	public function getMulti($namespace, $keys, $serverKey = false) {
-		$result   = [];
+	/**
+	 * Retrieve multiple cached values by namespace.
+	 *
+	 * Missing keys map to null; never fails, even when APCu is inactive.
+	 *
+	 * @param string             $namespace Cache namespace.
+	 * @param array<int, string> $keys      List of cache keys to retrieve.
+	 * @param string|int|false   $serverKey Unused (reserved for interface compatibility).
+	 *
+	 * @return array<string, mixed|null> Associative array<array-key, mixed> of originalKey => value.
+	 */
+	public function getMulti(string $namespace, array $keys, string|int|false $serverKey = false): array {
 		$fullKeys = [];
-		$success  = false;
 
-		foreach ($keys as &$key) {
-			// simulate with single call version
-			//$result[$key] = $this->get($namespace, $key);
-
-			//add namespace
-			$newKey         = $this->key($namespace, $key);
-			$fullKeys[$key] = $newKey;
-			$key            = $newKey;
+		foreach ($keys as $key) {
+			$fullKeys[$key] = $this->key($namespace, $key);
 		}
 
-		$result = $this->active ? apcu_fetch($keys, $success) : null;
+		$fetched = $this->active ? apcu_fetch(array_values($fullKeys), $success) : false;
 
-		if ($result) {
-			foreach ($fullKeys as $key => &$fullKey) {
-				$fullKeys[$key] = null;
-
-				if ($fullKey && isset($result[$fullKey]) && $success) {
-					$fullKeys[$key] = $fullKeys[$key];
-				}
-			}
-
-			return $fullKeys;
+		if (!is_array($fetched)) {
+			$fetched = [];
 		}
 
-		return $result;
+		$output = [];
+
+		foreach ($fullKeys as $key => $fullKey) {
+			$output[$key] = $fetched[$fullKey] ?? null;
+		}
+
+		return $output;
 	}
 
-	public function setMulti($namespace, $items, $expire = null, $serverKey = false) {
+	/**
+	 * Store multiple values in the APCu cache.
+	 *
+	 * @param string               $namespace Cache namespace.
+	 * @param array<string, mixed> $items     Associative array of key => value pairs.
+	 * @param int|null             $expire    Lifetime in seconds, or null to use the default.
+	 * @param string|int|false     $serverKey Unused (reserved for interface compatibility).
+	 *
+	 * @return bool True on success.
+	 */
+	public function setMulti(string $namespace, array $items, ?int $expire = null, string|int|false $serverKey = false): bool {
 		foreach ($items as $key => $value) {
 			$this->set($namespace, $key, $value, $expire);
 		}
+
+		return true;
 	}
 
-	public function delete($namespace, $key = '') {
+	/**
+	 * Delete cached entries matching a namespace and optional key.
+	 *
+	 * When a key is provided, deletes matching entries via APCUIterator regex.
+	 * When only a namespace is provided, deletes all entries in that namespace.
+	 * When neither is provided, clears the entire APCu cache.
+	 *
+	 * @param string       $namespace Cache namespace.
+	 * @param string|false $key       Cache key to delete, or false for all in namespace.
+	 *
+	 * @return bool True when entries were deleted or the whole cache was cleared, false when inactive.
+	 */
+	public function delete(string $namespace, string|false $key = false): bool {
 		if ($this->active) {
 			if ($namespace) {
-				if ($key) {
-					return apcu_delete(new \APCUIterator('/' . $this->key($namespace, $key) . '.*/'));
+				//anchor and quote the key: APCUIterator matches unanchored PCRE,
+				//so unescaped dots would also match sibling namespaces
+				apcu_delete(new \APCUIterator('/^' . preg_quote($this->key($namespace, $key ?: ''), '/') . '/'));
 
-					return apcu_delete($this->key($namespace, $key));
-				} else {
-					return apcu_delete(new \APCUIterator('/' . $this->key($namespace, $key) . '.*/'));
-					$cache_info = apcu_cache_info();
-
-					$cache_list = $cache_info['cache_list'];
-
-					foreach ($cache_list as $entry) {
-						if (strpos($entry['info'], $this->key($namespace, $key)) === 0) {
-							apcu_delete($entry['info']);
-						}
-					}
-				}
+				return true;
 			} else {
 				return apcu_clear_cache();
 			}
 		}
+
+		return false;
 	}
 
-	public function purge($namespace = '') {
+	/**
+	 * Purge the entire APCu cache.
+	 *
+	 * @param string $namespace Unused (kept for interface compatibility).
+	 *
+	 * @return bool True if the cache was cleared successfully, false otherwise.
+	 */
+	public function purge(string $namespace = ''): bool {
 		$status = false;
 
 		if (function_exists('apcu_clear_cache')) {

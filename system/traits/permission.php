@@ -27,66 +27,108 @@ use Vvveb\System\Core\FrontController;
 use Vvveb\System\User\Admin;
 
 trait Permission {
-	/*
-	 * Permission check for each module/action
+	/** @var string Module name override. */
+	protected string $module = '';
+
+	/** @var string Action name override. */
+	protected string $action = '';
+
+	/** @var string[]|null List of additional permission strings to check. */
+	protected ?array $additionalPermissionCheck = null;
+
+	/**
+	 * Permissions map keyed by full "module/action" paths.
+	 *
+	 * @var array<string, bool>
 	 */
-	protected function permission($permission = null) {
+	protected array $modulePermissions = [];
+
+	/**
+	 * Permissions map keyed by action name only (module prefix stripped).
+	 *
+	 * @var array<string, bool>
+	 */
+	protected array $actionPermissions = [];
+
+	/**
+	 * Verify that the current admin user has the given permission.
+	 *
+	 * If the permission is denied, a 403 error page is shown and execution stops.
+	 *
+	 * @param string|null $permission The permission string (e.g. 'blog/edit'). When null it
+	 *                                is derived from the current module/action.
+	 *
+	 * @return void
+	 */
+	protected function permission(?string $permission = null): void {
 		$module     = strtolower(FrontController::getModuleName());
 		$action     = strtolower(FrontController::getActionName());
-		$action     = ($action && $action != 'index') ? '/' . $action : '';
-		$permission = $permission ?? ($module . $action);
+		$action     = ($action && $action !== 'index') ? '/' . $action : '';
+		$permission ??= ($module . $action);
 
-		//if current module/action does not have permission then show permission denied page
-		if (! Admin::hasPermission($permission)) {
+		if (!Admin::hasPermission($permission)) {
 			$message              = __('Your role does not have permission to access this action!');
 			$this->view->errors[] = $message;
 
 			$adminPath = \Vvveb\adminPath();
 			$data      = ['message' => $message];
 
-			if (APP == 'admin') {
+			if (APP === 'admin') {
 				$data['adminPath'] = $adminPath;
 			}
 
-			$this->notFound($data, 403);
+			$this->notFound($data, 403, true);
 
-			die();
+			exit();
 		}
 	}
 
-	protected function setPermissions() {
-		$module     = $this->module ?? strtolower(FrontController::getModuleName());
-		$action     =  $this->action ?? strtolower(FrontController::getActionName());
-		$action     = ($action && $action != 'index') ? '/' . $action : '';
+	/**
+	 * Build permission arrays for the current controller's methods.
+	 *
+	 * Populates $this->modulePermissions and $this->actionPermissions so
+	 * that views can conditionally render UI elements.
+	 *
+	 * @return void
+	 */
+	protected function setPermissions(): void {
+		$module     = $this->module ?: strtolower(FrontController::getModuleName());
+		$action     = $this->action ?: strtolower(FrontController::getActionName());
+		$action     = ($action && $action !== 'index') ? '/' . $action : '';
 
-		//get current controller methods to check for permission
 		$methods = get_class_methods($this);
-		//$methods = array_map(fn ($value) => "$module/$value", $methods);
-		$methods = array_map(function ($value) use ($module) {return ($value == 'index') ? $module : "$module/$value"; }, $methods);
+		$methods = array_map(fn (string $value): string => ($value === 'index') ? $module : "$module/$value", $methods);
 
-		//check if controller requires additional permission check
-		if (isset($this->additionalPermissionCheck)) {
+		if ($this->additionalPermissionCheck !== null) {
 			$methods = array_merge($methods, $this->additionalPermissionCheck);
 		}
 
 		$permissions = Admin::hasPermission($methods);
 
-		//set a permission array only with action keys for easier permission check in html
 		$this->modulePermissions = $permissions;
 
-		foreach ($permissions as $permission => &$value) {
+		$actionPermissions = [];
+		foreach ($permissions as $permission => $value) {
 			$key                     = str_replace("$module/", '', $permission);
 			$actionPermissions[$key] = $value;
 		}
 		$this->actionPermissions = $actionPermissions;
 	}
 
-	protected function getPermissionsFromUrl(&$array, &$permissions) {
+	/**
+	 * Recursively extract permission strings from URL menu entries.
+	 *
+	 * @param array<int|string, mixed> $array       The menu array to inspect.
+	 * @param array<string, string>    $permissions Populated with url => permission mappings.
+	 *
+	 * @return void
+	 */
+	protected function getPermissionsFromUrl(array &$array, array &$permissions): void {
 		foreach ($array as $k => $v) {
 			if (is_array($v)) {
 				if (isset($v['url'])) {
 					if (isset($v['module'])) {
-						$permissions[$v['url']] = ($v['module'] ?? '') . ((isset($v['action']) && $v['action'] != 'index') ? '/' . $v['action'] : '');
+						$permissions[$v['url']] = $v['module'] . ((isset($v['action']) && $v['action'] !== 'index') ? '/' . $v['action'] : '');
 					} else {
 						$permissions[$v['url']] = \Vvveb\pregMatch('/module=([^&$]+)/', $v['url'], 1);
 					}
@@ -96,7 +138,15 @@ trait Permission {
 		}
 	}
 
-	protected function setPermissionsFromUrl(&$array, &$permissions) {
+	/**
+	 * Recursively assign permission values into menu entries based on their URL.
+	 *
+	 * @param array<int|string, mixed> $array       The menu array to modify.
+	 * @param array<string, string>    $permissions url => permission mappings.
+	 *
+	 * @return void
+	 */
+	protected function setPermissionsFromUrl(array &$array, array &$permissions): void {
 		foreach ($array as $k => &$v) {
 			if (is_array($v)) {
 				if (isset($v['url'])) {

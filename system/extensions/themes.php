@@ -22,48 +22,74 @@
 
 namespace Vvveb\System\Extensions;
 
-use \Vvveb\System\Cache;
-use \Vvveb\System\Event;
-use \Vvveb\System\Sites;
 use function Vvveb\__;
 use function Vvveb\getDefaultTemplateList;
 use function Vvveb\slugify;
+use Vvveb\System\Cache;
+use Vvveb\System\Event;
 use Vvveb\System\Functions\Str;
+use Vvveb\System\Notifications;
+use Vvveb\System\Sites;
 
 class Themes extends Extensions {
-	static protected $extension = 'theme';
+	/** @var string */
+	protected static string $extension = 'theme';
 
-	static protected $baseDir = DIR_THEMES;
+	/** @var string */
+	protected static string $baseDir = DIR_THEMES;
 
-	static protected $url = 'https://themes.vvveb.com';
+	/** @var string */
+	protected static string $url = 'https://themes.vvveb.com';
 
-	static protected $feedUrl = 'https://themes.vvveb.com/feed/themes';
+	/** @var string */
+	protected static string $feedUrl = 'https://themes.vvveb.com/feed/themes';
 
-	static protected $categoriesFeedUrl = 'https://themes.vvveb.com/feed/categories';
+	/** @var string */
+	protected static string $categoriesFeedUrl = 'https://themes.vvveb.com/feed/categories';
 
-	static protected $themes = [];
+	/** @var array<array-key, mixed> */
+	protected static array $themes = [];
 
-	static protected $imageExtensions = ['png', 'jpg', 'webp', 'jpeg'];
+	/** @var array<array-key, mixed> */
+	protected static array $imageExtensions = ['png', 'jpg', 'webp', 'jpeg'];
 
-	static protected $categories = [];
+	/** @var array<array-key, mixed> */
+	protected static array $categories = [];
 
-	static function getInfo($content, $name = false) {
+	/**
+	 * @param string       $content
+	 * @param string|false $name
+	 *
+	 * @return array<array-key, mixed>
+	 */
+	public static function getInfo(string $content, string|false $name = false): array {
 		$params               = parent::getInfo($content, $name);
 		$params['screenshot'] = PUBLIC_PATH . 'themes/' . $name . '/screenshot.png';
 
 		return $params;
 	}
 
-	static function clearThemesCache($site_id = SITE_ID) {
-		$cacheDriver = Cache :: getInstance();
+	/**
+	 * @param int $site_id
+	 *
+	 * @return void
+	 */
+	public static function clearThemesCache(int $site_id = SITE_ID): void {
+		$cacheDriver = Cache::getInstance();
 		$cacheKey    = "themes_list_$site_id";
 		$cacheDriver->delete('vvveb', $cacheKey);
 	}
 
-	static function getList($site_id = false, $cache = true) {
-		$cacheDriver = Cache :: getInstance();
+	/**
+	 * @param int|false $site_id
+	 * @param bool      $cache
+	 *
+	 * @return array<array-key, mixed>
+	 */
+	public static function getList(int|false $site_id = false, bool $cache = true): array {
+		$cacheDriver = Cache::getInstance();
 		$cacheKey    = "themes_list_$site_id";
-		$activeTheme = Sites::getTheme($site_id) ?? 'default';
+		$activeTheme = Sites::getTheme($site_id);
 
 		if ($cache && $themes = $cacheDriver->get('vvveb', $cacheKey)) {
 		} else {
@@ -74,9 +100,9 @@ class Themes extends Extensions {
 			foreach ($list as $file) {
 				$folder      = Str::match('@/([^/]+)/[a-z]+.\w+$@', $file);
 				$dir         = Str::match('@(.+)/[a-z]+.\w+$@', $file);
-				$themeConfig = $dir . DS . 'theme.php';
+				$themeConfig = $dir . DS . 'theme.json';
 
-				if ($folder == 'default') {
+				if ($folder === 'default') {
 					continue;
 				}
 				$theme           = [];
@@ -92,15 +118,14 @@ class Themes extends Extensions {
 					$theme['import'] = file_exists($dir . DS . 'import');
 				}
 
-				$theme['name']       = $theme['name'] ?? ucfirst($theme['folder']);
+				$theme['name'] ??= ucfirst($theme['folder']);
 				$theme['screenshot'] = $theme['screenshot'] ?? (file_exists($dir . DS . 'screenshot.png') ? PUBLIC_PATH . 'themes/' . $folder . '/screenshot.png' : null);
 
-				if (! isset($theme['screenshot'])) {
+				if (!isset($theme['screenshot'])) {
 					$theme['screenshot'] =  PUBLIC_PATH . 'media/extension.svg';
 					if ($h = opendir($dir)) {
 						while (($file = readdir($h)) !== false) {
-							$extension = strtolower(substr($file, strrpos($file, '.') + 1));
-							if (in_array($extension, self :: $imageExtensions)) {
+							if (in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), self::$imageExtensions, true)) {
 								$theme['screenshot'] = PUBLIC_PATH . 'themes/' . $folder . '/' . $file;
 								break;
 							}
@@ -119,11 +144,11 @@ class Themes extends Extensions {
 				$cacheDriver->set('vvveb', $cacheKey, $themes);
 			}
 
-			static :: $extensions[static :: $extension] = $themes;
+			static::$extensions[static::$extension] = $themes;
 		}
 
 		if (isset($themes[$activeTheme])) {
-			$theme = $themes[$activeTheme];
+			$theme           = $themes[$activeTheme];
 			$theme['active'] = true;
 			unset($themes[$activeTheme]);
 			$themes = [$activeTheme => $theme] + $themes;
@@ -132,10 +157,14 @@ class Themes extends Extensions {
 		return $themes;
 	}
 
-	/*
-	 * Add missing templates by copying from available template
-	*/
-	static function fixIfMissingTemplates($slug) {
+	// Add missing templates by copying from available template
+
+	/**
+	 * @param string $slug
+	 *
+	 * @return void
+	 */
+	public static function fixIfMissingTemplates(string $slug): void {
 		//check templates in order
 		$defaultTemplate = '';
 
@@ -153,11 +182,11 @@ class Themes extends Extensions {
 			foreach ($templates as $template) {
 				$file = DIR_THEMES . $slug . DS . $template;
 
-				if (! file_exists($file)) {
-					$dir = dirname($template);
+				if (!file_exists($file)) {
+					$dir = DIR_THEMES . $slug . DS . dirname($template);
 
-					if ($dir && ! file_exists($dir)) {
-						@mkdir(DIR_THEMES . $slug . DS . $dir);
+					if (!is_dir($dir)) {
+						@mkdir($dir, 0777, true);
 					}
 
 					@copy(DIR_THEMES . $slug . DS . $defaultTemplate, $file);
@@ -168,7 +197,7 @@ class Themes extends Extensions {
 		//create missing folders
 		foreach (['backup', 'css'] as $folder) {
 			$dir = DIR_THEMES . $slug . DS . $folder;
-			if (! is_dir($dir)) {
+			if (!is_dir($dir)) {
 				@mkdir($dir);
 			}
 		}
@@ -176,34 +205,25 @@ class Themes extends Extensions {
 		//create missing files
 		foreach (['css' . DS . 'custom.css', 'css' . DS . 'fonts.css'] as $file) {
 			$path = DIR_THEMES . $slug . DS . $file;
-			if (! file_exists($path)) {
+			if (!file_exists($path)) {
 				@touch($path);
 			}
 		}
 	}
 
-	static function validFile($file) {
-		if (strpos($file, '..') !== false) {
-			return false;
-		}
-
-		if (strpos($file, 'htaccess') !== false) {
-			return false;
-		}
-		
-		$extension = strtolower(substr($file, strrpos($file, '.') + 1));
-		if ($extension == 'php' && strpos($file, '/theme.php') === false) {
-			return false;
-		}
-		
-		return true;
-	}
-	
-	static function install($extensionZipFile, $slug = false, $validate = false) {
-		$success     = true;
-		$extractTo   = static :: $baseDir;
-		$fileCheck   = 'index.html';
-		$folder      = false;
+	/**
+	 * @param string       $extensionZipFile
+	 * @param string|false $slug
+	 * @param bool         $validate
+	 *
+	 * @return string|bool
+	 */
+	public static function install(string $extensionZipFile, string|false $slug = false, bool $validate = false): string|bool {
+		$success      = true;
+		$extractTo    = static::$baseDir;
+		$fileCheck    = 'index.html';
+		$folder       = false;
+		$invalidFiles = [];
 
 		$zip = new \ZipArchive();
 
@@ -212,27 +232,33 @@ class Themes extends Extensions {
 			for ($i = 0; (($i < $zip->numFiles) && $success == true); $i++) {
 				$file = $zip->getNameIndex($i);
 
-				if (!self :: validFile($file)) {
-					throw new \Exception(sprintf(__('Zip contains invalid file "%s"'), $file));
+				if (!self::validFile($file)) {
+					$invalidFiles[] = $file;
 				}
 
-				if (strpos($file, $fileCheck) !== false) {
-					if (! $folder || (strlen($file) < strlen($folder))) {
+				if (str_contains($file, $fileCheck)) {
+					if (!$folder || (strlen($file) < strlen($folder))) {
 						$folder = $file;
 					}
 				}
 			}
 
 			if ($folder) {
-				if ($folder == 'index.html') {
+				if ($folder === 'index.html') {
 					$extractTo .= $slug;
 				}
 
 				$extractTo = preg_replace('@[\\\/]([^\\\/]+?)\.\w+$@', '', $extractTo);
 				if ($zip->extractTo($extractTo)) {
+					if ($invalidFiles) {
+						foreach ($invalidFiles as $file) {
+							unlink($extractTo . DS . $file);
+						}
+					}
+
 					if ($folder !== 'index.html') {
 						$folder = preg_replace('@[\\\/]([^\\\/]+?)\.\w+$@', '', $folder);
-						$slug = slugify($folder);
+						$slug   = slugify($folder);
 
 						rename($extractTo . $folder, $extractTo . $slug);
 					}
@@ -248,7 +274,11 @@ class Themes extends Extensions {
 			throw new \Exception(__('File is not a valid zip archive!'));
 		}
 
-		Event :: trigger(__CLASS__, __FUNCTION__, $extensionZipFile, $slug, $success);
+		Event::trigger(__CLASS__, __FUNCTION__, $extensionZipFile, $slug, $success);
+
+		if ($success) {
+			Notifications::trigger('theme.add', ['subject' => sprintf('Theme installed: %s', $slug ?: $extensionZipFile), 'message' => sprintf('Theme "%s" was installed.', $slug ?: $extensionZipFile), 'theme' => $slug ?: $extensionZipFile]);
+		}
 
 		return $success;
 	}

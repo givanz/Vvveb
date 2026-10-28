@@ -23,7 +23,6 @@
 namespace Vvveb\System\Core;
 
 use function Vvveb\__;
-use function Vvveb\addTranslationDomain;
 use function Vvveb\config;
 use function Vvveb\isEditor;
 use Vvveb\System\Component\Component;
@@ -34,71 +33,108 @@ include DIR_SYSTEM . 'vtpl' . DS . 'vtpl.php';
 
 #[\AllowDynamicProperties]
 class View {
-	static private $instance;
+	/** @var self|null */
+	private static ?self $instance = null;
 
-	private $templatePath;
+	/** @var string|null */
+	private ?string $templatePath = null;
 
-	private $theme;
+	/** @var string|null */
+	private ?string $theme = null;
 
-	private $htmlPath;
+	/** @var string|null */
+	private ?string $htmlPath = null;
 
-	private $template;
+	/** @var string|false|null */
+	private string|false|null $template = null;
 
-	private $tplFile;
+	/** @var string|null */
+	private ?string $tplFile = null;
 
-	private $templateEngine;
+	/** @var object|null Template engine instance (Vtpl) */
+	private ?object $templateEngine = null;
 
-	private $compiledTemplate;
+	/** @var string|null */
+	private ?string $compiledTemplate = null;
 
-	private $serviceTemplate;
+	/** @var string|null */
+	private ?string $serviceTemplate = null;
 
-	private $component;
+	/** @var string|null */
+	private ?string $component = null;
 
-	private $componentCount;
+	/** @var string|null */
+	private string|int|null $componentCount = null;
 
-	private $componentContent;
+	/** @var string|null */
+	private ?string $componentContent = null;
 
-	private $html;
+	/** @var string|null */
+	private ?string $html = null;
 
-	private $useComponent;
+	/** @var bool|null */
+	private ?bool $useComponent = null;
 
-	private $isEditor = false;
+	private bool $isEditor = false;
 
-	private $_type = 'html';
+	private string $_type = 'html';
 
-	function getTemplateEngineInstance() {
-		if (! $this->templateEngine) {
+	/**
+	 * Get the template engine instance, creating it if needed.
+	 *
+	 * @return object|null Template engine instance (Vtpl)
+	 */
+	public function getTemplateEngineInstance(): ?object {
+		if (!$this->templateEngine) {
 			self :: getInstance();
 		}
 
 		return $this->templateEngine;
 	}
 
-	function __construct($app = null) {
-		//$this->theme        = \Vvveb\config($this->app . '.theme', 'default');
-		$this->app    = $app ?? APP;
+	/**
+	 * Resolve theme name, theme path and relative path for an app.
+	 *
+	 * Shared by the constructor and setTheme(): false selects the default
+	 * theme for the app, a string selects (and sanitizes) that theme.
+	 *
+	 * @param string|false $theme Theme name or false for the app default
+	 * @param string       $app   App name (app, admin, ...)
+	 *
+	 * @return array{0: string, 1: string, 2: string} theme, theme path, relative path
+	 */
+	private function resolveThemePaths(string|false $theme, string $app): array {
 		$relativePath = PUBLIC_PATH . 'themes/';
 
-		if ($this->app == 'app') {
-			$this->theme        = Sites::getTheme(SITE_ID) ?? 'default';
-			$themePath          = DIR_ROOT . join(DS, ['public', 'themes']) . DS . $this->theme . DS;
+		if (!$theme) {
+			if ($app === 'app') {
+				$theme     = Sites::getTheme(SITE_ID);
+				$themePath = DIR_ROOT . implode(DS, ['public', 'themes']) . DS . $theme . DS;
+			} else {
+				$theme        = config($app . '.theme', 'default');
+				$relativePath = PUBLIC_PATH . $app . '/';
+				$themePath    = DIR_ROOT . DS . 'public' . DS . $app . DS . $theme . DS;
+			}
 		} else {
-			$this->theme  = config($this->app . '.theme', 'default');
-			$relativePath = PUBLIC_PATH . $this->app . '/';
-			$themePath    = DIR_ROOT . DS . 'public' . DS . $this->app . DS . $this->theme . DS;
+			$theme     = \Vvveb\filter('/[a-z0-9_-]*/', $theme, 30);
+			$themePath = DIR_ROOT . implode(DS, ['public', 'themes']) . DS . $theme . DS;
 		}
 
-		if (isEditor()) {
-			$this->isEditor = true;
-		}
+		return [$theme, $themePath, $relativePath];
+	}
 
-		/*
-		$domain = $this->theme . '-domain';
-		addTranslationDomain($domain);
-		 */
+	/**
+	 * @param string|null $app
+	 */
+	public function __construct(?string $app = null) {
+		$this->app    = $app ?? APP;
+
+		[$this->theme, $themePath, $relativePath] = $this->resolveThemePaths(false, $this->app);
+
+		$this->isEditor = isEditor();
 
 		$this->htmlPath     = $themePath;
-		$this->templatePath = $themePath; //\Vvveb\config($this->app . '.theme', 'default') . DS;
+		$this->templatePath = $themePath;
 
 		if (isset($_REQUEST['_component_ajax']) && $this->isEditor) {
 			//check if user key is correct to allow override for editor
@@ -107,21 +143,21 @@ class View {
 				$key          = \Vvveb\getConfig('app.key');
 				$decriptedKey = \Vvveb\decrypt($key, $userKey);
 
-				if (($admin['admin_id'] != $adminId)|| $decriptedKey != $correctKey) {
-					die('Invalid user key!');
+				if (($admin['admin_id'] != $adminId) || $decriptedKey != $correctKey) {
+					exit('Invalid user key!');
 				}
 
 				$this->component        = \Vvveb\filter('/[a-z\-]+/', $_REQUEST['_component_ajax'], 80);
-				$this->componentCount   = \Vvveb\filter('/\d+/', $_REQUEST['_component_id'],  4);
+				$this->componentCount   = \Vvveb\filter('/\d+/', $_REQUEST['_component_id'], 4);
 
 				$this->componentContent = $_POST['_component_content'] ?? '';
 				$this->html             = $_POST['html'] ?? '';
 			} else {
-				die('Invalid request!');
+				exit('Invalid request!');
 			}
 		}
 
-		$selector = $count = null;
+		$selector = null;
 
 		if (isset($this->component)) {
 			$selector = '[data-v-component-' . $this->component . ']';
@@ -135,86 +171,116 @@ class View {
 		$template->setHtmlPath($this->htmlPath);
 
 		if ($this->isEditor) {
-			$this->isEditor = true;
 			$template->removeVattrs(false);
+			$template->setMinifyHtml(false);
 		} else {
-			//$template->removeVattrs(true);
+			$template->removeVattrs(false);
+			//$template->setMinifyHtml(true);
 			$template->setRelativePath($relativePath . $this->theme . '/');
 		}
 
 		$this->templateEngine = $template;
 	}
 
-	static function getInstance() {
-		if (self :: $instance === NULL) {
+	/**
+	 * Get singleton instance of View.
+	 */
+	public static function getInstance(): self {
+		if (self :: $instance === null) {
 			return self :: $instance = new self(); //create class instance
 		}
 
 		return self :: $instance;
 	}
 
-	function removeVattrs($flag = true) {
+	/**
+	 * Remove v-attributes from HTML output.
+	 *
+	 * @param bool $flag
+	 *
+	 * @return mixed
+	 */
+	public function removeVattrs(bool $flag = true): mixed {
 		return $this->templateEngine->removeVattrs($flag);
 	}
 
-	function setTheme($theme = false) {
-		$relativePath = PUBLIC_PATH . 'themes/';
-
-		if (! $theme) {
-			if ($this->app == 'app') {
-				$this->theme = Sites::getTheme(SITE_ID) ?? 'default';
-				$themePath   = DIR_ROOT . join(DS, ['public', 'themes']) . DS . $this->theme . DS;
-			} else {
-				$this->theme  = config($this->app . '.theme', 'default');
-				$relativePath = PUBLIC_PATH . $this->app . '/';
-				$themePath    = DIR_ROOT . DS . 'public' . DS . $this->app . DS . $this->theme . DS;
-			}
-		} else {
-			$theme       = \Vvveb\filter('/[a-z0-9_-]*/', $theme, 30);
-			$this->theme = $theme;
-			$themePath   = DIR_ROOT . join(DS, ['public', 'themes']) . DS . $this->theme . DS;
-		}
+	/**
+	 * Set the active theme.
+	 *
+	 * @param string|false $theme Theme name or false to use default
+	 *
+	 * @return void
+	 */
+	public function setTheme(string|false $theme = false): void {
+		[$this->theme, $themePath, $relativePath] = $this->resolveThemePaths($theme, $this->app);
 
 		$this->htmlPath       = $themePath;
 		$this->templatePath   = $themePath;
 		$this->templateEngine->setHtmlPath($this->htmlPath);
 
-		if (! $this->isEditor) {
+		if (!$this->isEditor) {
 			$this->templateEngine->setRelativePath($relativePath . $this->theme . '/');
 		}
 	}
 
-	function getTheme() {
+	/**
+	 * Get the current theme name.
+	 */
+	public function getTheme(): string {
 		return $this->theme;
 	}
 
-	function getDocumentType() {
+	/**
+	 * Get the document type from the template engine.
+	 */
+	public function getDocumentType(): string {
 		return $this->templateEngine->getDocumentType();
 	}
 
-	function getTemplatePath() {
+	/**
+	 * Get the template path.
+	 */
+	public function getTemplatePath(): string {
 		return $this->templatePath;
 	}
 
-	function compiledTemplate() {
+	/**
+	 * Get the compiled template path.
+	 */
+	public function compiledTemplate(): ?string {
 		return $this->compiledTemplate;
 	}
 
-	function set($data) {
-		if ($data && is_array($data)) {
-			foreach ($data as $key => &$value) {
-				$this->$key = $value;
-			}
+	/**
+	 * Set dynamic properties from an associative array.
+	 *
+	 * @param array<string, mixed> $data
+	 *
+	 * @return void
+	 */
+	public function set(array $data): void {
+		foreach ($data as $key => $value) {
+			$this->$key = $value;
 		}
 	}
 
-	function serviceTemplate() {
+	/**
+	 * Get the service template path.
+	 */
+	public function serviceTemplate(): ?string {
 		return $this->serviceTemplate;
 	}
 
-	function checkNeedRecompile($service = false) {
-		if (! $this->template) {
-			return false;
+	/**
+	 * Check if the template needs recompilation and recompile if necessary.
+	 *
+	 * @param object|null $service
+	 *
+	 * @return void
+	 */
+	public function checkNeedRecompile(?object $service = null): void {
+		if (!$this->template) {
+			return;
 		}
 
 		$this->template    = str_replace(['/', '\\'], DS, $this->template);
@@ -222,15 +288,15 @@ class View {
 		$template          = $this->template;
 		$templateMtime     = null;
 		$templateFile      = $templatePath . $template;
-		$html              = DIR_ROOT . APP . DS . 'template' . DS . $this->tplFile;
+		$tpl               = DIR_ROOT . APP . DS . 'template' . DS . $this->tplFile;
 
 		//absolute path
-		if ($this->template[0] == DS) {
+		if ($this->template[0] === DS) {
 			$templatePath = dirname($this->template) . DS;
 			$template     = basename($this->template);
 			$templateFile = $this->template;
 		} else {
-			if (strpos($this->template, 'plugins' . DS) === 0) {
+			if (str_starts_with($this->template, 'plugins' . DS)) {
 				$templatePath = DIR_PUBLIC . 'plugins' . DS;
 				//$templatePath = $this->templatePath = DIR_PUBLIC . 'plugins' . DS;
 
@@ -239,43 +305,47 @@ class View {
 				$pluginName = substr($template, 0, $p);
 				$nameSpace  = substr($template, $p + 1);
 
-				if ($this->app == 'admin') {
-					$tpl      = $pluginName . DS . join(DS, [$this->app, 'template']) . DS . $nameSpace;
+				if ($this->app === 'admin') {
 					$template = $pluginName . DS . $this->app . DS . $nameSpace;
 				} else {
-					$tpl      = $pluginName . DS . join(DS, [$this->app, 'template']) . DS . $nameSpace;
 					$template = $pluginName . DS . $nameSpace;
 				}
 
+				$tpl = $pluginName . DS . implode(DS, [$this->app, 'template']) . DS . $nameSpace;
+
 				$this->tplFile      = str_replace(['.html', '.xml', '.json'], '.tpl', $tpl);
-				$html               = DIR_PLUGINS . $this->tplFile;
+				$tpl                = DIR_PLUGINS . $this->tplFile;
 				$templateFile       = $templatePath . $template;
 			}
 		}
 
-		if (! file_exists($templatePath . $template)) {
-			if ($template == 'error404.html' || $template == 'error500.html') {
-				//if theme is missing error page then use the default
-				$templateFile = DIR_PUBLIC . $template;
+		if (!file_exists($templatePath . $template)) {
+			if ($this->fallback) {
+				$template     = $this->fallback;
+				$templateFile = $templatePath . $template;
 			} else {
-				FrontController::notFound(true, [
-					'message' => __('Html template not found!'),
-					'file'    => $templatePath . $template,
-				]);
+				if ($template === 'error404.html' || $template === 'error500.html') {
+					//if theme is missing error page then use the default
+					$templateFile = DIR_PUBLIC . $template;
+				} else {
+					FrontController::notFound(true, [
+						'message' => __('Html template not found!'),
+						'file'    => $templatePath . $template,
+					]);
+				}
 			}
 		}
 
-		//$this->tplFile = $templateFile;
 		$this->templatePath = $templatePath;
 
 		if (file_exists($templateFile)) {
 			$templateMtime = filemtime($templateFile);
 		}
 
-		$htmlMtime = 0;
+		$tplMtime = 0;
 
-		if (file_exists($html)) {
-			$htmlMtime = filemtime($html);
+		if (file_exists($tpl)) {
+			$tplMtime = filemtime($tpl);
 		}
 
 		$compiledMtime = 0;
@@ -284,19 +354,27 @@ class View {
 			$compiledMtime = @filemtime($this->compiledTemplate);
 		}
 
-		if ((max($templateMtime, $htmlMtime) > $compiledMtime
-			 || ! file_exists($this->compiledTemplate))
+		if ((max($templateMtime, $tplMtime) > $compiledMtime
+			 || !file_exists($this->compiledTemplate))
 			/*|| (defined('DEBUG') && DEBUG) */ || isset($_POST['_component_content'])) {
 			$this->compile($templateFile, $this->compiledTemplate, $service);
 		}
 	}
 
-	private function compile($filename, $file, $service = false) {
-		//@touch($file); //if recompiling takes longer avoid avoid other recompile requests
+	/**
+	 * Compile the template file.
+	 *
+	 * @param string  $filename
+	 * @param string  $file
+	 * @param ?object $service
+	 *
+	 * @return void
+	 */
+	private function compile(string $filename, string $file, ?object $service = null): void {
 		//regenerate component file
-		if ($this->useComponent && ! defined('CLI')) {
+		if ($this->useComponent && !defined('CLI')) {
 			//regenerate components cache
-			if (! $service) {
+			if (!$service) {
 				if ($this->html) {
 					$html = $this->html;
 				} else {
@@ -311,8 +389,8 @@ class View {
 			$this->templateEngine->addTemplatePath($this->htmlPath . 'template' . DS);
 		}
 
-		list($this->template, $filename, $this->tplFile) =
-		Event :: trigger(__CLASS__,__FUNCTION__, $this->template, $filename, $this->tplFile, $this->templateEngine, $this);
+		[$this->template, $filename, $this->tplFile] =
+		Event :: trigger(__CLASS__, __FUNCTION__, $this->template, $filename, $this->tplFile, $this->templateEngine, $this);
 
 		if ($this->html) {
 			$errors = $this->templateEngine->loadHtml($this->html);
@@ -321,11 +399,11 @@ class View {
 		}
 
 		//if no template defined use the default
-		if ($this->tplFile[0] == DS) {
+		if ($this->tplFile[0] === DS) {
 			$this->tplFile = DIR_ROOT . APP . DS . 'template' . DS . 'common.tpl';
 			$this->templateEngine->loadTemplateFile($this->tplFile);
 		} else {
-			if (strpos($this->template, 'plugins' . DS) === 0) {
+			if (str_starts_with($this->template, 'plugins' . DS)) {
 				//$template   = str_replace('plugins' . DS, '', $this->template);
 				$template   = $this->tplFile;
 				$p          = strpos($template, DS);
@@ -347,27 +425,42 @@ class View {
 					$this->tplFile = "$pluginName/admin/template/$nameSpace";
 				}*/
 			} else {
-				if (! file_exists(DIR_ROOT . APP . DS . 'template' . DS . $this->tplFile)) {
+				if (!file_exists(DIR_ROOT . APP . DS . 'template' . DS . $this->tplFile)) {
 					$this->tplFile = 'common.tpl';
 				}
 				$this->templateEngine->loadTemplateFileFromPath($this->tplFile);
 			}
 		}
 
-		list($this->template, $filename, $this->tplFile) =
-		Event :: trigger(__CLASS__,__FUNCTION__ . ':after', $this->template, $filename, $this->tplFile, $this->templateEngine, $this);
+		[$this->template, $filename, $this->tplFile] =
+		Event :: trigger(__CLASS__, __FUNCTION__ . ':after', $this->template, $filename, $this->tplFile, $this->templateEngine, $this);
 		$this->templateEngine->saveCompiledTemplate($file);
 	}
 
-	function tplFile($filename) {
+	/**
+	 * Set the template file name.
+	 *
+	 * @param string $filename
+	 *
+	 * @return void
+	 */
+	public function tplFile(string $filename): void {
 		$this->tplFile = $filename;
 	}
 
-	function template($filename = null) {
+	/**
+	 * Get or set the template filename.
+	 *
+	 * @param string|false|null $filename Template filename, false to clear, or null to get current
+	 * @param string|null|null  $fallback
+	 *
+	 * @return string|false|null Current template filename
+	 */
+	public function template(string|false|null $filename = null, ?string $fallback = null): string|false|null {
 		if ($filename === false) {
 			$this->template = false;
 
-			return;
+			return null;
 		}
 
 		if ($filename) {
@@ -377,10 +470,10 @@ class View {
 			. $this->app . '_' . (defined('SITE_ID') ? SITE_ID : '-') . '_'
 			. ((is_null($this->component)) ? '' : $this->component . $this->componentCount . '_')
 			. $this->theme . '_'
-			. str_replace([DS, '/', '\\'] , '_', $filename)
+			. str_replace([DS, '/', '\\'], '_', $filename)
 			. ($this->isEditor ? '-edit' : '');
 
-			list($filename, $compiledFilename) = Event :: trigger(__CLASS__,__FUNCTION__, $filename, $compiledFilename, $this);
+			[$filename, $compiledFilename] = Event :: trigger(__CLASS__, __FUNCTION__, $filename, $compiledFilename, $this);
 
 			$this->compiledTemplate        = $compiledFilename;
 			$this->serviceTemplate         = $compiledFilename;
@@ -388,28 +481,57 @@ class View {
 			$this->template                = $filename;
 		}
 
+		$this->fallback = $fallback;
+
 		return $this->template;
 	}
 
-	function fragment($selector, $index = 0) {
+	/**
+	 * Set the component selector and index for fragment rendering.
+	 *
+	 * @param string $selector CSS selector
+	 * @param int    $index    Component index
+	 *
+	 * @return void
+	 */
+	public function fragment(string $selector, string|int $index = 0): void {
 		$this->component      = $selector;
 		$this->componentCount = $index;
 	}
 
-	function setType($type) {
+	/**
+	 * Set the output type (html, json, text).
+	 *
+	 * @param string $type
+	 *
+	 * @return void
+	 */
+	public function setType(string $type): void {
 		$this->_type = $type;
 	}
 
-	function getType() {
+	/**
+	 * Get the current output type.
+	 */
+	public function getType(): string {
 		return $this->_type;
 	}
 
-	function render($useComponent = true, $output = true, $service = false) {
-		Event :: trigger(__CLASS__,__FUNCTION__, $this->template, $this->tplFile, $this->templateEngine, $this);
+	/**
+	 * Render the template.
+	 *
+	 * @param bool $useComponent Whether to use component rendering
+	 * @param bool $output       Whether to echo output or return it
+	 * @param bool $service      Whether this is a service template render
+	 *
+	 * @return mixed|string|null Rendered output string or void if outputting directly
+	 */
+	public function render(bool $useComponent = true, bool $output = true, bool $service = false): mixed {
+		Event :: trigger(__CLASS__, __FUNCTION__, $this->template, $this->tplFile, $this->templateEngine, $this);
 
 		$this->useComponent = $useComponent;
 
-		if ($useComponent && ! defined('CLI')) {
+		if ($useComponent && !defined('CLI')) {
 			if ($service) {
 				$service = new Component($this, $this->componentContent ? true : false, $this->componentContent);
 			} else {
@@ -417,29 +539,22 @@ class View {
 			}
 		}
 
-		/*
-		if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest' && ! isset($_REQUEST['_component_ajax'])) {
-			$this->_type = 'json';
-		}*/
-
-		if ($this->_type == 'text') {
-			if (isset($this->text)) {
-				if ($output) {
-					echo $this->text;
-				} else {
-					return $this->text;
-				}
+		if ($this->_type === 'text') {
+			if (!isset($this->text)) {
+				return null;
 			}
 
-			return;
+			if ($output) {
+				echo $this->text;
+
+				return null;
+			}
+
+			return $this->text;
 		}
 
-		if ($this->_type == 'json') {
-			$jsonFlags = 0;
-
-			//if (defined('CLI')) {
+		if ($this->_type === 'json') {
 			$jsonFlags = JSON_PRETTY_PRINT;
-			//}
 			ob_start();
 
 			if (isset($this->json)) {
@@ -454,22 +569,24 @@ class View {
 				return $json;
 			}
 		} else { //html
-			if (! $this->template) {
+			if (!$this->template) {
 				self::template();
 			}
 			$this->checkNeedRecompile($service);
 
 			if ($this->compiledTemplate) {
-				if (! file_exists($this->compiledTemplate)) {
+				if (!file_exists($this->compiledTemplate)) {
 					return FrontController::notFound(true, [
 						'message' => __('Compiled template not found!'),
-						'file'    => $templatePath . $template,
+						'file'    => $this->template,
 					]);
 				}
 
 				try {
 					if ($output) {
 						include $this->compiledTemplate;
+
+						return '';
 					} else {
 						ob_start();
 
@@ -479,23 +596,26 @@ class View {
 
 						return $return;
 					}
-				} catch (\ParseError | \Error $e) {
+				} catch (\ParseError|\Error $e) {
 					static $handled;
 
 					if ($handled) {
 						if (DEBUG) {
 							echo $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine();
 						} else {
-							die('Server error, enable debug for more info');
+							exit('Server error, enable debug for more info');
 						}
-						return;
+
+						return null;
 					}
 					$handled = true;
 
 					$data = \Vvveb\System\Core\exceptionToArray($e, $this->compiledTemplate);
-					return FrontController :: notFound(false, $data, 500);
+					FrontController :: notFound(false, $data, 500);
 				}
 			}
 		}
+
+		return '';
 	}
 }

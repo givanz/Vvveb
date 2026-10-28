@@ -29,39 +29,65 @@ use function Vvveb\sanitizeHTML;
 use Vvveb\System\Images;
 
 trait Crud {
-	protected $module;
+	/** @var string Module name (e.g. 'blog', 'shop'). */
+	protected string $module = '';
 
-	protected $type;
+	/** @var string Entity type name used as the primary key suffix. */
+	protected string $type = '';
 
-	protected $controller;
+	/** @var string Controller name; defaults to when null. */
+	protected string $controller = '';
 
-	protected $redirect = true;
+	/** @var string|bool Redirect target after save. true = auto-redirect, false = no redirect, string = custom URL. */
+	protected string|bool $redirect = true;
 
-	protected $data_id;
+	/** @var string Current entity primary key value. */
+	protected string $data_id = '';
 
-	protected $type_id;
+	/** @var string Column name used as primary key; defaults to "{type}_id". */
+	protected string $type_id = '';
 
-	protected $model;
+	/** @var string Slug from the request. */
+	protected string $slug = '';
 
-	protected $options = [];
+	/** @var object|null Model instance. */
+	protected ?object $model = null;
 
-	protected $data = [];
+	/** @var array<string, mixed> Additional options merged into every query. */
+	protected array $options = [];
 
-	//protected $fullPost;
+	/** @var array<string, mixed> Request data being processed. */
+	protected array $data = [];
 
-	protected $userFilter = false;
-	
-	protected $adminFilter = true;
-	
-	function delete() {
-		if (APP == 'admin') {
+	/** @var bool Whether to apply user_id filter in queries. */
+	protected bool $userFilter = false;
+
+	/** @var bool Whether to apply admin_id filter in queries. */
+	protected bool $adminFilter = true;
+
+	/** @var string Model class name; set by the controller. */
+	protected string $modelName = '';
+
+	/** @var bool When true, the full POST array<array-key, mixed> is used instead of->post[$type]. */
+	protected bool $fullPost = false;
+
+	/**
+	 * Delete one or more entities by primary key.
+	 *
+	 * Reads the type ID from the request, calls the model delete method,
+	 * and displays a success or error message via the view.
+	 *
+	 * @return array<string, mixed> The index data after deletion.
+	 */
+	public function delete(): array {
+		if (APP === 'admin') {
 			$this->checkCsrf();
 		}
 
 		$type    = $this->type;
-		$type_id = $this->type_id ?? "{$type}_id";
+		$type_id = $this->type_id ?: "{$type}_id";
 
-		if (APP == 'admin') {
+		if (APP === 'admin') {
 			$data_id = $this->request->post[$type_id];
 		} else {
 			$data_id = $this->request->post[$type_id] ?? $this->request->get[$type_id] ?? false;
@@ -72,9 +98,7 @@ trait Crud {
 				$data_id = [$data_id];
 			}
 
-			if (! isset($this->modelName)) {
-				$modelName = $type;
-			}
+			$modelName = $this->modelName ?: $type;
 
 			$model               = model($modelName);
 			$options             = [$type_id => $data_id] + $this->global;
@@ -85,7 +109,7 @@ trait Crud {
 				if ($result[$type]) {
 					$this->view->success[] = sprintf(__('%s(s) deleted!'), humanReadable($name));
 				} else {
-					$this->view->info[] = sprintf(__('No rows affected!'), humanReadable($name));
+					$this->view->info[] = __('No rows affected!');
 				}
 			} else {
 				$this->view->errors[] = sprintf(__('Error deleting %s!'), humanReadable($name));
@@ -95,34 +119,43 @@ trait Crud {
 		return $this->index();
 	}
 
-	function save() {
+	/**
+	 * Save (create or update) an entity from submitted POST data.
+	 *
+	 * Determines whether to insert or update based on the presence of a
+	 * primary key value in the request. Handles timestamps, sanitisation,
+	 * and optional redirect after save.
+	 *
+	 * @return array<string, mixed> The model result or index data.
+	 */
+	public function save(): array {
 		$type        = $this->type;
 		$module      = $this->module;
-		$controller  = $this->controller ?? $type;
+		$controller  = $this->controller ?: $type;
 		$result      = [];
 
-		$type_id       = $this->type_id ?? "{$type}_id";
+		$type_id       = $this->type_id ?: "{$type}_id";
 		$this->data_id = $this->request->get[$type_id] ?? false;
 
-		if (isset($this->fullPost) && $this->fullPost) {
+		if ($this->fullPost) {
 			$this->data = $this->request->post ?? [];
 		} else {
 			$this->data = $this->request->post[$type] ?? [];
 		}
 
 		if ($this->data) {
-			if (! isset($this->modelName)) {
+			if (empty($this->modelName)) {
 				$this->modelName = $type;
 			}
 
 			$this->model = model($this->modelName);
 
-			if (! $this->data_id) {
-				$this->data['created_at'] = $this->data['created_at'] ?? date('Y-m-d H:i:s');
+			if (!$this->data_id) {
+				$this->data['created_at'] ??= date('Y-m-d H:i:s');
 			}
-			$this->data['updated_at'] = $this->data['updated_at'] ?? date('Y-m-d H:i:s');
+			$this->data['updated_at'] ??= date('Y-m-d H:i:s');
 
-			if (isset($this->fullPost) && $this->fullPost) {
+			if ($this->fullPost) {
 				$options = $this->data + $this->global;
 			} else {
 				$options = [$type => $this->data] + $this->global;
@@ -148,7 +181,7 @@ trait Crud {
 				$this->view->success['get'] = $successMessage;
 				$this->session->set('success', ['get' => $successMessage]);
 
-				if (! $this->data_id && $this->redirect) {
+				if (!$this->data_id && $this->redirect) {
 					if ($this->redirect === true) {
 						$this->redirect(['module' => "$module/$controller", $type_id => $result[$type], 'success' => $successMessage]);
 					} else {
@@ -161,21 +194,30 @@ trait Crud {
 		}
 
 		if ($this->redirect) {
-			return $this->index();
+			$this->index();
 		}
 
 		return $result;
 	}
 
-	protected function index() {
+	/**
+	 * Load a single entity or an empty data set for the edit/create form.
+	 *
+	 * When a primary key or slug is present in the request, the model is
+	 * queried for the corresponding record. Otherwise an empty array is
+	 * returned so the view can render a "create new" form.
+	 *
+	 * @return array<string, mixed> The entity data array<array-key, mixed>.
+	 */
+	protected function index(): array {
 		$type             = $this->type;
-		$type_id          = $this->type_id ?? "{$type}_id";
+		$type_id          = $this->type_id ?: "{$type}_id";
 		$this->data_id    = $this->request->get[$type_id] ?? false;
-		$this->slug    	  = $this->request->get['slug'] ?? false;
+		$this->slug       = $this->request->get['slug'] ?? '';
 		$this->data       = [];
 
 		if ($this->data_id || $this->slug) {
-			if (! isset($this->modelName)) {
+			if (empty($this->modelName)) {
 				$this->modelName = $type;
 			}
 
@@ -190,13 +232,12 @@ trait Crud {
 			}
 
 			$this->options += $this->global + $this->request->get;
-			//unset($this->options['user_id']);
 
-			if (! $this->userFilter) {
+			if (!$this->userFilter) {
 				unset($this->options['user_id']);
 			}
 
-			if (! $this->adminFilter) {
+			if (!$this->adminFilter) {
 				unset($this->options['admin_id']);
 			}
 

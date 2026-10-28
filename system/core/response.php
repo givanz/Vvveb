@@ -23,27 +23,42 @@
 namespace Vvveb\System\Core;
 
 class Response {
-	private $headers = [];
+	/** @var array<string, mixed> */
+	private array $headers = [];
 
-	private $done = false;
+	private bool $done = false;
 
-	public $output = true;
+	public bool $output = true;
 
-	public $filters = [];
+	/** @var list<callable> */
+	public array $filters = [];
 
-	private $type = ''; //html, json, xml
+	private string $type = '';
 
-	private $status = 200;
+	private int $status = 200;
 
-	private $callback = 'callback';
+	private string $callback = 'callback';
 
-	private $typeHeaders = ['html' => 'text/html', 'xml' => 'text/xml', 'text' => 'text/plain', 'json' => 'application/json', 'jsonp' => 'application/javascript', 'activityjson' => 'application/activity+json', 'ldjson' => 'application/ld+json', 'jrdjson' => 'application/jrd+json'];
+	/** @var array<string, string> */
+	private array $typeHeaders = [
+		'html'         => 'text/html',
+		'xml'          => 'text/xml',
+		'text'         => 'text/plain',
+		'json'         => 'application/json',
+		'jsonp'        => 'application/javascript',
+		'activityjson' => 'application/activity+json',
+		'ldjson'       => 'application/ld+json',
+		'jrdjson'      => 'application/jrd+json',
+	];
 
-	protected static $instance;
+	protected static ?self $instance = null;
 
-	final public static function getInstance() {
+	/**
+	 * @return self
+	 */
+	final public static function getInstance(): self {
 		if (is_null(static::$instance)) {
-			static::$instance = new static();
+			static::$instance = new self();
 		}
 
 		return static::$instance;
@@ -53,55 +68,66 @@ class Response {
 		$this->addHeader('X-Powered-By', 'Vvveb ' . V_VERSION);
 	}
 
-	function addFilter($filter) {
+	public function addFilter(callable $filter): void {
 		$this->filters[] = $filter;
 	}
 
-	function getStatus() {
+	public function getStatus(): int {
 		return $this->status;
 	}
 
-	function setStatus($status) {
+	public function setStatus(int $status): int {
 		return $this->status = $status;
 	}
 
-	public function addHeader($header, $value = null) {
+	public function addHeader(string $header, ?string $value = null): void {
 		$this->headers[$header] = $value;
 	}
 
-	public function removeHeader($header) {
+	public function removeHeader(string $header): void {
 		unset($this->headers[$header]);
 	}
 
-	public function getHeaders() {
+	/** @return array<string, ?string> */
+	public function getHeaders(): array {
 		return $this->headers;
 	}
 
-	public function redirect($url, $status = 302) {
+	/** @return never */
+	public function redirect(string $url, int $status = 302): never {
 		header('Location: ' . str_replace(['&amp;', "\n", "\r"], ['&', '', ''], $url), true, $status);
 
 		exit();
 	}
 
-	public function getType() {
+	public function getType(): string {
 		return $this->type;
 	}
 
-	public function setType($type) {
+	public function setType(string $type): bool {
 		$contentType = $this->typeHeaders[$type] ?? false;
 
-		if ($contentType) {
-			$this->addHeader('Content-Type', $contentType);
-			$this->type = $type;
+		if (!$contentType) {
+			return false;
 		}
+
+		$this->addHeader('Content-Type', $contentType);
+		$this->type = $type;
+
+		return true;
 	}
 
-	public function output($data = null) {
+	/**
+	 * @param array<array-key, mixed>|object|null $data
+	 *
+	 * @return string|false
+	 */
+	public function output(array|object|string|null $data = null): string|false {
 		if ($this->done) {
 			return false;
 		}
 
-		if (! headers_sent()) {
+		if (!headers_sent()) {
 			foreach ($this->headers as $name => $value) {
 				if ($value) {
 					$header = "$name: $value";
@@ -119,14 +145,15 @@ class Response {
 
 		$this->done = true;
 
-		if ($this->type == 'text' && $data !== null) {
-			$output = $data;
+		if ($this->type === 'text' && $data !== null) {
+			//$data may be an array (see signature): encode it instead of echoing "Array"
+			$output = is_string($data) ? $data : json_encode($data);
 		} else {
-			if (($this->type == 'json' || $this->type == 'jsonp' || $this->type == 'ldjson' || $this->type == 'activityjson' || $this->type == 'jrdjson') && $data !== null && (! defined('CLI'))) {
+			if (in_array($this->type, ['json', 'jsonp', 'ldjson', 'activityjson', 'jrdjson']) && $data !== null && (!defined('CLI'))) {
 				if (is_array($data) || is_object($data)) {
 					$data = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
-					if ($this->type == 'jsonp') {
+					if ($this->type === 'jsonp') {
 						$data = "/**/{$this->callback}($data)";
 					}
 				}
@@ -139,7 +166,7 @@ class Response {
 					$view->setType($this->type);
 				}
 
-				$output = $view->render(true, $this->output && ! $this->filters);
+				$output = $view->render(true, $this->output && !$this->filters);
 			}
 		}
 

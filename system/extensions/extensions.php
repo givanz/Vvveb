@@ -28,30 +28,57 @@ use function Vvveb\getUrl;
 use Vvveb\System\Event;
 use Vvveb\System\Functions\Str;
 use Vvveb\System\Import\Rss;
-use function Vvveb\unzip;
 
 abstract class Extensions {
-	static protected $extensions = [];
+	/**
+	 * @var array<array-key, mixed>
+	 */
+	protected static array $extensions = [];
 
-	static protected $categories = [];
+	/**
+	 * @var array<array-key, mixed>
+	 */
+	protected static array $categories = [];
 
-	static protected $extension = 'extension';
+	/**
+	 * @var string
+	 */
+	protected static string $extension = 'extension';
 
-	static protected $baseDir = 'extension';
+	/**
+	 * @var string
+	 */
+	protected static string $baseDir = 'extension';
 
-	static protected $url;
+	/**
+	 * @var string
+	 */
+	protected static string $url = '';
 
-	static protected $feedUrl;
+	/**
+	 * @var string
+	 */
+	protected static string $feedUrl = '';
 
-	const KEY_VALUE_REGEX = '/^([\w ]+):\s+(.+)$/m';
+	/**
+	 * @var string
+	 */
+	protected static string $categoriesFeedUrl = '';
 
-	static function getParams($comments) {
+	public const KEY_VALUE_REGEX = '/^([\w -]+):\s+(.+?)\s*$/m';
+
+	/**
+	 * @param string $comments
+	 *
+	 * @return array<array-key, mixed>
+	 */
+	public static function getParams(string $comments): array {
 		$results = [];
 
-		if (preg_match_all(static :: KEY_VALUE_REGEX, $comments, $matches)) {
-			$matches[1] = array_map(function ($key) {
-				return str_replace(' ','-',strtolower(trim($key)));
-			}, $matches[1]);
+		if (preg_match_all(static::KEY_VALUE_REGEX, $comments, $matches)) {
+			$matches[1] = array_map(fn ($key) => str_replace(' ', '-', strtolower(trim($key))), $matches[1]);
+
+			$matches[2] = array_map('trim', $matches[2]);
 
 			$results = array_combine($matches[1], $matches[2]);
 		}
@@ -59,47 +86,51 @@ abstract class Extensions {
 		return $results;
 	}
 
-	static function getComments($content) {
-		//$content = file_get_contents($file);
-		if (function_exists('token_get_all')) {
-			$docComments = [];
-
-			foreach (token_get_all($content) as $entry) {
-				if ($entry[0] == T_DOC_COMMENT || $entry[0] == T_COMMENT) {
-					$docComments[] = $entry[1];
-				}
-			}
-
-			return implode("\n", $docComments);
-		} else {
-			if (preg_match_all('@(?s)/\*.*?\*/@', $content, $matches, PREG_PATTERN_ORDER)) {
-				return implode("\n", $matches[0] ?? []);
-			}
+	/**
+	 * @param string $content
+	 *
+	 * @return string
+	 */
+	public static function getComments(string $content): string {
+		//extract block comments; line comments are not used for extension info headers
+		if (preg_match_all('@(?s)/\*.*?\*/@', $content, $matches, PREG_PATTERN_ORDER)) {
+			return implode("\n", $matches[0]);
 		}
 
 		return '';
 	}
 
-	static function getInfo($content, $name = false) {
-		$comments = static :: getComments($content);
-		$params   = static ::  getParams($comments);
+	/**
+	 * @param string       $content
+	 * @param string|false $name
+	 *
+	 * @return array<array-key, mixed>
+	 */
+	public static function getInfo(string $content, string|false $name = false): array {
+		$comments = static::getComments($content);
+		$params   = static::getParams($comments);
 
 		if (isset($params['status'])) {
 			unset($params['status']);
 		}
 
 		if (isset($params['category']) && $name) {
-			static :: $categories[$params['category']][] = $name;
+			static::$categories[$params['category']][] = $name;
 		}
 
 		return $params;
 	}
 
-	static function getListInfo($path) {
-		if (isset(static :: $extensions[static :: $extension])) {
-			return static :: $extensions[static :: $extension];
+	/**
+	 * @param string $path
+	 *
+	 * @return array<array-key, mixed>
+	 */
+	public static function getListInfo(string $path): array {
+		if (isset(static::$extensions[static::$extension])) {
+			return static::$extensions[static::$extension];
 		} else {
-			static :: $extensions[static :: $extension] = [];
+			static::$extensions[static::$extension] = [];
 		}
 
 		$adminPath = \Vvveb\adminPath();
@@ -107,92 +138,115 @@ abstract class Extensions {
 
 		foreach ($list as $file) {
 			$content		      = file_get_contents($file);
-			$dir			         = Str::match('@(.+)/[a-z]+.\w+$@', $file);
-			$folder		       = Str::match('@/([^/]+)/[a-z]+.\w+$@', $file);
+			$dir			         = Str::match('@(.+)[\\/][a-z]+.\w+$@', $file);
+			$folder		       = Str::match('@[\\/]([^\\/]+)[\\/][a-z]+.\w+$@', $file);
 			$info           = static::getInfo($content, $folder);
 			$info['file']   = $file;
 			$info['folder'] = $folder;
 			$info['import'] = file_exists($dir . DS . 'import');
 
 			if (isset($info['settings'])) {
-				$info['settings']= str_replace('/admin/', $adminPath, $info['settings']);
+				$info['settings'] = str_replace('/admin/', $adminPath, $info['settings']);
 			}
 
 			// plugin folder does not match slug
-			if (! isset($info['slug']) || ($info['slug'] != $info['folder'])) {
+			if (!isset($info['slug']) || ($info['slug'] !== $info['folder'])) {
 				$info['status'] = 'slug_folder_mismatch';
 				$info['slug']   = $info['folder'];
 			}
 
-			static :: $extensions[static :: $extension][$folder] = $info;
+			static::$extensions[static::$extension][$folder] = $info;
 		}
 
-		return static :: $extensions[static :: $extension];
+		return static::$extensions[static::$extension];
 	}
 
-	static function getCategories() {
-		return static :: $categories;
+	/**
+	 * @return array<array-key, mixed>
+	 */
+	public static function getCategories(): array {
+		return static::$categories;
 	}
 
-	static function download($url) {
-		$f    = false;
+	/**
+	 * @param string $url
+	 *
+	 * @return string|false
+	 */
+	public static function download(string $url): string|false {
 		$temp = @tempnam(sys_get_temp_dir(), 'vvveb_plugin');
 
-		if (! $temp) {
-			$temp = @tmpfile();
+		if (!$temp && ($handle = @tmpfile())) {
+			//tmpfile() returns a stream, not a path: resolve it via metadata.
+			//fclose() deletes the file, the path is recreated by file_put_contents below.
+			$meta = stream_get_meta_data($handle);
+			$temp = $meta['uri'] ?? false;
+			fclose($handle);
 		}
 
 		//if temp still fails use cache dir, some shared hosting have this issue
-		if (! $temp) {
+		if (!$temp) {
 			$temp = DIR_CACHE . APP . '.extension.' . md5($url) . '.zip';
 		}
 
-		if ($content = download($url)) {
-			$f  = file_put_contents($temp, $content, LOCK_EX);
-			if ($f) {
-				return $temp;
-			}
+		if (($content = download($url)) && @file_put_contents($temp, $content, LOCK_EX) !== false) {
+			return $temp;
 		}
 
-		return $f;
+		return false;
 	}
 
-	static function validFile($file) {
-		if (strpos($file, '..') !== false) {
+	/**
+	 * @param string $file
+	 *
+	 * @return bool
+	 */
+	public static function validFile(string $file): bool {
+		if (str_contains($file, '..')) {
 			return false;
 		}
 
-		if (strpos($file, 'htaccess') !== false) {
+		if (str_contains($file, 'htaccess')) {
 			return false;
 		}
-		
+
 		//for public folder don't allow php and htaccess files
-		if (strpos($file, 'public') !== false) {
+		if (str_contains($file, 'public')) {
 			$extension = strtolower(substr($file, strrpos($file, '.') + 1));
 			if (in_array($extension, ['php', 'htaccess'])) {
 				return false;
 			}
 		}
-		
-		
+
 		return true;
 	}
-	
-	static function install($extensionZipFile, $slug = false, $validate = true) {
-		$extension   = static :: $extension;
+
+	/**
+	 * @param string       $extensionZipFile
+	 * @param string|false $slug
+	 * @param bool         $validate
+	 *
+	 * @return string|bool
+	 */
+	public static function install(string $extensionZipFile, string|false $slug = false, bool $validate = true): string|bool {
+		$extension   = static::$extension;
 		$success     = true;
-		$extractTo   = static :: $baseDir;
+		$extractTo   = static::$baseDir;
 		$fileCheck   = "$extension.php";
 		$valid       = false;
 
 		$zip = new \ZipArchive();
 
 		if ($zip->open($extensionZipFile/*, \ZipArchive::OVERWRITE*/) === true) {
+			if ($zip->numFiles === 0) {
+				throw new \Exception(__('File is not a valid zip archive!'));
+			}
+
 			$info       = false;
 			$folderName = $zip->getNameIndex(0);
 
 			//check if first entry is a directory
-			if (substr($folderName, -1, 1) != '/') {
+			if (substr($folderName, -1, 1) !== '/') {
 				if ($validate) {
 					throw new \Exception(sprintf('%s zip must have only %s folder!', $extensionZipFile, ucfirst($extension)));
 				}
@@ -200,33 +254,31 @@ abstract class Extensions {
 				$slug = trim($folderName, '/');
 			}
 
-			for ($i = $zip->numFiles - 1; ($i > 0 && $success == true); $i--) {
+			for ($i = $zip->numFiles - 1; ($i > 0 && $success === true); $i--) {
 				$file = $zip->getNameIndex($i);
 
-				if (!self :: validFile($file)) {
+				if (!self::validFile($file)) {
 					throw new \Exception(sprintf(__('Zip contains invalid file "%s"'), $file));
 				}
-				
+
 				if ($validate) {
 					//check if all files inside the extension folder
-					if (strpos($file, $folderName) === false) {
+					if (!str_contains($file, $folderName)) {
 						$extractTo .= DS . $slug;
 
-						if ($validate) {
-							throw new \Exception(sprintf(__('%s zip should not have other files than %s folder!'), $extension, $extension));
-						}
+						throw new \Exception(sprintf(__('%s zip should not have other files than %s folder!'), $extension, $extension));
 					}
 				}
 
 				// plugin.php must be in the top most folder
-				if (strpos($file, $fileCheck) !== false && substr_count($file, '/') < 2) {
+				if (str_contains($file, $fileCheck) && substr_count($file, '/') < 2) {
 					$content = $zip->getFromName($file);
 					$info    = static::getInfo($content);
 
 					if (isset($info['slug']) && ($folderName == ($info['slug'] . '/'))) {
 						// Unzip Path
 						$success = $info['slug'];
-						$valid = true;
+						$valid   = true;
 					} else {
 						if ($validate) {
 							throw new \Exception(sprintf(__('%s slug `%s` does not match folder %s!'), $extension, $info['slug'] ?? '', $folderName));
@@ -236,8 +288,6 @@ abstract class Extensions {
 							$success = $info['slug'];
 						}
 					}
-
-					//break;
 				}
 			}
 
@@ -246,7 +296,7 @@ abstract class Extensions {
 				if (!is_writable($extractTo)) {
 					throw new \Exception(sprintf(__('%s folder not writable!'), str_replace(DIR_ROOT, '', $extractTo)));
 				}
-				
+
 				if ($zip->extractTo($extractTo)) {
 					$success = $slug;
 					$info    = ['slug' => $slug];
@@ -257,30 +307,40 @@ abstract class Extensions {
 
 			$zip->close();
 
-			if (! $info) {
+			if (!$info) {
 				throw new \Exception(sprintf(__('No `%s.php` info found inside zip!'), $extension));
 			}
 		} else {
 			throw new \Exception(__('File is not a valid zip archive!'));
 		}
 
-		Event :: trigger(__CLASS__, __FUNCTION__, $extensionZipFile, $success);
+		Event::trigger(__CLASS__, __FUNCTION__, $extensionZipFile, $success);
 
 		return $success;
 	}
 
-	static function marketUrl() {
-		return static :: $url;
+	/**
+	 * @return ?string
+	 */
+	public static function marketUrl(): ?string {
+		return static::$url;
 	}
 
-	static function getMarketUrl($url, $params = [], $key = null) {
+	/**
+	 * @param string                  $url
+	 * @param array<array-key, mixed> $params
+	 * @param ?string                 $key
+	 *
+	 * @return array<array-key, mixed>
+	 */
+	public static function getMarketUrl(string $url, array $params = [], ?string $key = null): array {
 		$query            = http_build_query($params);
 		$content          = getUrl($url . '?' . $query);
 
 		if ($content) {
 			$rss  = new Rss($content);
 
-			$key                                = $key ?? static :: $extension . 's';
+			$key ??= static::$extension . 's';
 			$result[$key]                       = $rss->get($params['start'] ?? 1, $params['limit'] ?? 10);
 			$result['count']                    = $rss->value('count');
 
@@ -290,11 +350,23 @@ abstract class Extensions {
 		return [];
 	}
 
-	static function getMarketCategories($params = [], $key = null) {
-		return static :: getMarketUrl(static :: $categoriesFeedUrl, $params, $key);
+	/**
+	 * @param array<array-key, mixed> $params
+	 * @param ?string                 $key
+	 *
+	 * @return array<array-key, mixed>
+	 */
+	public static function getMarketCategories(array $params = [], ?string $key = null): array {
+		return static::getMarketUrl(static::$categoriesFeedUrl, $params, $key);
 	}
 
-	static function getMarketList($params = [], $key = null) {
-		return static :: getMarketUrl(static :: $feedUrl, $params, $key);
+	/**
+	 * @param array<array-key, mixed> $params
+	 * @param ?string                 $key
+	 *
+	 * @return array<array-key, mixed>
+	 */
+	public static function getMarketList(array $params = [], ?string $key = null): array {
+		return static::getMarketUrl(static::$feedUrl, $params, $key);
 	}
 }

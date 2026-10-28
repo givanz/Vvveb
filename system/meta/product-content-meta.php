@@ -23,7 +23,9 @@
 namespace Vvveb\System\Meta;
 
 class ProductContentMeta extends Meta {
-	protected $modelName = 'product_content_meta';
+	/** @var string */
+	protected string $modelName = 'product_content_meta';
 
-	protected $item_id = 'product_id';
+	/** @var string */
+	protected string $item_id = 'product_id';
 }

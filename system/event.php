@@ -22,30 +22,24 @@
 
 namespace Vvveb\System;
 
-trait EventTrait {
-	static function trigger($method, $params = NULL) {
-		if ($params === NULL) {
-			return $params = \Vvveb\System\Event::trigger(__CLASS__, $method);
-		} else {
-			return $params = \Vvveb\System\Event::trigger(__CLASS__, $method, $params);
-		}
-	}
-
-	public static function on($namespace, $name, $id, $callback, $priority = 0) {
-		return $params = \Vvveb\System\Event::on($namespace, $name, __CLASS__ . '::' . $id, $callback, $priority);
-	}
-}
-
 class Event {
-	private static $events = [];
+	/** @var array<string, array<string, array<int, array<string, callable>>>> */
+	private static array $events = [];
 
-	private function __construct() {
-	}
+	private function __construct() {}
 
-	private function __clone() {
-	}
+	private function __clone() {}
 
-	public static function on($namespace, $name, $id, $callback, $priority = 1000) {
+	/**
+	 * @param string   $namespace
+	 * @param string   $name
+	 * @param string   $id
+	 * @param callable $callback
+	 * @param int      $priority
+	 *
+	 * @return void
+	 */
+	public static function on(string $namespace, string $name, string $id, callable $callback, int $priority = 1000): void {
 		if (empty(self::$events[$namespace][$name][$priority])) {
 			self::$events[$namespace][$name][$priority] = [];
 		}
@@ -54,32 +48,39 @@ class Event {
 		ksort(self::$events[$namespace][$name], SORT_NUMERIC);
 	}
 
-	public static function trigger($namespace, $name) {
+	/**
+	 * Trigger all callbacks registered for the given namespace and name.
+	 * Additional arguments are passed to each callback.
+	 *
+	 * @param string $namespace
+	 * @param string $name
+	 * @param mixed  ...$args
+	 *
+	 * @return mixed
+	 */
+	public static function trigger(string $namespace, string $name, mixed ...$args): mixed {
 		$hasParams = false;
-		$params    = func_get_args();
-		$params    = array_slice($params, 2);
+		$params    = $args;
 
 		if (empty(self::$events[$namespace][$name])) {
 			return $params;
 		}
 
 		//$params can be changed by events and be empty, set flag so that we know to return it
-		if ($params || isset($params[0])) {
+		if ($params) {
 			$hasParams = true;
 		}
 
 		foreach (self::$events[$namespace][$name] as $priority => $events) {
 			foreach ($events as $id => $event) {
-				if (is_callable($event)) {
-					if ($hasParams) {
-						$ret = call_user_func_array($event, $params);
-						//if event does not filter parameters or someone forgot to return them keep previous parameters
-						if ($ret !== null) {
-							$params = $ret;
-						}
-					} else {
-						call_user_func($event);
+				if ($hasParams) {
+					$ret = $event(...$params);
+					//if event does not filter parameters or someone forgot to return them keep previous parameters
+					if ($ret !== null) {
+						$params = $ret;
 					}
+				} else {
+					$event();
 				}
 			}
 		}
@@ -87,45 +88,68 @@ class Event {
 		if ($hasParams) {
 			return $params;
 		}
+
+		return null;
 	}
 
-	public static function off($namespace, $name = false, $eventId = false) {
-		if ($eventId && ! empty(self::$events[$namespace][$name])) {
+	/**
+	 * @param string       $namespace
+	 * @param string|false $name
+	 * @param string|false $eventId
+	 *
+	 * @return bool
+	 */
+	public static function off(string $namespace, string|false $name = false, string|false $eventId = false): bool {
+		if ($eventId && $name && !empty(self::$events[$namespace][$name])) {
 			foreach (self::$events[$namespace][$name] as $priority => &$events) {
 				foreach ($events as $id => $event) {
 					if ($id == $eventId) {
 						unset($events[$id]);
 
-						break 2;
-
 						return true;
 					}
 				}
 			}
-		} else {
-			if ($name && ! empty(self::$events[$namespace][$name])) {
-				unset(self::$events[$namespace][$name]);
+		} elseif ($eventId && !empty(self::$events[$namespace])) {
+			//no name given, remove the event id from all names
+			$removed = false;
 
-				return true;
-			} else {
-				if ($namespace && ! empty(self::$events[$namespace])) {
-					unset(self::$events[$namespace]);
-
-					return true;
+			foreach (self::$events[$namespace] as &$priorities) {
+				foreach ($priorities as &$events) {
+					if (isset($events[$eventId])) {
+						unset($events[$eventId]);
+						$removed = true;
+					}
 				}
 			}
+
+			return $removed;
+		} elseif ($name && !empty(self::$events[$namespace][$name])) {
+			unset(self::$events[$namespace][$name]);
+
+			return true;
+		} elseif ($namespace && !empty(self::$events[$namespace])) {
+			unset(self::$events[$namespace]);
+
+			return true;
 		}
 
 		return false;
 	}
 
-	public static function getEvents($namespace = false, $name = false) {
+	/**
+	 * @param string|false $namespace
+	 * @param string|false $name
+	 *
+	 * @return array<array-key, mixed>
+	 */
+	public static function getEvents(string|false $namespace = false, string|false $name = false): array {
 		if ($name) {
 			return self::$events[$namespace][$name] ?? [];
-		} else {
-			if ($namespace) {
-				return self::$events[$namespace] ?? [];
-			}
+		}
+
+		if ($namespace) {
+			return self::$events[$namespace] ?? [];
 		}
 
 		return self::$events;

@@ -22,36 +22,73 @@
 
 namespace Vvveb\System\Cart;
 
+/**
+ * Provides tax calculation helpers for the cart.
+ *
+ * @property array<string, array{price: float|int|string, tax_type_id: int|string}> $taxes
+ * @property array<int|string, array<array-key, mixed>>                             $products
+ * @property float|int                                                              $total_tax
+ * @property Tax                                                                    $tax
+ */
 trait TaxTrait {
-	public function addTax($name, $price, $taxTypeId) {
+	/**
+	 * Split a tax-inclusive amount using the cart's resolved rates.
+	 *
+	 * @param float|int|string $gross
+	 * @param int|string       $taxTypeId
+	 *
+	 * @return array{0: float, 1: float} [net, tax]
+	 */
+	public function extractTax(float|int|string $gross, int|string $taxTypeId): array {
+		return $this->tax->extractTax($gross, $taxTypeId);
+	}
+
+	/**
+	 * @param string           $name
+	 * @param float|int|string $price
+	 * @param int|string       $taxTypeId
+	 */
+	public function addTax(string $name, float|int|string $price, int|string $taxTypeId): void {
 		if ($price && $taxTypeId) {
 			$this->taxes[$name] = ['price' => $price, 'tax_type_id' => $taxTypeId];
 		}
 	}
 
-	public function removeTax($name) {
+	/**
+	 * @param string $name
+	 */
+	public function removeTax(string $name): void {
 		unset($this->taxes[$name]);
 	}
 
-	public function getTaxes() {
+	/**
+	 * Calculate taxes for all products and custom taxes.
+	 *
+	 * @return array<int, array{tax_rate_id: int|string, name: string, rate: string, type: string, amount: float|int, value: float|int}>
+	 */
+	public function getTaxes(): array {
 		$taxes           = [];
 		$this->total_tax = 0;
 		$products        = $this->products + $this->taxes;
+		$precision       = $this->tax->taxPrecision ?? 2;
 
 		foreach ($products as $product) {
 			if (isset($product['tax_type_id']) && $product['tax_type_id']) {
 				$tax_rates = $this->tax->getRates($product['price'], $product['tax_type_id']);
 
 				foreach ($tax_rates as $tax_rate) {
-					$rateId = $tax_rate['tax_rate_id'] ?? false;
+					$rateId = $tax_rate['tax_rate_id'];
 
-					if (! isset($taxes[$rateId])) {
+					if (!isset($taxes[$rateId])) {
 						$taxes[$rateId]          = $tax_rate;
 						$taxes[$rateId]['value'] = 0;
 					}
 
-					$taxes[$rateId]['value'] += ($tax_rate['amount'] * ($product['quantity'] ?? 1));
-					$this->total_tax = $taxes[$rateId]['value'];
+					//round per order line so the summed total matches the
+					//displayed line taxes instead of drifting by a cent
+					$lineTax               = round($tax_rate['amount'] * ($product['quantity'] ?? 1), $precision);
+					$taxes[$rateId]['value'] += $lineTax;
+					$this->total_tax += $lineTax;
 				}
 			}
 		}
@@ -59,14 +96,20 @@ trait TaxTrait {
 		return $taxes;
 	}
 
-	public function getTaxTotal() {
+	/**
+	 * Get the total tax amount.
+	 */
+	public function getTaxTotal(): float|int {
 		return $this->total_tax;
 	}
 
-	function addTaxTotal() {
+	/**
+	 * Calculate and add all tax totals to the cart totals.
+	 */
+	public function addTaxTotal(): void {
 		$taxes = $this->getTaxes();
 		$this->removeTotal('tax');
-		
+
 		foreach ($taxes as $tax) {
 			$this->addTotal('tax', 'tax.' . $tax['tax_rate_id'], $tax['name'], $tax['value']);
 		}

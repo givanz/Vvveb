@@ -25,15 +25,21 @@ namespace Vvveb\System\Cart;
 use Vvveb\Sql\CouponSQL;
 
 trait CouponTrait {
-	protected $coupons = [];
+	/** @var array<string, array<string, mixed>> */
+	protected array $coupons = [];
 
-	public function addCoupon($code) {
+	/**
+	 * Validate and add a coupon code to the cart.
+	 *
+	 * @param string $code
+	 */
+	public function addCoupon(string $code): bool {
 		if ($code) {
 			$coupon  = new CouponSQL();
 			$options = ['code' => $code, 'status' => 1] + $this->options;
 			$result  = $coupon->get($options);
 
-			if ($result && $result['code'] == $code) {
+			if ($result && $result['code'] === $code) {
 				$this->coupons[$code] = $result;
 
 				return true;
@@ -43,7 +49,16 @@ trait CouponTrait {
 		return false;
 	}
 
-	public function removeCoupon($code) {
+	/**
+	 * Remove a coupon code from the cart.
+	 *
+	 * @param string $code
+	 */
+	public function removeCoupon(string $code): bool {
+		if (!isset($this->coupons[$code])) {
+			return false;
+		}
+
 		$coupon = $this->coupons[$code];
 		$this->removeTotal('coupon', 'coupon.' . $coupon['coupon_id']);
 		unset($this->coupons[$code]);
@@ -51,11 +66,19 @@ trait CouponTrait {
 		return true;
 	}
 
-	public function getCoupons() {
+	/**
+	 * Get all applied coupons.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	public function getCoupons(): array {
 		return $this->coupons;
 	}
 
-	function addCouponTotal() {
+	/**
+	 * Calculate and add coupon discount totals.
+	 */
+	public function addCouponTotal(): void {
 		$coupons = $this->getCoupons();
 
 		$total = $this->getSubTotal();
@@ -63,15 +86,15 @@ trait CouponTrait {
 		$taxes = $this->getTotals('tax');
 		foreach ($taxes as $tax) {
 			$total += $tax['value'];
-		}		
+		}
 
-		foreach ($coupons as $coupon) {
-			if ($coupon['type'] == 'P') {
-				$discount = (($coupon['discount'] * $total) / 100);
-			} else {
-				$discount = $coupon['discount'];
+		foreach ($coupons as $code => $coupon) {
+			$discount = $coupon['discount'] ?? 0;
+
+			if (($coupon['type'] ?? '') === 'P') {
+				$discount = (($discount * $total) / 100);
 			}
-			$this->addTotal('coupon', 'coupon.' . $coupon['coupon_id'], $coupon['name'], -$discount);
+			$this->addTotal('coupon', 'coupon.' . ($coupon['coupon_id'] ?? $code), $coupon['name'] ?? (string)$code, -$discount);
 		}
 	}
 }

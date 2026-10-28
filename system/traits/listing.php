@@ -28,39 +28,70 @@ use function Vvveb\model;
 use Vvveb\System\Images;
 
 trait Listing {
-	protected $module;
+	/** @var string Module name (e.g. 'blog', 'shop'). */
+	protected string $module = '';
 
-	protected $type;
+	/** @var string Entity type name used as the primary key suffix. */
+	protected string $type = '';
 
-	protected $list;
+	/** @var string List identifier; defaults to when null. */
+	protected string $list = '';
 
-	protected $type_id;
+	/** @var string Column name used as primary key; defaults to "{type}_id". */
+	protected string $type_id = '';
 
-	protected $data_id;
+	/** @var string Column name used as a secondary data identifier. */
+	protected string $data_id = '';
 
-	protected $model;
+	/** @var object|null Model instance. */
+	protected ?object $model = null;
 
-	protected $modelName;
+	/** @var string Model class name; set by the controller. */
+	protected string $modelName = '';
 
-	protected $userFilter = false;
-	
-	protected $adminFilter = true;
+	/** @var bool Whether to apply user_id filter in queries. */
+	protected bool $userFilter = false;
 
-	protected $options = [];
+	/** @var bool Whether to apply admin_id filter in queries. */
+	protected bool $adminFilter = true;
 
-	function init() {
-		if (isset($this->request->get['type'])) {
-			//$this->type = $this->request->get['type'];
-		}
+	/** @var array<string, mixed> Additional options merged into every query. */
+	protected array $options = [];
 
+	/** @var string Controller name; defaults to when null. */
+	protected string $controller = '';
+
+	/** @var string List controller name; defaults to when null. */
+	protected string $listController = '';
+
+	/** @var array<string, mixed> Current filter parameters from the request. */
+	protected array $filter = [];
+
+	/** @var string Slug from the request. */
+	protected string $slug = '';
+
+	/**
+	 * Initialise the listing controller.
+	 *
+	 * @return mixed Parent init result.
+	 */
+	public function init(): ?string {
 		return parent::init();
 	}
 
-	function delete() {
+	/**
+	 * Delete one or more entities by primary key.
+	 *
+	 * Reads the type ID from the request, calls the model delete method,
+	 * and displays a success or error message via the view.
+	 *
+	 * @return array<string, mixed> The listing data after deletion.
+	 */
+	public function delete(): void {
 		$type    = $this->type;
-		$type_id = $this->type_id ?? "{$type}_id";
+		$type_id = $this->type_id ?: "{$type}_id";
 
-		if (APP == 'admin') {
+		if (APP === 'admin') {
 			$data_id = $this->request->post[$type_id];
 		} else {
 			$data_id = $this->request->post[$type_id] ?? $this->request->get[$type_id] ?? false;
@@ -71,17 +102,17 @@ trait Listing {
 				$data_id = [$data_id];
 			}
 
-			if (! isset($this->modelName)) {
+			if (empty($this->modelName)) {
 				$this->modelName = $type;
 			}
 
 			$model               = model($this->modelName);
 			$options             = [$type_id => $data_id] + $this->global;
 
-			if (! $this->adminFilter) {
+			if (!$this->adminFilter) {
 				unset($options['admin_id']);
 			}
-			
+
 			$result              = $model->delete($options);
 			$name                = ucfirst(__($type));
 
@@ -89,7 +120,7 @@ trait Listing {
 				if ($result[$type]) {
 					$this->view->success[] = sprintf(__('%s(s) deleted!'), humanReadable($name));
 				} else {
-					$this->view->info[] = sprintf(__('No rows affected!'), humanReadable($name));
+					$this->view->info[] = __('No rows affected!');
 				}
 			} else {
 				$this->view->errors[] = sprintf(__('Error deleting %s!'), humanReadable($name));
@@ -98,43 +129,44 @@ trait Listing {
 
 		unset($this->request->get[$type_id]);
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Fetch and return a paginated list of entities.
+	 *
+	 * Applies pagination, filters, and optional image URL resolution from
+	 * the model results.
+	 *
+	 * @return array<string, mixed> Results array<array-key, mixed> keyed by entity type, plus query options.
+	 */
+	public function index(): array {
 		$type           = $this->type;
-		$controller  	  = $this->controller ?? $type;
-		$listController = $this->listController ?? $type;
-		$type_id        = $this->type_id ?? "{$type}_id";
-		$data_id        = $this->data_id ?? "{$type}_id";
-		$list           = $this->list ?? $type;
-		$module         = $this->module;
 		$this->filter   = $this->request->get['filter'] ?? [];
 
-		if (! isset($this->modelName)) {
+		if (empty($this->modelName)) {
 			$this->modelName = $type;
 		}
 
 		$model = model($this->modelName);
 
-		$page   = max($this->request->get['page'] ?? 1, 1);
+		$page   = max((int)($this->request->get['page'] ?? 1), 1);
 		$limit  = (int)($this->request->get['limit'] ?? 10);
 		$start  = ($page - 1) * $limit;
 
 		$options = [
 			'start' => $start,
 			'limit' => $limit,
-			//'type'        => $this->type,
 		] + $this->global + $this->filter + $this->request->get;
 
-		if (! $this->userFilter) {
+		if (!$this->userFilter) {
 			unset($options['user_id']);
 		}
 
-		if (! $this->adminFilter) {
+		if (!$this->adminFilter) {
 			unset($options['admin_id']);
 		}
-		
+
 		if ($this->data_id && ($id = $this->request->get[$this->data_id] ?? false)) {
 			$options[$this->data_id] = $id;
 		}
@@ -144,10 +176,12 @@ trait Listing {
 		if (isset($results[$type])) {
 			foreach ($results[$type] as $id => &$row) {
 				if (isset($row['images'])) {
-					$row['images'] = json_decode($row['images'], 1);
+					$row['images'] = json_decode($row['images'], true);
 
-					foreach ($row['images'] as &$image) {
-						$image = Images::image($image, $type);
+					if (is_array($row['images'])) {
+						foreach ($row['images'] as &$image) {
+							$image = Images::image($image, $type);
+						}
 					}
 				} else {
 					if (isset($row['image'])) {

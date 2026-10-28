@@ -22,16 +22,20 @@
 
 namespace Vvveb\System;
 
-use Vvveb\Sql\SettingSQL as SettingSQL;
+use Vvveb\Sql\SettingSQL;
 
 class Setting {
-	private $setting = [];
+	/** @var array<string, mixed> */
+	private array $setting = [];
 
-	private $settingSql;
+	/** @var SettingSQL */
+	private SettingSQL $settingSql;
 
-	private static $instance;
+	/** @var ?self */
+	private static ?self $instance = null;
 
-	public static function getInstance() {
+	/** @return self */
+	public static function getInstance(): self {
 		if (self::$instance) {
 			return self::$instance;
 		} else {
@@ -39,12 +43,99 @@ class Setting {
 		}
 	}
 
-	function __construct() {
+	/**
+	 * @return void
+	 */
+	public function __construct() {
 		$this->settingSql = new SettingSQL();
 	}
 
-	public function get($namespace, $key, $default = null, $site_id = SITE_ID) {
-		if (! $namespace && ! $key) {
+	/**
+	 * Decrypt a stored value (or nested settings array) for runtime use.
+	 *
+	 * Key-agnostic: any `enc:v1:` envelope is decrypted, legacy plaintext
+	 * passes through, failures keep the stored value so re-save can recover.
+	 *
+	 * @param mixed $value Stored value.
+	 *
+	 * @return mixed Decrypted value.
+	 */
+	private function decryptStored(mixed $value): mixed {
+		if (function_exists('\Vvveb\decryptSettings')) {
+			return \Vvveb\decryptSettings($value);
+		}
+
+		if (is_array($value)) {
+			foreach ($value as &$item) {
+				$item = $this->decryptStored($item);
+			}
+			unset($item);
+
+			return $value;
+		}
+
+		if (is_string($value) && function_exists('\Vvveb\isEncryptedSecret') && function_exists('\Vvveb\decryptSecret') && \Vvveb\isEncryptedSecret($value)) {
+			$plain = \Vvveb\decryptSecret($value);
+
+			return $plain === false ? $value : $plain;
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Encrypt a value for database storage.
+	 *
+	 * Sensitive keys (`key|secret|password|signature|token|private|username|
+	 * login`) are encrypted with the install-generated `app.key`; everything
+	 * else and already-encrypted values pass through. Failures fall back to
+	 * plaintext so a missing key never loses data.
+	 *
+	 * @param string|int $key   Setting key (drives the sensitivity check).
+	 * @param mixed      $value Plaintext value.
+	 *
+	 * @return mixed Encrypted value ready for storage.
+	 */
+	private function encryptForStorage(string|int $key, mixed $value): mixed {
+		if (is_array($value)) {
+			if (function_exists('\Vvveb\encryptSettings')) {
+				return \Vvveb\encryptSettings($value);
+			}
+
+			return $value;
+		}
+
+		if (!is_string($value) || $value === '') {
+			return $value;
+		}
+
+		if (function_exists('\Vvveb\isEncryptedSecret') && \Vvveb\isEncryptedSecret($value)) {
+			return $value;
+		}
+
+		$sensitive = is_string($key) && function_exists('\Vvveb\isSensitiveSettingKey') ? \Vvveb\isSensitiveSettingKey($key) : false;
+
+		if ($sensitive && function_exists('\Vvveb\encryptSecret')) {
+			$encrypted = \Vvveb\encryptSecret($value);
+
+			if (is_string($encrypted) && $encrypted !== '') {
+				return $encrypted;
+			}
+		}
+
+		return $value;
+	}
+
+	/**
+	 * @param string                              $namespace
+	 * @param string|array<array-key, mixed>|null $key
+	 * @param mixed                               $default
+	 * @param int                                 $site_id
+	 *
+	 * @return mixed
+	 */
+	public function get(string $namespace, string|array|null $key, mixed $default = null, int $site_id = SITE_ID): mixed {
+		if (!$namespace && !$key) {
 			return $default;
 		}
 
@@ -61,7 +152,7 @@ class Setting {
 						$json = json_decode($val, true);
 						$val  =  $json ?: $val;
 					}
-					$return[$value['key']] = $val;
+					$return[$value['key']] = $this->decryptStored($val);
 				}
 
 				return $return;
@@ -90,27 +181,44 @@ class Setting {
 				$result  =  $json ?? $result;
 			}
 
-			return $result;
+			return $this->decryptStored($result);
 		}
 	}
 
-	public function set($namespace, $key, $value, $site_id = SITE_ID) {
-		if (! $namespace || ! $key) {
-			return;
+	/**
+	 * @param string $namespace
+	 * @param string $key
+	 * @param mixed  $value
+	 * @param int    $site_id
+	 *
+	 * @return mixed
+	 */
+	public function set(string $namespace, string $key, mixed $value, int $site_id = SITE_ID): mixed {
+		if (!$namespace || !$key) {
+			return null;
 		}
 
-		$this->setting[$namespace][$key] = $value;
+		$this->setting[$namespace][$key] = $this->decryptStored($value);
 
-		if (is_array($value)) {
-			$value = json_encode($value);
+		$storeValue = $this->encryptForStorage($key, $value);
+
+		if (is_array($storeValue)) {
+			$storeValue = json_encode($storeValue);
 		}
 
-		return $this->settingSql->set(['namespace' => $namespace, 'key' => $key, 'value' => $value, 'site_id' => $site_id]);
+		return $this->settingSql->set(['namespace' => $namespace, 'key' => $key, 'value' => $storeValue, 'site_id' => $site_id]);
 	}
 
-	public function delete($namespace, $key, $site_id = SITE_ID) {
-		if (! $namespace) {
-			return;
+	/**
+	 * @param string $namespace
+	 * @param string $key
+	 * @param int    $site_id
+	 *
+	 * @return mixed
+	 */
+	public function delete(string $namespace, ?string $key = null, int $site_id = SITE_ID): mixed {
+		if (!$namespace) {
+			return null;
 		}
 
 		unset($this->setting[$namespace][$key]);
@@ -118,12 +226,28 @@ class Setting {
 		return $this->settingSql->delete(['namespace' => $namespace, 'key' => $key, 'site_id' => $site_id]);
 	}
 
-	public function setMulti($namespace, $settings, $site_id = SITE_ID) {
-		if (! $site_id) {
+	/**
+	 * @param string               $namespace
+	 * @param array<string, mixed> $settings
+	 * @param int                  $site_id
+	 *
+	 * @return mixed
+	 */
+	public function setMulti(string $namespace, array $settings, int $site_id = SITE_ID): mixed {
+		if (!$site_id) {
 			$site_id = 0;
 		}
 
 		$result = false;
+
+		if (function_exists('\Vvveb\encryptSettings')) {
+			$settings = \Vvveb\encryptSettings($settings);
+		} else {
+			foreach ($settings as $storeKey => &$item) {
+				$item = $this->encryptForStorage($storeKey, $item);
+			}
+			unset($item);
+		}
 
 		foreach ($settings as &$item) {
 			if (is_array($item)) {
