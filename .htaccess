@@ -25,9 +25,21 @@ Options -Indexes -ExecCGI -Includes -MultiViews
     DirectoryIndex index.php
 </IfModule>
 
-#<IfModule mod_headers.c>
-#Header always set Content-Security-Policy "upgrade-insecure-requests;"
-#</IfModule>
+#pass the authorization header to php when running via php-fpm/proxy_fcgi,
+#otherwise rest/api authentication won't work
+<IfModule mod_setenvif.c>
+	SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+</IfModule>
+
+#security headers
+<IfModule mod_headers.c>
+	#Header always set X-Frame-Options "SAMEORIGIN"
+	#Header always set X-Content-Type-Options "nosniff"
+	#Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+	#Header always set Content-Security-Policy "upgrade-insecure-requests;"
+	#Header always set Strict-Transport-Security "max-age=31536000"
+</IfModule>
 
 <IfModule mod_rewrite.c>
 RewriteEngine On
@@ -36,6 +48,8 @@ RewriteBase /
 # Redirect http to https
 #RewriteCond %{HTTPS} !=on
 #RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
+RewriteRule (^|/)\.(?!well-known) - [F,L]
+RewriteRule ^(config|system|storage|app|vendor)(/|$) - [F,L]
 
 #page cache
 RewriteCond %{REQUEST_METHOD} !=POST
@@ -60,27 +74,23 @@ RewriteRule ^ index.php [L]
 <IfModule mod_headers.c>
 
 	Header unset ETag
-    Header set Connection keep-alive
 
-    <FilesMatch "\.(txt|xml|js)$">
-        Header set Cache-Control "max-age=2592000"
-    </FilesMatch>
+	<FilesMatch "\.(txt|xml|json|js|css)$">
+		Header set Cache-Control "max-age=2592000, public"
+	</FilesMatch>
 
-    <FilesMatch "\.(css)$">
-        Header set Cache-Control "max-age=2592000"
-    </FilesMatch>
+	<FilesMatch "\.(flv|ico|pdf|avi|mov|ppt|doc|docx|mp3|wmv|wav|mp4|m4v|ogg|webm|aac)$">
+		Header set Cache-Control "max-age=31536000, public, immutable"
+	</FilesMatch>
 
-    <FilesMatch "\.(flv|ico|pdf|avi|mov|ppt|doc|mp3|wmv|wav|mp4|m4v|ogg|webm|aac)$">
-        Header set Cache-Control "max-age=2592000"
-    </FilesMatch>
+	<FilesMatch "\.(jpg|jpeg|png|gif|swf|webp|avif|svg|svgz)$">
+		Header set Cache-Control "max-age=31536000, public, immutable"
+	</FilesMatch>
 
-    <FilesMatch "\.(jpg|jpeg|png|gif|swf|webp)$">
-		Header set Cache-Control "max-age=2592000"
-    </FilesMatch>
-
-    <FilesMatch "\.(ttf|ttc|otf|eot|woff|woff2|font.css|css|js)$">
-        Header set Access-Control-Allow-Origin "*"
-    </FilesMatch>  
+	<FilesMatch "\.(ttf|ttc|otf|eot|woff|woff2)$">
+		Header set Cache-Control "max-age=31536000, public, immutable"
+		Header set Access-Control-Allow-Origin "*"
+	</FilesMatch>
 </IfModule>
 
 #FileETag None
@@ -88,34 +98,26 @@ RewriteRule ^ index.php [L]
 <IfModule mod_expires.c>
     ExpiresActive On
     ExpiresDefault A2592000
-     
-    <FilesMatch "\.(txt|xml|js)$">
+
+    <FilesMatch "\.(txt|xml|json|js|css)$">
     ExpiresDefault A2592000
     </FilesMatch>
-     
-    <FilesMatch "\.(css)$">
-    ExpiresDefault A2592000
+
+    <FilesMatch "\.(ico|pdf|avi|mov|ppt|doc|docx|mp3|wmv|wav|mp4|m4v|ogg|webm|aac)$">
+    ExpiresDefault A31536000
     </FilesMatch>
-     
-    <FilesMatch "\.(ico|pdf|avi|mov|ppt|doc|mp3|wmv|wav|mp4|m4v|ogg|webm|aac)$">
-    ExpiresDefault A2592000
+
+    <FilesMatch "\.(jpg|jpeg|png|gif|swf|webp|avif|svg|svgz)$">
+    ExpiresDefault A31536000
     </FilesMatch>
-     
-    <FilesMatch "\.(jpg|jpeg|png|gif|swf|webp)$">
-    ExpiresDefault A2592000
+
+    <FilesMatch "\.(ttf|ttc|otf|eot|woff|woff2)$">
+    ExpiresDefault A31536000
     </FilesMatch>
 </IfModule>
 
-
-
 #gzip to reduce response size
 <IfModule mod_deflate.c>
-    <IfModule mod_setenvif.c>
-        <IfModule mod_headers.c>
-            SetEnvIfNoCase ^(Accept-EncodXng|X-cept-Encoding|X{15}|~{15}|-{15})$ ^((gzip|deflate)\s*,?\s*)+|[X~-]{4,13}$ HAVE_Accept-Encoding
-            RequestHeader append Accept-Encoding "gzip,deflate" env=HAVE_Accept-Encoding
-        </IfModule>
-    </IfModule>
     <IfModule mod_filter.c>
         AddOutputFilterByType DEFLATE "application/atom+xml" \
                                       "application/javascript" \
@@ -125,6 +127,7 @@ RewriteRule ^ index.php [L]
                                       "application/rdf+xml" \
                                       "application/rss+xml" \
                                       "application/schema+json" \
+                                      "application/vnd.api+json" \
                                       "application/vnd.geo+json" \
                                       "application/vnd.ms-fontobject" \
                                       "application/x-font-ttf" \
@@ -149,11 +152,13 @@ RewriteRule ^ index.php [L]
                                       "text/x-component" \
                                       "text/x-cross-domain-policy" \
                                       "text/xml"
- 
-    </IfModule>
-    <IfModule mod_mime.c>
-        AddEncoding gzip              svgz
-    </IfModule>
- 
-</IfModule>
 
+        #don't compress already compressed formats
+        SetEnvIfNoCase Request_URI "\.(?:gif|jpe?g|png|webp|avif|gz|zip|rar|bz2|7z|xz|mp[34]|webm|og[v g]|woff2?)$" no-gzip
+    </IfModule>
+
+    <IfModule mod_mime.c>
+        AddEncoding gzip svgz
+    </IfModule>
+
+</IfModule>
