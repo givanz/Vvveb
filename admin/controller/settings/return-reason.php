@@ -25,9 +25,12 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Crud;
 
 class ReturnReason extends Crud {
-	protected $type = 'return_reason';
+	/** @var string The entity type identifier */
+	protected string $type = 'return_reason';
 
-	protected $controller = 'return-reason';
+	/** @var string The controller route slug */
+	protected string $controller = 'return-reason';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

@@ -25,13 +25,18 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Listing;
 
 class TaxRates extends Listing {
-	protected $type = 'tax_rate';
+	/** @var string The entity type identifier */
+	protected string $type = 'tax_rate';
 
-	protected $controller = 'tax-rate';
+	/** @var string The single-item controller route slug */
+	protected string $controller = 'tax-rate';
 
-	protected $listController = 'tax-rates';
+	/** @var string The list controller route slug */
+	protected string $listController = 'tax-rates';
 
-	protected $list = 'tax_rate';
+	/** @var string The list property name on the view */
+	protected string $list = 'tax_rate';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

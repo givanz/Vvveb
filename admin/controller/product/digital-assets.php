@@ -26,37 +26,46 @@ use Vvveb\Controller\Listing;
 use Vvveb\System\User\Admin;
 
 class DigitalAssets extends Listing {
-	protected $additionalPermissionCheck = ['product/digital-asset/save'];
+	/** @var list<string> */
+	protected ?array $additionalPermissionCheck = ['product/digital-asset/save'];
 
-	protected $type = 'digital_asset';
+	protected string $type = 'digital_asset';
 
-	protected $controller = 'digital-asset';
+	protected string $controller = 'digital-asset';
 
-	protected $listController = 'digital-assets';
+	protected string $listController = 'digital-assets';
 
-	protected $list = 'digital_asset';
+	protected string $list = 'digital_asset';
 
-	protected $module = 'product';
+	protected string $module = 'product';
 
-	function delete() {
+	/**
+	 * Delete digital assets, checking edit capabilities first.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
 		$editCapability = 'edit_other_products';
 
 		if (Admin::hasCapability($editCapability)) {
 			$this->adminFilter = false;
-		} else {
 		}
 
 		parent::delete();
 	}
 
-	function index() {
+	/**
+	 * Display the digital assets listing, checking view capabilities first.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$editCapability = 'view_other_products';
 
 		if (Admin::hasCapability($editCapability)) {
 			$this->adminFilter = false;
-		} else {
 		}
-		$this->adminFilter = false;
+
 		parent::index();
 	}
 }

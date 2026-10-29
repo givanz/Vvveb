@@ -25,7 +25,24 @@ namespace Vvveb\Controller\Localization;
 use Vvveb\Controller\Crud;
 
 class Currency extends Crud {
-	protected $type = 'currency';
+	/**
+	 * Entity type identifier for currencies.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'currency';
 
-	protected $module = 'localization';
+	/**
+	 * Singular controller name for detail views.
+	 *
+	 * @var string
+	 */
+	protected string $controller = 'currency';
+
+	/**
+	 * Module path this controller belongs to.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'localization';
 }

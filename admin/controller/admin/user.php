@@ -23,25 +23,36 @@
 namespace Vvveb\Controller\Admin;
 
 use Vvveb\Controller\User\User as UserBase;
+use Vvveb\Sql\RoleSQL;
 use Vvveb\Sql\SiteSQL;
 
 class User extends UserBase {
-	protected $type = 'admin';
+	/**
+	 * User type identifier for admin users.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'admin';
 
-	function index() {
+	/**
+	 * Display the admin user edit form with roles and site access data.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		parent :: index();
 
-		$roles    = new \Vvveb\Sql\RoleSQL();
+		$roleSQL = new RoleSQL();
 
-		$options    =  [
-			'type' => 'admin', //$this->type,
-			'limit'=> 100,
+		$options = [
+			'type'  => 'admin',
+			'limit' => 100,
 		] + $this->global;
 
-		$roles             = $roles->getAll($options);
-		$sites             = new SiteSQL();
+		$roles    = $roleSQL->getAll($options);
+		$sites    = new SiteSQL();
 
-		if (! isset($this->view->user['site_access'])) {
+		if (!isset($this->view->user['site_access'])) {
 			//set default site access to current site for new user
 			$this->view->user['site_access'] = [$this->global['site_id']];
 		}

@@ -27,32 +27,38 @@ use Vvveb\Controller\Crud;
 use Vvveb\System\Event;
 
 class Taxonomy extends Crud {
-	protected $type = 'taxonomy';
+	/** @var string The entity type identifier */
+	protected string $type = 'taxonomy';
 
-	protected $controller = 'taxonomy';
+	/** @var string The controller route slug */
+	protected string $controller = 'taxonomy';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 
-	function index() {
+	/**
+	 * Display the taxonomy edit/create form with post type options.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		parent::index();
 
 		$this->view->type          = ['categories' => __('Categories'), 'tags' => __('Tags')];
-		$postType                  = ['post' => __('Post'), 'page' => __('Page'), 'product' => __('product')];
+		$postType                  = ['post' => __('Post'), 'page' => __('Page'), 'product' => __('Product')];
 
 		$userPostTypes         = \Vvveb\getSetting('post', 'types', []);
-		list($pluginPostTypes) = Event::trigger('Vvveb\Controller\Base', 'customPost', []);
+		[$pluginPostTypes]     = Event::trigger('Vvveb\Controller\Base', 'customPost', []);
 		$customPost            = $userPostTypes + $pluginPostTypes;
 		array_walk($customPost, fn (&$type, $key) => $type = ucfirst($key));
 		$postType += $customPost;
 
 		$userProductTypes         = \Vvveb\getSetting('product', 'types', []);
-		list($pluginProductTypes) = Event::trigger('Vvveb\Controller\Base', 'customProduct', []);
+		[$pluginProductTypes]     = Event::trigger('Vvveb\Controller\Base', 'customProduct', []);
 		$customProduct            = $userProductTypes + $pluginProductTypes;
 		array_walk($customProduct, fn (&$type, $key) => $type = ucfirst($key));
 		$postType += $customProduct;
 
 		$this->view->post_type     = $postType;
-
-		//$this->view->taxonomy_id = $taxonomy_item_id;
 	}
 }

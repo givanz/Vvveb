@@ -25,9 +25,12 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Crud;
 
 class PaymentStatus extends Crud {
-	protected $type = 'payment_status';
+	/** @var string The entity type identifier */
+	protected string $type = 'payment_status';
 
-	protected $controller = 'payment-status';
+	/** @var string The controller route slug */
+	protected string $controller = 'payment-status';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

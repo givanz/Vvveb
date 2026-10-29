@@ -27,8 +27,7 @@ use Vvveb\Controller\Base;
 use function Vvveb\friendlyDate;
 use function Vvveb\getTemplateList;
 use function Vvveb\slugify;
-use Vvveb\Sql\CountrySQL;
-use Vvveb\Sql\regionSQL;
+use Vvveb\Sql\RegionSQL;
 use Vvveb\Sql\SiteSQL;
 use Vvveb\System\Cache;
 use Vvveb\System\CacheManager;
@@ -37,71 +36,75 @@ use Vvveb\System\Extensions\Themes;
 use Vvveb\System\Images;
 use Vvveb\System\Locale;
 use Vvveb\System\Media\Image;
+use Vvveb\System\Payment;
+use Vvveb\System\Shipping;
 use Vvveb\System\Sites;
+use Vvveb\System\User\Admin;
 use Vvveb\System\User\Role;
 use Vvveb\System\Validator;
+use function Vvveb\url;
 
 class Site extends Base {
-	private function data() {
-		$countryModel      = new CountrySQL();
-		$options           = $this->global;
-		$options['status'] = 1;
-
-		unset($options['limit']);
-
-		$country               = $countryModel->getAll($options);
-		$this->view->countries = $country['country'] ?? [];
-
-		//set Regions for default store country
-		/*
-		$region  = new RegionSQL();
-		$regions	 = $countryModel->getAll($options);
-
-		$options['country_id'] = $country_id;
-		$this->view->regions = $regions['region'] ?? [];
-		*/
-		$this->view->regionsUrl = url(['module' => 'checkout/checkout', 'action' => 'regions']);
-	}
-
-	function dateFormat() {
+	/**
+	 * Output a formatted date for preview.
+	 *
+	 * @return never
+	 */
+	public function dateFormat(): never {
 		$format = $this->request->get['format'] ?? false;
 
-		die(date($format));
+		exit(date($format));
 	}
 
-	private function invoiceFormatPreview($format) {
+	/**
+	 * Generate an invoice format preview string.
+	 *
+	 * @param string $format The invoice format pattern
+	 *
+	 * @return string The formatted preview string
+	 */
+	private function invoiceFormatPreview(string $format): string {
 		$data = ['order_id' => 777, 'customer_order_id' => 'OI888', 'user_id' => 1000, 'site_id' => 1];
 
 		return \Vvveb\invoiceFormat($format, $data);
 	}
 
-	private function orderIdFormatPreview($format) {
-		$data = ['order_id' => 777, 'customer_order_id' => 'OI888', 'user_id' => 1000, 'site_id' => 1];
-
-		return \Vvveb\invoiceFormat($format, $data);
-	}
-
-	function invoiceFormat() {
+	/**
+	 * Output an invoice format preview for AJAX.
+	 *
+	 * @return never
+	 */
+	public function invoiceFormat(): never {
 		$format = $this->request->get['format'] ?? false;
 
 		if ($format) {
 			$format = $this->invoiceFormatPreview($format);
 		}
 
-		die($format);
+		exit($format);
 	}
 
-	function orderIdFormat() {
+	/**
+	 * Output an order ID format preview for AJAX.
+	 *
+	 * @return never
+	 */
+	public function orderIdFormat(): never {
 		$format = $this->request->get['format'] ?? false;
 
 		if ($format) {
 			$format = $this->invoiceFormatPreview($format);
 		}
 
-		die($format);
+		exit($format);
 	}
 
-	function regions() {
+	/**
+	 * Return regions for a given country as JSON.
+	 *
+	 * @return void
+	 */
+	public function regions(): void {
 		$country_id = $this->request->get['country_id'] ?? false;
 		$regions    = [];
 
@@ -118,11 +121,23 @@ class Site extends Base {
 		$this->response->output($regions);
 	}
 
-	function add() {
+	/**
+	 * Alias for save().
+	 *
+	 * @return void
+	 */
+	public function add(): void {
 		$this->save();
 	}
 
-	private function themeTemplates($theme) {
+	/**
+	 * Get template file list for a given theme.
+	 *
+	 * @param string $theme The theme name
+	 *
+	 * @return array<int|string, mixed> The template file list
+	 */
+	private function themeTemplates(string $theme): array {
 		$templates = getTemplateList($theme, ['email']);
 
 		$files = ['index.html' => 'Home page'];
@@ -137,22 +152,47 @@ class Site extends Base {
 		return $files;
 	}
 
-	function getThemeTemplates() {
+	/**
+	 * Return theme templates as JSON for AJAX.
+	 *
+	 * @return array<int|string, mixed>|null The template files or null if no theme
+	 */
+	public function getThemeTemplates(): ?array {
 		$theme = $this->request->get['theme'];
 		if ($theme) {
 			$files = $this->themeTemplates($theme);
 
 			$this->response->setType('json');
+
 			return $files;
 		}
+
+		return null;
 	}
 
-	function save() {
+	/**
+	 * Save a site (create or update) with settings, routes, and templates.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
+		$site_id          = $this->request->get['site_id'] ?? false;
+		$edit_other_sites = Admin::hasCapability('edit_other_sites');
+
+		if (!$edit_other_sites) {
+			$access = Admin::siteAccess();
+			if (!$site_id || !in_array($site_id, $access)) {
+				$this->notFound('Permission denied!', 403);
+
+				return;
+			}
+		}
+
 		$siteValidator 		    = new Validator(['site']);
 		$settingsValidator	  = new Validator(['site-settings']);
 
 		$view       = $this->view;
-		$site 	    = $this->request->post['site'] ?? [];
+		$site 	     = $this->request->post['site'] ?? [];
 		$settings   = $this->request->post['settings'] ?? [];
 		$routes     = $this->request->post['route'] ?? [];
 		$routesType = $this->request->post['routes-type'] ?? [];
@@ -162,7 +202,7 @@ class Site extends Base {
 			$r = $route['route'];
 			unset($route['route']);
 			foreach ($route as $key => &$value) {
-				if (! $value) {
+				if (!$value) {
 					unset($route[$key]);
 				}
 			}
@@ -174,23 +214,23 @@ class Site extends Base {
 			($errors = $settingsValidator->validate($settings)) === true) {
 			$sites = new SiteSQL();
 
-			if (! isset($site['host']) || ! $site['host']) {
+			if (!isset($site['host']) || !$site['host']) {
 				$site['host'] = slugify($site['name']) . '.*.*';
 			}
 
 			if ($this->request->post['site-type'] == 'subfolder') {
 				$site['host'] = '*.*.*';
-				if (! $site['path']) {
+				if (!$site['path']) {
 					$site['path'] = slugify($site['name']);
 				}
 			}
 
 			if ($this->request->post['site-type'] == 'both') {
-				if (! $site['path'] && $site['path']) {
+				if (!$site['host']) {
 					$site['host'] = '*.*.*';
 				}
 
-				if (! $site['path']) {
+				if (!$site['path']) {
 					$site['path'] = slugify($site['name']);
 				}
 			}
@@ -225,11 +265,12 @@ class Site extends Base {
 
 			//array_walk_recursive($settings['description'], '\Vvveb\sanitizeHTML');
 
-			if (isset($this->request->get['site_id']) && ($site_id = $this->request->get['site_id'])) {
+			if ($site_id) {
 				$data['site_id']  = (int)$site_id;
 				$site['settings'] = json_encode($settings);
 				$data['site']     = $site;
 				$site['site_id']  = $data['site_id'];
+				unset($data['site']['template']);
 				$result           = $sites->edit($data);
 
 				//Sites::saveSite($site);
@@ -237,7 +278,7 @@ class Site extends Base {
 
 				Sites::setSiteDataById($data['site_id'], null, $site);
 
-				list($site, $settings, $site_id, $data) = Event :: trigger(__CLASS__,__FUNCTION__, $site, $settings, $site_id, $data);
+				[$site, $settings, $site_id, $data] = Event :: trigger(__CLASS__, __FUNCTION__, $site, $settings, $site_id, $data);
 
 				if ($result >= 0) {
 					//CacheManager::delete('site');
@@ -256,7 +297,7 @@ class Site extends Base {
 					$view->success['get'] = $message;
 					//$this->redirect(['module'=>'settings/sites', 'success'=> $message]);
 				} else {
-					$this->view->errors = [$sites->error];
+					$view->errors = ($sites->error ?? []) ?: [];
 				}
 			} else {
 				$newHomepage  = $this->request->post['new-homepage'] ?? [];
@@ -266,7 +307,7 @@ class Site extends Base {
 							continue;
 						}
 
-						$template = $site['template'][$languageId] ?: 'index.html';
+						$template    = $site['template'][$languageId] ?: 'index.html';
 						$newTemplate = str_replace('.html', '', $template) . '-' . slugify($site['name']);
 
 						if ($languageId) {
@@ -297,7 +338,7 @@ class Site extends Base {
 				}
 
 				foreach ($site['template'] as $id => $template) {
-					if (! $template) {
+					if (!$template) {
 						unset($site['template'][$id]);
 					}
 				}
@@ -307,10 +348,10 @@ class Site extends Base {
 				$return                   = $sites->add($data);
 				$site_id                  = $return['site'];
 				$site['state']            = 'live';
-				$site['site_id']               = $site_id;
+				$site['site_id']          = $site_id;
 				Sites::saveSite($site);
 
-				list($site, $settings, $site_id, $data) = Event :: trigger(__CLASS__,__FUNCTION__, $site, $settings, $site_id, $data);
+				[$site, $settings, $site_id, $data] = Event :: trigger(__CLASS__, __FUNCTION__, $site, $settings, $site_id, $data);
 
 				if ($site_id) {
 					$siteRoutes = DIR_CONFIG . "site-$site_id-routes.php";
@@ -327,9 +368,10 @@ class Site extends Base {
 					CacheManager::delete();
 					$message              = __('Site saved!');
 					$view->success['get'] = $message;
-					$view->errors = [$sites->error];
+					$view->errors         = ($sites->error ?? []) ?: [];
+					$this->redirect(['module' => 'settings/site', 'success' => $message, 'site_id' => $site_id]);
 				} else {
-					$this->redirect(['module'=>'settings/site', 'success' => $message, 'site_id' => $site_id]);
+					$view->errors = ($sites->error ?? []) ?: [];
 				}
 			}
 		} else {
@@ -339,25 +381,39 @@ class Site extends Base {
 		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display the site edit/create form with all configuration data.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$themeList = Themes:: getList();
 
 		$site_id            = $this->request->get['site_id'] ?? null;
 		$view               = $this->view;
 		$site               = [];
-		$siteSql            = new SiteSQL();
+		$siteSQL            = new SiteSQL();
 
 		if ($site_id) {
-			$site = $siteSql->get(['site_id' => $site_id]);
+			$view_other_sites = Admin::hasCapability('view_other_sites');
+
+			if (!$view_other_sites) {
+				$access = Admin::siteAccess();
+				if (!in_array($site_id, $access)) {
+					$this->notFound('Permission denied!', 403);
+
+					return;
+				}
+			}
+
+			$site = $siteSQL->get(['site_id' => $site_id]);
 			$data = Sites::getSiteById($site_id);
 
-			if (! $site || ! $data) {
-				return $this->notFound();
+			if (!$site || !$data) {
+				$this->notFound();
 			}
 
-			if ($data) {
-				$site = $data + $site;
-			}
+			$site = $data + $site;
 		}
 
 		$default       = '{"logo":"logo.png","logo-sticky":"logo.png","logo-dark":"logo-white.png","logo-dark-sticky":"logo-white.png","favicon":"favicon.ico","webbanner":"biglogo.png", "country_id":223, "region_id":3655}';
@@ -369,7 +425,7 @@ class Site extends Base {
 			}
 		}
 
-		$data                       = $siteSql->getData(['language_id' => $this->global['language_id']] + ($setting ?? []) + $this->global);
+		$data                       = $siteSQL->getData(['language_id' => $this->global['language_id']] + ($setting ?? []) + $this->global);
 		$data['complete_status_id'] = $data['processing_status_id'] = ($data['order_status_id'] ?? []);
 
 		$data['timezone'] = [];
@@ -403,9 +459,9 @@ class Site extends Base {
 			$data['time_format'][$format] = date($format);
 		}
 
-		list($site, $setting, $site_id, $data) = Event :: trigger(__CLASS__,__FUNCTION__, $site, $setting, $site_id, $data);
+		[$site, $setting, $site_id, $data] = Event :: trigger(__CLASS__, __FUNCTION__, $site, $setting, $site_id, $data);
 
-		if (! defined('CLI')) {
+		if (!defined('CLI')) {
 			$view->domain = '';
 
 			if ($domain) {
@@ -416,24 +472,24 @@ class Site extends Base {
 			$setting['order_id_format_preview'] = $this->invoiceFormatPreview($setting['order_id_format'] ?? '');
 
 			$view->set($data);
-			//$site['full-url']   = $site ? ('//' . Sites::url($site['host']) . (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '')  . ($site['path'] ?? '' ? '/' . $site['path'] : '')) : '';
-			$site['full-url']    = $site ? ('//' . $site['url']) : '';
-			$view->site          = $site + $setting;
-			$view->path          = $site['path'] ?? '';
-			$view->setting       = $setting;
-			$view->resize        = ['cs' => __('Crop & Resize'), 's' => __('Stretch'), 'c' => __('Crop')];
-			$view->formats       = Image::formats();
-			$view->themeList     = $themeList;
-			$view->subdir        = V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '';
-			$view->templateList  = getTemplateList(false, ['email']);
+			//$site['full-url']   = $site ? ('//' . Sites::url($site['host']) . V_SUBDIR_INSTALL  . ($site['path'] ?? '' ? '/' . $site['path'] : '')) : '';
+			$site['full-url']     = $site ? ('//' . $site['url']) : '';
+			$view->site           = $site + $setting;
+			$view->path           = $site['path'] ?? '';
+			$view->setting        = $setting;
+			$view->resize         = ['cs' => __('Crop & Resize'), 'r' => __('Resize'), 's' => __('Stretch'), 'c' => __('Crop')];
+			$view->formats        = Image::formats();
+			$view->themeList      = $themeList;
+			$view->subdir         = V_SUBDIR_INSTALL ?: '';
+			$view->templateList   = getTemplateList(null, ['email']);
 			$view->currenciesList = Locale :: availableCurrencies();
 
 			$siteRoutes = DIR_CONFIG . "site-$site_id-routes.php";
 			if (file_exists($siteRoutes)) {
-				$view->routes 	= include $siteRoutes;
+				$view->routes 	   = include $siteRoutes;
 				$view->routesType = 'site';
 			} else {
-				$view->routes 	= include DIR_CONFIG . 'app-routes.php';
+				$view->routes 	   = include DIR_CONFIG . 'app-routes.php';
 				$view->routesType = 'global';
 			}
 
@@ -441,15 +497,21 @@ class Site extends Base {
 
 			$cache = Cache::getInstance();
 
-			$view->modules  = $cache->cache(APP, 'app-actions',function () {
+			$view->modules  = $cache->cache(APP, 'app-actions', function() {
 				$actions = Role::controllers('app');
 
 				//set home first
 				$home = $actions['index'];
-				$actions = array_merge($home, $actions);
 
-				return $actions;
+				return array_merge($home, $actions);
 			}, 259200);
+
+			$payment  = Payment::getInstance();
+			$shipping = Shipping::getInstance();
+
+			$checkoutInfo          = [];
+			$view->paymentMethods  = $payment->getMethods($checkoutInfo);
+			$view->shippingMethods = $shipping->getMethods($checkoutInfo);
 
 			$controllerPath  = $admin_path . 'index.php?module=media/media';
 			$view->scanUrl   = "$controllerPath&action=scan";

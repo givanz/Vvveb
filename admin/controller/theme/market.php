@@ -30,7 +30,12 @@ use Vvveb\System\Extensions\Themes;
 use Vvveb\System\Validator;
 
 class Market extends Base {
-	function install() {
+	/**
+	 * Install a theme from the marketplace by slug.
+	 *
+	 * @return void
+	 */
+	public function install(): void {
 		$slug = $this->request->post['slug'] ?? false;
 
 		try {
@@ -38,10 +43,12 @@ class Market extends Base {
 				$theme =  Themes :: getMarketList(['slug' => $slug])['themes'];
 
 				if ($theme && isset($theme[0])) {
-					$themeInfo = $theme[0];
-					extract($themeInfo);
-					$url          = Themes :: marketUrl();
-					$downloadLink = "$url$download_link";
+					$themeInfo     = $theme[0];
+					$download_link = $themeInfo['download_link'] ?? '';
+					$name          = $themeInfo['name'] ?? '';
+					$slug          = $themeInfo['slug'] ?? $slug;
+					$url           = Themes :: marketUrl();
+					$downloadLink  = "$url$download_link";
 
 					$this->view->log[] = sprintf(__('Installing "%s"'), $name);
 					$this->view->log[] = sprintf(__('Downloading "%s"'), $downloadLink);
@@ -54,9 +61,9 @@ class Market extends Base {
 
 							$themeName        = \Vvveb\humanReadable($slug);
 							$themeName        = "<b>$themeName</b>";
-							$themeActivateUrl = \Vvveb\url(['module' => 'theme/themes', 'action'=> 'activate', 'theme' => $slug]);
+							$themeActivateUrl = \Vvveb\url(['module' => 'theme/themes', 'action' => 'activate', 'theme' => $slug]);
 
-							$successMessage    = sprintf(__('Theme %s was successfully installed!'), $themeName, $themeActivateUrl);
+							$successMessage    = sprintf(__('Theme %s was successfully installed!'), $themeName);
 							$this->view->log[] = $successMessage;
 
 							$successMessage .= "<button class='btn btn-primary btn-sm btn-icon m-2' formaction='$themeActivateUrl' name='theme' value='$slug'>" . __('Activate theme') . '</button>';
@@ -84,10 +91,15 @@ class Market extends Base {
 			$this->view->setType('json');
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display the theme marketplace with categories and installed status.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$view = View :: getInstance();
 
 		$validator = new Validator(['themes']);
@@ -103,8 +115,10 @@ class Market extends Base {
 			$categories = Themes :: getMarketCategories(['limit' => 100] + $request, 'categories');
 			$installed  = Themes :: getList($this->global['site_id']);
 
-			foreach ($themes['themes'] as &$theme) {
-				$theme['installed']  = isset($installed[$theme['slug']]);
+			if ($themes) {
+				foreach ($themes['themes'] as &$theme) {
+					$theme['installed']  = isset($installed[$theme['slug']]);
+				}
 			}
 		} catch (\Exception $e) {
 			$view->warning[] =  __('Failed to connect to marketplace');

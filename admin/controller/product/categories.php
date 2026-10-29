@@ -24,5 +24,4 @@ namespace Vvveb\Controller\Product;
 
 use Vvveb\Controller\Content\Categories as ContentCategories;
 
-class Categories extends ContentCategories {
-}
+class Categories extends ContentCategories {}

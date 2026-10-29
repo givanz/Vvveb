@@ -25,13 +25,18 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Listing;
 
 class OrderStatuses extends Listing {
-	protected $type = 'order_status';
+	/** @var string The entity type identifier */
+	protected string $type = 'order_status';
 
-	protected $controller = 'order-status';
+	/** @var string The single-item controller route slug */
+	protected string $controller = 'order-status';
 
-	protected $listController = 'order-statuses';
+	/** @var string The list controller route slug */
+	protected string $listController = 'order-statuses';
 
-	protected $list = 'order_status';
+	/** @var string The list property name on the view */
+	protected string $list = 'order_status';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

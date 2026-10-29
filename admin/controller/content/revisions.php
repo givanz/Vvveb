@@ -73,6 +73,11 @@ class Revisions extends Base {
 	 * @return void
 	 */
 	public function delete(): void {
+		//deleting a revision changes data and must not be triggered by a link/image
+		if ($this->request->getMethod() !== 'post') {
+			$this->notFound(__('Method not allowed!'), 405);
+		}
+
 		$options        = $this->options + $this->global;
 		$editCapability = 'edit_other_posts';
 
@@ -100,6 +105,10 @@ class Revisions extends Base {
 	 * @return void
 	 */
 	public function save(): void {
+		if ($this->request->getMethod() !== 'post') {
+			$this->notFound(__('Method not allowed!'), 405);
+		}
+
 		$content = $this->request->post['content'] ?? false;
 
 		if ($content) {

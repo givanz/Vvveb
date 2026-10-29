@@ -25,9 +25,10 @@ namespace Vvveb\Controller\Product;
 use Vvveb\Controller\Content\Revisions as RevisionsBase;
 
 class Revisions extends RevisionsBase {
-	protected $type = 'product';
-	
-	protected $object = 'product';
+	protected string $type = 'product';
 
-	protected $additionalPermissionCheck = ['product/revisions/save'];
+	protected string $object = 'product';
+
+	/** @var list<string> */
+	protected ?array $additionalPermissionCheck = ['product/revisions/save'];
 }

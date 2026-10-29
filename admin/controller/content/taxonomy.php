@@ -25,21 +25,22 @@ namespace Vvveb\Controller\Content;
 use Vvveb\Controller\Base;
 
 class Taxonomy extends Base {
-	function index() {
+	/**
+	 * Displays all taxonomy types in the view.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$view        = $this->view;
-		$taxonomies  = new \Vvveb\Sql\taxonomySQL();
+		$taxonomies  = new \Vvveb\Sql\TaxonomySQL();
 		$limit       = 10000;
 
 		$options = [
-			'limit'        => $limit,
+			'limit' => $limit,
 		] + $this->global;
 
 		$results = $taxonomies->getAll($options);
 
-		if ($results) {
-			foreach ($results as &$category) {
-			}
-		}
 		$view->taxonomies = $results;
 	}
 }

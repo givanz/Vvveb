@@ -25,13 +25,13 @@ namespace Vvveb\Controller\Product;
 use Vvveb\Controller\Content\Comments;
 
 class ProductReviews extends Comments {
-	protected $type = 'product_review';
+	protected string $type = 'product_review';
 
-	protected $list = 'product_review';
+	protected string $list = 'product_review';
 
-	protected $module = 'product';
+	protected string $module = 'product';
 
-	protected $controller = 'product-review';
+	protected string $controller = 'product-review';
 
-	protected $listController = 'product-reviews';
+	protected string $listController = 'product-reviews';
 }

@@ -27,13 +27,18 @@ use Vvveb\Controller\Crud;
 use Vvveb\Sql\CouponSQL;
 
 class Coupon extends Crud {
-	protected $type = 'coupon';
+	protected string $type = 'coupon';
 
-	protected $controller = 'coupon';
+	protected string $controller = 'coupon';
 
-	protected $module = 'order';
+	protected string $module = 'order';
 
-	function save() {
+	/**
+	 * Save the coupon and its associated products and taxonomies.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		parent::save();
 
 		$post       = &$this->request->post;
@@ -52,10 +57,15 @@ class Coupon extends Crud {
 			$couponSQL->setTaxonomies(['coupon_taxonomy' => $taxonomy, 'coupon_id' => $coupon_id]);
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display the coupon edit form with associated products and taxonomies.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		parent::index();
 		$get        = &$this->request->get;
 		$coupon_id  = $get['coupon_id'] ?? false;

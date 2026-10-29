@@ -22,15 +22,20 @@
 
 namespace Vvveb\Controller\Content;
 
-use \Vvveb\Sql\categorySQL;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
+use Vvveb\Sql\CategorySQL;
 use Vvveb\System\Images;
 
 class Categories extends Base {
-	function delete() {
+	/**
+	 * Deletes one or more taxonomy items by ID.
+	 *
+	 * @return never
+	 */
+	public function delete(): never {
 		$taxonomy_item_id = $this->request->post['taxonomy_item_id'] ?? false;
-		$categories       = new categorySQL();
+		$categories       = new CategorySQL();
 
 		if (is_numeric($taxonomy_item_id)) {
 			$taxonomy_item_id = [$taxonomy_item_id];
@@ -40,28 +45,42 @@ class Categories extends Base {
 			echo __('Item removed!');
 		}
 
-		die(0);
+		exit();
 	}
 
-	function reorder() {
+	/**
+	 * Reorders taxonomy items based on submitted data.
+	 *
+	 * @return never
+	 */
+	public function reorder(): never {
 		$data       = $this->request->post;
-		$categories = new categorySQL();
+		$categories = new CategorySQL();
 
 		//['taxonomy_items' => $data]
 		if ($categories->updateTaxonomyItems($data)) {
 			echo __('Items reordered!');
 		}
 
-		die(0);
+		exit();
 	}
 
-	function save() {
+	/**
+	 * Saves a new or existing taxonomy item.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$data                = $this->request->post;
-		$data['taxonomy_id'] = $data['taxonomy_id'] ?? $this->request->get['taxonomy_id'];
+		$data['taxonomy_id'] ??= $this->request->get['taxonomy_id'];
 		$data['taxonomy_item']['taxonomy_id'] = $data['taxonomy_id'];
-		$data['taxonomy_item']['sort_order'] = $data['sort_order'] ?? 0;
+		$data['taxonomy_item']['sort_order']  = $data['sort_order'] ?? 0;
 
-		$categories  = new categorySQL();
+		$categories       = new CategorySQL();
+		$results          = [];
+		$success          = false;
+		$message          = '';
+		$taxonomy_item_id = false;
 
 		$options = [
 			'taxonomy_item_content' => $data['taxonomy_item_content'],
@@ -71,36 +90,48 @@ class Categories extends Base {
 		if (isset($data['taxonomy_item_id']) && $data['taxonomy_item_id']) {
 			$options['taxonomy_item_id'] = $data['taxonomy_item_id'];
 			$results                     = $categories->editTaxonomyItem($options);
+			$taxonomy_item_id            = $data['taxonomy_item_id'];
 
 			if ($results) {
-				echo __('Item saved!');
+				$message = __('Item saved!');
+				$success = true;
 			}
 		} else {
 			$results = $categories->addTaxonomyItem($options);
 
 			if ($results) {
-				echo __('Item added!');
+				$taxonomy_item_id = $results['taxonomy_item'];
+				$message          = __('Item added!');
+				$success          = true;
 			}
 		}
 
-		die(0);
+		$results['message']          = $message;
+		$results['success']          = $success;
+		$results['taxonomy_item_id'] = $taxonomy_item_id;
 
-		return;
+		$this->response->setType('json');
+		$this->response->output($results);
 	}
 
-	function index() {
+	/**
+	 * Lists all categories for a given taxonomy with multilingual support.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$view        = $this->view;
-		$categories  = new categorySQL();
+		$categories  = new CategorySQL();
 
 		$page        = $this->request->get['page'] ?? 1;
 		$type        = $this->request->get['type'] ?? '';
 		$taxonomy_id = $this->request->get['taxonomy_id'] ?? false;
 		$limit       = 1000;
 
-		$admin_path          = \Vvveb\adminPath();
-		$controllerPath      = $admin_path . 'index.php?module=media/media';
-		$this->view->scanUrl = "$controllerPath&action=scan";
-		$this->uploadUrl     = "$controllerPath&action=upload";
+		$admin_path            = \Vvveb\adminPath();
+		$controllerPath        = $admin_path . 'index.php?module=media/media';
+		$this->view->scanUrl   = "$controllerPath&action=scan";
+		$this->view->uploadUrl = "$controllerPath&action=upload";
 
 		if ($taxonomy_id) {
 			$options = [

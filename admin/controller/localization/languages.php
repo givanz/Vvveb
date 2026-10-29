@@ -25,9 +25,38 @@ namespace Vvveb\Controller\Localization;
 use Vvveb\Controller\Listing;
 
 class Languages extends Listing {
-	protected $type = 'language';
+	/**
+	 * Entity type identifier for languages.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'language';
 
-	protected $list = 'language';
+	/**
+	 * Singular controller name for detail views.
+	 *
+	 * @var string
+	 */
+	protected string $controller = 'language';
 
-	protected $module = 'localization';
+	/**
+	 * List key used to identify the data collection.
+	 *
+	 * @var string
+	 */
+	protected string $list = 'language';
+
+	/**
+	 * Plural controller name for listing views.
+	 *
+	 * @var string
+	 */
+	protected string $listController = 'languages';
+
+	/**
+	 * Module path this controller belongs to.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'localization';
 }

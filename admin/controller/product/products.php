@@ -196,7 +196,7 @@ class Products extends Listing {
 					$url = url(['module' => 'product/product', 'product_id' => $product_id, 'type' => $this->type]);
 
 					$success = ucfirst($this->type) . ' ' . __('duplicated') . '!';
-					$success .= sprintf(' <a href="%s">%s</a>', $url, __('Edit') . " {$this->type}");
+					$success .= sprintf(' <a href="%s">%s</a>', $url, __('Edit') . ' ' . $this->type);
 					$this->view->success[] = $success;
 					$this->session->set('success', $success);
 					$this->redirect(['module' => 'product/products'], [], false);

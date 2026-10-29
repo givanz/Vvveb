@@ -25,15 +25,26 @@ namespace Vvveb\Controller\Media;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use function Vvveb\sanitizeFileName;
-use Vvveb\Sql\media_ContentSQL;
+use Vvveb\Sql\Media_contentSQL;
 use Vvveb\System\Traits\Media as MediaTrait;
 
+/**
+ * Handles media file management: listing, scanning, uploading, and media content editing.
+ */
 class Media extends Base {
 	use MediaTrait;
 
-	protected $dirMedia = DIR_MEDIA;
+	/**
+	 * @var string Base directory for media files.
+	 */
+	protected string $dirMedia = DIR_MEDIA;
 
-	function index() {
+	/**
+	 * Sets up the media manager view with scan/upload endpoints.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$adminPath      = \Vvveb\adminPath();
 		$controllerPath = $adminPath . 'index.php?module=media/media';
 		$this->setMediaEndpoints($controllerPath);
@@ -41,13 +52,18 @@ class Media extends Base {
 		$this->view->mediaContentUrl = "$controllerPath&action=mediaContent";
 	}
 
-	function mediaContentSave() {
+	/**
+	 * Saves media file content (metadata) to the database.
+	 *
+	 * @return void
+	 */
+	public function mediaContentSave(): void {
 		$file    = sanitizeFileName($this->request->post['file']);
 		$content = ($this->request->post['media_content'] ?? []);
 		$result  = false;
 
 		if ($file && $content) {
-			$mediaContent = new media_ContentSQL();
+			$mediaContent = new Media_contentSQL();
 			$media        = $mediaContent->get(['file' => $file] + $this->global);
 
 			if ($media) {
@@ -67,11 +83,15 @@ class Media extends Base {
 		$this->response->output($message);
 	}
 
-	function mediaContent() {
+	/**
+	 * Returns media file content (metadata) as JSON.
+	 *
+	 * @return void
+	 */
+	public function mediaContent(): void {
 		$file        = sanitizeFileName($this->request->get['file']);
-		$themeFolder = DIR_MEDIA;
 
-		$mediaContent = new media_ContentSQL();
+		$mediaContent = new Media_contentSQL();
 		$result       = $mediaContent->getContent(['file' => $file] + $this->global);
 
 		$this->response->setType('json');

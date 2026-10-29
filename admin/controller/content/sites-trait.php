@@ -26,7 +26,14 @@ use Vvveb\Sql\SiteSQL;
 use Vvveb\System\User\Admin;
 
 trait SitesTrait {
-	function sites($selectedSites = []) {
+	/**
+	 * Returns a list of sites, optionally marking selected ones.
+	 *
+	 * @param array<int> $selectedSites Array of selected site IDs.
+	 *
+	 * @return array<int, array<string, mixed>> List of site records.
+	 */
+	public function sites(array $selectedSites = []): array {
 		$sites = new SiteSQL();
 
 		$options = [];
@@ -34,13 +41,13 @@ trait SitesTrait {
 		if (Admin::hasCapability('edit_other_sites')) {
 			//unset($options['site_id']);
 		} else {
-			$options['site_id'] = Admin :: siteAccess();
+			$options['site_id'] = Admin::siteAccess();
 		}
 
 		$results = $sites->getAll(
 			$options + [
-				'start'        => 0,
-				'limit'        => 100,
+				'start' => 0,
+				'limit' => 100,
 			]
 		)['site'] ?? [];
 

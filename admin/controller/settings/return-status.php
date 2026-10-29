@@ -25,9 +25,12 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Crud;
 
 class ReturnStatus extends Crud {
-	protected $type = 'return_status';
+	/** @var string The entity type identifier */
+	protected string $type = 'return_status';
 
-	protected $controller = 'return-status';
+	/** @var string The controller route slug */
+	protected string $controller = 'return-status';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

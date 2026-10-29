@@ -25,22 +25,45 @@ namespace Vvveb\Controller\Plugin;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use function Vvveb\fileUploadErrMessage;
+use function Vvveb\sanitizeFileName;
 use function Vvveb\slugify;
 use Vvveb\System\CacheManager;
 use function Vvveb\System\Core\exceptionToArray;
 use Vvveb\System\Core\FrontController;
-use Vvveb\System\Core\View;
 use Vvveb\System\Extensions\Plugins as PluginsList;
 use Vvveb\System\User\Admin;
 
 class Plugins extends Base {
-	function init() {
+	/**
+	 * Initialize plugin from request data.
+	 *
+	 * @return string|null
+	 */
+	public function init(): ?string {
 		parent::init();
 
-		$this->plugin = $this->request->post['plugin'] ?? null;
+		$plugin = $this->request->post['plugin'] ?? null;
+
+		//plugin slugs are folder names, sanitize to prevent path traversal on file operations
+		if (is_array($plugin)) {
+			$this->plugin = array_map(fn ($p) => sanitizeFileName(basename((string)$p)), $plugin);
+		} elseif ($plugin !== null) {
+			$this->plugin = sanitizeFileName(basename((string)$plugin));
+		} else {
+			$this->plugin = null;
+		}
+
+		$this->view->checkPluginUrl = '';
+
+		return null;
 	}
 
-	function update() {
+	/**
+	 * Update an installed plugin from the marketplace.
+	 *
+	 * @return void
+	 */
+	public function update(): void {
 		$slug = $this->request->post['plugin'] ?? false;
 
 		try {
@@ -48,10 +71,11 @@ class Plugins extends Base {
 				$plugin =  PluginsList :: getMarketList(['slug' => $slug])['plugins'];
 
 				if ($plugin && isset($plugin[0])) {
-					$pluginInfo = $plugin[0];
-					extract($pluginInfo);
-					$url          = PluginsList :: marketUrl();
-					$downloadLink = "$url$download_link";
+					$pluginInfo    = $plugin[0];
+					$download_link = $pluginInfo['download_link'] ?? '';
+					$name          = $pluginInfo['name'] ?? '';
+					$url           = PluginsList :: marketUrl();
+					$downloadLink  = "$url$download_link";
 
 					$this->view->log[] = sprintf(__('Installing "%s"'), $name);
 					$this->view->log[] = sprintf(__('Downloading "%s"'), $downloadLink);
@@ -59,7 +83,7 @@ class Plugins extends Base {
 					if ($tempFile = PluginsList :: download($downloadLink)) {
 						$this->view->log[] = sprintf(__('Unpacking "%s"'), $tempFile);
 
-						if (! is_writable(DIR_PLUGINS . $slug) && ! @chmod($path, 0750)) {
+						if (!is_writable(DIR_PLUGINS . $slug) && !@chmod(DIR_PLUGINS . $slug, 0750)) {
 							$this->view->errors[] = sprintf(__('"%s" is not writable'), DIR_PLUGINS . $slug);
 						}
 
@@ -67,9 +91,9 @@ class Plugins extends Base {
 							CacheManager::clearObjectCache('vvveb', 'plugins_list_' . $this->global['site_id']);
 							$pluginName        = \Vvveb\humanReadable($slug);
 							$pluginName        = "<b>$pluginName</b>";
-							$pluginActivateUrl = \Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'activate', 'plugin' => $slug]);
+							$pluginActivateUrl = \Vvveb\url(['module' => 'plugin/plugins', 'action' => 'activate', 'plugin' => $slug]);
 
-							$successMessage    = sprintf(__('Plugin %s was successfully updated!'), $pluginName, $pluginActivateUrl);
+							$successMessage    = sprintf(__('Plugin %s was successfully updated!'), $pluginName);
 							$this->view->log[] = $successMessage;
 
 							$this->view->success[] = $successMessage;
@@ -97,7 +121,12 @@ class Plugins extends Base {
 		}
 	}
 
-	function deactivate() {
+	/**
+	 * Deactivate the current plugin and clear caches.
+	 *
+	 * @return void
+	 */
+	public function deactivate(): void {
 		if (PluginsList::deactivate($this->plugin, $this->global['site_id'])) {
 			$this->view->success[] = sprintf(__('Plugin `%s` deactivated!'), '<b>' . \Vvveb\humanReadable($this->plugin) . '</b>');
 			CacheManager::clearObjectCache('admin-menu');
@@ -107,10 +136,15 @@ class Plugins extends Base {
 			$this->view->errors[] = sprintf(__('Error deactivating plugin `%s`!'), '<b>' . \Vvveb\humanReadable($this->plugin) . '</b>');
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function checkPluginAndActivate() {
+	/**
+	 * Check CSRF and prepare for plugin activation via GET parameter.
+	 *
+	 * @return void
+	 */
+	public function checkPluginAndActivate(): void {
 		//allow plugin activation through get parameter if csrf is provided
 		if (($csrf = $this->request->get['csrf'] ?? false) &&
 			($plugin = $this->request->get['plugin'] ?? null) &&
@@ -119,26 +153,34 @@ class Plugins extends Base {
 		}
 
 		$this->category             = $this->request->get['category'] ?? false;
-		$this->pluginCheckUrl       = \Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'activate', 'plugin' => $this->plugin, 'category' => $this->category, 'csrf' => $this->session->get('csrf')]);
-		$this->view->checkPluginUrl = $this->pluginCheckUrl;
+		$this->view->checkPluginUrl = \Vvveb\url(['module' => 'plugin/plugins', 'action' => 'activate', 'plugin' => $this->plugin, 'category' => $this->category, 'csrf' => $this->session->get('csrf')]);
 		$this->view->info[]         = sprintf(__('Activating %s plugin ...'), '<b>' . \Vvveb\humanReadable($this->plugin) . '</b> <span class="spinner-border spinner-border-sm align-middle" role="status" aria-hidden="true"></span>');
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
-		$view             = View :: getInstance();
-		$view->category   = $this->request->get['category'] ?? false;
-		$cache            = (bool)($this->request->get['cache'] ?? true);
-		$view->plugins    = PluginsList :: getList($this->global['site_id'], $view->category, $cache);
-		$view->categories = PluginsList :: getCategories($this->global['site_id']);
-		$view->safemode   = ($admin = Admin::current()) && isset($admin['safemode']) && $admin['safemode'];
+	/**
+	 * Display the installed plugins management page.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$this->view->category   = $this->request->get['category'] ?? false;
+		$cache                  = (bool)($this->request->get['cache'] ?? true);
+		$this->view->plugins    = PluginsList :: getList($this->global['site_id'], $this->view->category, $cache);
+		$this->view->categories = PluginsList :: getCategories($this->global['site_id']);
+		$this->view->safemode   = ($admin = Admin::current()) && isset($admin['safemode']) && $admin['safemode'];
 	}
 
-	function delete() {
+	/**
+	 * Delete one or more installed plugins.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
 		if ($this->plugin) {
-			if (! is_array($this->plugin)) {
-				$this->plugin[] = $this->plugin;
+			if (!is_array($this->plugin)) {
+				$this->plugin = [$this->plugin];
 			}
 
 			foreach ($this->plugin as $plugin) {
@@ -154,10 +196,15 @@ class Plugins extends Base {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function upload() {
+	/**
+	 * Handle plugin file upload and installation.
+	 *
+	 * @return void
+	 */
+	public function upload(): void {
 		$files = $this->request->files;
 		$error = false;
 
@@ -173,26 +220,31 @@ class Plugins extends Base {
 			} else {
 				$error                 = true;
 				$this->view->errors[]  = sprintf(__('Error uploading %s!'), $file['name']);
-				$this->view->warning[] = sprintf(fileUploadErrMessage($file['error']));
+				$this->view->warning[] = fileUploadErrMessage($file['error']);
 			}
 
-			if (! $error) {
+			if (!$error) {
 				if ($this->pluginSlug) {
 					$this->pluginName        = \Vvveb\humanReadable($this->pluginSlug);
 					$successMessage          = sprintf(__('Plugin %s was successfully installed!'), '<b>' . $this->pluginName . '</b>');
-					$successMessage         .= '<button type="submit" name="plugin" value="' . $this->pluginSlug . '" class="btn btn-primary btn-sm btn-icon ms-2" onclick="document.getElementById(\'action\').value=\'checkPluginAndActivate\';">' . __('Activate plugin') . '</button>';
+					$successMessage .= '<button type="submit" name="plugin" value="' . $this->pluginSlug . '" class="btn btn-primary btn-sm btn-icon ms-2" onclick="document.getElementById(\'action\').value=\'checkPluginAndActivate\';">' . __('Activate plugin') . '</button>';
 					$this->view->success[]   = $successMessage;
 				} else {
-					$errorMessage            = sprintf(__('Failed to install %s plugin!'), $this->pluginName);
-					$this->view->error[]     = $errorMessage;
+					$errorMessage            = sprintf(__('Failed to install %s plugin!'), $file['name']);
+					$this->view->errors[]    = $errorMessage;
 				}
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function activate() {
+	/**
+	 * Activate a plugin, loading it and registering it for the current site.
+	 *
+	 * @return false Always returns false after process completion.
+	 */
+	public function activate(): false {
 		header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 		header('Cache-Control: post-check=0, pre-check=0', false);
 		header('Pragma: no-cache');
@@ -201,8 +253,8 @@ class Plugins extends Base {
 		$csrf           = $this->request->post['csrf'] ?? $this->request->get['csrf'] ?? false;
 		$message        = '';
 
-		if (! defined('CLI') && $csrf != $this->session->get('csrf')) {
-			die('Invalid csrf!');
+		if (!defined('CLI') && $csrf != $this->session->get('csrf')) {
+			exit('Invalid csrf!');
 		}
 
 		$active = false;
@@ -229,8 +281,6 @@ class Plugins extends Base {
 			$error['minimal'] = true;
 			$error['title']   = sprintf(__('Error activating plugin `%s`!'), $this->plugin);
 			FrontController::notFound(false, $error, 500);
-
-			die();
 		}
 
 		if ($active) {
@@ -243,7 +293,7 @@ class Plugins extends Base {
 			}
 			$this->session->set('success', $success);
 
-			ignore_user_abort(1);
+			ignore_user_abort(true);
 			clearstatcache(true);
 
 			CacheManager::clearObjectCache('admin-menu');
@@ -267,16 +317,16 @@ class Plugins extends Base {
 					</body>
 					</html>";
 
-				die($response);
+				exit($response);
 			}
 		} else {
 			$message .= sprintf(__('Error activating plugin `%s`!'), $this->plugin);
-			
+
 			if (!is_writable(DIR_CONFIG . 'plugins.php')) {
-				$message . '<br/>' . __('Check config file permissions!');
+				$message .= '<br/>' . __('Check config file permissions!');
 			}
-			
-			die($message);
+
+			exit($message);
 		}
 
 		return false;

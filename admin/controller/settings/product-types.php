@@ -23,5 +23,6 @@
 namespace Vvveb\Controller\Settings;
 
 class ProductTypes extends PostTypes {
-	protected $type = 'product';
+	/** @var string The entity type identifier */
+	protected string $type = 'product';
 }

@@ -29,24 +29,42 @@ use Vvveb\System\Traits\Crud as CrudTrait;
 class Crud extends Base {
 	use CrudTrait {
 		CrudTrait::index as get;
+		CrudTrait::save as set;
+		CrudTrait::delete as del;
 	}
 
-	function index() {
+	/**
+	 * Delete data.
+	 */
+	public function delete(): void {
+		$result = $this->del();
+	}
+
+	/**
+	 * Save data.
+	 */
+	public function save(): void {
+		$result = $this->set();
+	}
+
+	/**
+	 * Display the CRUD edit/create page with media scan URL and status options.
+	 */
+	public function index(): void {
 		$result = $this->get();
 
 		$this->view->{$this->type}  = $this->data;
 
-		$this->type_id = $this->type_id ?? $this->type . '_id';
+		$this->type_id = $this->type_id ?: $this->type . '_id';
 
-		if ($this->data_id && (! $this->data || (! isset($this->data[$this->type_id])))) {
-			return $this->notFound(sprintf(__('%s not found!'), humanReadable(__($this->type))));
+		if ($this->data_id && (!$this->data || (!isset($this->data[$this->type_id])))) {
+			$this->notFound(sprintf(__('%s not found!'), humanReadable(__($this->type))));
 		}
 
-
-		$admin_path          = \Vvveb\adminPath();
-		$controllerPath      = $admin_path . 'index.php?module=media/media';
-		$this->view->scanUrl = "$controllerPath&action=scan";
-		$this->uploadUrl     = "$controllerPath&action=upload";
+		$admin_path            = \Vvveb\adminPath();
+		$controllerPath        = $admin_path . 'index.php?module=media/media';
+		$this->view->scanUrl   = "$controllerPath&action=scan";
+		$this->view->uploadUrl = "$controllerPath&action=upload";
 
 		$this->view->status = [0 => __('Inactive'), 1 => __('Active')];
 	}

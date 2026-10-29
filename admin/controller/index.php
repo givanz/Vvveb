@@ -25,10 +25,9 @@ namespace Vvveb\Controller;
 use Vvveb\Sql\StatSQL;
 
 class Index extends Base {
-	function index() {
-	}
+	public function index(): void {}
 
-	function stats() {
+	public function stats(): void {
 		$options = [];
 		$stats   = new StatSQL();
 
@@ -83,7 +82,12 @@ class Index extends Base {
 		$this->response->output($output);
 	}
 
-	function heartbeat() {
-		die('ok');
+	/**
+	 * Simple heartbeat endpoint to verify session is alive.
+	 *
+	 * @return never
+	 */
+	public function heartbeat(): never {
+		exit('ok');
 	}
 }

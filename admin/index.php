@@ -25,20 +25,20 @@ define('APP', 'admin');
 //no trailing slash for subdir path
 //define('V_SUBDIR_INSTALL', '/vvveb');
 
-if (! isset($PUBLIC_PATH)) {
+if (!isset($PUBLIC_PATH)) {
 	$PUBLIC_PATH = '/public/';
 }
 
-if (! isset($PUBLIC_THEME_PATH)) {
+if (!isset($PUBLIC_THEME_PATH)) {
 	$PUBLIC_THEME_PATH = '/public/admin/';
 }
 /*
 if (! defined('PUBLIC_PATH')) {
-	define('PUBLIC_PATH', (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . $PUBLIC_PATH);
-	define('PUBLIC_THEME_PATH', (V_SUBDIR_INSTALL ? V_SUBDIR_INSTALL : '') . $PUBLIC_THEME_PATH);
+	define('PUBLIC_PATH', V_SUBDIR_INSTALL . $PUBLIC_PATH);
+	define('PUBLIC_THEME_PATH', V_SUBDIR_INSTALL . $PUBLIC_THEME_PATH);
 }
 */
-if (! isset($FILE)) {
+if (!isset($FILE)) {
 	$FILE = __FILE__;
 }
 

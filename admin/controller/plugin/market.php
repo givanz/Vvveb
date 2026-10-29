@@ -25,37 +25,42 @@ namespace Vvveb\Controller\Plugin;
 use function Vvveb\__;
 use Vvveb\Controller\Base;
 use Vvveb\System\CacheManager;
-use Vvveb\System\Core\View;
 use Vvveb\System\Extensions\Plugins;
 use Vvveb\System\Validator;
 
 class Market extends Base {
-	function install() {
+	/**
+	 * Install a plugin from the marketplace by slug.
+	 *
+	 * @return void
+	 */
+	public function install(): void {
 		$slug = $this->request->post['slug'] ?? false;
 
 		try {
 			if ($slug) {
-				$plugin =  Plugins :: getMarketList(['slug' => $slug])['plugins'];
+				$plugin =  Plugins::getMarketList(['slug' => $slug])['plugins'];
 
 				if ($plugin && isset($plugin[0])) {
-					$pluginInfo = $plugin[0];
-					extract($pluginInfo);
-					$url          = Plugins :: marketUrl();
-					$downloadLink = "$url$download_link";
+					$pluginInfo    = $plugin[0];
+					$download_link = $pluginInfo['download_link'] ?? '';
+					$name          = $pluginInfo['name'] ?? '';
+					$url           = Plugins::marketUrl();
+					$downloadLink  = "$url$download_link";
 
 					$this->view->log[] = sprintf(__('Installing "%s"'), $name);
 					$this->view->log[] = sprintf(__('Downloading "%s"'), $downloadLink);
 
-					if ($tempFile = Plugins :: download($downloadLink)) {
+					if ($tempFile = Plugins::download($downloadLink)) {
 						$this->view->log[] = sprintf(__('Unpacking "%s"'), $tempFile);
 
-						if (Plugins :: install($tempFile, $slug)) {
+						if (Plugins::install($tempFile, $slug)) {
 							CacheManager::clearObjectCache('vvveb', 'plugins_list_' . $this->global['site_id']);
 							$pluginName        = \Vvveb\humanReadable($slug);
 							$pluginName        = "<b>$pluginName</b>";
-							$pluginActivateUrl = \Vvveb\url(['module' => 'plugin/plugins', 'action'=> 'activate', 'plugin' => $slug]);
+							$pluginActivateUrl = \Vvveb\url(['module' => 'plugin/plugins', 'action' => 'activate', 'plugin' => $slug]);
 
-							$successMessage    = sprintf(__('Plugin %s was successfully installed!'), $pluginName, $pluginActivateUrl);
+							$successMessage    = sprintf(__('Plugin %s was successfully installed!'), $pluginName);
 							$this->view->log[] = $successMessage;
 
 							$successMessage .= "<button class='btn btn-primary btn-sm btn-icon m-2' formaction='$pluginActivateUrl' name='plugin' value='$slug'>" . __('Activate plugin') . '</button>';
@@ -84,28 +89,36 @@ class Market extends Base {
 		}
 	}
 
-	function download() {
-		$slug = $this->request->get['slug'];
-
-		if ($slug) {
-		}
+	/**
+	 * Download a plugin by slug (placeholder).
+	 *
+	 * @return void
+	 */
+	public function download(): void {
+		$slug = $this->request->get['slug'] ?? '';
 	}
 
-	function index() {
-		$view = View :: getInstance();
+	/**
+	 * Display the plugin marketplace with categories and installed status.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$view = $this->view;
 
 		$validator = new Validator(['plugins']);
 
 		//allow only fields that are in the validator list and remove the rest
-		$request = array_filter($validator->filter($this->request->get));
-		$plugins = [];
+		$request    = array_filter($validator->filter($this->request->get));
+		$plugins    = [];
+		$categories = [];
 
 		$request['limit'] = $this->view->limit = 8;
 
 		try {
-			$plugins    = Plugins :: getMarketList($request);
-			$categories = Plugins :: getMarketCategories(['limit' => 100] + $request, 'categories');
-			$installed  = Plugins :: getList($this->global['site_id']);
+			$plugins    = Plugins::getMarketList($request);
+			$categories = Plugins::getMarketCategories(['limit' => 100] + $request, 'categories');
+			$installed  = Plugins::getList($this->global['site_id']);
 
 			foreach ($plugins['plugins'] as &$plugin) {
 				$plugin['installed']  = isset($installed[$plugin['slug']]);
@@ -118,8 +131,7 @@ class Market extends Base {
 			}
 		}
 
-		$admin_path       = \Vvveb\adminPath();
-		$view->installUrl = $admin_path . 'index.php?module=plugin/market&action=install&json';
+		$view->installUrl = \Vvveb\adminPath() . 'index.php?module=plugin/market&action=install&json';
 		$view->categories = $categories['categories'];
 		$view->set($request);
 		$view->set($plugins);

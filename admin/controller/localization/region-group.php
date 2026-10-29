@@ -25,37 +25,73 @@ namespace Vvveb\Controller\Localization;
 use function Vvveb\__;
 use Vvveb\Controller\Crud;
 use Vvveb\Sql\CountrySQL;
-use Vvveb\Sql\Region_GroupSQL;
-use Vvveb\Sql\regionSQL;
+use Vvveb\Sql\Region_groupSQL;
+use Vvveb\Sql\RegionSQL;
+use Vvveb\System\Cart\Tax;
 
 class RegionGroup extends Crud {
-	protected $type = 'region_group';
+	/**
+	 * Entity type identifier for region groups.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'region_group';
 
-	protected $controller = 'region-group';
+	/**
+	 * Singular controller name for detail views.
+	 *
+	 * @var string
+	 */
+	protected string $controller = 'region-group';
 
-	protected $module = 'localization';
+	/**
+	 * Module path this controller belongs to.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'localization';
 
-	function save() {
+	/**
+	 * Save region group with associated regions.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$region          = $this->request->post['region'] ?? [];
 		$region_group_id = $this->request->get['region_group_id'] ?? false;
 
 		if ($region_group_id) {
-			$regionGroup = new Region_GroupSQL();
+			$regionGroup = new Region_groupSQL();
 			$result      = $regionGroup->addRegions(['region_group_id' => $region_group_id, 'region_to_region_group' => $region]);
 
 			if ($result && isset($result['region_to_region_group'])) {
-				//$successMessage        = __('Region saved!');
-				//$this->view->success[] = $successMessage;
-				$this->view->errors    = [];
+				$successMessage        = __('Region saved!');
+				$this->view->success[] = $successMessage;
 			} else {
 				$this->view->errors[] = __('Error saving!');
 			}
 		}
 
 		parent::save();
+		Tax::clearRulesCache();
 	}
 
-	function regions() {
+	/**
+	 * Delete region groups and drop the cached region rules.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
+		parent::delete();
+		Tax::clearRulesCache();
+	}
+
+	/**
+	 * Return regions for a given country as JSON.
+	 *
+	 * @return void
+	 */
+	public function regions(): void {
 		$country_id   = $this->request->get['country_id'] ?? false;
 		$regions      = [];
 
@@ -70,17 +106,21 @@ class RegionGroup extends Crud {
 
 		$this->response->setType('json');
 		$this->response->output($regions);
-		//return [];
 	}
 
-	function index() {
+	/**
+	 * Display the region group edit form with associated regions and countries.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		parent::index();
 		$region_group_id = $this->request->get['region_group_id'] ?? false;
 
 		$regions = [];
 
 		if ($region_group_id) {
-			$regionGroup  = new Region_GroupSQL();
+			$regionGroup  = new Region_groupSQL();
 			$regions	     = $regionGroup->getRegions(['region_group_id' => $region_group_id])['regions'] ?? [];
 		}
 		$this->view->regions         = $regions;

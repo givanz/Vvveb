@@ -23,17 +23,22 @@
 namespace Vvveb\Controller\Content;
 
 class Post extends Edit {
-	protected $type = 'post';
+	protected string $type = 'post';
 
-	protected $object = 'post';
+	protected string $object = 'post';
 
-	protected $module = 'content/post';
+	protected string $module = 'content/post';
 
-	protected $list   = 'content/posts';
+	protected string $list   = 'content/posts';
 
-	function save() {
+	/**
+	 * Saves the post and reloads the editor index.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		parent::save();
 
-		return $this->index();
+		$this->index();
 	}
 }

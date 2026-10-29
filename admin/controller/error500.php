@@ -23,8 +23,10 @@
 namespace Vvveb\Controller;
 
 #[\AllowDynamicProperties]
-class Error500 /*extends Base */
-{
-	function index() {
-	}
+class Error500 {
+	// extends Base
+	/**
+	 * Handle 500 Internal Server errors.
+	 */
+	public function index(): void {}
 }

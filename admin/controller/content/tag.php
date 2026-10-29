@@ -24,52 +24,64 @@ namespace Vvveb\Controller\Content;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
-use Vvveb\Sql\categorySQL;
+use Vvveb\Sql\CategorySQL;
 use Vvveb\System\Images;
 
 class Tag extends Base {
-	protected $type = 'tag';
+	protected string $type = 'tag';
 
-	function save() {
+	/**
+	 * Saves a new or existing tag.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$taxonomy_item_id = $this->request->get['taxonomy_item_id'] ?? false;
-		$taxonomy_id      = $this->request->get['taxonomy_id'];
+		$taxonomy_id      = $this->request->get['taxonomy_id'] ?? false;
 		$post_type        = $this->request->get['type'] ?? '';
 		$tag              = $this->request->post['tag'] ?? false;
 
 		if ($tag) {
-			$tags   = new categorySQL();
+			$tags   = new CategorySQL();
 
 			if ($taxonomy_item_id) {
 				$result = $tags->editCategory(
 					['taxonomy_item_content' => [$tag + $this->global],
 						'taxonomy_item_id'      => $taxonomy_item_id,
 						'taxonomy_item'         => ['taxonomy_item_id' => $taxonomy_item_id, 'taxonomy_id' => $taxonomy_id] + $tag,
-					]);
+					]
+				);
 			} else {
 				$result = $tags->addCategory(
 					['taxonomy_item_content' => $tag + $this->global,
 						'taxonomy_item'         => ['taxonomy_id' => $taxonomy_id] + $tag,
 						'site_id'               => $this->global['site_id'],
-					]);
+					]
+				);
 			}
 
 			if ($result && isset($result['taxonomy_item_content'])) {
 				$message                    = __('Tag saved!');
 				$this->view->success['get'] = $message;
 
-				if (! $taxonomy_item_id) {
-					$this->redirect(['module'=> 'content/tag', 'taxonomy_item_id' => $result['taxonomy_item'], 'taxonomy_id' => $taxonomy_id, 'type' => $post_type, 'success' => $message], [], false);
+				if (!$taxonomy_item_id) {
+					$this->redirect(['module' => 'content/tag', 'taxonomy_item_id' => $result['taxonomy_item'], 'taxonomy_id' => $taxonomy_id, 'type' => $post_type, 'success' => $message], [], false);
 				}
 			} else {
 				$this->view->errors[] = __('Error saving!');
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
-		$tags             = new categorySQL();
+	/**
+	 * Displays a single tag for editing.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$tags             = new CategorySQL();
 		$taxonomy_item_id = $this->request->get['taxonomy_item_id'] ?? false;
 		$taxonomy_id      = $this->request->get['taxonomy_id'] ?? false;
 		$post_type        = $this->request->get['type'] ?? '';

@@ -23,7 +23,10 @@
 namespace Vvveb\Controller;
 
 #[\AllowDynamicProperties]
-class Error403 { /*extends Base*/
-	function index() {
-	}
+class Error403 {
+	// extends Base
+	/**
+	 * Handle 403 Forbidden errors.
+	 */
+	public function index(): void {}
 }

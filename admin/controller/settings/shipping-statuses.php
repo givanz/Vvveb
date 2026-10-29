@@ -25,13 +25,18 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Listing;
 
 class ShippingStatuses extends Listing {
-	protected $type = 'shipping_status';
+	/** @var string The entity type identifier */
+	protected string $type = 'shipping_status';
 
-	protected $controller = 'shipping-status';
+	/** @var string The single-item controller route slug */
+	protected string $controller = 'shipping-status';
 
-	protected $listController = 'shipping-statuses';
+	/** @var string The list controller route slug */
+	protected string $listController = 'shipping-statuses';
 
-	protected $list = 'shipping_status';
+	/** @var string The list property name on the view */
+	protected string $list = 'shipping_status';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

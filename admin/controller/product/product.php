@@ -25,45 +25,50 @@ namespace Vvveb\Controller\Product;
 use function Vvveb\__;
 use Vvveb\Controller\Content\Edit;
 use function Vvveb\dashesToCamelCase;
-use Vvveb\Sql\Product_Option_ValueSQL;
-use Vvveb\Sql\Product_OptionSQL;
-use Vvveb\Sql\Product_VariantSQL;
+use Vvveb\Sql\Product_option_valueSQL;
+use Vvveb\Sql\Product_optionSQL;
+use Vvveb\Sql\Product_variantSQL;
 use Vvveb\Sql\ProductSQL;
 
 class Product extends Edit {
-	protected $type = 'product';
+	protected string $type = 'product';
 
-	protected $object = 'product';
+	protected string $object = 'product';
 
-	protected $module = 'product/product';
+	protected string $module = 'product/product';
 
-	protected $list   = 'product/products';
+	protected string $list   = 'product/products';
 
-	protected $revisions = true;
+	protected bool $revisions = true;
 
-	function saveVariants() {
+	/**
+	 * Save product variants from the request post data.
+	 *
+	 * @return void
+	 */
+	public function saveVariants(): void {
 		$post                     = &$this->request->post;
-		$post['product_variant']  = $post['product_variant'] ?? [];
+		$post['product_variant'] ??= [];
 
 		if ($post['product_variant']) {
 			$deleteVariant            = $this->request->post['delete']['product_variant_id'] ?? [];
-			$variantSql               = new Product_VariantSQL();
+			$variantSQL               = new Product_variantSQL();
 
-			unset($post['product_variant']['#'], $post['product_variant']['0']);
+			unset($post['product_variant']['#'], $post['product_variant']['#product_variant#'], $post['product_variant']['0']);
 
 			foreach ($post['product_variant'] as $i => $opt) {
 				$opt['product_id'] = $this->product_id;
 
 				if ($opt['product_variant_id']) {
 					//existing variant
-					$variantSql->edit([
+					$variantSQL->edit([
 						'product_variant'    => $opt,
 						'product_variant_id' => $opt['product_variant_id'],
 					] + $this->global);
 				} else {
 					// new variant
 					unset($opt['product_variant_id']);
-					$result = $variantSql->add(['product_variant' => $opt] + $this->global);
+					$result = $variantSQL->add(['product_variant' => $opt] + $this->global);
 
 					if ($result && $result['product_variant']) {
 						//set new id to use for variant values
@@ -73,21 +78,26 @@ class Product extends Edit {
 			}
 
 			if ($deleteVariant) {
-				$variantSql->delete(['product_variant_id' => $deleteVariant] + $this->global);
+				$variantSQL->delete(['product_variant_id' => $deleteVariant] + $this->global);
 			}
 		}
 	}
 
-	function saveOptions() {
+	/**
+	 * Save product options and option values from the request post data.
+	 *
+	 * @return void
+	 */
+	public function saveOptions(): void {
 		$post                    = &$this->request->post;
-		$post['product_option']  = $post['product_option'] ?? [];
+		$post['product_option'] ??= [];
 
 		if ($post['product_option']) {
-			$deleteOption		    = $this->request->post['delete']['product_option_id'] ?? [];
-			$deleteOptionValue	= $this->request->post['delete']['product_option_value_id'] ?? [];
+			$deleteOption		     = $this->request->post['delete']['product_option_id'] ?? [];
+			$deleteOptionValue	 = $this->request->post['delete']['product_option_value_id'] ?? [];
 
-			$optionSql               = new Product_OptionSQL();
-			$productOptionValueSql   = new Product_Option_ValueSQL();
+			$optionSQL               = new Product_optionSQL();
+			$productoptionvalueSQL   = new Product_option_valueSQL();
 
 			unset($post['product_option']['#'], $post['product_option']['0']);
 
@@ -96,14 +106,14 @@ class Product extends Edit {
 
 				if ($opt['product_option_id']) {
 					//existing option
-					$optionSql->edit([
-						'product_option'	   => $opt,
-						'product_option_id'	=> $opt['product_option_id'],
+					$optionSQL->edit([
+						'product_option'    => $opt,
+						'product_option_id' => $opt['product_option_id'],
 					] + $this->global);
 				} else {
 					// new option
 					unset($opt['product_option_id']);
-					$result = $optionSql->add(['product_option' => $opt] + $this->global);
+					$result = $optionSQL->add(['product_option' => $opt] + $this->global);
 
 					if ($result && $result['product_option']) {
 						//set new id to use for option values
@@ -112,7 +122,7 @@ class Product extends Edit {
 				}
 
 				if (isset($opt['product_option_value'])) {
-					unset($opt['product_option_value']['#']);
+					unset($opt['product_option_value']['#'], $opt['product_option_value']['#product_option_value#']);
 
 					foreach ($opt['product_option_value'] as $j => $value) {
 						//set parent option id
@@ -122,29 +132,33 @@ class Product extends Edit {
 
 						if ($value['product_option_value_id']) {
 							//existing option value
-							$productOptionValueSql->edit([
-								'product_option_value'		  => $value,
-								'product_option_value_id'	=> $value['product_option_value_id'],
+							$productoptionvalueSQL->edit([
+								'product_option_value'    => $value,
+								'product_option_value_id' => $value['product_option_value_id'],
 							] + $this->global);
 						} else {
 							unset($value['product_option_value_id']);
-							$result = $productOptionValueSql->add(['product_option_value' => $value] + $this->global);
+							$result = $productoptionvalueSQL->add(['product_option_value' => $value] + $this->global);
 						}
 					}
 				}
 			}
 
 			if ($deleteOptionValue) {
-				$productOptionValueSql->delete(['product_option_value_id' => $deleteOptionValue] + $this->global);
+				$productoptionvalueSQL->delete(['product_option_value_id' => $deleteOptionValue] + $this->global);
 			}
 
 			if ($deleteOption) {
-				$optionSql->delete(['product_option_id' => $deleteOption] + $this->global);
+				$optionSQL->delete(['product_option_id' => $deleteOption] + $this->global);
 			}
 		}
 	}
 
-	function save() {
+	/**
+	 * Save the product and related data (options, variants, features).
+	 *
+	 */
+	public function save(): void {
 		$post                    = &$this->request->post;
 
 		$post['requires_shipping']    = isset($post['requires_shipping']) ? 1 : 0;
@@ -155,6 +169,17 @@ class Product extends Edit {
 		parent::save();
 
 		$this->product_id = $this->request->get[$this->object . '_id'] ?? $post[$this->object . '_id'] ?? false;
+
+		if ($this->product_id && isset($post['quantity'])) {
+			try {
+				\Vvveb\System\Notifications::checkLowStock([
+					'product_id' => $this->product_id,
+					'name'       => $post['name'] ?? '',
+					'quantity'   => (int)$post['quantity'],
+				]);
+			} catch (\Throwable $e) {
+			}
+		}
 
 		if ($this->product_id) {
 			$this->saveOptions();
@@ -170,20 +195,28 @@ class Product extends Edit {
 				if ($data) {
 					$fn = lcfirst(dashesToCamelCase($feature, '_')); //eg: $product->productRelated()
 					unset($data['#']);
+					unset($data['#' . $feature . '#']);
 					$product->$fn([$this->object . '_id' => $this->product_id, $feature => array_unique($data, SORT_REGULAR)]);
 				}
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	private function optionCombinations($arr) {
+	/**
+	 * Generate all combinations of option values.
+	 *
+	 * @param array<string, array<int, string>> $arr Option values keyed by option ID.
+	 *
+	 * @return array{0: list<string>, 1: list<string>} Names and value keys for each combination.
+	 */
+	private function optionCombinations(array $arr): array {
 		$names  = [];
 		$values = [];
 
 		foreach ($arr as $optionId => $set) {
-			if (! $names) {
+			if (!$names) {
 				foreach ($set as $i => $val) {
 					$names[]  = $val;
 					$values[] = $optionId . ':' . $i;
@@ -210,12 +243,18 @@ class Product extends Edit {
 		return [$names, $values];
 	}
 
-	function index() {
+	/**
+	 * Display the product edit form with all related data.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		parent::index();
 
 		$view    = $this->view;
 		$product = new ProductSQL();
 		$options = (isset($view->product['product_id']) ? $view->product : $this->global);
+
 		$data    = $product->getData($options);
 
 		if (isset($data['option'])) {
@@ -225,6 +264,7 @@ class Product extends Edit {
 		} else {
 			$data['option'] = [];
 		}
+
 		$optionIds = [];
 
 		if (isset($view->product['product_option'])) {
@@ -260,7 +300,7 @@ class Product extends Edit {
 
 		$view->combinations = [];
 
-		if ($optionIds && $view->product['product_variant']) {
+		if ($optionIds && isset($view->product['product_variant'])) {
 			foreach ($view->product['product_variant'] as $opts => &$variant) {
 				$keys = explode(',', $opts);
 				$name = '';
@@ -284,7 +324,7 @@ class Product extends Edit {
 
 		$view->product['manufacturer_id'] = (($view->product['manufacturer_id'] ?? 0) ? $view->product['manufacturer_id'] : '');
 		$view->product['vendor_id']       = (($view->product['vendor_id'] ?? 0) ? $view->product['vendor_id'] : '');
-		$view->product['status']          = $view->product['status'] ?? 1;
+		$view->product['status'] ??= 1;
 		$data['subtract_stock']           = [1 => __('Yes'), 0 => __('No')]; //Subtract stock options
 		$data['status']                   = [0 => __('Disabled'), 1 => __('Enabled')];
 		$view->set($data);

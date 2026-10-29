@@ -25,13 +25,18 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Listing;
 
 class SubscriptionStatuses extends Listing {
-	protected $type = 'subscription_status';
+	/** @var string The entity type identifier */
+	protected string $type = 'subscription_status';
 
-	protected $controller = 'subscription-status';
+	/** @var string The single-item controller route slug */
+	protected string $controller = 'subscription-status';
 
-	protected $listController = 'subscription-statuses';
+	/** @var string The list controller route slug */
+	protected string $listController = 'subscription-statuses';
 
-	protected $list = 'subscription_status';
+	/** @var string The list property name on the view */
+	protected string $list = 'subscription_status';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

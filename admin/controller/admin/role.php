@@ -29,32 +29,60 @@ use Vvveb\System\Cache;
 use Vvveb\System\User\Role as RoleList;
 
 class Role extends Base {
-	protected $type = 'role';
+	/**
+	 * Role type identifier.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'role';
 
-	protected $app = 'admin';
+	/**
+	 * Current application context.
+	 *
+	 * @var string
+	 */
+	protected string $app = 'admin';
 
-	protected $apps = [
+	/**
+	 * Available applications and their permission methods.
+	 *
+	 * @var array<string, array{permissions: list<string>}>
+	 */
+	protected array $apps = [
 		'admin'   => ['permissions' => ['controllers']],
 		'rest'    => ['permissions' => ['routes', 'controllers']],
 		'graphql' => ['permissions' => ['controllers', 'models']],
+		'mcp'     => ['permissions' => ['controllers', 'models']],
 	];
 
-	function init() {
+	/**
+	 * Initialize the application context from the request.
+	 *
+	 * @return string|null
+	 */
+	public function init(): ?string {
 		$this->app = $this->request->get['app'] ?? 'admin';
 
-		if (! isset($this->apps[$this->app])) {
+		if (!isset($this->apps[$this->app])) {
 			//$this->view->errors[] = __('Invalid app!');
-			return $this->notFound(__('Invalid app!'));
+			$this->notFound(__('Invalid app!'));
+
+			return null;
 		}
 
-		parent::init();
+		return parent::init();
 	}
 
-	function index() {
+	/**
+	 * Display the role edit form with permissions tree and capabilities.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$role_id = $this->request->get['role_id'] ?? false;
 
 		$cache = Cache::getInstance();
-		$tree  = $cache->cache(APP, $this->app . '-permissions',function () {
+		$tree  = $cache->cache(APP, $this->app . '-permissions', function() {
 			$tree = [];
 			//$this->view->tree = RoleList::controllers($this->app);
 			foreach ($this->apps[$this->app]['permissions'] as $method) {
@@ -94,13 +122,18 @@ class Role extends Base {
 			}
 
 			$this->view->role['permissions']                 = $permissions;
-			$this->view->role['permissions']['deny']         = $this->view->role['permissions']['deny'] ?? [];
-			$this->view->role['permissions']['allow']        = $this->view->role['permissions']['allow'] ?? [];
-			$this->view->role['permissions']['capabilities'] = $this->view->role['permissions']['capabilities'] ?? [];
+			$this->view->role['permissions']['deny'] ??= [];
+			$this->view->role['permissions']['allow'] ??= [];
+			$this->view->role['permissions']['capabilities'] ??= [];
 		}
 	}
 
-	function save() {
+	/**
+	 * Save the role with its permissions, handling both create and update.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$data         = $this->request->post['role'] ?? [];
 		$allow        = $this->request->post['allow'] ?? [];
 		$deny         = $this->request->post['deny'] ?? [];
@@ -111,7 +144,7 @@ class Role extends Base {
 
 		$role               = new RoleSQL();
 		$this->view->role   = $role->get(['role_id' => $role_id]);
-		$currentPermissions = json_decode($this->view->role['permissions'], true);
+		$currentPermissions = $this->view->role ? json_decode($this->view->role['permissions'], true) : null;
 
 		if ($currentPermissions) {
 			//backward compatibility
@@ -136,6 +169,6 @@ class Role extends Base {
 			$this->view->errors[] = __('Error saving!');
 		}
 
-		return $this->index();
+		$this->index();
 	}
 }

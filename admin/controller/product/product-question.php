@@ -24,12 +24,12 @@ namespace Vvveb\Controller\Product;
 
 use Vvveb\Controller\Content\Comment;
 
-class Productquestion extends Comment {
-	protected $type = 'product_question';
+class ProductQuestion extends Comment {
+	protected string $type = 'product_question';
 
-	protected $list = 'product_question';
+	protected string $list = 'product_question';
 
-	protected $module = 'product';
+	protected string $module = 'product';
 
-	protected $controller = 'product-question';
+	protected string $controller = 'product-question';
 }

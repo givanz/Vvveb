@@ -25,13 +25,38 @@ namespace Vvveb\Controller\Admin;
 use Vvveb\Controller\Listing;
 
 class Roles extends Listing {
-	protected $type = 'role';
+	/**
+	 * Role type identifier.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'role';
 
-	protected $controller = 'role';
+	/**
+	 * Singular controller name for detail views.
+	 *
+	 * @var string
+	 */
+	protected string $controller = 'role';
 
-	protected $listController = 'roles';
+	/**
+	 * Plural controller name for listing views.
+	 *
+	 * @var string
+	 */
+	protected string $listController = 'roles';
 
-	protected $list = 'role';
+	/**
+	 * List key used to identify the data collection.
+	 *
+	 * @var string
+	 */
+	protected string $list = 'role';
 
-	protected $module = 'admin';
+	/**
+	 * Module path this controller belongs to.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'admin';
 }

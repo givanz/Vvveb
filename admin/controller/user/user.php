@@ -34,33 +34,39 @@ use Vvveb\System\User\User as UserSystem;
 use Vvveb\System\Validator;
 
 class User extends Base {
-	protected $type = 'user';
+	/**
+	 * User type identifier (user or admin).
+	 *
+	 * @var string
+	 */
+	protected string $type = 'user';
 
-	function index() {
-		$view = View :: getInstance();
+	/**
+	 * Display the user edit form with user data, media URLs, and theme CSS.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		$view = View::getInstance();
 
 		$user_id = (int)($this->request->get[$this->type . '_id'] ?? false);
-
 
 		if ($user_id) {
 			$options = [$this->type . '_id' => (int)$user_id];
 
 			if ($this->type == 'admin') {
-				if (Admin::hasCapability('view_other_admin')) {
-				} else {
-					if ($user_id != $this->global['admin_id']) {
-						$message = __('Permission denied!');
-						$view->errors[] = $message;
-						$this->notFound($message, 403, true);
-					}
+				if (!Admin::hasCapability('view_other_admin') && $user_id != $this->global['admin_id']) {
+					$message        = __('Permission denied!');
+					$view->errors[] = $message;
+					$this->notFound($message, 403, true);
 				}
 			}
 
 			$users      = model($this->type);
 			$user       = $users->get($options);
 
-			if (! $user) {
-				return $this->notFound(__('User not found!'));
+			if (!$user) {
+				$this->notFound(__('User not found!'));
 			}
 
 			if (isset($user['password'])) {
@@ -71,7 +77,7 @@ class User extends Base {
 			//featured avatar
 			foreach (['avatar', 'cover'] as $image) {
 				if (isset($user[$image])) {
-					$user[$image . '_url']= Images::image($user[$image], $this->type);
+					$user[$image . '_url'] = Images::image($user[$image], $this->type);
 				}
 			}
 
@@ -89,7 +95,7 @@ class User extends Base {
 		$view->uploadUrl = "$controllerPath&action=upload";
 		$view->themeCss  = '';
 
-		$theme = Sites::getTheme($this->global['site_id']) ?? 'default';
+		$theme = Sites::getTheme($this->global['site_id']);
 		if (file_exists(DIR_THEMES . "$theme/css/admin-post-editor.css")) {
 			$view->themeCss .= PUBLIC_PATH . "themes/$theme/css/admin-post-editor.css";
 		} else {
@@ -117,11 +123,16 @@ class User extends Base {
 		}
 	}
 
-	function loginAs() {
+	/**
+	 * Log in as a different user and display the user edit page.
+	 *
+	 * @return void
+	 */
+	public function loginAs(): void {
 		$user_id = (int)($this->request->get[$this->type . '_id'] ?? false);
 
 		if ($user_id) {
-			$view      = View :: getInstance();
+			$view      = View::getInstance();
 
 			$userInfo = UserSystem::get(['user_id' => $user_id]);
 
@@ -137,31 +148,34 @@ class User extends Base {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function save() {
+	/**
+	 * Save user data after validation, handling both create and update operations.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$validator = new Validator([$this->type]);
-		$view      = View :: getInstance();
+		$view      = View::getInstance();
 
 		$user_id = (int)($this->request->get[$this->type . '_id'] ?? false);
 		$user    = $this->request->post[$this->type] ?? [];
 
 		if ($this->type == 'admin') {
 			$editCapability = 'edit_other_admin';
-			if (Admin::hasCapability($editCapability)) {
-			} else {
-				if (! $user_id || $user_id != $this->global['admin_id']) {
-					$view->errors[] = __('Permission denied!');
-					return;
-				}
+			if (!Admin::hasCapability($editCapability) && (!$user_id || $user_id != $this->global['admin_id'])) {
+				$view->errors[] = __('Permission denied!');
+
+				return;
 			}
 
 			$admin = Admin::current();
 
 			if (isset($user['role_id'])) {
 				//don't allow role change for non admin roles
-				if (! in_array($admin['role'], ['super_admin', 'admin'])) {
+				if (!in_array($admin['role'], ['super_admin', 'admin'])) {
 					unset($user['role_id']);
 				} else {
 					//admin role can not set himself super admin, make sure role id is lower than super_admin
@@ -178,7 +192,6 @@ class User extends Base {
 			//if no password provided don't change
 			if (empty($user['password'])) {
 				unset($user['password']);
-			} else {
 			}
 
 			if (isset($user['site_access'])) {
@@ -192,7 +205,7 @@ class User extends Base {
 			}
 
 			$user['updated_at'] = date('Y-m-d H:i:s');
-			$user['bio'] = sanitizeHTML($user['bio']);
+			$user['bio']        = sanitizeHTML($user['bio']);
 
 			if ($user_id) {
 				if ($this->type == 'admin') {
@@ -219,11 +232,11 @@ class User extends Base {
 					if (isset($result[$this->type])) {
 						$id = $result[$this->type];
 
-						if (! $id) {
+						if (!$id) {
 							$view->errors[] = $users->error;
 						} else {
 							$view->success['get'] = ucfirst($this->type) . __(' added!');
-							$this->redirect(['module'=> $this->type . '/user', $this->type . '_id' => $id, 'success' => ucfirst(__($this->type)) . __(' added!')]);
+							$this->redirect(['module' => $this->type . '/user', $this->type . '_id' => $id, 'success' => ucfirst(__($this->type)) . __(' added!')]);
 						}
 					} else {
 						if ($result['email'] == $user['email']) {

@@ -23,26 +23,56 @@
 namespace Vvveb\Controller\Localization;
 
 use Vvveb\Controller\Listing;
-use Vvveb\Sql\countrySQL;
+use Vvveb\Sql\CountrySQL;
 
 class Countries extends Listing {
-	protected $type = 'country';
+	/**
+	 * Entity type identifier for countries.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'country';
 
-	protected $controller = 'country';
+	/**
+	 * Singular controller name for detail views.
+	 *
+	 * @var string
+	 */
+	protected string $controller = 'country';
 
-	protected $listController = 'countries';
+	/**
+	 * Plural controller name for listing views.
+	 *
+	 * @var string
+	 */
+	protected string $listController = 'countries';
 
-	protected $list = 'country';
+	/**
+	 * List key used to identify the data collection.
+	 *
+	 * @var string
+	 */
+	protected string $list = 'country';
 
-	protected $module = 'localization';
+	/**
+	 * Module path this controller belongs to.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'localization';
 
-	function countryAutocomplete() {
-		$country = new countrySQL();
+	/**
+	 * Return matching countries as JSON for autocomplete.
+	 *
+	 * @return false
+	 */
+	public function countryAutocomplete(): false {
+		$country = new CountrySQL();
 
 		$options = [
 			'start'  => 0,
 			'limit'  => 10,
-			'search' => trim($this->request->get['text']),
+			'search' => trim($this->request->get['text'] ?? ''),
 		] + $this->global;
 
 		$results = $country->getAll($options);
@@ -50,11 +80,9 @@ class Countries extends Listing {
 		$search = [];
 
 		foreach ($results['country'] as $country) {
-			//$country['image']               = Images::image($country['image'], 'country');
 			$search[$country['country_id']] = $country['name'];
 		}
 
-		//echo json_encode($search);
 		$this->response->setType('json');
 		$this->response->output($search);
 

@@ -25,9 +25,11 @@ namespace Vvveb\Controller\Product;
 use Vvveb\Controller\Listing;
 
 class Vendors extends Listing {
-	protected $type = 'vendor';
+	protected string $type = 'vendor';
 
-	protected $list = 'vendor';
+	protected string $listController = 'vendors';
 
-	protected $module = 'product';
+	protected string $list = 'vendor';
+
+	protected string $module = 'product';
 }

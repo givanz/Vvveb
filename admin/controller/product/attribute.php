@@ -25,9 +25,9 @@ namespace Vvveb\Controller\Product;
 use Vvveb\Controller\Crud;
 
 class Attribute extends Crud {
-	protected $type = 'attribute';
+	protected string $type = 'attribute';
 
-	protected $controller = 'attribute';
+	protected string $controller = 'attribute';
 
-	protected $module = 'product';
+	protected string $module = 'product';
 }

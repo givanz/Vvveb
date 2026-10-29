@@ -27,13 +27,33 @@ use Vvveb\Controller\Crud;
 use Vvveb\Sql\CountrySQL;
 
 class Region extends Crud {
-	protected $type = 'region';
+	/**
+	 * Entity type identifier for regions.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'region';
 
-	protected $controller = 'region';
+	/**
+	 * Singular controller name for detail views.
+	 *
+	 * @var string
+	 */
+	protected string $controller = 'region';
 
-	protected $module = 'localization';
+	/**
+	 * Module path this controller belongs to.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'localization';
 
-	function index() {
+	/**
+	 * Display the region edit form with available countries.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		parent::index();
 
 		$countryModel  = new CountrySQL();

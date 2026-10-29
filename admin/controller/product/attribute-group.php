@@ -24,32 +24,37 @@ namespace Vvveb\Controller\Product;
 
 use function Vvveb\__;
 use Vvveb\Controller\Crud;
-use Vvveb\Sql\Attribute_GroupSQL;
+use Vvveb\Sql\Attribute_groupSQL;
 use Vvveb\Sql\AttributeSQL;
 
 class AttributeGroup extends Crud {
-	protected $type = 'attribute_group';
+	protected string $type = 'attribute_group';
 
-	protected $controller = 'attribute-group';
+	protected string $controller = 'attribute-group';
 
-	protected $module = 'product';
+	protected string $module = 'product';
 
-	function save() {
+	/**
+	 * Save the attribute group and its associated attributes.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$this->redirect = false;
 		parent::save();
 
-		$delete          	     = $this->request->post['delete']['attribute_id'] ?? [];
-		$attribute             = $this->request->post['attribute'] ?? [];
-		$attribute_group	      = $this->request->post['attribute_group'] ?? [];
-		$edit                  = $this->request->get['attribute_group_id'] ?? false;
-		$attribute_group_id    = $this->attribute_group_id;
-		$new                = [];
+		$delete              = $this->request->post['delete']['attribute_id'] ?? [];
+		$attribute           = $this->request->post['attribute'] ?? [];
+		$attribute_group     = $this->request->post['attribute_group'] ?? [];
+		$edit                = $this->request->get['attribute_group_id'] ?? false;
+		$attribute_group_id  = $this->attribute_group_id;
+		$new                 = [];
 
 		foreach ($attribute as $index => &$attr) {
 			$attr['attribute_group_id'] = $attribute_group_id;
-			$attr['sort_order']         = $attr['sort_order'] ?? 0;
+			$attr['sort_order'] ??= 0;
 
-			if (! $attr['attribute_id'] && $attr['name']) {
+			if (!$attr['attribute_id'] && $attr['name']) {
 				unset($attr['attribute_id']);
 				$new[] = $attr;
 				unset($attribute[$index]);
@@ -57,43 +62,48 @@ class AttributeGroup extends Crud {
 		}
 
 		if ($attribute_group_id) {
-			$attributeGroup = new Attribute_GroupSQL();
-			$attributeSql   = new AttributeSQL();
+			$attributeGroup = new Attribute_groupSQL();
+			$attributeSQL   = new AttributeSQL();
 
 			if ($delete) {
-				$attributeSql->delete(['attribute_id' => $delete] + $this->global);
+				$attributeSQL->delete(['attribute_id' => $delete] + $this->global);
 			}
 
 			if ($attribute) {
 				foreach ($attribute as $index => &$attr) {
-					$attributeSql->edit(['attribute' => $attr, 'attribute_id' => $attr['attribute_id']] + $this->global);
+					$attributeSQL->edit(['attribute' => $attr, 'attribute_id' => $attr['attribute_id']] + $this->global);
 				}
 			}
 
 			if ($new) {
 				foreach ($new as $index => &$attr) {
-					$attributeSql->add(['attribute' => $attr] + $this->global);
+					$attributeSQL->add(['attribute' => $attr] + $this->global);
 				}
 			}
 
-			$result      = $attributeGroup->edit(['attribute_group_id' => $attribute_group_id, 'attribute_group' => $attribute_group]);
+			$result = $attributeGroup->edit(['attribute_group_id' => $attribute_group_id, 'attribute_group' => $attribute_group]);
 
 			if ($result && isset($result['attribute_group_content'])) {
-				if (! $edit) {
+				if (!$edit) {
 					$this->redirect(['module' => "{$this->module}/{$this->controller}", 'attribute_group_id' => $attribute_group_id]);
 				}
 
-				$successMessage        = __('Saved!');
+				$successMessage             = __('Saved!');
 				$this->view->success['get'] = $successMessage;
 			} else {
 				$this->view->errors[] = __('Error saving!');
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display the attribute group edit form with associated attributes.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		parent::index();
 		$attribute_group_id = $this->request->get['attribute_group_id'] ?? false;
 

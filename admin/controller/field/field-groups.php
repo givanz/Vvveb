@@ -25,13 +25,13 @@ namespace Vvveb\Controller\Field;
 use Vvveb\Controller\Listing;
 
 class FieldGroups extends Listing {
-	protected $type = 'field_group';
+	protected string $type = 'field_group';
 
-	protected $controller = 'field-group';
+	protected string $controller = 'field-group';
 
-	protected $listController = 'field-group';
+	protected string $listController = 'field-group';
 
-	protected $list = 'field_group';
+	protected string $list = 'field_group';
 
-	protected $module = 'field';
+	protected string $module = 'field';
 }

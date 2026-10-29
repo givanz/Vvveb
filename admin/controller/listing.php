@@ -28,28 +28,42 @@ use Vvveb\System\Traits\Listing as ListingTrait;
 class Listing extends Base {
 	use ListingTrait {
 		ListingTrait::index as get;
+		ListingTrait::delete as del;
 	}
 
-	function index() {
+	/**
+	 * Delete data.
+	 */
+	public function delete(): void {
+		$this->del();
+	}
+
+	/**
+	 * Display the listing page with row URLs and filter data.
+	 */
+	public function index(): void {
 		$results = $this->get();
 
 		$type = $this->type;
 
 		if (isset($results[$type])) {
-			$controller  	  = $this->controller ?? $type;
-			$listController = $this->listController ?? $type;
-			$type_id        = $this->type_id ?? "{$type}_id";
-			$data_id        = $this->data_id ?? "{$type}_id";
-			$list           = $this->list ?? $type;
+			$controller  	  = $this->controller ?: $type;
+			$listController = $this->listController ?: $type;
+			$type_id        = $this->type_id ?: "{$type}_id";
+			$data_id        = $this->data_id ?: "{$type}_id";
+			$list           = $this->list ?: $type;
 			$module         = $this->module;
 
 			foreach ($results[$type] as $id => &$row) {
-				$params            = ['module' => "$module/$controller", $type_id => $row[$type_id]];
-				$paramsList        = ['module' => "$module/$listController", $type_id => $row[$type_id]];
+				$rowId             = $row[$type_id] ?? null;
+				$params            = ['module' => "$module/$controller", $type_id => $rowId];
+				$paramsList        = ['module' => "$module/$listController", $type_id => $rowId];
 				$row['url']        = \Vvveb\url($params);
 				$row['edit-url']   = \Vvveb\url($params);
-				$row['delete-url'] = \Vvveb\url($paramsList + ['action' => 'delete', $type_id . '[]' => $row[$type_id]]);
+				$row['delete-url'] = \Vvveb\url($paramsList + ['action' => 'delete', $type_id . '[]' => $rowId]);
 			}
+
+			unset($row);
 		}
 
 		$this->view->{$this->list}  = $results[$this->type] ?? [];

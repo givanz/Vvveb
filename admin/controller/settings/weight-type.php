@@ -25,9 +25,12 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Crud;
 
 class WeightType extends Crud {
-	protected $type = 'weight_type';
+	/** @var string The entity type identifier */
+	protected string $type = 'weight_type';
 
-	protected $controller = 'weight-type';
+	/** @var string The controller route slug */
+	protected string $controller = 'weight-type';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

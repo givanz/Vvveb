@@ -25,9 +25,24 @@ namespace Vvveb\Controller\Localization;
 use Vvveb\Controller\Crud;
 
 class Country extends Crud {
-	protected $type = 'country';
+	/**
+	 * Entity type identifier for countries.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'country';
 
-	protected $controller = 'country';
+	/**
+	 * Singular controller name for detail views.
+	 *
+	 * @var string
+	 */
+	protected string $controller = 'country';
 
-	protected $module = 'localization';
+	/**
+	 * Module path this controller belongs to.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'localization';
 }

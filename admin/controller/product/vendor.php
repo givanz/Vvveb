@@ -25,7 +25,7 @@ namespace Vvveb\Controller\Product;
 use Vvveb\Controller\Crud;
 
 class Vendor extends Crud {
-	protected $type = 'vendor';
+	protected string $type = 'vendor';
 
-	protected $module = 'product';
+	protected string $module = 'product';
 }

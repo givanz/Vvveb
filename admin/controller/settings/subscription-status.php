@@ -25,9 +25,12 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Crud;
 
 class SubscriptionStatus extends Crud {
-	protected $type = 'subscription_status';
+	/** @var string The entity type identifier */
+	protected string $type = 'subscription_status';
 
-	protected $controller = 'subscription-status';
+	/** @var string The controller route slug */
+	protected string $controller = 'subscription-status';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

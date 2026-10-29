@@ -25,16 +25,11 @@ namespace Vvveb\Controller\Admin;
 use function Vvveb\__;
 use Vvveb\Controller\Listing;
 use function Vvveb\humanReadable;
-use Vvveb\Sql\Admin_Auth_TokenSQL;
+use Vvveb\Sql\Admin_auth_tokenSQL;
+use Vvveb\System\User\Admin;
 use function Vvveb\url;
-///use Vvveb\System\Traits\Crud as CrudTrait;
 
 class AuthToken extends Listing {
-	/*
-	use CrudTrait {
-		CrudTrait::delete as get;
-	}*/
-
 	/**
 	 * Auth token type identifier.
 	 *
@@ -68,24 +63,24 @@ class AuthToken extends Listing {
 	 *
 	 * @return void
 	 */
-	function index() : void {
+	public function index(): void {
 		$this->options['admin_id'] = $this->request->get['admin_id'] ?? false;
 		$this->options['limit']    = 1000;
 
-		if (! $this->options['admin_id']) {
+		if (!$this->options['admin_id']) {
 			$this->notFound(__('User not found!'));
+
 			return;
 		}
-		
 
 		if (!Admin::hasCapability('view_other_admin')) {
-			if ($this->options['admin_id'] || ($this->options['admin_id'] != $this->global['admin_id'])) {
-				$message = __('Permission denied!');
+			if ($this->options['admin_id'] != $this->global['admin_id']) {
+				$message              = __('Permission denied!');
 				$this->view->errors[] = $message;
 				$this->notFound($message, 403, true);
 			}
 		}
-		
+
 		$this->view->user_url = url(['module' => 'admin/user', 'admin_id' => $this->options['admin_id']]);
 		parent::index();
 	}
@@ -95,25 +90,26 @@ class AuthToken extends Listing {
 	 *
 	 * @return void
 	 */
-	function save() : void {
+	public function save(): void {
 		$admin_auth_token    = $this->request->post['admin_auth_token'] ?? [];
 		$admin_id            = $this->request->get['admin_id'] ?? false;
 
 		$editCapability = 'edit_other_admin';
 		if (!Admin::hasCapability($editCapability)) {
-			if (! $admin_id || $admin_id != $this->global['admin_id']) {
-				$view->errors[] = __('Permission denied!');
+			if (!$admin_id || $admin_id != $this->global['admin_id']) {
+				$this->view->errors[] = __('Permission denied!');
+
 				return;
 			}
 		}
-		
+
 		if ($admin_auth_token && $admin_id) {
 			foreach ($admin_auth_token as $key => $token) {
-				if ($key == '#') {
+				if ($key == '#' || $key == '#admin_auth_token') {
 					unset($admin_auth_token[$key]);
 				}
 
-				if (! $token['admin_auth_token_id']) {
+				if (!$token['admin_auth_token_id']) {
 					unset($admin_auth_token[$key]['admin_auth_token_id']);
 				}
 			}
@@ -121,7 +117,7 @@ class AuthToken extends Listing {
 			$adminAuthToken = new Admin_Auth_TokenSQL();
 
 			if (($result = $adminAuthToken->update(['admin_auth_token' => $admin_auth_token, 'admin_id' => $admin_id] + $this->global))/* && $result['admin_auth_token']*/) {
-				$this->view->success['get'] =humanReadable(__($this->type)) . __(' saved!');
+				$this->view->success['get'] = humanReadable(__($this->type)) . __(' saved!');
 			} else {
 				$this->view->errors[] = __('Error saving!');
 			}

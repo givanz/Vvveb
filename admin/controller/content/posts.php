@@ -120,7 +120,7 @@ class Posts extends Listing {
 					$url     = url(['module' => 'content/post', 'post_id' => $post_id, 'type' => $this->type]);
 
 					$success = ucfirst($this->type) . ' ' . __('duplicated') . '!';
-					$success .= sprintf(' <a href="%s">%s</a>', $url, __('Edit') . " {$this->type}");
+					$success .= sprintf(' <a href="%s">%s</a>', $url, __('Edit') . ' ' . $this->type);
 					$this->view->success['get'] = $success;
 					//$this->session->set('success', $success);
 					//$this->redirect(['module' => 'content/posts', 'type' => $this->type], [], false);

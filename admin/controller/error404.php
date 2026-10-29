@@ -23,8 +23,10 @@
 namespace Vvveb\Controller;
 
 #[\AllowDynamicProperties]
-class Error404/* extends Base */
-{
-	function index() {
-	}
+class Error404 {
+	// extends Base
+	/**
+	 * Handle 404 Not Found errors.
+	 */
+	public function index(): void {}
 }

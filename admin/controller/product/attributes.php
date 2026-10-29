@@ -25,15 +25,16 @@ namespace Vvveb\Controller\Product;
 use Vvveb\Controller\Listing;
 
 class Attributes extends Listing {
-	protected $additionalPermissionCheck = ['product/attribute/save'];
+	/** @var list<string> */
+	protected ?array $additionalPermissionCheck = ['product/attribute/save'];
 
-	protected $type = 'attribute';
+	protected string $type = 'attribute';
 
-	protected $controller = 'attribute';
+	protected string $controller = 'attribute';
 
-	protected $listController = 'attributes';
+	protected string $listController = 'attributes';
 
-	protected $list = 'attribute';
+	protected string $list = 'attribute';
 
-	protected $module = 'product';
+	protected string $module = 'product';
 }

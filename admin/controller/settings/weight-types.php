@@ -25,13 +25,18 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Listing;
 
 class WeightTypes extends Listing {
-	protected $type = 'weight_type';
+	/** @var string The entity type identifier */
+	protected string $type = 'weight_type';
 
-	protected $controller = 'weight-type';
+	/** @var string The single-item controller route slug */
+	protected string $controller = 'weight-type';
 
-	protected $listController = 'weight-types';
+	/** @var string The list controller route slug */
+	protected string $listController = 'weight-types';
 
-	protected $list = 'weight_type';
+	/** @var string The list property name on the view */
+	protected string $list = 'weight_type';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

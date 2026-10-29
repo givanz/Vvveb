@@ -34,15 +34,35 @@ use Vvveb\System\Traits\Media as MediaTrait;
 class Fonts extends Base {
 	use MediaTrait;
 
-	protected $dirMedia = DIR_PUBLIC . 'fonts' . DS;
+	/**
+	 * Directory path for public font assets.
+	 *
+	 * @var string
+	 */
+	protected string $dirMedia = DIR_PUBLIC . 'fonts' . DS;
 
-	protected $fontsPath = '../../../fonts/'; // /public/fonts relative to /themes/theme-slug/css folder
+	/**
+	 * Relative path from theme CSS folder to the public fonts directory.
+	 *
+	 * @var string
+	 */
+	protected string $fontsPath = '../../../fonts/'; // /public/fonts relative to /themes/theme-slug/css folder
 
-	private function getTheme() {
-		return $theme = sanitizeFileName($this->request->get['theme'] ?? Sites::getTheme($this->global['site_id']) ?? 'default');
+	/**
+	 * Get the current theme slug from the request or default.
+	 *
+	 * @return string The sanitized theme slug.
+	 */
+	private function getTheme(): string {
+		return sanitizeFileName($this->request->get['theme'] ?? Sites::getTheme($this->global['site_id']));
 	}
 
-	function save() {
+	/**
+	 * Save custom font definitions to the theme's fonts.css file.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$fonts   = $this->request->post['font'] ?? [];
 
 		if ($fonts) {
@@ -51,10 +71,10 @@ class Fonts extends Base {
 			$cssFile     = DS . 'css' . DS . 'fonts.css';
 
 			//try to create file if it doesn't exist
-			if ($theme && ! file_exists($themeFolder . $cssFile) && ! touch($themeFolder . $cssFile)) {
+			if ($theme && !file_exists($themeFolder . $cssFile) && !touch($themeFolder . $cssFile)) {
 				$this->view->errors[] = sprintf(__('Can not create file %s!'), $theme . $cssFile);
 
-				return $this->index();
+				$this->index();
 			}
 
 			if ($theme && is_writable($themeFolder . $cssFile)) {
@@ -74,7 +94,7 @@ class Fonts extends Base {
 
 					$css .= "\n$fontsCss";
 
-					if (! file_put_contents($themeFolder . $cssFile, $css)) {
+					if (!file_put_contents($themeFolder . $cssFile, $css)) {
 						$this->view->errors[] = sprintf(__('%s is not writable!'), $theme . $cssFile);
 					}
 				}
@@ -83,10 +103,15 @@ class Fonts extends Base {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display the font management page with built-in and custom font faces.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$theme = $this->getTheme();
 		//var_dump(Font::themeFonts($theme));
 		if ($theme && is_dir($themeCssDir = DIR_THEMES . $theme . DS . 'css' . DS)) {

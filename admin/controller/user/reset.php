@@ -32,7 +32,12 @@ use function Vvveb\url;
 
 #[\AllowDynamicProperties]
 class Reset {
-	function reset() {
+	/**
+	 * Process the password reset form submission.
+	 *
+	 * @return void
+	 */
+	public function reset(): void {
 		$token           = $this->request->get['token'] ?? false;
 		$user            = $this->request->get['user'] ?? false;
 		$password        = $this->request->post['password'] ?? false;
@@ -49,7 +54,8 @@ class Reset {
 							$success                      = __('Password was reset!');
 							$this->view->success['login'] = $success;
 							$this->session->set('success', ['login' => $success]);
-							header('Location: ' . url(['module' => 'user/login'/*, 'success' => $success*/]));
+							header('Location: ' . url(['module' => 'user/login']));
+							exit();
 						} else {
 							$errors                      =  __('Update failed!');
 							$this->view->errors['login'] = $errors;
@@ -63,17 +69,25 @@ class Reset {
 			}
 		}
 
-		if (! $admin) {
-			die(__('Invalid or expired token!'));
+		if (!$admin) {
+			$this->view->errors['login'] = __('Invalid or expired token!');
+			$this->session->set('errors', ['login' => __('Invalid or expired token!')]);
+			header('Location: ' . url(['module' => 'user/login']));
+			exit();
 		}
 	}
 
-	function index() {
+	/**
+	 * Handle the password reset request page and send reset email.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$email      = $this->request->post['email'] ?? false;
 		$loginData  = [];
 
 		$language = $this->session->get('language') ?? 'en_US';
-		Locale :: setLanguage($language);
+		Locale::setLanguage($language);
 
 		if ($email) {
 			$loginData['email'] = $email;
@@ -83,29 +97,35 @@ class Reset {
 				$token = Str::random(32);
 				Admin::update(['token' => $token], ['email' => $adminData['email']]);
 
-				$agent = $_SERVER['HTTP_USER_AGENT'];
+				$agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
-				if (strpos($agent, 'Linux') !== false) {
+				if (str_contains($agent, 'Linux')) {
 					$os = 'Linux';
-				} elseif (strpos($agent, '/Win/') !== false) {
+				} elseif (str_contains($agent, '/Win/')) {
 					$os = 'Windows';
-				} elseif (strpos($agent, '/Mac/') !== false) {
+				} elseif (str_contains($agent, '/Mac/')) {
 					$os = 'Mac';
 				} else {
 					$os = 'UnKnown';
 				}
 
-				$site = Sites :: getSiteData($this->global['site_id']);
+				$site = Sites::getSiteData($this->global['site_id'] ?? SITE_ID);
 
 				$reset_url = url(['module' => 'user/reset', 'action' => 'reset', 'token' => $token, 'user' => $adminData['username'], 'host' => $site['host'] ?? false]);
 
 				$data = $adminData + ['token' => $token, 'operating_system' => $os, 'browser_name' => $_SERVER['HTTP_USER_AGENT'], 'reset_url' => $reset_url];
 
+				\Vvveb\System\Notifications::trigger('admin.password_reset', $data + [
+					'subject' => __('Password reset'),
+					'message' => __('A password reset was requested for your account.'),
+				]);
+
 				if (email($adminData['email'], __('Password reset'), 'user/reset', $data)) {
 					$success               = __('A reset email was sent, please use it to reset your password!');
 					$this->view->success[] = $success;
 					$this->session->set('success', $success);
-					header('Location: ' . url(['module' => 'user/login'/* 'success' => $success*/]));
+					header('Location: ' . url(['module' => 'user/login']));
+					exit();
 				} else {
 					$this->view->errors['login'] = __('Error sending reset email!');
 				}

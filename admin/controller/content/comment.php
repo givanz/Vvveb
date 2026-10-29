@@ -28,9 +28,14 @@ use function Vvveb\model;
 use Vvveb\System\User\Admin;
 
 class Comment extends Base {
-	protected $type = 'comment';
+	protected string $type = 'comment';
 
-	function save() {
+	/**
+	 * Saves a comment (new or existing) and redirects to the index.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$type		     = $this->type;
 		$comment_id = $this->request->get[$type . '_id'] ?? false;
 		$comment    = $this->request->post[$type] ?? false;
@@ -65,10 +70,15 @@ class Comment extends Base {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Displays a single comment by ID.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$type		     = $this->type;
 		$comments   = model($type);
 		$comment_id = $this->request->get[$type . '_id'] ?? false;
@@ -92,7 +102,7 @@ class Comment extends Base {
 
 		$this->view->$type = $comments->get($options);
 
-		if (! $this->view->$type) {
+		if (!$this->view->$type) {
 			$this->notFound();
 		}
 	}

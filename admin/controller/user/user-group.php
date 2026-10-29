@@ -25,9 +25,24 @@ namespace Vvveb\Controller\User;
 use Vvveb\Controller\Crud;
 
 class UserGroup extends Crud {
-	protected $type = 'user_group';
+	/**
+	 * Entity type identifier for user groups.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'user_group';
 
-	protected $controller = 'user-group';
+	/**
+	 * Singular controller name for detail views.
+	 *
+	 * @var string
+	 */
+	protected string $controller = 'user-group';
 
-	protected $module = 'user';
+	/**
+	 * Module path this controller belongs to.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'user';
 }

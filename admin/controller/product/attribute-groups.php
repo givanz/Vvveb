@@ -25,15 +25,16 @@ namespace Vvveb\Controller\Product;
 use Vvveb\Controller\Listing;
 
 class AttributeGroups extends Listing {
-	protected $additionalPermissionCheck = ['product/attribute-group/save'];
+	/** @var list<string> */
+	protected ?array $additionalPermissionCheck = ['product/attribute-group/save'];
 
-	protected $type = 'attribute_group';
+	protected string $type = 'attribute_group';
 
-	protected $controller = 'attribute-group';
+	protected string $controller = 'attribute-group';
 
-	protected $listController = 'attribute-groups';
+	protected string $listController = 'attribute-groups';
 
-	protected $list = 'attribute_group';
+	protected string $list = 'attribute_group';
 
-	protected $module = 'product';
+	protected string $module = 'product';
 }

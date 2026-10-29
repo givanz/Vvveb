@@ -23,24 +23,29 @@
 namespace Vvveb\Controller\Order;
 
 use Vvveb\Controller\Crud;
-use Vvveb\Sql\Return_ReasonSQL;
-use Vvveb\Sql\Return_ResolutionSQL;
-use Vvveb\Sql\Return_StatusSQL;
+use Vvveb\Sql\Return_reasonSQL;
+use Vvveb\Sql\Return_resolutionSQL;
+use Vvveb\Sql\Return_statusSQL;
 
 //Return is a reserved keyword using ReturnOrder and return-order instead
 class ReturnOrder extends Crud {
-	protected $type = 'return';
+	protected string $type = 'return';
 
-	protected $controller = 'return-order';
+	protected string $controller = 'return-order';
 
-	protected $module = 'order';
+	protected string $module = 'order';
 
-	function index() {
-		parent :: index();
+	/**
+	 * Display the return order edit form with resolution, reason, and status data.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
+		parent::index();
 
-		$resolution = new Return_ResolutionSQL();
-		$reason     = new Return_ReasonSQL();
-		$status     = new Return_StatusSQL();
+		$resolution = new Return_resolutionSQL();
+		$reason     = new Return_reasonSQL();
+		$status     = new Return_statusSQL();
 
 		$resolutions = $resolution->getAll($this->global)['return_resolution'] ?? [];
 		$reasons     = $reason->getAll($this->global)['return_reason'] ?? [];

@@ -27,7 +27,12 @@ use Vvveb\Controller\Base;
 use Vvveb\System\Validator;
 
 class Settings extends Base {
-	function save() {
+	/**
+	 * Save general settings.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$validator = new Validator(['settings']);
 		$settings  = $this->request->post['settings'] ?? false;
 		$errors    = [];
@@ -35,7 +40,7 @@ class Settings extends Base {
 		if ($settings /*&&
 			($errors = $validator->validate($settings)) === true*/) {
 			//$settings              = $validator->filter($settings);
-			$results               = \Vvveb\setMultiSetting('settings',$settings);
+			$results               = \Vvveb\setMultiSetting('settings', $settings);
 
 			if ($results) {
 				$this->view->success[] = __('Settings saved!');
@@ -49,6 +54,10 @@ class Settings extends Base {
 		$this->index();
 	}
 
-	function index() {
-	}
+	/**
+	 * Display general settings.
+	 *
+	 * @return void
+	 */
+	public function index(): void {}
 }

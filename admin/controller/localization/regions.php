@@ -28,19 +28,51 @@ use function Vvveb\humanReadable;
 use function Vvveb\model;
 
 class Regions extends Listing {
-	protected $type = 'region';
+	/**
+	 * Entity type identifier for regions.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'region';
 
-	protected $controller = 'region';
+	/**
+	 * Singular controller name for detail views.
+	 *
+	 * @var string
+	 */
+	protected string $controller = 'region';
 
-	protected $listController = 'regions';
+	/**
+	 * Plural controller name for listing views.
+	 *
+	 * @var string
+	 */
+	protected string $listController = 'regions';
 
-	protected $list = 'region';
+	/**
+	 * List key used to identify the data collection.
+	 *
+	 * @var string
+	 */
+	protected string $list = 'region';
 
-	protected $module = 'localization';
+	/**
+	 * Module path this controller belongs to.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'localization';
 
-	private function setStatus($status) {
+	/**
+	 * Set the status for one or more regions.
+	 *
+	 * @param int $status The new status value (1 = active, 0 = inactive).
+	 *
+	 * @return void
+	 */
+	private function setStatus(int $status): void {
 		$type    = $this->type;
-		$type_id = $this->type_id ?? "{$type}_id";
+		$type_id = $this->type_id ?: "{$type}_id";
 
 		if (APP == 'admin') {
 			$data_id = $this->request->post[$type_id];
@@ -53,12 +85,11 @@ class Regions extends Listing {
 				$data_id = [$data_id];
 			}
 
-			if (! isset($this->modelName)) {
+			if (empty($this->modelName)) {
 				$this->modelName = $type;
 			}
 
 			$model               = model($this->modelName);
-			//$options             = [$type_id => $data_id] + $this->global;
 			$result              = $model->multiEdit([$type => ['status' => $status], $type_id => $data_id]);
 			$name                = ucfirst(__($type));
 
@@ -69,19 +100,30 @@ class Regions extends Listing {
 					$this->view->info[] = sprintf(__('No rows affected!'), humanReadable($name));
 				}
 			} else {
-				$this->view->errors[] = sprintf(__('Error %s!'), humanReadable($name));
+				$this->view->errors[] = sprintf(__('Error changing %s status!'), humanReadable($name));
 			}
 		}
 
 		unset($this->request->get[$type_id]);
 
-		return $this->index();
+		$this->index();
 	}
-	function enable() {
+
+	/**
+	 * Enable regions by setting status to active.
+	 *
+	 * @return void
+	 */
+	public function enable(): void {
 		$this->setStatus(1);
 	}
 
-	function disable() {
+	/**
+	 * Disable regions by setting status to inactive.
+	 *
+	 * @return void
+	 */
+	public function disable(): void {
 		$this->setStatus(0);
 	}
 }

@@ -29,14 +29,20 @@ use function Vvveb\url;
 require_once DIR_SYSTEM . 'functions' . DS . 'php-mo.php';
 
 class Translations extends Base {
-	function domains() {
+	/**
+	 * Display the list of translation domains for a given language.
+	 *
+	 * @return void
+	 */
+	public function domains(): void {
 		$lang   = $this->request->get['lang'] ?? false;
 
 		if ($lang) {
 			$folder = DIR_ROOT . 'locale' . DS . $lang . DS . 'LC_MESSAGES' . DS;
 			$files  = glob($folder . '*.po');
 
-			$url = ['module' => 'localization/translations', 'action' => 'domain', 'lang' => $lang];
+			$url     = ['module' => 'localization/translations', 'action' => 'domain', 'lang' => $lang];
+			$domains = [];
 			//add user if does not exist yet
 			$domains['user'] = url($url + ['domain' => 'user']);
 
@@ -52,7 +58,12 @@ class Translations extends Base {
 		}
 	}
 
-	private function compile() {
+	/**
+	 * Compile all translation domain PO files into a single MO file.
+	 *
+	 * @return string Status message indicating compilation result.
+	 */
+	private function compile(): string {
 		//add default translations first to be overriden by all others
 		$domains = ['vvveb'];
 		$message = '';
@@ -74,13 +85,13 @@ class Translations extends Base {
 		foreach ($domains as $domain) {
 			$poFile = $folder . $domain . '.po';
 
-			if (file_exists($poFile) && ($translations = phpmo_parse_po_file($poFile) ?: []) && is_array($translations)) {
+			if (file_exists($poFile) && ($translations = phpmo_parse_po_file($poFile) ?: [])) {
 				$view->translations = array_merge($view->translations, $translations);
 			}
 		}
 		//compile
 		if (phpmo_write_mo_file($view->translations, $folder . 'vvveb-new.mo')) {
-			if (rename($folder . 'vvveb-new.mo',  $folder . 'vvveb.mo')) {
+			if (rename($folder . 'vvveb-new.mo', $folder . 'vvveb.mo')) {
 				clearstatcache();
 				$message .= "\n" . __('Compiled!');
 			}
@@ -91,7 +102,12 @@ class Translations extends Base {
 		return $message;
 	}
 
-	function save() {
+	/**
+	 * Save translation edits to PO file and recompile the MO file.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$view         = $this->view;
 		$translations = $this->request->post['translations'] ?? [];
 		$this->response->setType('json');
@@ -103,7 +119,7 @@ class Translations extends Base {
 			$this->domain();
 
 			$folder = DIR_ROOT . 'locale' . DS . $view->lang . DS . 'LC_MESSAGES' . DS;
-			if (! file_exists($folder)) {
+			if (!file_exists($folder)) {
 				mkdir($folder, 0777, true);
 			}
 
@@ -123,7 +139,12 @@ class Translations extends Base {
 		$this->response->output($result);
 	}
 
-	function domain() {
+	/**
+	 * Display a translation domain's PO file for editing.
+	 *
+	 * @return void
+	 */
+	public function domain(): void {
 		$view             = $this->view;
 		$view->lang       =  $lang       = $this->request->get['lang'] ?? false;
 		$view->domain     =  $domain     = $this->request->get['domain'] ?? false;
@@ -138,7 +159,7 @@ class Translations extends Base {
 			if (file_exists($poFile)) {
 				$view->translations = phpmo_parse_po_file($poFile);
 
-				if (! is_writeable($poFile)) {
+				if (!is_writable($poFile)) {
 					$view->info = [__('Po file not writable, saving will not work!')];
 				}
 			} else {

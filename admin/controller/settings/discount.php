@@ -27,11 +27,21 @@ use Vvveb\Controller\Base;
 use Vvveb\System\Validator;
 
 class Discount extends Base {
-	function save() {
+	/**
+	 * Save discount settings.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display and validate discount settings.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$validator = new Validator(['settings']);
 		$settings  = $this->request->post['settings'] ?? false;
 		$errors    = [];
@@ -39,7 +49,7 @@ class Discount extends Base {
 		if ($settings &&
 			($errors = $validator->validate($settings)) === true) {
 			$settings              = $validator->filter($settings);
-			$results               = \Vvveb\setMultiSetting('discount',$settings);
+			$results               = \Vvveb\setMultiSetting('discount', $settings);
 			$this->view->success[] = __('Settings saved!');
 		} else {
 			$this->view->errors = $errors;

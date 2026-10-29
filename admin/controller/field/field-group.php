@@ -26,24 +26,29 @@ use function Vvveb\__;
 use Vvveb\Controller\Crud;
 use function Vvveb\fieldTypeClass;
 use function Vvveb\getFieldTypes;
-use function Vvveb\importHtml;
 use function Vvveb\postTypes;
-use Vvveb\Sql\Field_GroupSQL;
+use Vvveb\Sql\Field_groupSQL;
 use Vvveb\Sql\FieldSQL;
-use Vvveb\System\Event;
 use Vvveb\System\Field as Fields;
 use Vvveb\System\Traits\FieldGroup as FieldGroupTrait;
 
 class FieldGroup extends Crud {
 	use FieldGroupTrait;
 
-	protected $type = 'field_group';
+	protected string $type = 'field_group';
 
-	protected $controller = 'field-group';
+	protected string $controller = 'field-group';
 
-	protected $module = 'field';
+	protected string $module = 'field';
 
-	function setFieldDefault(&$field) {
+	/**
+	 * Sets default values for a field based on its type's value configuration.
+	 *
+	 * @param array<string, mixed> &$field The field array to modify.
+	 *
+	 * @return void
+	 */
+	public function setFieldDefault(array &$field): void {
 		$fieldClass = fieldTypeClass($field['type']);
 
 		if ($fieldClass && $fieldClass::valueType) {
@@ -57,23 +62,12 @@ class FieldGroup extends Crud {
 		}
 	}
 
-	function save() {/*
-		$field          = $this->request->post['field'] ?? [];
-		$field_group_id = $this->request->get['field_group_id'] ?? false;
-
-		if ($field_group_id) {
-			$fieldGroup = new Field_GroupSQL();
-			$result     = $fieldGroup->addFields(['field_group_id' => $field_group_id, 'field_to_field_group' => $field]);
-
-			if ($result && isset($result['field_to_field_group'])) {
-				$successMessage        = __('Field saved!');
-				$this->view->success[] = $successMessage;
-				$this->view->errors    = [];
-			} else {
-				$this->view->errors[] = __('Error saving!');
-			}
-		}*/
-
+	/**
+	 * Saves a field group and its fields (new, edited, and deleted).
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$this->request->post[$this->type]['status'] = 1;
 		$this->redirect                             = false;
 		parent::save();
@@ -86,10 +80,10 @@ class FieldGroup extends Crud {
 		$field_group_id     = $this->field_group_id;
 		$new                = [];
 		unset($field_group['conditionals']);
-		//var_dump($field);
+
 		foreach ($field as $index => &$attr) {
 			$attr['field_group_id']       = $field_group_id;
-			$attr['sort_order']           = $attr['sort_order'] ?? 0;
+			$attr['sort_order'] ??= 0;
 
 			if ($index === '#') {
 				unset($field[$index]);
@@ -97,15 +91,15 @@ class FieldGroup extends Crud {
 				continue;
 			}
 
-			$attr['name']       = $attr['name'] ?? $attr['settings']['name'] ?? '(none)';
-			$attr['label']      = $attr['label'] ?? $attr['settings']['label'] ?? '(none)';
-			$attr['default']    = $attr['label'] ?? $attr['settings']['default'] ?? '';
+			$attr['name'] ??= $attr['settings']['name'] ?? '(none)';
+			$attr['label'] ??= $attr['settings']['label'] ?? '(none)';
+			$attr['default'] ??= $attr['settings']['default'] ?? '';
 			$attr['type']       = $attr['settings']['type'] ?? 'text';
 			$attr['field_id']   = $attr['settings']['field_id'] ?? $attr['field_id'] ?? null;
 			$attr['sort_order'] = $attr['settings']['sort_order'] ?? $attr['sort_order'] ?? 0;
 			$attr['row']        = $attr['settings']['row'] ?? $attr['row'] ?? 0;
 
-			if (! $attr['name']) {
+			if (!$attr['name']) {
 				unset($field[$index]);
 
 				continue;
@@ -114,12 +108,12 @@ class FieldGroup extends Crud {
 			$this->setFieldDefault($attr);
 
 			foreach (['settings', 'validation', 'presentation', 'conditionals'] as $section) {
-				$attr[$section] = $attr[$section] ?? [];
+				$attr[$section] ??= [];
 				$attr[$section] = array_filter($attr[$section]);
 				$attr[$section] = json_encode($attr[$section]);
 			}
 
-			if (! ($attr['field_id'] ?? false) && $attr['name']) {
+			if (!($attr['field_id'] ?? false) && $attr['name']) {
 				unset($attr['field_id']);
 				$new[] = $attr;
 				unset($field[$index]);
@@ -127,29 +121,29 @@ class FieldGroup extends Crud {
 		}
 
 		if ($field_group_id) {
-			$fieldGroup = new Field_GroupSQL();
-			$fieldSql   = new FieldSQL();
+			$fieldGroup = new Field_groupSQL();
+			$fieldSQL   = new FieldSQL();
 
 			if ($delete) {
-				$fieldSql->delete(['field_id' => $delete] + $this->global);
+				$fieldSQL->delete(['field_id' => $delete] + $this->global);
 			}
 
 			if ($field) {
 				foreach ($field as $index => &$attr) {
-					$fieldSql->edit(['field' => $attr, 'field_id' => $attr['field_id']] + $this->global);
+					$fieldSQL->edit(['field' => $attr, 'field_id' => $attr['field_id']] + $this->global);
 				}
 			}
 
 			if ($new) {
 				foreach ($new as $index => &$attr) {
-					$fieldSql->add(['field' => $attr] + $this->global);
+					$fieldSQL->add(['field' => $attr] + $this->global);
 				}
 			}
 
 			$result = $fieldGroup->edit(['field_group_id' => $field_group_id, 'field_group' => $field_group]);
 
 			if ($result && isset($result['field_group_content'])) {
-				if (! $edit) {
+				if (!$edit) {
 					$this->redirect(['module' => "{$this->module}/{$this->controller}", 'field_group_id' => $field_group_id]);
 				}
 			} else {
@@ -160,29 +154,35 @@ class FieldGroup extends Crud {
 		$this->index();
 	}
 
-	function fields() {
+	/**
+	 * Returns fields as JSON for API consumption.
+	 *
+	 * @return void
+	 */
+	public function fields(): void {
 		$fields      = [];
 
-		if ($country_id) {
-			$field                  = new FieldSQL();
-			$options                = $this->global;
-			$options['status'] 	    = 1;
-			unset($options['limit']);
-			$fields	               = $field->getAll($options)['field'] ?? [];
-		}
+		$field                  = new FieldSQL();
+		$options                = $this->global;
+		$options['status'] 	    = 1;
+		unset($options['limit']);
+		$fields	               = $field->getAll($options)['field'] ?? [];
 
 		$this->response->setType('json');
 		$this->response->output($fields);
-		//return [];
 	}
 
-	function index() {
+	/**
+	 * Displays a field group with its fields rendered for editing.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$field_group_id             = $this->request->get['field_group_id'] ?? false;
 		$this->view->field_group_id = $field_group_id;
 
 		parent::index();
 
-		//return;
 		$field_group_id = $this->request->get['field_group_id'] ?? false;
 
 		$fields = [];
@@ -198,8 +198,8 @@ class FieldGroup extends Crud {
 					$input['presentation']           = json_decode($field['presentation'], true);
 					$input['cols']                   = $input['presentation']['cols'] ?? 'col';
 					$input['settings']['field_id']   = $field['field_id'];
-					$input['settings']['name']       = $input['settings']['name'] ?? '(none)';
-					$input['settings']['label']      = $input['settings']['label'] ?? '(none)';
+					$input['settings']['name'] ??= '(none)';
+					$input['settings']['label'] ??= '(none)';
 					$input['settings']['sort_order'] = $field['sort_order'];
 					$input['settings']['row']        = $field['row'];
 					$input['row']                    = $input['settings']['row'] ?? 0;

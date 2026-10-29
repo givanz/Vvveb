@@ -25,15 +25,21 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Listing;
 
 class SubscriptionPlans extends Listing {
-	protected $additionalPermissionCheck = ['settings/subscription-plan/save'];
-	
-	protected $type = 'subscription_plan';
+	/** @var array<int, string> Additional permission URLs required for access */
+	protected ?array $additionalPermissionCheck = ['settings/subscription-plan/save'];
 
-	protected $controller = 'subscription-plan';
+	/** @var string The entity type identifier */
+	protected string $type = 'subscription_plan';
 
-	protected $listController = 'subscription-plans';
+	/** @var string The single-item controller route slug */
+	protected string $controller = 'subscription-plan';
 
-	protected $list = 'subscription_plan';
+	/** @var string The list controller route slug */
+	protected string $listController = 'subscription-plans';
 
-	protected $module = 'settings';
+	/** @var string The list property name on the view */
+	protected string $list = 'subscription_plan';
+
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

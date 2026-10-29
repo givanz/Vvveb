@@ -24,30 +24,40 @@ namespace Vvveb\Controller\Content;
 
 use function Vvveb\__;
 use Vvveb\Controller\Base;
-use Vvveb\Sql\categorySQL;
+use Vvveb\Sql\CategorySQL;
 use Vvveb\System\Images;
 
 class Tags extends Base {
-	function delete() {
+	/**
+	 * Deletes one or more tags by taxonomy_item_id.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
 		$taxonomy_item_id = $this->request->post['taxonomy_item_id'] ?? false;
-		$categories       = new categorySQL();
+		$categories       = new CategorySQL();
 
 		if (is_numeric($taxonomy_item_id)) {
 			$taxonomy_item_id = [$taxonomy_item_id];
 		}
 
 		if ($taxonomy_item_id && $categories->deleteTaxonomyItem(['taxonomy_item_id' => $taxonomy_item_id])) {
-			$this->view->success[] = 'Item removed!';
+			$this->view->success[] = __('Item removed!');
 		} else {
-			$this->view->errors[] = __('Error saving!');
+			$this->view->errors[] = __('Error deleting!');
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Lists all tags with multilingual support and edit/delete URLs.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$view        = $this->view;
-		$categories  = new categorySQL();
+		$categories  = new CategorySQL();
 
 		$page        = $this->request->get['page'] ?? 1;
 		$type        = $this->request->get['type'] ?? '';

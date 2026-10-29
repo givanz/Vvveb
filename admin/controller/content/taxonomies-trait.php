@@ -22,25 +22,32 @@
 
 namespace Vvveb\Controller\Content;
 
-use Vvveb\Sql\categorySQL;
-use Vvveb\Sql\taxonomySQL;
+use Vvveb\Sql\CategorySQL;
+use Vvveb\Sql\TaxonomySQL;
 
 trait TaxonomiesTrait {
-	protected function taxonomies($post_id = false) {
+	/**
+	 * Retrieves all taxonomies and their items for a given post.
+	 *
+	 * @param int|false $post_id The post ID to load taxonomy assignments for, or false.
+	 *
+	 * @return array<int, array<string, mixed>> Array of taxonomy records with nested items.
+	 */
+	protected function taxonomies(int|false $post_id = false): array {
 		//get taxonomies for post type
-		$taxonomies = new taxonomySQL();
+		$taxonomies = new TaxonomySQL();
 		$results    = $taxonomies->getAll(
-			['post_type'    => $this->type]
+			['post_type' => $this->type]
 		);
 
 		//get taxonomies content
 		if ($results) {
-			$taxonomy_itemSql = new categorySQL();
+			$taxonomy_itemSQL = new CategorySQL();
 
 			$options =  [
-				'post_type'  => $this->type,
-				'start'      => 0,
-				'limit'      => 1000,
+				'post_type' => $this->type,
+				'start'     => 0,
+				'limit'     => 1000,
 			] + $this->global;
 
 			if ($post_id) {
@@ -53,7 +60,14 @@ trait TaxonomiesTrait {
 					//for tags don't retrive taxonomies if no post id provided
 					if ($taxonomy_item['type'] != 'tags' || $post_id) {
 						$options                        = ['taxonomy_id' => $id, 'type' => $taxonomy_item['type']] + $options;
-						$taxonomy_item['taxonomy_item'] = $taxonomy_itemSql->getCategories($options);
+						$taxonomies                     = $taxonomy_itemSQL->getCategories($options);
+						if (isset($taxonomies['categories'])) {
+							foreach ($taxonomies['categories'] as &$taxonomy) {
+								$taxonomy = ['taxonomy_item_id' => $taxonomy['taxonomy_item_id'], 'taxonomy_id' => $taxonomy['taxonomy_id'], 'name' => $taxonomy['name'], 'parent_id' => $taxonomy['name'], 'checked' => $taxonomy['checked'] ?? false, 'slug' => $taxonomy['slug'], 'language_id' => $taxonomy['language_id'], 'item_id' => $taxonomy['item_id'], 'image' => $taxonomy['image']];
+							}
+						}
+
+						$taxonomy_item['taxonomy_item'] = $taxonomies;
 					}
 				}
 			}

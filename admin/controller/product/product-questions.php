@@ -25,13 +25,13 @@ namespace Vvveb\Controller\Product;
 use Vvveb\Controller\Content\Comments;
 
 class ProductQuestions extends Comments {
-	protected $type = 'product_question';
+	protected string $type = 'product_question';
 
-	protected $list = 'product_question';
+	protected string $list = 'product_question';
 
-	protected $listController = 'product-questions';
+	protected string $listController = 'product-questions';
 
-	protected $module = 'product';
+	protected string $module = 'product';
 
-	protected $controller = 'product-question';
+	protected string $controller = 'product-question';
 }

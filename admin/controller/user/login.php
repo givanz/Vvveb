@@ -22,26 +22,40 @@
 
 namespace Vvveb\Controller\User;
 
-use \Vvveb\System\Functions\Str;
 use function Vvveb\__;
 use function Vvveb\pregMatch;
-use Vvveb\Sql\Admin_Failed_LoginSQL;
+use Vvveb\Sql\Admin_failed_loginSQL;
 use Vvveb\System\Event;
 use Vvveb\System\Extensions\Plugins;
+use Vvveb\System\Functions\Str;
 use Vvveb\System\Locale;
 use Vvveb\System\User\Admin;
 use Vvveb\System\Validator;
 
 #[\AllowDynamicProperties]
 class Login {
-	//failed attemps per minute Y-m-d H:i:00
-	protected $failedTimeInterval = 'Y-m-d H:00:00'; //failed attemps per hour
+	/**
+	 * Time interval format for grouping failed login attempts.
+	 *
+	 * @var string
+	 */
+	protected string $failedTimeInterval = 'Y-m-d H:00:00';
 
-	protected $failedCount = 10; //the number of failures before account is locked
+	/**
+	 * Maximum number of failed login attempts before the account is locked.
+	 *
+	 * @var int
+	 */
+	protected int $failedCount = 10;
 
-	protected function language() {
+	/**
+	 * Initialize the default language and RTL settings for the login page.
+	 *
+	 * @return void
+	 */
+	protected function language(): void {
 		$default_rtl = false;
-		if (! ($default_code = $this->session->get('code'))) {
+		if (!($default_code = $this->session->get('code'))) {
 			$languages = Locale::availableLanguages();
 
 			foreach ($languages as $code => $lang) {
@@ -56,47 +70,62 @@ class Login {
 					break;
 				}
 			}
-		} else {
 		}
 
-		Locale :: setLanguage($default_code);
+		Locale::setLanguage($default_code);
 		$this->global['code'] = $default_code;
-		$this->global['rtl'] = $default_rtl;
+		$this->global['rtl']  = $default_rtl;
 	}
 
-	protected function redirect($url = '/', $parameters = []) {
+	/**
+	 * Redirect the user to the specified URL.
+	 *
+	 * @param string                   $url        The URL to redirect to.
+	 * @param array<int|string, mixed> $parameters Additional URL parameters (unused).
+	 *
+	 * @return void
+	 */
+	protected function redirect(string $url = '/', array $parameters = []): void {
 		header("Location: $url");
 
 		exit();
 	}
 
-	function index() {
+	/**
+	 * Handle the login page display and form submission.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$view            = $this->view;
 		$adminPath       = \Vvveb\adminPath();
 		$view->adminPath = $adminPath;
 
 		if (isset($this->request->post['logout'])) {
-			return Admin::logout();
+			Admin::logout();
+
+			return;
 		}
 
 		$this->language();
-		//$this->checkAlreadyLoggedIn();
 		$admin      = Admin::current();
 
 		if ($admin) {
-			return $this->redirect($adminPath);
+			$this->redirect($adminPath);
+
+			return;
 		}
 
-		if (! $this->session->get('csrf')) {
+		if (!$this->session->get('csrf')) {
 			$this->session->set('csrf', Str::random());
 		}
 
 		//don't load plugins at all if safemode get parameter
-		if (! isset($this->request->get['safemode'])) {
+		if (!isset($this->request->get['safemode'])) {
 			$failedPlugins = [];
 
 			try {
-				Plugins :: loadPlugins();
+				Plugins::loadPlugins();
 			} catch (\Throwable $e) {
 				$file            = $e->getFile();
 				$plugin          = pregMatch('@.*[\/]plugins[\/]([^\/]+)[$\/]@', $file, 1) ?: $file;
@@ -148,10 +177,10 @@ class Login {
 		$method = $this->request->getMethod();
 
 		if ($method == 'post') {
-			if (! ($csrf = $this->session->get('csrf')) || ! ($postCsrf = ($this->request->post['csrf'] ?? false)) || ($csrf != $postCsrf)) {
+			if (!($csrf = $this->session->get('csrf')) || !($postCsrf = ($this->request->post['csrf'] ?? false)) || ($csrf !== $postCsrf)) {
 				$view->errors['get'] = __('Invalid csrf!');
+
 				return;
-				//$this->notFound('Invalid csrf!', 403);
 			}
 
 			if (($view->errors = $validator->validate($this->request->post)) === true) {
@@ -167,7 +196,7 @@ class Login {
 					$loginData['username'] = $user;
 				}
 
-				$failedLogin   = new Admin_Failed_LoginSQL();
+				$failedLogin   = new Admin_failed_loginSQL();
 				$date          = date($this->failedTimeInterval);
 				$lastIp        = $_SERVER['REMOTE_ADDR'] ?? '';
 				$failedAttemps = $failedLogin->get(['updated_at' => $date, 'status' => 1] + $loginData);
@@ -185,7 +214,7 @@ class Login {
 					$flags['safemode'] = true;
 				}
 
-				list($loginData) = Event :: trigger(__CLASS__, __FUNCTION__ , $loginData);
+				[$loginData] = Event::trigger(__CLASS__, __FUNCTION__, $loginData);
 
 				if ($loginData) {
 					if ($userInfo = Admin::login($loginData, $flags)) {
@@ -194,7 +223,6 @@ class Login {
 						if (isset($this->request->post['redir']) && $this->request->post['redir'] && $_SERVER['REQUEST_URI'] != $this->request->post['redir']) {
 							$url = parse_url($this->request->post['redir']);
 							$this->redirect($url['path'] . '?' . ($url['query'] ?? '') . '#' . ($url['fragment'] ?? ''));
-							//$this->redirect($this->request->post['redirect']);
 						} else {
 							$this->redirect($adminPath);
 						}
@@ -208,7 +236,6 @@ class Login {
 					}
 				}
 			} else {
-				//return $this->redirect($adminPath);
 				$this->session->set('csrf', Str::random());
 			}
 		}

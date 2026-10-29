@@ -26,11 +26,28 @@ use Vvveb\Controller\User\Users as UsersBase;
 use Vvveb\System\User\Admin;
 
 class Users extends UsersBase {
-	protected $type = 'admin';
+	/**
+	 * User type identifier for admin users.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'admin';
 
-	protected $module = 'admin/users';
+	/**
+	 * Module path for this controller.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'admin/users';
 
-	function index($options = []) {
+	/**
+	 * Display the list of admin users, filtering by capability.
+	 *
+	 * @param array<string, mixed> $options Additional query options.
+	 *
+	 * @return void
+	 */
+	public function index(array $options = []): void {
 		if (Admin::hasCapability('view_other_admin')) {
 			unset($options['admin_id']);
 		} else {

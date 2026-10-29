@@ -25,13 +25,18 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Listing;
 
 class LengthTypes extends Listing {
-	protected $type = 'length_type';
+	/** @var string The entity type identifier */
+	protected string $type = 'length_type';
 
-	protected $controller = 'length-type';
+	/** @var string The single-item controller route slug */
+	protected string $controller = 'length-type';
 
-	protected $listController = 'length-types';
+	/** @var string The list controller route slug */
+	protected string $listController = 'length-types';
 
-	protected $list = 'length_type';
+	/** @var string The list property name on the view */
+	protected string $list = 'length_type';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

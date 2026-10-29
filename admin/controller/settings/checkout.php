@@ -27,11 +27,21 @@ use Vvveb\Controller\Base;
 use Vvveb\System\Validator;
 
 class Checkout extends Base {
-	function save() {
+	/**
+	 * Save checkout settings.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display and validate checkout settings.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$validator = new Validator(['settings']);
 		$settings  = $this->request->post['settings'] ?? false;
 		$errors    = [];
@@ -39,7 +49,7 @@ class Checkout extends Base {
 		if ($settings &&
 			($errors = $validator->validate($settings)) === true) {
 			$settings              = $validator->filter($settings);
-			$results               = \Vvveb\setMultiSetting('checkout',$settings);
+			$results               = \Vvveb\setMultiSetting('checkout', $settings);
 			$this->view->success[] = __('Settings saved!');
 		} else {
 			$this->view->errors = $errors;

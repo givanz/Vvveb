@@ -25,9 +25,12 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Crud;
 
 class StockStatus extends Crud {
-	protected $type = 'stock_status';
+	/** @var string The entity type identifier */
+	protected string $type = 'stock_status';
 
-	protected $controller = 'stock-status';
+	/** @var string The controller route slug */
+	protected string $controller = 'stock-status';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

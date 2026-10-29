@@ -25,15 +25,16 @@ namespace Vvveb\Controller\Order;
 use Vvveb\Controller\Listing;
 
 class Returns extends Listing {
-	protected $additionalPermissionCheck = ['order/return-order/save'];
+	/** @var list<string> */
+	protected ?array $additionalPermissionCheck = ['order/return-order/save'];
 
-	protected $type = 'return';
+	protected string $type = 'return';
 
-	protected $controller = 'return-order';
+	protected string $controller = 'return-order';
 
-	protected $listController = 'returns';
+	protected string $listController = 'returns';
 
-	protected $list = 'return';
+	protected string $list = 'return';
 
-	protected $module = 'order';
+	protected string $module = 'order';
 }

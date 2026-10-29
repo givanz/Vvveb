@@ -25,13 +25,38 @@ namespace Vvveb\Controller\Localization;
 use Vvveb\Controller\Listing;
 
 class RegionGroups extends Listing {
-	protected $type = 'region_group';
+	/**
+	 * Entity type identifier for region groups.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'region_group';
 
-	protected $controller = 'region-group';
+	/**
+	 * Singular controller name for detail views.
+	 *
+	 * @var string
+	 */
+	protected string $controller = 'region-group';
 
-	protected $listController = 'region-groups';
+	/**
+	 * Plural controller name for listing views.
+	 *
+	 * @var string
+	 */
+	protected string $listController = 'region-groups';
 
-	protected $list = 'region_group';
+	/**
+	 * List key used to identify the data collection.
+	 *
+	 * @var string
+	 */
+	protected string $list = 'region_group';
 
-	protected $module = 'localization';
+	/**
+	 * Module path this controller belongs to.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'localization';
 }

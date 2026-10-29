@@ -25,9 +25,12 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Crud;
 
 class LengthType extends Crud {
-	protected $type = 'length_type';
+	/** @var string The entity type identifier */
+	protected string $type = 'length_type';
 
-	protected $controller = 'length-type';
+	/** @var string The controller route slug */
+	protected string $controller = 'length-type';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

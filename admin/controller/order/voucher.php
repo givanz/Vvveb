@@ -25,9 +25,9 @@ namespace Vvveb\Controller\Order;
 use Vvveb\Controller\Crud;
 
 class Voucher extends Crud {
-	protected $type = 'voucher';
+	protected string $type = 'voucher';
 
-	protected $controller = 'voucher';
+	protected string $controller = 'voucher';
 
-	protected $module = 'order';
+	protected string $module = 'order';
 }

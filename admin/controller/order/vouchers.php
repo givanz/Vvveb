@@ -25,13 +25,13 @@ namespace Vvveb\Controller\Order;
 use Vvveb\Controller\Listing;
 
 class Vouchers extends Listing {
-	protected $type = 'voucher';
+	protected string $type = 'voucher';
 
-	protected $controller = 'voucher';
+	protected string $controller = 'voucher';
 
-	protected $listController = 'vouchers';
+	protected string $listController = 'vouchers';
 
-	protected $list = 'voucher';
+	protected string $list = 'voucher';
 
-	protected $module = 'order';
+	protected string $module = 'order';
 }

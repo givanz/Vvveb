@@ -25,9 +25,12 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Crud;
 
 class OrderStatus extends Crud {
-	protected $type = 'order_status';
+	/** @var string The entity type identifier */
+	protected string $type = 'order_status';
 
-	protected $controller = 'order-status';
+	/** @var string The controller route slug */
+	protected string $controller = 'order-status';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

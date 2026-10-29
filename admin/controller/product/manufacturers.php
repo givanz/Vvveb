@@ -25,9 +25,11 @@ namespace Vvveb\Controller\Product;
 use Vvveb\Controller\Listing;
 
 class Manufacturers extends Listing {
-	protected $type = 'manufacturer';
+	protected string $type = 'manufacturer';
 
-	protected $list = 'manufacturer';
+	protected string $listController = 'manufacturers';
 
-	protected $module = 'product';
+	protected string $list = 'manufacturer';
+
+	protected string $module = 'product';
 }

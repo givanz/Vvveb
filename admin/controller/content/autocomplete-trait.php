@@ -22,13 +22,18 @@
 
 namespace Vvveb\Controller\Content;
 
-use \Vvveb\Sql\categorySQL;
 use function Vvveb\__;
+use Vvveb\Sql\CategorySQL;
 use Vvveb\System\Images;
 use function Vvveb\url;
 
 trait AutocompleteTrait {
-	function categoriesAutocomplete() {
+	/**
+	 * Returns category autocomplete suggestions as JSON.
+	 *
+	 * @return void
+	 */
+	public function categoriesAutocomplete(): void {
 		$categories = new CategorySQL();
 		$text       = trim($this->request->get['text'] ?? '');
 		$type       = trim($this->request->get['type'] ?? '');
@@ -52,7 +57,12 @@ trait AutocompleteTrait {
 		$this->response->output($search);
 	}
 
-	function manufacturersAutocomplete() {
+	/**
+	 * Returns manufacturer autocomplete suggestions as JSON.
+	 *
+	 * @return void
+	 */
+	public function manufacturersAutocomplete(): void {
 		$manufacturers = new \Vvveb\Sql\ManufacturerSQL();
 		$text          = trim($this->request->get['text'] ?? '');
 
@@ -75,7 +85,12 @@ trait AutocompleteTrait {
 		$this->response->output($search);
 	}
 
-	function vendorsAutocomplete() {
+	/**
+	 * Returns vendor autocomplete suggestions as JSON.
+	 *
+	 * @return void
+	 */
+	public function vendorsAutocomplete(): void {
 		$vendors    = new \Vvveb\Sql\VendorSQL();
 		$text       = trim($this->request->get['text'] ?? '');
 
@@ -98,7 +113,12 @@ trait AutocompleteTrait {
 		$this->response->output($search);
 	}
 
-	function urlAutocomplete() {
+	/**
+	 * Returns URL autocomplete suggestions (products, posts, pages) as JSON.
+	 *
+	 * @return void
+	 */
+	public function urlAutocomplete(): void {
 		$products   = new \Vvveb\Sql\ProductSQL();
 		$text       = trim($this->request->get['text'] ?? '');
 		$type       = $this->request->get['type'] ?? 'card'; //'key-value'
@@ -135,14 +155,14 @@ trait AutocompleteTrait {
 		if (isset($results['product'])) {
 			foreach ($results['product'] as $product) {
 				$product['image'] = Images::image($product['image'], 'product', 'thumb');
-				$url              = url('product/product/index', ['slug'=> $product['slug'], 'product_id' => $product['product_id']]);
+				$url              = url('product/product/index', ['slug' => $product['slug'], 'product_id' => $product['product_id']]);
 
 				if ($type == 'card') {
 					$search[]         = [
-						'type' => 'cardimage',
-						'src'  => $product['image'],
-						'text' => $product['name'],
-						'value'=> '<a href="' . $url . '">' . $product['name'] . '</a>',
+						'type'  => 'cardimage',
+						'src'   => $product['image'],
+						'text'  => $product['name'],
+						'value' => '<a href="' . $url . '">' . $product['name'] . '</a>',
 					];
 				} else {
 					$search[$url] = '<img width="32" height="32" src="' . $product['image'] . '"> ' . $product['name'];
@@ -157,14 +177,14 @@ trait AutocompleteTrait {
 			if (isset($results['post'])) {
 				foreach ($results['post'] as $post) {
 					$post['image'] = Images::image($post['image'], 'post', 'thumb');
-					$url           = url('content/post/index', ['slug'=> $post['slug'], 'post_id' => $post['post_id']]);
+					$url           = url('content/post/index', ['slug' => $post['slug'], 'post_id' => $post['post_id']]);
 
 					if ($type == 'card') {
 						$search[]      = [
-							'type' => 'cardimage',
-							'src'  => $post['image'],
-							'text' => $post['name'],
-							'value'=> '<a href="' . $url . '">' . $post['name'] . '</a>',
+							'type'  => 'cardimage',
+							'src'   => $post['image'],
+							'text'  => $post['name'],
+							'value' => '<a href="' . $url . '">' . $post['name'] . '</a>',
 						];
 					} else {
 						$search[$url] = '<img width="32" height="32" src="' . $post['image'] . '"> ' . $post['name'];
@@ -177,7 +197,12 @@ trait AutocompleteTrait {
 		$this->response->output($search);
 	}
 
-	function productsAutocomplete() {
+	/**
+	 * Returns product autocomplete suggestions as JSON.
+	 *
+	 * @return void
+	 */
+	public function productsAutocomplete(): void {
 		$products   = new \Vvveb\Sql\ProductSQL();
 		$text       = trim($this->request->get['text'] ?? '');
 
@@ -201,7 +226,12 @@ trait AutocompleteTrait {
 		$this->response->output($search);
 	}
 
-	function adminsAutocomplete() {
+	/**
+	 * Returns admin user autocomplete suggestions as JSON.
+	 *
+	 * @return void
+	 */
+	public function adminsAutocomplete(): void {
 		$admins     = new \Vvveb\Sql\AdminSQL();
 		$text       = trim($this->request->get['text'] ?? '');
 
@@ -232,7 +262,12 @@ trait AutocompleteTrait {
 		$this->response->output($search);
 	}
 
-	function attributesAutocomplete() {
+	/**
+	 * Returns attribute autocomplete suggestions as JSON.
+	 *
+	 * @return void
+	 */
+	public function attributesAutocomplete(): void {
 		$attributes = new \Vvveb\Sql\AttributeSQL();
 		$text       = trim($this->request->get['text'] ?? '');
 
@@ -246,9 +281,7 @@ trait AutocompleteTrait {
 
 		if (isset($results['attribute'])) {
 			foreach ($results['attribute'] as $attribute) {
-				$text = '';
-
-				$text .= $attribute['name'] . ' (' . $attribute['group'] . ')';
+				$text = $attribute['name'] . ' (' . $attribute['group'] . ')';
 
 				$search[$attribute['attribute_id']] =  $text;
 			}
@@ -258,11 +291,16 @@ trait AutocompleteTrait {
 		$this->response->output($search);
 	}
 
-	function optionValuesAutocomplete() {
+	/**
+	 * Returns option values autocomplete suggestions as JSON.
+	 *
+	 * @return void
+	 */
+	public function optionValuesAutocomplete(): void {
 		$values = new \Vvveb\Sql\Option_valueSQL();
 
 		$options = [
-			'option_id'      => trim($this->request->get['option_id']),
+			'option_id' => trim($this->request->get['option_id'] ?? ''),
 		] + $this->global;
 
 		$results = $values->getAll($options);
@@ -271,11 +309,7 @@ trait AutocompleteTrait {
 
 		if (isset($results['option_value'])) {
 			foreach ($results['option_value'] as $value) {
-				$text = '';
-
-				$text .= $value['name'];
-
-				$search[$value['option_value_id']] =  $text;
+				$search[$value['option_value_id']] =  $value['name'];
 			}
 		}
 
@@ -283,7 +317,12 @@ trait AutocompleteTrait {
 		$this->response->output($search);
 	}
 
-	function digitalAssetsAutocomplete() {
+	/**
+	 * Returns digital asset autocomplete suggestions as JSON.
+	 *
+	 * @return void
+	 */
+	public function digitalAssetsAutocomplete(): void {
 		$digital_assets = new \Vvveb\Sql\Digital_assetSQL();
 		$text           = trim($this->request->get['text'] ?? '');
 
@@ -297,9 +336,7 @@ trait AutocompleteTrait {
 
 		if (isset($results['digital_asset'])) {
 			foreach ($results['digital_asset'] as $digital_asset) {
-				$text = '';
-
-				$text .= $digital_asset['name'] . ' (' . $digital_asset['file'] . ')';
+				$text = $digital_asset['name'] . ' (' . $digital_asset['file'] . ')';
 
 				$search[$digital_asset['digital_asset_id']] =  $text;
 			}

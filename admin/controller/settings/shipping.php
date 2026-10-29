@@ -27,11 +27,21 @@ use Vvveb\Controller\Base;
 use Vvveb\System\Validator;
 
 class Shipping extends Base {
-	function save() {
+	/**
+	 * Save shipping settings.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display and validate shipping settings.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$validator = new Validator(['settings']);
 		$settings  = $this->request->post['settings'] ?? false;
 		$errors    = [];
@@ -39,7 +49,7 @@ class Shipping extends Base {
 		if ($settings &&
 			($errors = $validator->validate($settings)) === true) {
 			$settings              = $validator->filter($settings);
-			$results               = \Vvveb\setMultiSetting('shipping',$settings);
+			$results               = \Vvveb\setMultiSetting('shipping', $settings);
 			$this->view->success[] = __('Settings saved!');
 		} else {
 			$this->view->errors = $errors;

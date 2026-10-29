@@ -25,13 +25,18 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Listing;
 
 class PaymentStatuses extends Listing {
-	protected $type = 'payment_status';
+	/** @var string The entity type identifier */
+	protected string $type = 'payment_status';
 
-	protected $controller = 'payment-status';
+	/** @var string The single-item controller route slug */
+	protected string $controller = 'payment-status';
 
-	protected $listController = 'payment-statuses';
+	/** @var string The list controller route slug */
+	protected string $listController = 'payment-statuses';
 
-	protected $list = 'payment_status';
+	/** @var string The list property name on the view */
+	protected string $list = 'payment_status';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

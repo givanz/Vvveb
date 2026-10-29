@@ -25,11 +25,38 @@ namespace Vvveb\Controller\Localization;
 use Vvveb\Controller\Listing;
 
 class Currencies extends Listing {
-	protected $type = 'currency';
+	/**
+	 * Entity type identifier for currencies.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'currency';
 
-	protected $list = 'currency';
+	/**
+	 * Singular controller name for detail views.
+	 *
+	 * @var string
+	 */
+	protected string $controller = 'currency';
 
-	protected $listController = 'currencies';
+	/**
+	 * List key used to identify the data collection.
+	 *
+	 * @var string
+	 */
+	protected string $list = 'currency';
 
-	protected $module = 'localization';
+	/**
+	 * Plural controller name for listing views.
+	 *
+	 * @var string
+	 */
+	protected string $listController = 'currencies';
+
+	/**
+	 * Module path this controller belongs to.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'localization';
 }

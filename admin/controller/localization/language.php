@@ -31,18 +31,54 @@ use Vvveb\System\CacheManager;
 use Vvveb\System\Locale;
 
 class Language extends Crud {
-	protected $type = 'language';
+	/**
+	 * Entity type identifier for languages.
+	 *
+	 * @var string
+	 */
+	protected string $type = 'language';
 
-	protected $module = 'localization';
+	/**
+	 * Singular controller name for detail views.
+	 *
+	 * @var string
+	 */
+	protected string $controller = 'language';
 
-	protected $installUrl = 'https://raw.githubusercontent.com/Vvveb/{code}/master/LC_MESSAGES/';
+	/**
+	 * Module path this controller belongs to.
+	 *
+	 * @var string
+	 */
+	protected string $module = 'localization';
 
-	protected $files = ['vvveb.po'];
+	/**
+	 * URL template for downloading language packs from GitHub.
+	 *
+	 * @var string
+	 */
+	protected string $installUrl = 'https://raw.githubusercontent.com/Vvveb/{code}/master/LC_MESSAGES/';
 
-	protected $listUrl = 'https://www.vvveb.com/page/contribute#language';
+	/**
+	 * List of translation files to download for a language pack.
+	 *
+	 * @var list<string>
+	 */
+	protected array $files = ['vvveb.po'];
 
-	function save() {
-		//$this->redirect = false;
+	/**
+	 * URL to the translations contribution page.
+	 *
+	 * @var string
+	 */
+	protected string $listUrl = 'https://www.vvveb.com/page/contribute#language';
+
+	/**
+	 * Save language data, handling default language logic and cache clearing.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$this->model = model('language');
 		//check if a default language is set
 		$default = $this->model->get(['default' => 1]);
@@ -52,17 +88,22 @@ class Language extends Crud {
 			$this->model->edit(['language' => ['default' => 0]]);
 		} else {
 			//if no default language set then set this language as default
-			if (! $default) {
+			if (!$default) {
 				$this->request->post['language']['default']  = 1;
 			}
 		}
 
-		parent::save();
 		CacheManager::clearObjectCache(APP, 'languages');
+		parent::save();
 		$this->index();
 	}
 
-	function install() {
+	/**
+	 * Download and install a language pack from the remote repository.
+	 *
+	 * @return void
+	 */
+	public function install(): void {
 		$code      = filter('/[-\w]+/', $this->request->post['code']);
 		$url       = str_replace('{code}', $code, $this->installUrl);
 		$available = false;
@@ -96,18 +137,23 @@ class Language extends Crud {
 			}
 		}
 
-		if (! $available) {
+		if (!$available) {
 			$this->view->errors[] = __('Language pack not available!');
 			$this->view->info[]   = sprintf(__('Check available translations at %s'), '<a href="' . $this->listUrl . '" target="_blank">' . $this->listUrl . '</a>');
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display the languages management page with installed and available languages.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		parent::index();
 		$languageList = include DIR_SYSTEM . 'data' . DS . 'languages-list.php';
-		$installed    = Locale :: installedLanguages();
+		$installed    = Locale::installedLanguages();
 
 		foreach ($installed as $l) {
 			$languageList[$l]['installed'] = true;

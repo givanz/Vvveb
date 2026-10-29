@@ -25,13 +25,18 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Listing;
 
 class Taxonomies extends Listing {
-	protected $type = 'taxonomy';
+	/** @var string The entity type identifier */
+	protected string $type = 'taxonomy';
 
-	protected $controller = 'taxonomy';
+	/** @var string The single-item controller route slug */
+	protected string $controller = 'taxonomy';
 
-	protected $listController = 'taxonomies';
+	/** @var string The list controller route slug */
+	protected string $listController = 'taxonomies';
 
-	protected $list = 'taxonomy';
+	/** @var string The list property name on the view */
+	protected string $list = 'taxonomy';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

@@ -28,9 +28,15 @@ use function Vvveb\humanReadable;
 use Vvveb\System\Images;
 
 class PostType extends Base {
-	protected $type = 'post';
+	/** @var string The entity type identifier */
+	protected string $type = 'post';
 
-	function save() {
+	/**
+	 * Save a post type entry (create or update).
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$postType = $this->request->post['post_type'] ?? false;
 		$userType = $this->request->get['type'] ?? false;
 
@@ -47,7 +53,7 @@ class PostType extends Base {
 						unset($userPostTypes[$userType]);
 					}
 				} else {
-					return $this->notFound();
+					$this->notFound();
 				}
 			} else {
 				//new
@@ -65,10 +71,15 @@ class PostType extends Base {
 			}
 		}
 
-		return $this->index();
+		$this->index();
 	}
 
-	function index() {
+	/**
+	 * Display the post type edit/create form.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		$type                  = ucfirst($this->type);
 		$userPostTypes         = \Vvveb\getSetting($this->type, 'types', []);
 
@@ -79,7 +90,7 @@ class PostType extends Base {
 			$customType = $userPostTypes[$userType];
 		}
 
-		if ($userType && ! $customType) {
+		if ($userType && !$customType) {
 			$this->notFound();
 		}
 
@@ -93,7 +104,5 @@ class PostType extends Base {
 		$controllerPath  = $admin_path . 'index.php?module=media/media';
 		$view->scanUrl   = "$controllerPath&action=scan";
 		$view->uploadUrl = "$controllerPath&action=upload";
-
-		//$this->view->taxonomy_id = $taxonomy_item_id;
 	}
 }

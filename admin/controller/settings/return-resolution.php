@@ -25,9 +25,12 @@ namespace Vvveb\Controller\Settings;
 use Vvveb\Controller\Crud;
 
 class ReturnResolution extends Crud {
-	protected $type = 'return_resolution';
+	/** @var string The entity type identifier */
+	protected string $type = 'return_resolution';
 
-	protected $controller = 'return-resolution';
+	/** @var string The controller route slug */
+	protected string $controller = 'return-resolution';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 }

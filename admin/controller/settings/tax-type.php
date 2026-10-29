@@ -22,36 +22,62 @@
 
 namespace Vvveb\Controller\Settings;
 
+use function Vvveb\__;
 use Vvveb\Controller\Crud;
-use Vvveb\Sql\Tax_RateSQL;
-use Vvveb\Sql\Tax_RuleSQL;
+use Vvveb\Sql\Tax_rateSQL;
+use Vvveb\Sql\Tax_ruleSQL;
+use Vvveb\System\Cart\Tax;
 
 class TaxType extends Crud {
-	protected $type = 'tax_type';
+	/** @var string The entity type identifier */
+	protected string $type = 'tax_type';
 
-	protected $controller = 'tax-type';
+	/** @var string The controller route slug */
+	protected string $controller = 'tax-type';
 
-	protected $module = 'settings';
+	/** @var string The module namespace */
+	protected string $module = 'settings';
 
-	function save() {
+	/**
+	 * Save a tax type and its associated tax rules.
+	 *
+	 * @return void
+	 */
+	public function save(): void {
 		$tax_rule     = $this->request->post['tax_rule'] ?? [];
 		$tax_type_id  = $this->request->get['tax_type_id'] ?? false;
 
 		if ($tax_type_id) {
-			$taxRules = new Tax_RuleSQL();
+			$taxRules = new Tax_ruleSQL();
 			$taxRules->add(['tax_type_id' => $tax_type_id, 'tax_rule' => $tax_rule]);
 		}
 
 		parent::save();
+		Tax::clearRulesCache();
 	}
 
-	function index() {
+	/**
+	 * Delete tax types and drop the cached region rules.
+	 *
+	 * @return void
+	 */
+	public function delete(): void {
+		parent::delete();
+		Tax::clearRulesCache();
+	}
+
+	/**
+	 * Display the tax type edit/create form with tax rules and rates.
+	 *
+	 * @return void
+	 */
+	public function index(): void {
 		parent::index();
 		$tax_type_id = $this->request->get['tax_type_id'] ?? false;
 
 		if ($tax_type_id) {
-			$taxRules              = new Tax_RuleSQL();
-			$taxRates              = new Tax_RateSQL();
+			$taxRules              = new Tax_ruleSQL();
+			$taxRates              = new Tax_rateSQL();
 			$tax_rates             = $taxRates->getAll(['tax_type_id' => $tax_type_id]);
 			$this->view->tax_rates = $tax_rates['tax_rate'];
 
@@ -60,6 +86,6 @@ class TaxType extends Crud {
 		}
 
 		$this->view->tax_type_id  = $tax_type_id;
-		$this->view->based   	    = ['shipping' =>'Shipping Address', 'payment' => 'Payment Address', 'store' => 'Store Address'];
+		$this->view->based        = ['shipping' => __('Shipping Address'), 'payment' => __('Payment Address'), 'store' => __('Store Address')];
 	}
 }
