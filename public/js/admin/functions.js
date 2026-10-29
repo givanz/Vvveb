@@ -1,32 +1,67 @@
 //Tables
-function addTemplate(id, name, parent, element = false, parentElement = "table", container = "tbody", callback) {
+var elementIdCounter = 0;
+function newId() {
+	elementIdCounter++;
+	return (Date.now() % 1000000000) * 1000 + elementIdCounter;
+}
+
+function adminEscapeHtml(value) {
+	return String(value ?? '').replace(/[&<>"']/g, function (char) {
+		return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char];
+	});
+}
+
+function addDataTemplate(element, template) {
+	const targetText = template;
+	const reg = /#([\w_-]+)#/g;
+	let result;
+	while ((result = reg.exec(targetText)) !== null) {
+		let attr = element.closest("[data-" + result[1] + "]");
+		//values come from the page data and must not be able to inject markup
+		let value = attr ? attr.getAttribute("data-" + result[1]) : 0;
+		template = template.replaceAll("#" + result[1] + "#", () => adminEscapeHtml(value));
+	}
+	
+	return template;
+}
+
+function addTemplate(templateSelector, name, parent, element = false, parentElement = "table", container = "tbody", callback) {
 	// id = attribute-template 
 	// name = product_attribute
 	// parent = attribute
 	let template;
-	let tbody;
 	if (element) {
 		element = element.closest(parentElement);
 	} else {
 		element = document;
 	}
-	template = document.querySelector(id).cloneNode(true);
+
+	template = element.querySelector(templateSelector);
+	if (!template) {
+		template = document.querySelector(templateSelector);
+	}
+
+	template = template.cloneNode(true)
+	template.classList.remove("d-none");
 	
-	template.querySelectorAll('[type="date"]', template).forEach(e => e.setAttribute("value", date()));
+	template.querySelectorAll('[type="date"]').forEach(e => e.setAttribute("value", date()));
 	template.querySelectorAll('[type="datetime-local"]').forEach(e => e.setAttribute("value", datetime()));
 	template.querySelectorAll("input,select").forEach(e => e.removeAttribute("disabled"));
 	
-	template =template.outerHTML;
-	let newId = Math.floor(Math.random() * 10000);
-	template = template.replaceAll(name + '[0]', name + '[' + newId + ']').
-						replaceAll(name + '[#]', name + '[' + newId + ']').
-						replaceAll(name + '#', name + newId ).
-						replaceAll("[" + name +"][#]", "[" + name +"][" + newId + "]").
-						replace('d-none', '').
-						replace('id="' + id + '"', '');
+	template = template.outerHTML;
+	let rowId = newId();
+	template = template.replaceAll(name + "[#" + name + "#]", name + "[" + rowId + "]").
+						replaceAll("#" + name + "#", rowId).
+						replaceAll(name + "#", name + rowId);
+	
+	template = addDataTemplate(element, template); 
 	
 	let row = generateElements(template)[0];
 	row.removeAttribute("id");
+	if (templateSelector[0] === ".") {
+		row.classList.remove(templateSelector.slice(1));
+	}
+	
 	element.querySelector(parent + " " + container).append(row);
 	
 	if (callback) {
@@ -39,10 +74,19 @@ function addTemplate(id, name, parent, element = false, parentElement = "table",
 function removeRow(element, elementName = false) {
 	let row = element.closest("tr");
 	if (row && elementName) {
-		let form = element.closest("form");
-		form.append(generateElements('<input type="hidden" name="delete[' + elementName + '][]" value="' + row.dataset.id + '">')[0]);
+		let id = row.dataset.id;
+		if (id && id !== "#") {
+			let form = element.closest("form");
+			if (form) {
+				let input = document.createElement("input");
+				input.type = "hidden";
+				input.name = "delete[" + elementName + "][]";
+				input.value = id;
+				form.append(input);
+			}
+		}
 	}
-	return row.remove();
+	return row ? row.remove() : undefined;
 }
 
 function slugify(str) {
@@ -63,32 +107,42 @@ function addTab(element, callback) {
 
 	let navTemplate = nav.querySelector(".tab-nav-template");
 	let contentTemplate = content.querySelector(".tab-content-template");
-	let newId = Math.floor(Math.random() * 10000);
+	if (!navTemplate || !contentTemplate) {
+		return;
+	}
+	let id = newId();
 	
 	navTemplate = navTemplate.cloneNode(true);
 	navTemplate.classList.remove("tab-nav-template", "d-none"); 
 	contentTemplate = contentTemplate.cloneNode(true);
 	contentTemplate.classList.remove("tab-content-template", "d-none"); 
 
-	navTemplate.querySelector("a").setAttribute("href", "#tab-" + newId);
-	contentTemplate.setAttribute("id", "tab-" + newId);
+	navTemplate.querySelector("a")?.setAttribute("href", "#tab-" + id);
+	contentTemplate.setAttribute("id", "tab-" + id);
 
 	contentTemplate = contentTemplate.outerHTML;
-	contentTemplate = contentTemplate.replaceAll('[0]', '[' + newId + ']').replaceAll('-0-', '-' + newId + '-').replaceAll('disabled', '');
+	contentTemplate = contentTemplate.replaceAll('[0]', '[' + id + ']').replaceAll('[#tab#]', '[' + id + ']').replaceAll('#tab#', id).replaceAll('-0-', '-' + id + '-');
 
 	nav.append(navTemplate);
+	
+	//contentTemplate = addDataTemplate(content, contentTemplate);
 	let contentElement = generateElements(contentTemplate)[0];
+	contentElement.querySelectorAll("[disabled]").forEach(e => e.removeAttribute("disabled"));
+	
 	content.append(contentElement);
 
 	if (callback) {
 		callback(navTemplate, contentElement);
 	}
 	
-	document.querySelectorAll("#tab-" + newId +" .product_option_id").forEach(e => {
+	//keep hidden inputs disabled 
+	document.querySelectorAll(".d-none input, .d-none select").forEach(e => e.setAttribute("disabled", "true"));
+
+	document.querySelectorAll("#tab-" + id + " .product_option_id").forEach(e => {
 		e.dispatchEvent(new Event("change"));
 	});	
 	
-	navTemplate.querySelector("a").click();
+	navTemplate.querySelector("a")?.click();
 }
 
 function removeTab(element, elementName) {
@@ -96,23 +150,36 @@ function removeTab(element, elementName) {
 	let nav = element.closest(".nav");
 
 	if (elementName) {
-		let form = element.closest("form");
-		form.append(generateElements('<input type="hidden" name="delete[' + elementName + '][]" value="' + link.dataset.id + '">')[0]);
+		let id = link.dataset.id;
+		if (id && id !== "#") {
+			let form = element.closest("form");
+			if (form) {
+				let input = document.createElement("input");
+				input.type = "hidden";
+				input.name = "delete[" + elementName + "][]";
+				input.value = id;
+				form.append(input);
+			}
+		}
 	}
 
-	const bsTab = bootstrap.Tab.getOrCreateInstance(nav.querySelector(".nav-item:not(.d-none) a"));
-	bsTab.show();
-	document.querySelector(link.getAttribute("href")).remove();
+	let nextTab = nav.querySelector(".nav-item:not(.d-none) a");
+	if (nextTab && window.bootstrap?.Tab) {
+		bootstrap.Tab.getOrCreateInstance(nextTab).show();
+	}
+	let target = link.getAttribute("href");
+	if (target) {
+		document.querySelector(target)?.remove();
+	}
 	return link.parentNode.remove();
-	return false;
 }
 
 
 function datetime() {
   let now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  now.setMilliseconds(null)
-  now.setSeconds(null)
+  now.setMilliseconds(0)
+  now.setSeconds(0)
 
   return now.toISOString().slice(0, 19).replace('T', ' ');
 }
@@ -120,8 +187,8 @@ function datetime() {
 function date() {
   let now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  now.setMilliseconds(null)
-  now.setSeconds(null)
+  now.setMilliseconds(0)
+  now.setSeconds(0)
 
   return now.toISOString().slice(0, 10);	
 }
@@ -133,21 +200,28 @@ function addRow(element) {
 	let table = element.closest("table");
 	let template = table.querySelector("tr.template").cloneNode(true);
 	template.classList.remove("template", "d-none");
-	let newId = Math.floor(Math.random() * 10000);
+	let id = newId();
 	
-	template.querySelectorAll("input,select", template).forEach(e => e.removeAttribute("disabled"));
+	template.querySelectorAll("input,select").forEach(e => e.removeAttribute("disabled"));
 	template = template.outerHTML;
-	template = template.replaceAll('[0]', '[' + newId + ']').
-		replaceAll('[#]', '[' + newId + ']');
+	template = template.replaceAll('[0]', '[' + id + ']').
+		replaceAll('[#]', '[' + id + ']');
 	
-	table.querySelector("tbody").append(generateElements(template)[0]);
-	return element;
+	let newEl = generateElements(template)[0];
+	table.querySelector("tbody")?.append(newEl);
+	return newEl;
 }
 
 let optionValues = [];
 
 function optionTypeChange(element) {
+	if (typeof productOption === "undefined" || !productOption[element.value]) {
+		return;
+	}
 	let tab = element.closest(".tab-pane");
+	if (!tab) {
+		return;
+	}
 	let optionValueId = element.value;
 	let option = productOption[element.value];
 	let optionType = option['type'];
@@ -164,17 +238,23 @@ function optionTypeChange(element) {
 	}
 	
 	function setValues(values){
-			let options = "";
-			for (id in values) {
-				options += "<option value='"+ id +"'>" + values[id] + "</option>";  
-			}
-			tab.querySelector(".values select.option_value", tab).innerHTML = options;
+		let select = tab.querySelector(".values select.option_value");
+		if (!select) {
+			return;
+		}
+		select.innerHTML = "";
+		Object.entries(values).forEach(([valueId, valueName]) => {
+			let option = generateElements("<option></option>")[0];
+			option.value = valueId;
+			option.textContent = valueName;
+			select.append(option);
+		});
 	}
 	
 	if (!optionValues[optionValueId]) {
-		fetch(window.location.pathname + '?module=product/product&action=optionValuesAutocomplete&option_id=' + optionValueId)
+		fetch(window.location.pathname + '?module=product/product&action=optionValuesAutocomplete&option_id=' + encodeURIComponent(optionValueId))
 		.then((response) => {
-			if (!response.ok) { throw new Error(response) }
+			if (!response.ok) { throw new Error(response.statusText || response.status) }
 			return response.json()
 		})
 		.then((values) => {
@@ -182,14 +262,29 @@ function optionTypeChange(element) {
 			setValues(values);				
 		})
 		.catch(error => {
-			console.log(error.statusText);
-			displayToast("danger", "Error", "Error saving!");
+			console.error(error);
+			displayToast("danger", "Error", "Error loading options!");
 		});
 	} else {
 		setValues(optionValues[optionValueId]);
 	}
 }
 
+
+function addAllOptionsValues(element) {
+	let table = element.closest(".tab-pane ").querySelector("table");
+	let row = addRow(table);
+	let dropdown = row.querySelector("[data-v-option-value-option_value_id]");
+	dropdown.selectedIndex = 0;
+	
+	for (let i = 1;i < dropdown.childElementCount;i++) {
+		row = addRow(table);
+		dropdown = row.querySelector("[data-v-option-value-option_value_id]");
+		dropdown.selectedIndex = i;
+		console.log(row, dropdown, i);
+	}
+	
+}
 // Date
 let datepicker = function (e) {
 	let element = e.target.closest('input.date, input[type="date"]');
@@ -199,6 +294,11 @@ let datepicker = function (e) {
 			singleDatePicker: true,
 			autoApply: true,
 			autoUpdateInput: false,
+			/*
+			ranges: {
+				'Today': [moment().startOf('day'), moment().endOf('day')],
+				'Yesterday': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
+			},*/
 			locale: {
 				format: 'YYYY-MM-DD'
 			}
@@ -228,9 +328,12 @@ let daterangepicker = function (e) {
 				'This Year': [moment().startOf('year').startOf('month').startOf('day'), moment().endOf('year').endOf('month').endOf('day')],
 			},
 			locale: {
+				//format: "YYYY-MM-DD HH:mm:ss",
 				format: "YYYY-MM-DD",
 			}
-		});
+		}/*, function (start, end) {
+			this.element.value = start.format('YYYY-MM-DD') + " - " + end.format('YYYY-MM-DD');
+		}*/);
 	}
 }
 
@@ -293,16 +396,27 @@ function generateElements(html) {
 }
 
 function togglePasswordInput(element, input) {
-	let password = document.getElementById(input) || element.parentNode.querySelector("[type=text],[type=password]");
+	let password = (input && document.getElementById(input)) || element.parentNode?.querySelector("[type=text],[type=password]");
+	if (!password) {
+		return;
+	}
+	let use = element.querySelector("use");
+	if (use) {
+		let base = (use.getAttribute("href") || "").split("#")[0];
+		use.setAttribute("href", base + (password.type == "password" ? "#eye" : "#eye-off"));
+	} else {
+		let icon = element.querySelector("i");
+		if (password.type == "password") {
+			icon?.classList.add("icon-eye-outline");
+			icon?.classList.remove("icon-eye-off-outline");
+		} else {
+			icon?.classList.remove("icon-eye-outline");
+			icon?.classList.add("icon-eye-off-outline");
+		}
+	}
 	if (password.type == "password") {
-		password.type = "text"; 
-		let i = element.querySelector("i")
-		i.classList.add("icon-eye-outline")
-		i.classList.remove("icon-eye-off-outline");
+		password.type = "text";
 	} else {
 		password.type = "password";
-		let i = element.querySelector("i")
-		i.classList.remove("icon-eye-outline")
-		i.classList.add("icon-eye-off-outline");
 	}
 }

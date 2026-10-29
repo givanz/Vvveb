@@ -46,7 +46,7 @@ function filterChange() {
 	
 	for(const filterName in filters) {
 		for (const filter in filters[filterName]) {   
-			filterText += (filterText ? '&' : '?') + "filter[" + filterName + "][]=" + filters[filterName][filter];
+			filterText += (filterText ? '&' : '?') + "filter[" + encodeURIComponent(filterName) + "][]=" + encodeURIComponent(filters[filterName][filter]);
 		}
 	}
 

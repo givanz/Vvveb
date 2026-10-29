@@ -77,7 +77,7 @@ window.addEventListener('DOMContentLoaded', (e) => {
 	}
 	
 	//if shipping or payment method is selected collapse the accordion
-	document.querySelector('.accordion-item input[type="radio"]:checked')?.closest("label").dispatchEvent(new MouseEvent('click'));
+	document.querySelector('.accordion-item input[type="radio"]:checked')?.closest("label")?.dispatchEvent(new MouseEvent('click'));
 
 	document.addEventListener("click", function(e) {
 		let element = e.target.closest(".accordion-header label");
@@ -147,7 +147,7 @@ document.addEventListener("change", function (e) {
 				addRegionsToSelect(regionSelect, regions[country_id], region_id, self);
 				reloadRegions(element);
 			} else {
-				fetch(regionsUrl + "&country_id=" + country_id)
+				fetch(regionsUrl + "&country_id=" + encodeURIComponent(country_id))
 				 .then(response => {
 					if (!response.ok) { throw new Error(response) }
 					return response.json()
@@ -176,6 +176,10 @@ document.addEventListener("change", function (e) {
 
 function togglePasswordInput(element, input) {
 	let password = document.getElementById(input);
+	if (!password) {
+		return;
+	}
+
 	if (password.type == "password") {
 		password.type = "text"; 
 		let i = element.querySelector("i")
@@ -196,7 +200,7 @@ document.addEventListener('click', function (e) {
 		let updateElements = [".cart-right-column", ".mini-cart", ".cart-summary"];
 		VvvebTheme.Cart.module= 'checkout/checkout';
 		if (element.classList.contains("btn-remove-coupon")) {
-			let coupon = element.parentNode.querySelector(".code").innerHTML;
+			let coupon = element.parentNode.querySelector(".code")?.textContent?.trim() ?? "";
 			let container = e.target.closest("[data-v-cart-coupon]");
 			VvvebTheme.Cart.removeCoupon({coupon}, element, updateElements);
 			container.remove();

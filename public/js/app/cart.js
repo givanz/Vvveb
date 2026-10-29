@@ -6,7 +6,8 @@ document.addEventListener('change', function (e) {
 			let key = product.dataset.key;
 			let product_id = product.dataset.product_id;
 			let quantity = element.value;
-			let updateElements = ['#cart-container [data-key="' + key + '"] .price', '#cart-container [data-key="' + key + '"] .total', ".cart-right-column", ".mini-cart"];
+			//let updateElements = ['#cart-container [data-key="' + key + '"] .price', '#cart-container [data-key="' + key + '"] .total', ".cart-right-column", ".mini-cart"];
+			let updateElements = [".cart-table", ".mini-cart"];
 			
 			delay(() => VvvebTheme.Cart.update(key ?? product_id, {quantity}, element, updateElements), 1000);
 		}
@@ -18,7 +19,7 @@ document.addEventListener('click', function (e) {
 	if (element) {
 		let updateElements = [".cart-right-column", ".mini-cart"];
 		if (element.classList.contains("btn-remove-coupon")) {
-			let coupon = element.parentNode.querySelector(".code").innerHTML;
+			let coupon = element.parentNode.querySelector(".code")?.textContent?.trim() ?? "";
 			let container = e.target.closest("[data-v-cart-coupon]");
 			
 			VvvebTheme.Cart.removeCoupon({coupon}, element, updateElements);

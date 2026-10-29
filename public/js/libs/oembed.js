@@ -214,9 +214,13 @@ const oEmbedProviders = [
   {
     regex: /https?:\/\/((play|www)\.)?anghami\.com\/.*/,
     url: "https://api.anghami.com/rest/v1/oembed.view"
-  }   
+  }
 ];
 
+/**
+ * Fallback url -> embeddable iframe src transforms for providers without an
+ * oEmbed endpoint. $1..$n are replaced with the regex capture groups.
+ */
 const urlTransforms = [
   {
 	regex: /youtu\.be\/([\w\-_\?&=.]+)/i,
@@ -236,7 +240,7 @@ const urlTransforms = [
   },
   {
 	regex: /vimeo\.com\/(.*)\/([0-9]+)\?h=(\w+)/,
-	url: 'player.vimeo.com/video/$2?h=$3&title=0&amp;byline=0',
+	url: 'player.vimeo.com/video/$2?h=$3&title=0&byline=0',
   },
   {
 	regex: /vimeo\.com\/([0-9]+)/,
@@ -244,16 +248,16 @@ const urlTransforms = [
   },
   {
 	regex: /vimeo\.com\/(.*)\/([0-9]+)/,
-	url: 'player.vimeo.com/video/$2?title=0&amp;byline=0',
+	url: 'player.vimeo.com/video/$2?title=0&byline=0',
   },
   {
 	regex: /(maps|www)\.google\.([a-z]{2,3})\/maps\/(.+)msid=(.+)/,
-	url: '$2.google.com/maps/ms?msid=$3&output=embed"',
-  },  
+	url: '$2.google.com/maps/ms?msid=$3&output=embed',
+  },
   {
 	regex: /(maps|www)\.google\.([a-z]{2,3})\/maps\/@(.+)/,
-	url: '$1.google.com/maps/embed?center=$3"',
-  },  
+	url: '$1.google.com/maps/embed?center=$3',
+  },
   {
 	regex: /dailymotion\.com\/video\/([^_]+)/,
 	url: 'www.dailymotion.com/embed/video/$1',
@@ -264,74 +268,96 @@ const urlTransforms = [
   }
 ];
 
-async function getOembed(url, maxwidth = 800, maxheight = 600, silent = false) {
-	let oembedUrl;
+function notifyError(message) {
+	if (typeof displayToast === "function") {
+		displayToast("danger", "Error", message);
+	} else {
+		console.warn(message);
+	}
+}
 
+async function getOembed(url, maxwidth = 800, maxheight = 600, silent = false) {
+	maxwidth = Number.parseInt(maxwidth, 10) || 800;
+	maxheight = Number.parseInt(maxheight, 10) || 600;
+
+	const matchTransform = () => {
+		for (const transform of urlTransforms) {
+			const matches = transform.regex.exec(url);
+			if (matches) {
+				let newUrl = transform.url;
+				for (let i = 0; i < matches.length; i++) {
+					newUrl = newUrl.replace('$' + i, () => matches[i] ? matches[i] : '');
+				}
+				//build the iframe through the DOM so a crafted embed url cannot
+				//break out of the src attribute
+				const iframe = document.createElement('iframe');
+				iframe.src = 'https://' + newUrl;
+				iframe.width = String(maxwidth);
+				iframe.height = String(maxheight);
+				iframe.style.border = '0';
+				iframe.loading = 'lazy';
+				return iframe.outerHTML;
+			}
+		}
+	};
+
+	//find the first matching provider endpoint
+	let oembedUrl;
 	for (const service of oEmbedProviders) {
 		if (service.regex.exec(url)) {
-		   let eurl = encodeURIComponent(url);
-		   oembedUrl = service.url + `?url=${eurl}&maxwidth=${maxwidth}&maxheight=${maxheight}&format=json`;
+			oembedUrl = service.url + `?url=${encodeURIComponent(url)}&maxwidth=${maxwidth}&maxheight=${maxheight}&format=json`;
+			break;
 		}
 	 }
 
+	 //no provider matched, try local url transforms
 	 if (oembedUrl === undefined) {
-		 
-		const matchTransform = (url, maxwidth, maxheight) => {
-			for (const transforms of urlTransforms) {
-				let matches = transforms.regex.exec(url);
-				if (matches) {
-					let newUrl = transforms.url;
-					for (let i = 0; i < matches.length; i++) {
-						newUrl = newUrl.replace('$' + i, () => matches[i] ? matches[i] : '');
-					}
-					return `<iframe src="https://${newUrl}" width="${maxwidth}" height="${maxheight}" style="border:0;" loading="lazy" ></iframe>`;
-				}
-			}
-		};
-		 
-		 let transform = matchTransform(url, maxwidth, maxheight);
-		 if (transform) {
-			 return {html: transform};
-		 }
-		 
-		 if (!silent) {
-			 let message = 'Embed error: URL did not match any provider.';
-			 displayToast("danger", "Error", message);
-		 }
-		 
-		 return;
+		const html = matchTransform();
+
+		if (html) {
+			return {html};
+		}
+
+		if (!silent) {
+			notifyError('Embed error: URL did not match any provider.');
+		}
+
+		return null;
 	 }
 
-	 let remoteResponse;
-	 //try to fetch directly, if CORS error use proxy
-	 for (url of [oembedUrl,oEmbedProxyUrl + "&url=" + encodeURIComponent(oembedUrl)]) { 
+	//try to fetch directly, if CORS error use proxy (when configured)
+	const urls = [oembedUrl];
+	if (typeof oEmbedProxyUrl !== "undefined" && oEmbedProxyUrl) {
+		urls.push(oEmbedProxyUrl + "&url=" + encodeURIComponent(oembedUrl));
+	}
 
-		 try {
-			 remoteResponse = await window.fetch(url);
-
-			 if (remoteResponse && remoteResponse.status == 200) {
-				 break;
+	let remoteResponse = null;
+	for (const fetchUrl of urls) {
+		try {
+			remoteResponse = await window.fetch(fetchUrl);
+			if (remoteResponse?.ok) {
+				break;
 			}
 		} catch (error) {
-			console.log(error);
+			console.warn(`Vvveb: could not fetch ${fetchUrl}`, error);
 		}
-	 }
+	}
 
-	 if (!remoteResponse || remoteResponse.status !== 200) {
-		let message = `Embed error: Could not fetch embed URL.`;
-		displayToast("danger", "Error", message);
-	 }
+	if (!remoteResponse || !remoteResponse.ok) {
+		if (!silent) {
+			notifyError('Embed error: Could not fetch embed URL.');
+		}
+		return null;
+	}
 
-	 const json = await remoteResponse.json();
+	const json = await remoteResponse.json();
 
-	 if (json.html === undefined) {
-		const message = `Eembed error: ${message}`;
-		displayToast("danger", "Error", message);
-		return;
-	 }
+	if (!json || json.html === undefined) {
+		if (!silent) {
+			notifyError('Embed error: invalid oEmbed response.');
+		}
+		return null;
+	}
 
-    //response = { url: url, html: json.html, poster: json.thumbnail_url };
-	response = json;
-
-	return response;
+	return json;
 }

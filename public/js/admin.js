@@ -56,9 +56,21 @@ class AjaxStack {
         if (this.start = this.stack.length) {
 			let self = this;
             let call = this.stack.shift();
-            let ajax = call();
+            let ajax;
 
-            ajax.then(function() {
+            try {
+                ajax = call();
+            } catch (error) {
+                console.error(error);
+                self.execute();
+                return;
+            }
+
+            Promise.resolve(ajax).then(function() {
+                self.execute();
+            }).catch(function(error) {
+                //a failed request must not block the rest of the queue
+                console.error(error);
                 self.execute();
             });
         }
@@ -77,16 +89,40 @@ function displayToast(type, title, message, position = 'bottom', id = null) {
 	if (!id) {
 		id = position + "-toast";
 	}
-	
+
+	type = String(type ?? 'success').replace(/^bg-/, '');
+
 	let toast = document.getElementById(id);
+	if (!toast) {
+		console.warn("displayToast: missing toast element", id);
+		return;
+	}
+
 	let header = toast.querySelector(".toast-header");
 	toast.classList.remove("bottom-0", "top-0");
 	toast.classList.add(position + "-0");
-	toast.querySelector(".toast-body .message").innerHTML = message;
-	header.classList.remove("bg-danger", "bg-success");
-	header.classList.add("bg-" + type);	
-	header.querySelector("strong").textContent = title;
+
+	//messages are plain text from the server, never render them as html
+	let body = toast.querySelector(".toast-body .message");
+	if (body) {
+		body.textContent = message ?? "";
+	}
+
+	if (header) {
+		header.classList.remove("bg-danger", "bg-success", "bg-warning", "bg-info");
+		header.classList.add("bg-" + type);
+		const strong = header.querySelector("strong");
+		if (strong) {
+			strong.textContent = title ?? "";
+		}
+	}
+
+	if (!toast.parentNode) {
+		return;
+	}
+
 	let toastDisplay = toast.cloneNode(true);
+	toastDisplay.removeAttribute("id");
 	toast.parentNode.appendChild(toastDisplay);
 
 	let delay = 3000;

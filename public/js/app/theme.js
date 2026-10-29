@@ -46,16 +46,25 @@ function navbarSticky(isSticky) {
 }
 
 function setCookie(name, value) {
-	document.cookie = name + "=" + value + ";";
-	//try to set cookie to all subdomains
-	document.cookie = name + "=" + value + ";path=/;domain=." + window.location.host.replace(/^.*?\./, '') + ";";
+	value = encodeURIComponent(value);
+	document.cookie = name + "=" + value + ";path=/;SameSite=Lax";
+
+	//share the preference between www.example.com and example.com only
+	let hostname = window.location.hostname;
+	if (hostname.startsWith('www.') && hostname.length > 4) {
+		document.cookie = name + "=" + value + ";path=/;domain=." + hostname.slice(4) + ";SameSite=Lax";
+	}
 }
 
 let themeSwitch = document.querySelector("#color-theme-switch i");
 let theme = document.documentElement.dataset.bsTheme;
-let themeCookie = document.cookie.match(/theme=(.*?);/);
+let themeCookie = document.cookie.match(/(?:^|;\s*)theme=([^;]*)/);
 if (themeCookie && themeCookie[1]) {
-	theme = themeCookie[1];
+	try {
+		theme = decodeURIComponent(themeCookie[1]);
+	} catch (error) {
+		theme = themeCookie[1];
+	}
 }
 
 if (theme && themeSwitch) {
@@ -229,7 +238,8 @@ function productPage() {
 								}
 							});
 							
-							document.querySelector("[data-v-product-price_tax_formatted]").innerText = variant.price_formatted;
+							let price = document.querySelector("[data-v-product-price_tax_formatted]");
+							if (price) price.innerText = variant.price_formatted;
 						}
 					}
 
@@ -398,9 +408,9 @@ if (!isEditor()) document.addEventListener("click", function(event) {
 					elements = [el];
 				}
 				
-				if (title) Object.assign(el , title);
-				if (description) Object.assign(el , title);
-				if (descPosition) Object.assign(el , title);
+				if (title) el.title = title.innerHTML;
+				if (description) el.description = description.innerHTML;
+				if (descPosition) el.descPosition = descPosition;
 				
 			} else {
 				//elements = [{"href": element.src}];

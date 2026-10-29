@@ -1,6 +1,12 @@
 var noWrapNodes = "p > img, p > video, p > figure, p > iframe";
 var wrapNodes = ['B','I','SPAN', 'TABLE', 'P', 'H1', 'H2', 'H3', 'H4'];
 
+function escapeHtmlAttribute(value) {
+	return String(value ?? '').replace(/[&<>"']/g, function (char) {
+		return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char];
+	});
+}
+
 function fixWrapper(doc){
 	let body = doc.body;
 
@@ -68,9 +74,15 @@ const tinymce_image_upload_handler = (blobInfo, progress) => new Promise((resolv
       return;
     }
 
-    const json = JSON.parse(xhr.responseText);
+    let json;
+    try {
+      json = JSON.parse(xhr.responseText);
+    } catch (err) {
+      reject('Invalid JSON: ' + xhr.responseText);
+      return;
+    }
 
-    if (!json || typeof json[0].file != 'string') {
+    if (!Array.isArray(json) || !json[0] || typeof json[0].file != 'string') {
       reject('Invalid JSON: ' + xhr.responseText);
       return;
     }
@@ -112,21 +124,26 @@ var tinyMceOptions = {
 			args.content = '';
 			getOembed(url, 800, 600, true).then(response => {
 				 if (response && response.html) {
-					editor.insertContent( '<div class="iframe" data-url="' + url + '" data-component-iframe>' + response.html.replace('<iframe ','<iframe class="align-center" ') + '</div>' );
+					editor.insertContent( '<div class="iframe" data-url="' + escapeHtmlAttribute(url) + '" data-component-iframe>' + response.html.replace('<iframe ','<iframe class="align-center" ') + '</div>' );
  				    let arr = editor.contentDocument.getElementsByTagName('script');
 					
 					for (let n = 0; n < arr.length; n++) {
 						let script = arr[n];
-						if (!script.hasAttribute("type")) continue;//process only new scripts that have the tinymce attribute
+						//process only new scripts that have the tinymce sanitized src attribute
+						let src = script.getAttribute("data-mce-src");
+						//only allow http(s) and relative script urls from embeds
+						if (!src || !/^(https?:\/\/|\/\/|\/)/i.test(src)) continue;
 						let newScript = editor.contentDocument.createElement("script");
-						newScript.src = script.src;
+						newScript.src = src;
 						script.replaceWith(newScript);
 					}	
 				 } else {
 					 editor.insertContent(url);
 				 }
 			}).catch(error => {
-				//editor.insertContent(url);
+				//insert the raw url if oembed fails so the pasted content is not lost
+				editor.insertContent(url);
+				console.error('oEmbed failed:', error);
 			});
 	}	
   },  
@@ -187,20 +204,21 @@ var tinyMceOptions = {
 			editor.insertContent(galleryHTML);
 			let node = editor.selection.getNode();
 			let gallery = node.closest('[data-component-gallery]');
+			if (gallery) {
 			gallery.setAttribute( 'data-mce-selected', '2' );
 			let img = gallery.querySelector("img");
-			editor.selection.select(img);
-
+				if (img) editor.selection.select(img);
+			}
 
 			if (!Vvveb.MediaModal) {
 				Vvveb.MediaModal = new MediaModal(true);
 				Vvveb.MediaModal.mediaPath = mediaPath;
 			}
-			Vvveb.MediaModal.type = "multitple";
+			Vvveb.MediaModal.type = "multiple";
 			Vvveb.MediaModal.open(null, function (src, file, files) {
 				if (src) {
 					let imgs = "";
-					for (img of src.split(",")) if (img) {
+					for (let img of src.split(",")) if (img) {
 						imgs +=
 						'<div class="item"><a href="' + img + '">' + editor.dom.createHTML('img', {
 							src: img,
@@ -222,7 +240,10 @@ var tinyMceOptions = {
 				//editor.fire( 'cut' );
 				let node = editor.selection.getNode();
 				let gallery = node.closest('[data-component-gallery]');
-				editor.selection.setNode(gallery.prevElementSibling);
+				if (!gallery) return;
+				if (gallery.previousElementSibling) {
+					editor.selection.setNode(gallery.previousElementSibling);
+				}
 				gallery.remove();
 			}
 		} );	
@@ -245,7 +266,7 @@ var tinyMceOptions = {
 				Vvveb.MediaModal.open(null, function (src, file, files) {
 					if (src) {
 						let imgs = "";
-						for (img of src.split(",")) if (img) {
+					for (let img of src.split(",")) if (img) {
 							imgs +=
 							'<div class="item"><a href="' + img + '">' + editor.dom.createHTML('img', {
 								src: img,
@@ -463,7 +484,7 @@ var tinyMceOptions = {
 			Vvveb.MediaModal.open(null, function (src, file, files) {
 				if (src) {
 					let imgs = "";
-					for (img of src.split(",")) if (img) {
+					for (let img of src.split(",")) if (img) {
 						imgs +=
 						'<div><a href="' + img + '">' + editor.dom.createHTML('img', {
 							src: img,
@@ -473,7 +494,6 @@ var tinyMceOptions = {
 					editor.insertContent(imgs);
 				}
 			});
-			//editor.fire("blur");
 			editor.dispatch("blur");
         }
       });
